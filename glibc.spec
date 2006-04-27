@@ -20,8 +20,8 @@
 Summary: The GNU libc libraries.
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}.dwmw2testbuild.2
-ExcludeArch: x86_64
+Release: %{glibcrelease}.dwmw2testbuild.3
+ExcludeArch: s390 s390x
 License: LGPL
 Group: System Environment/Libraries
 Source0: %{glibcsrcdir}.tar.bz2
