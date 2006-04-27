@@ -20,7 +20,8 @@
 Summary: The GNU libc libraries.
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}.dwmw2testbuild
+Release: %{glibcrelease}.dwmw2testbuild.1
+ExcludeArch: x64_64
 License: LGPL
 Group: System Environment/Libraries
 Source0: %{glibcsrcdir}.tar.bz2
