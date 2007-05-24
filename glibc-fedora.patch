@@ -1,6 +1,12 @@
 --- glibc-20070515T2025/ChangeLog	15 May 2007 20:24:57 -0000	1.10641
-+++ glibc-20070515T2025-fedora/ChangeLog	21 May 2007 20:00:48 -0000	1.8782.2.245
-@@ -1,3 +1,58 @@
++++ glibc-20070515T2025-fedora/ChangeLog	24 May 2007 10:33:00 -0000	1.8782.2.246
+@@ -1,3 +1,64 @@
++2007-01-15  Jakub Jelinek  <jakub@redhat.com>
++
++	* elf/dl-open.c (add_to_global): If the main searchlist is 256
++	entries or more, on each reallocation at least double the size
++	of the search list rather than growing it linearly.
++
 +2007-05-21  Ulrich Drepper  <drepper@redhat.com>
 +
 +	* sysdeps/unix/sysv/linux/i386/epoll_pwait.S: New file.
@@ -59,7 +65,7 @@
  2007-05-14  Ulrich Drepper  <drepper@redhat.com>
  
  	* version.h (VERSION): Define to 6.
-@@ -71,6 +126,13 @@
+@@ -71,6 +132,13 @@
  	* include/sys/cdefs.h: Redefine __nonnull so that test for
  	incorrect parameters in the libc code itself are not omitted.
  
@@ -73,7 +79,7 @@
  2007-05-09  Jakub Jelinek  <jakub@redhat.com>
  
  	* sysdeps/ia64/fpu/fraiseexcpt.c (feraiseexcept): Don't raise overflow
-@@ -366,6 +428,10 @@
+@@ -366,6 +434,10 @@
  	[BZ #4368]
  	* stdlib/stdlib.h: Remove obsolete part of comment for realpath.
  
@@ -84,7 +90,7 @@
  2007-04-16  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #4364]
-@@ -1623,6 +1689,15 @@
+@@ -1623,6 +1695,15 @@
  	separators also if no non-zero digits found.
  	* stdlib/Makefile (tests): Add tst-strtod3.
  
@@ -408,6 +414,30 @@
  # define O 0
  #else
  # define O 1
+--- glibc-20070515T2025/elf/dl-open.c	11 May 2007 21:34:32 -0000	1.139
++++ glibc-20070515T2025-fedora/elf/dl-open.c	24 May 2007 10:33:02 -0000	1.111.2.18
+@@ -125,14 +125,18 @@ add_to_global (struct link_map *new)
+     {
+       /* We have to extend the existing array of link maps in the
+ 	 main map.  */
++      size_t new_size = ns->_ns_global_scope_alloc;
++      if (new_size >= 256 && new_size > to_add + 8)
++	new_size *= 2;
++      else
++	new_size += to_add + 8;
+       new_global = (struct link_map **)
+ 	realloc (ns->_ns_main_searchlist->r_list,
+-		 ((ns->_ns_global_scope_alloc + to_add + 8)
+-		  * sizeof (struct link_map *)));
++		 new_size * sizeof (struct link_map *));
+       if (new_global == NULL)
+ 	goto nomem;
+ 
+-      ns->_ns_global_scope_alloc += to_add + 8;
++      ns->_ns_global_scope_alloc = new_size;
+       ns->_ns_main_searchlist->r_list = new_global;
+     }
+ 
 --- glibc-20070515T2025/elf/ldconfig.c	13 Apr 2007 19:53:20 -0000	1.59
 +++ glibc-20070515T2025-fedora/elf/ldconfig.c	16 Apr 2007 23:59:03 -0000	1.47.2.14
 @@ -965,17 +965,19 @@ search_dirs (void)
@@ -1371,8 +1401,14 @@
 -#SETENT_BATCH_READ=TRUE
 +SETENT_BATCH_READ=TRUE
 --- glibc-20070515T2025/nptl/ChangeLog	15 May 2007 06:32:02 -0000	1.970
-+++ glibc-20070515T2025-fedora/nptl/ChangeLog	21 May 2007 20:01:10 -0000	1.706.2.125
-@@ -1,3 +1,16 @@
++++ glibc-20070515T2025-fedora/nptl/ChangeLog	24 May 2007 10:33:02 -0000	1.706.2.126
+@@ -1,3 +1,22 @@
++2007-01-15  Jakub Jelinek  <jakub@redhat.com>
++
++	* pthread_create.c (__pthread_create_2_1): On the first pthread_create
++	in a process make sure main search list can store at least 256
++	entries.
++
 +2007-05-17  Ulrich Drepper  <drepper@redhat.com>
 +
 +	[BZ #4512]
@@ -1389,7 +1425,7 @@
  2007-05-14  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/unix/sysv/linux/x86_64/sem_wait.S: Remove unnecessary
-@@ -1474,6 +1487,15 @@
+@@ -1474,6 +1493,15 @@
  	Use __sigfillset.  Document that sigfillset does the right thing wrt
  	to SIGSETXID.
  
@@ -1405,7 +1441,7 @@
  2005-07-11  Jakub Jelinek  <jakub@redhat.com>
  
  	[BZ #1102]
-@@ -2210,6 +2232,11 @@
+@@ -2210,6 +2238,11 @@
  	Move definition inside libpthread, libc, librt check.  Provide
  	definition for rtld.
  
@@ -1417,7 +1453,7 @@
  2004-09-02  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/alpha/jmpbuf-unwind.h: Define __libc_unwind_longjmp.
-@@ -4284,6 +4311,11 @@
+@@ -4284,6 +4317,11 @@
  
  	* Makefile [$(build-shared) = yes] (tests): Depend on $(test-modules).
  
@@ -1482,6 +1518,39 @@
  else
  $(addprefix $(objpfx),$(tests) $(test-srcs)): $(objpfx)libpthread.a
  endif
+--- glibc-20070515T2025/nptl/pthread_create.c	5 Sep 2006 17:12:15 -0000	1.54
++++ glibc-20070515T2025-fedora/nptl/pthread_create.c	24 May 2007 10:33:02 -0000	1.34.2.18
+@@ -462,6 +462,30 @@ __pthread_create_2_1 (newthread, attr, s
+   pd->flags = ((iattr->flags & ~(ATTR_FLAG_SCHED_SET | ATTR_FLAG_POLICY_SET))
+ 	       | (self->flags & (ATTR_FLAG_SCHED_SET | ATTR_FLAG_POLICY_SET)));
+ 
++  /* Hack: realloc the main search list on the first pthread_create call
++     to minimize the number of global search scope reallocations.
++     Wastes at most 1KB on 32-bit and 2KB on 64-bit per process
++     which calls pthread_create.  */
++  if (__builtin_expect (self->header.multiple_threads == 0, 0)
++      && GL(dl_ns)[0]._ns_main_searchlist
++      && GL(dl_ns)[0]._ns_main_searchlist->r_nlist < 256
++      && GL(dl_ns)[0]._ns_global_scope_alloc < 256)
++    {
++      struct link_map **new_global = (struct link_map **)
++	realloc (GL(dl_ns)[0]._ns_global_scope_alloc == 0
++		 ? NULL : GL(dl_ns)[0]._ns_main_searchlist->r_list,
++		 256 * sizeof (struct link_map *));
++      if (new_global != NULL)
++	{
++	  if (GL(dl_ns)[0]._ns_global_scope_alloc == 0)
++	    memcpy (new_global, GL(dl_ns)[0]._ns_main_searchlist->r_list,
++		    GL(dl_ns)[0]._ns_main_searchlist->r_nlist
++		    * sizeof (struct link_map *));
++	  GL(dl_ns)[0]._ns_global_scope_alloc = 256;
++	  GL(dl_ns)[0]._ns_main_searchlist->r_list = new_global;
++	}
++    }
++
+   /* Initialize the field for the ID of the thread which is waiting
+      for us.  This is a self-reference in case the thread is created
+      detached.  */
 --- glibc-20070515T2025/nptl/pthread_mutex_lock.c	14 Aug 2006 23:01:26 -0000	1.15
 +++ glibc-20070515T2025-fedora/nptl/pthread_mutex_lock.c	21 May 2007 20:01:11 -0000	1.8.2.7
 @@ -1,4 +1,4 @@

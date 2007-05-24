@@ -3,7 +3,7 @@
 %define glibcsrcdir glibc-20070515T2025
 %define glibc_release_tarballs 0
 %define glibcversion 2.6
-%define glibcrelease 2
+%define glibcrelease 3
 %define auxarches i586 i686 athlon sparcv9 alphaev6
 %define xenarches i686 athlon
 %ifarch %{xenarches}
@@ -1511,7 +1511,7 @@ rm -f *.filelist*
 %files -f common.filelist common
 %defattr(-,root,root)
 %dir %{_prefix}/lib/locale
-%attr(0644,root,root) %config(missingok) %{_prefix}/lib/locale/locale-archive.tmpl
+%attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
@@ -1566,6 +1566,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu May 24 2007 Jakub Jelinek <jakub@redhat.com> 2.6-3
+- don't use %%config(missingok) for locale-archive.tmpl,
+  instead of removing it altogether truncate it to zero
+  size (#240697)
+- add a workaround for #210748
+
 * Mon May 21 2007 Jakub Jelinek <jakub@redhat.com> 2.6-2
 - restore malloc_set_state backwards compatibility (#239344)
 - fix epoll_pwait (BZ#4525)
