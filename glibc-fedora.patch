@@ -1,6 +1,50 @@
 --- glibc-20080412T0741/ChangeLog	12 Apr 2008 04:17:47 -0000	1.11164
-+++ glibc-20080412T0741-fedora/ChangeLog	12 Apr 2008 07:48:55 -0000	1.8782.2.297
-@@ -4395,6 +4395,13 @@
++++ glibc-20080412T0741-fedora/ChangeLog	30 Apr 2008 12:11:28 -0000	1.8782.2.298
+@@ -1,3 +1,43 @@
++2008-04-25  David S. Miller  <davem@davemloft.net>
++
++	* sysdeps/unix/sysv/linux/sparc/sparc64/semctl.c (semctl):
++	Pass "union semun" properly in to sys_ipc, it must be passed
++	by value, not by reference.
++
++2008-04-22  Jakub Jelinek  <jakub@redhat.com>
++
++	* nscd/Makefile (nscd-cflags): Set back to -fpie.
++	* nscd/nscd.h (mem_in_flight): Add attribute_tls_model_ie.
++	* nscd/connections.c (mem_in_flight): Likewise.
++
++	* nscd/nscd.h (dbs): Make hidden.
++
++2008-04-15  Ulrich Drepper  <drepper@redhat.com>
++
++	[BZ #5381]
++	* nscd/nscd.h: Define enum in_flight, mem_in_flight, and
++	mem_in_flight_list variables.  Add new parameter to mempool_alloc
++	prototype.
++	* nscd/mem.c (mempool_alloc): Take additional parameter.  Initialize
++	appropriate mem_in_flight element.
++	(gc): Take allocations which have not yet been committed to the
++	database into account.
++	* nscd/cache.c (cache_add): Add new parameter to mempool_alloc call.
++	Reset mem_in_flight before returning.
++	* nscd/connections.c (nscd_run_worker): Initialize mem_in_flight and
++	cue it up in mem_in_flight_list.
++	* nscd/aicache.c: Adjust mempool_alloc call.
++	* nscd/grpcache.c: Likewise.
++	* nscd/hstcache.c: Likewise.
++	* nscd/initgrcache.c: Likewise.
++	* nscd/pwdcache.c: Likewise.
++	* nscd/servicescache.c: Likewise.
++	* nscd/Makefile (nscd-flags): Until ld is fixed, use -fpic instead
++	of -fpie.
++
++	* nscd/connections.c (handle_request): Provide better error message
++	in case SELinux forbids the service.
++
+ 2008-04-11  Ulrich Drepper  <drepper@redhat.com>
+ 
+ 	* sysdeps/unix/sysv/linux/powerpc/bits/mathinline.h (__signbitl):
+@@ -4395,6 +4435,13 @@
  	* include/sys/cdefs.h: Redefine __nonnull so that test for
  	incorrect parameters in the libc code itself are not omitted.
  
@@ -14,7 +58,7 @@
  2007-05-09  Jakub Jelinek  <jakub@redhat.com>
  
  	* sysdeps/ia64/fpu/fraiseexcpt.c (feraiseexcept): Don't raise overflow
-@@ -4690,6 +4697,10 @@
+@@ -4690,6 +4737,10 @@
  	[BZ #4368]
  	* stdlib/stdlib.h: Remove obsolete part of comment for realpath.
  
@@ -25,7 +69,7 @@
  2007-04-16  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #4364]
-@@ -5947,6 +5958,15 @@
+@@ -5947,6 +5998,15 @@
  	separators also if no non-zero digits found.
  	* stdlib/Makefile (tests): Add tst-strtod3.
  
@@ -1222,8 +1266,17 @@
 -#SETENT_BATCH_READ=TRUE
 +SETENT_BATCH_READ=TRUE
 --- glibc-20080412T0741/nptl/ChangeLog	9 Apr 2008 17:59:06 -0000	1.1062
-+++ glibc-20080412T0741-fedora/nptl/ChangeLog	10 Apr 2008 19:21:05 -0000	1.706.2.153
-@@ -3148,6 +3148,15 @@
++++ glibc-20080412T0741-fedora/nptl/ChangeLog	30 Apr 2008 12:11:30 -0000	1.706.2.154
+@@ -1,3 +1,8 @@
++2008-04-14  David S. Miller  <davem@davemloft.net>
++
++	* sysdeps/unix/sysv/linux/sparc/sparc32/sem_wait.c
++	(__old_sem_wait): Fix argument to lll_futex_wait().
++
+ 2007-11-26  Daniel Jacobowitz  <dan@codesourcery.com>
+ 
+ 	* pthread_create.c: Require pthread_mutex_trylock and
+@@ -3148,6 +3153,15 @@
  	Use __sigfillset.  Document that sigfillset does the right thing wrt
  	to SIGSETXID.
  
@@ -1239,7 +1292,7 @@
  2005-07-11  Jakub Jelinek  <jakub@redhat.com>
  
  	[BZ #1102]
-@@ -3884,6 +3893,11 @@
+@@ -3884,6 +3898,11 @@
  	Move definition inside libpthread, libc, librt check.  Provide
  	definition for rtld.
  
@@ -1251,7 +1304,7 @@
  2004-09-02  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/alpha/jmpbuf-unwind.h: Define __libc_unwind_longjmp.
-@@ -5958,6 +5972,11 @@
+@@ -5958,6 +5977,11 @@
  
  	* Makefile [$(build-shared) = yes] (tests): Depend on $(test-modules).
  
@@ -1342,6 +1395,323 @@
 +#define _XOPEN_STREAMS	-1
 +
  #endif /* posix_opt.h */
+--- glibc-20080412T0741/nptl/sysdeps/unix/sysv/linux/sparc/sparc32/sem_wait.c	15 Aug 2007 20:47:42 -0000	1.2
++++ glibc-20080412T0741-fedora/nptl/sysdeps/unix/sysv/linux/sparc/sparc32/sem_wait.c	30 Apr 2008 12:11:31 -0000	1.1.2.3
+@@ -155,7 +155,7 @@ __old_sem_wait (sem_t *sem)
+       /* Enable asynchronous cancellation.  Required by the standard.  */
+       int oldtype = __pthread_enable_asynccancel ();
+ 
+-      err = lll_futex_wait (futex, 0,
++      err = lll_futex_wait (&isem->value, 0,
+ 			    isem->private ^ FUTEX_PRIVATE_FLAG);
+ 
+       /* Disable asynchronous cancellation.  */
+--- glibc-20080412T0741/nscd/aicache.c	25 Nov 2007 12:56:35 -0000	1.17
++++ glibc-20080412T0741-fedora/nscd/aicache.c	30 Apr 2008 12:11:31 -0000	1.5.2.9
+@@ -262,7 +262,8 @@ addhstaiX (struct database_dyn *db, int 
+ 		{
+ 		  dataset = (struct dataset *) mempool_alloc (db,
+ 							      total
+-							      + req->key_len);
++							      + req->key_len,
++							      IDX_result_data);
+ 		  if (dataset == NULL)
+ 		    ++db->head->addfailed;
+ 		}
+@@ -338,7 +339,8 @@ addhstaiX (struct database_dyn *db, int 
+ 		      struct dataset *newp
+ 			= (struct dataset *) mempool_alloc (db,
+ 							    total
+-							    + req->key_len);
++							    + req->key_len,
++							    IDX_result_data);
+ 		      if (__builtin_expect (newp != NULL, 1))
+ 			{
+ 			  /* Adjust pointer into the memory block.  */
+@@ -424,7 +426,8 @@ addhstaiX (struct database_dyn *db, int 
+       if (fd != -1)
+ 	TEMP_FAILURE_RETRY (send (fd, &notfound, total, MSG_NOSIGNAL));
+ 
+-      dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len);
++      dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
++			       IDX_result_data);
+       /* If we cannot permanently store the result, so be it.  */
+       if (dataset != NULL)
+ 	{
+--- glibc-20080412T0741/nscd/cache.c	25 Nov 2007 21:47:35 -0000	1.35
++++ glibc-20080412T0741-fedora/nscd/cache.c	30 Apr 2008 12:11:31 -0000	1.19.2.10
+@@ -155,11 +155,16 @@ cache_add (int type, const void *key, si
+   unsigned long int hash = __nis_hash (key, len) % table->head->module;
+   struct hashentry *newp;
+ 
+-  newp = mempool_alloc (table, sizeof (struct hashentry));
++  newp = mempool_alloc (table, sizeof (struct hashentry), IDX_record_data);
+   /* If we cannot allocate memory, just do not do anything.  */
+   if (newp == NULL)
+     {
+       ++table->head->addfailed;
++
++      /* Mark the in-flight memory as unused.  */
++      for (enum in_flight idx = 0; idx < IDX_record_data; ++idx)
++	mem_in_flight.block[idx].dbidx = -1;
++
+       return -1;
+     }
+ 
+@@ -215,6 +220,10 @@ cache_add (int type, const void *key, si
+     else
+       next_wakeup = table->wakeup_time;
+ 
++  /* Mark the in-flight memory as unused.  */
++  for (enum in_flight idx = 0; idx < IDX_last; ++idx)
++    mem_in_flight.block[idx].dbidx = -1;
++
+   return 0;
+ }
+ 
+--- glibc-20080412T0741/nscd/connections.c	4 Mar 2008 01:53:50 -0000	1.109
++++ glibc-20080412T0741-fedora/nscd/connections.c	30 Apr 2008 12:11:31 -0000	1.55.2.39
+@@ -225,6 +225,11 @@ static int sock;
+ /* Number of times clients had to wait.  */
+ unsigned long int client_queued;
+ 
++/* Data structure for recording in-flight memory allocation.  */
++__thread struct mem_in_flight mem_in_flight attribute_tls_model_ie;
++/* Global list of the mem_in_flight variables of all the threads.  */
++struct mem_in_flight *mem_in_flight_list;
++
+ 
+ ssize_t
+ writeall (int fd, const void *buf, size_t len)
+@@ -964,7 +969,7 @@ send_ro_fd (struct database_dyn *db, cha
+ 
+ /* Handle new request.  */
+ static void
+-handle_request (int fd, request_header *req, void *key, uid_t uid)
++handle_request (int fd, request_header *req, void *key, uid_t uid, pid_t pid)
+ {
+   if (__builtin_expect (req->version, NSCD_VERSION) != NSCD_VERSION)
+     {
+@@ -979,7 +984,31 @@ cannot handle old request version %d; cu
+   if (selinux_enabled && nscd_request_avc_has_perm (fd, req->type) != 0)
+     {
+       if (debug_level > 0)
+-	dbg_log (_("request not handled due to missing permission"));
++	{
++#ifdef SO_PEERCRED
++# ifdef PATH_MAX
++	  char buf[PATH_MAX];
++# else
++	  char buf[4096];
++# endif
++
++	  snprintf (buf, sizeof (buf), "/proc/%ld/exe", (long int) pid);
++	  ssize_t n = readlink (buf, buf, sizeof (buf) - 1);
++
++	  if (n <= 0)
++	    dbg_log (_("\
++request from %ld not handled due to missing permission"), (long int) pid);
++	  else
++	    {
++	      buf[n] = '\0';
++	      dbg_log (_("\
++request from '%s' [%ld] not handled due to missing permission"),
++		       buf, (long int) pid);
++	    }
++#else
++	  dbg_log (_("request not handled due to missing permission"));
++#endif
++	}
+       return;
+     }
+ 
+@@ -1426,6 +1455,16 @@ nscd_run_worker (void *p)
+ {
+   char buf[256];
+ 
++  /* Initialize the memory-in-flight list.  */
++  for (enum in_flight idx = 0; idx < IDX_last; ++idx)
++    mem_in_flight.block[idx].dbidx = -1;
++  /* And queue this threads structure.  */
++  do
++    mem_in_flight.next = mem_in_flight_list;
++  while (atomic_compare_and_exchange_bool_acq (&mem_in_flight_list,
++					       &mem_in_flight,
++					       mem_in_flight.next) != 0);
++
+   /* Initial locking.  */
+   pthread_mutex_lock (&readylist_lock);
+ 
+@@ -1491,6 +1530,8 @@ nscd_run_worker (void *p)
+ 	  if (getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &caller, &optlen) == 0)
+ 	    pid = caller.pid;
+ 	}
++#else
++      const pid_t pid = 0;
+ #endif
+ 
+       /* It should not be possible to crash the nscd with a silly
+@@ -1531,7 +1572,7 @@ handle_request: request received (Versio
+ 	    }
+ 
+ 	  /* Phew, we got all the data, now process it.  */
+-	  handle_request (fd, &req, keybuf, uid);
++	  handle_request (fd, &req, keybuf, uid, pid);
+ 	}
+ 
+     close_and_out:
+--- glibc-20080412T0741/nscd/grpcache.c	25 Nov 2007 21:25:22 -0000	1.50
++++ glibc-20080412T0741-fedora/nscd/grpcache.c	30 Apr 2008 12:11:31 -0000	1.36.2.12
+@@ -113,7 +113,8 @@ cache_addgr (struct database_dyn *db, in
+ 	  written = TEMP_FAILURE_RETRY (send (fd, &notfound, total,
+ 					      MSG_NOSIGNAL));
+ 
+-	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len);
++	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
++				   IDX_result_data);
+ 	  /* If we cannot permanently store the result, so be it.  */
+ 	  if (dataset != NULL)
+ 	    {
+@@ -204,7 +205,8 @@ cache_addgr (struct database_dyn *db, in
+ 
+       if (he == NULL)
+ 	{
+-	  dataset = (struct dataset *) mempool_alloc (db, total + n);
++	  dataset = (struct dataset *) mempool_alloc (db, total + n,
++						      IDX_result_data);
+ 	  if (dataset == NULL)
+ 	    ++db->head->addfailed;
+ 	}
+@@ -274,7 +276,8 @@ cache_addgr (struct database_dyn *db, in
+ 	      /* We have to create a new record.  Just allocate
+ 		 appropriate memory and copy it.  */
+ 	      struct dataset *newp
+-		= (struct dataset *) mempool_alloc (db, total + n);
++		= (struct dataset *) mempool_alloc (db, total + n,
++						    IDX_result_data);
+ 	      if (newp != NULL)
+ 		{
+ 		  /* Adjust pointers into the memory block.  */
+--- glibc-20080412T0741/nscd/hstcache.c	25 Nov 2007 21:24:14 -0000	1.46
++++ glibc-20080412T0741-fedora/nscd/hstcache.c	30 Apr 2008 12:11:31 -0000	1.31.2.11
+@@ -121,7 +121,8 @@ cache_addhst (struct database_dyn *db, i
+ 	    written = TEMP_FAILURE_RETRY (send (fd, &notfound, total,
+ 						MSG_NOSIGNAL));
+ 
+-	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len);
++	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
++				   IDX_result_data);
+ 	  /* If we cannot permanently store the result, so be it.  */
+ 	  if (dataset != NULL)
+ 	    {
+@@ -226,7 +227,8 @@ cache_addhst (struct database_dyn *db, i
+       if (he == NULL && h_addr_list_cnt == 1)
+ 	{
+ 	  dataset = (struct dataset *) mempool_alloc (db,
+-						      total + req->key_len);
++						      total + req->key_len,
++						      IDX_result_data);
+ 	  if (dataset == NULL)
+ 	    ++db->head->addfailed;
+ 	}
+@@ -312,7 +314,8 @@ cache_addhst (struct database_dyn *db, i
+ 		     appropriate memory and copy it.  */
+ 		  struct dataset *newp
+ 		    = (struct dataset *) mempool_alloc (db,
+-							total + req->key_len);
++							total + req->key_len,
++							IDX_result_data);
+ 		  if (newp != NULL)
+ 		    {
+ 		      /* Adjust pointers into the memory block.  */
+--- glibc-20080412T0741/nscd/initgrcache.c	25 Nov 2007 21:29:04 -0000	1.12
++++ glibc-20080412T0741-fedora/nscd/initgrcache.c	30 Apr 2008 12:11:31 -0000	1.1.2.14
+@@ -197,7 +197,8 @@ addinitgroupsX (struct database_dyn *db,
+ 	    written = TEMP_FAILURE_RETRY (send (fd, &notfound, total,
+ 						MSG_NOSIGNAL));
+ 
+-	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len);
++	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
++				   IDX_result_data);
+ 	  /* If we cannot permanently store the result, so be it.  */
+ 	  if (dataset != NULL)
+ 	    {
+@@ -259,7 +260,8 @@ addinitgroupsX (struct database_dyn *db,
+       if (he == NULL)
+ 	{
+ 	  dataset = (struct dataset *) mempool_alloc (db,
+-						      total + req->key_len);
++						      total + req->key_len,
++						      IDX_result_data);
+ 	  if (dataset == NULL)
+ 	    ++db->head->addfailed;
+ 	}
+@@ -329,7 +331,8 @@ addinitgroupsX (struct database_dyn *db,
+ 	      /* We have to create a new record.  Just allocate
+ 		 appropriate memory and copy it.  */
+ 	      struct dataset *newp
+-		= (struct dataset *) mempool_alloc (db, total + req->key_len);
++		= (struct dataset *) mempool_alloc (db, total + req->key_len,
++						    IDX_result_data);
+ 	      if (newp != NULL)
+ 		{
+ 		  /* Adjust pointer into the memory block.  */
+--- glibc-20080412T0741/nscd/mem.c	25 Nov 2007 21:07:14 -0000	1.12
++++ glibc-20080412T0741-fedora/nscd/mem.c	30 Apr 2008 12:11:31 -0000	1.3.2.7
+@@ -197,6 +197,31 @@ gc (struct database_dyn *db)
+     }
+   assert (cnt == db->head->nentries);
+ 
++  /* Go through the list of in-flight memory blocks.  */
++  struct mem_in_flight *mrunp = mem_in_flight_list;
++  while (mrunp != NULL)
++    {
++      /* NB: There can be no race between this test and another thread
++        setting the field to the index we are looking for because
++        this would require the other thread to also have the memlock
++        for the database.
++
++	NB2: we do not have to look at latter blocks (higher indices) if
++	earlier blocks are not in flight.  They are always allocated in
++	sequence.  */
++      for (enum in_flight idx = IDX_result_data;
++	   idx < IDX_last && mrunp->block[idx].dbidx == db - dbs; ++idx)
++	{
++	 assert ((char *) mrunp->block[idx].blockaddr > db->data);
++	 assert ((char *) mrunp->block[idx].blockaddr
++		 + mrunp->block[0].blocklen <= db->data + db->memsize);
++	 markrange (mark, (char *) mrunp->block[idx].blockaddr -  db->data,
++		    mrunp->block[idx].blocklen);
++	}
++
++      mrunp = mrunp->next;
++    }
++
+   /* Sort the entries by the addresses of the referenced data.  All
+      the entries pointing to the same DATAHEAD object will have the
+      same key.  Stability of the sorting is unimportant.  */
+@@ -503,7 +528,7 @@ gc (struct database_dyn *db)
+ 
+ 
+ void *
+-mempool_alloc (struct database_dyn *db, size_t len)
++mempool_alloc (struct database_dyn *db, size_t len, enum in_flight idx)
+ {
+   /* Make sure LEN is a multiple of our maximum alignment so we can
+      keep track of used memory is multiples of this alignment value.  */
+@@ -567,6 +592,12 @@ mempool_alloc (struct database_dyn *db, 
+       db->head->first_free += len;
+ 
+       db->last_alloc_failed = false;
++
++      /* Remember that we have allocated this memory.  */
++      assert (idx >= 0 && idx < IDX_last);
++      mem_in_flight.block[idx].dbidx = db - dbs;
++      mem_in_flight.block[idx].blocklen = len;
++      mem_in_flight.block[idx].blockaddr = res;
+     }
+ 
+   pthread_mutex_unlock (&db->memlock);
 --- glibc-20080412T0741/nscd/nscd.conf	6 Nov 2007 00:50:48 -0000	1.16
 +++ glibc-20080412T0741-fedora/nscd/nscd.conf	12 Dec 2007 18:13:28 -0000	1.8.2.7
 @@ -33,7 +33,7 @@
@@ -1353,6 +1723,59 @@
  #	stat-user		somebody
  	debug-level		0
  #	reload-count		5
+--- glibc-20080412T0741/nscd/nscd.h	4 Mar 2008 01:53:25 -0000	1.33
++++ glibc-20080412T0741-fedora/nscd/nscd.h	30 Apr 2008 12:11:31 -0000	1.17.2.13
+@@ -130,7 +130,7 @@ struct database_dyn
+ 
+ 
+ /* Global variables.  */
+-extern struct database_dyn dbs[lastdb];
++extern struct database_dyn dbs[lastdb] attribute_hidden;
+ extern const char *const dbnames[lastdb];
+ extern const char *const serv2str[LASTREQ];
+ 
+@@ -181,6 +181,31 @@ extern uid_t old_uid;
+ extern gid_t old_gid;
+ 
+ 
++/* Memory allocation in flight.  Each thread can have a limited number
++   of allocation in flight.  No need to create dynamic data
++   structures.  We use fixed indices.  */
++enum in_flight
++  {
++    IDX_result_data = 0,
++    /* Keep the IDX_record_data entry last at all times.  */
++    IDX_record_data = 1,
++    IDX_last
++  };
++extern __thread struct mem_in_flight
++{
++  struct
++  {
++    int dbidx;
++    nscd_ssize_t blocklen;
++    void *blockaddr;
++  } block[IDX_last];
++
++  struct mem_in_flight *next;
++} mem_in_flight attribute_tls_model_ie;
++/* Global list of the mem_in_flight variables of all the threads.  */
++extern struct mem_in_flight *mem_in_flight_list;
++
++
+ /* Prototypes for global functions.  */
+ 
+ /* nscd.c */
+@@ -271,7 +296,8 @@ extern void readdservbyport (struct data
+ 			     struct datahead *dh);
+ 
+ /* mem.c */
+-extern void *mempool_alloc (struct database_dyn *db, size_t len);
++extern void *mempool_alloc (struct database_dyn *db, size_t len,
++			    enum in_flight idx);
+ extern void gc (struct database_dyn *db);
+ 
+ 
 --- glibc-20080412T0741/nscd/nscd.init	1 Dec 2006 20:12:45 -0000	1.10
 +++ glibc-20080412T0741-fedora/nscd/nscd.init	12 Dec 2007 18:13:28 -0000	1.6.2.6
 @@ -9,6 +9,7 @@
@@ -1411,6 +1834,70 @@
  	;;
      *)
  	echo $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
+--- glibc-20080412T0741/nscd/pwdcache.c	25 Nov 2007 21:27:50 -0000	1.48
++++ glibc-20080412T0741-fedora/nscd/pwdcache.c	30 Apr 2008 12:11:31 -0000	1.35.2.11
+@@ -120,7 +120,8 @@ cache_addpw (struct database_dyn *db, in
+ 	    written = TEMP_FAILURE_RETRY (send (fd, &notfound, total,
+ 						MSG_NOSIGNAL));
+ 
+-	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len);
++	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
++				   IDX_result_data);
+ 	  /* If we cannot permanently store the result, so be it.  */
+ 	  if (dataset != NULL)
+ 	    {
+@@ -199,7 +200,8 @@ cache_addpw (struct database_dyn *db, in
+ 
+       if (he == NULL)
+ 	{
+-	  dataset = (struct dataset *) mempool_alloc (db, total + n);
++	  dataset = (struct dataset *) mempool_alloc (db, total + n,
++						      IDX_result_data);
+ 	  if (dataset == NULL)
+ 	    ++db->head->addfailed;
+ 	}
+@@ -270,7 +272,8 @@ cache_addpw (struct database_dyn *db, in
+ 	      /* We have to create a new record.  Just allocate
+ 		 appropriate memory and copy it.  */
+ 	      struct dataset *newp
+-		= (struct dataset *) mempool_alloc (db, total + n);
++		= (struct dataset *) mempool_alloc (db, total + n,
++						    IDX_result_data);
+ 	      if (newp != NULL)
+ 		{
+ 		  /* Adjust pointer into the memory block.  */
+--- glibc-20080412T0741/nscd/servicescache.c	25 Nov 2007 21:26:37 -0000	1.5
++++ glibc-20080412T0741-fedora/nscd/servicescache.c	30 Apr 2008 12:11:31 -0000	1.1.2.6
+@@ -103,7 +103,8 @@ cache_addserv (struct database_dyn *db, 
+ 	  written = TEMP_FAILURE_RETRY (send (fd, &notfound, total,
+ 					      MSG_NOSIGNAL));
+ 
+-	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len);
++	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
++				   IDX_result_data);
+ 	  /* If we cannot permanently store the result, so be it.  */
+ 	  if (dataset != NULL)
+ 	    {
+@@ -190,7 +191,8 @@ cache_addserv (struct database_dyn *db, 
+       if (he == NULL)
+ 	{
+ 	  dataset = (struct dataset *) mempool_alloc (db,
+-						      total + req->key_len);
++						      total + req->key_len,
++						      IDX_result_data);
+ 	  if (dataset == NULL)
+ 	    ++db->head->addfailed;
+ 	}
+@@ -261,7 +263,8 @@ cache_addserv (struct database_dyn *db, 
+ 	      /* We have to create a new record.  Just allocate
+ 		 appropriate memory and copy it.  */
+ 	      struct dataset *newp
+-		= (struct dataset *) mempool_alloc (db, total + req->key_len);
++		= (struct dataset *) mempool_alloc (db, total + req->key_len,
++						    IDX_result_data);
+ 	      if (newp != NULL)
+ 		{
+ 		  /* Adjust pointers into the memory block.  */
 --- glibc-20080412T0741/posix/Makefile	20 Nov 2007 00:41:16 -0000	1.203
 +++ glibc-20080412T0741-fedora/posix/Makefile	12 Dec 2007 18:13:30 -0000	1.171.2.27
 @@ -301,11 +301,8 @@ $(inst_libexecdir)/getconf: $(inst_bindi
@@ -2299,6 +2786,15 @@
 @@ -1 +1 @@
 -s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 \2\3"_
 +s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 /emul/ia32-linux\2\3"_
+--- glibc-20080412T0741/sysdeps/unix/sysv/linux/sparc/sparc64/semctl.c	6 Jul 2001 04:56:21 -0000	1.4
++++ glibc-20080412T0741-fedora/sysdeps/unix/sysv/linux/sparc/sparc64/semctl.c	30 Apr 2008 12:11:31 -0000	1.4.4.1
+@@ -54,5 +54,5 @@ semctl (int semid, int semnum, int cmd, 
+   va_end (ap);
+ 
+   return INLINE_SYSCALL (ipc, 5, IPCOP_semctl, semid, semnum, cmd,
+-			 CHECK_SEMCTL (&arg, semid, cmd));
++			 CHECK_SEMCTL (&arg, semid, cmd)->array);
+ }
 --- glibc-20080412T0741/sysdeps/unix/sysv/linux/x86_64/clone.S	3 Dec 2006 23:12:36 -0000	1.7
 +++ glibc-20080412T0741-fedora/sysdeps/unix/sysv/linux/x86_64/clone.S	14 Dec 2006 09:06:34 -0000	1.4.2.4
 @@ -89,9 +89,6 @@ L(pseudo_end):
