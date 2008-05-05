@@ -2815,3 +2815,105 @@
  
  	cfi_startproc;
  PSEUDO_END (BP_SYM (__clone))
+--- libc/math/s_clog10l.c.jj	2005-12-14 11:20:38.000000000 +0100
++++ libc/math/s_clog10l.c	2008-05-05 10:11:11.000000000 +0200
+@@ -34,7 +34,15 @@ __clog10l (__complex__ long double x)
+   if (rcls == FP_ZERO && icls == FP_ZERO)
+     {
+       /* Real and imaginary part are 0.0.  */
++#ifdef __powerpc64__
++      long double t = 0.0;
++      asm ("" : "+f" (t));
++      if (signbit (__real__ x))
++	t = M_PIl;
++      __imag__ result = t;
++#else
+       __imag__ result = signbit (__real__ x) ? M_PIl : 0.0;
++#endif
+       __imag__ result = __copysignl (__imag__ result, __imag__ x);
+       /* Yes, the following line raises an exception.  */
+       __real__ result = -1.0 / fabsl (__real__ x);
+--- libc/math/s_catanhl.c.jj	2005-12-14 11:16:38.000000000 +0100
++++ libc/math/s_catanhl.c	2008-05-05 10:22:57.000000000 +0200
+@@ -35,14 +35,29 @@ __catanhl (__complex__ long double x)
+     {
+       if (icls == FP_INFINITE)
+ 	{
++#ifdef __powerpc64__
++          long double t = M_PI_2l;
++          asm ("" : "+f" (t));
++	  __real__ res = __copysignl (0.0, __real__ x);
++	  __imag__ res = __copysignl (t, __imag__ x);
++#else
+ 	  __real__ res = __copysignl (0.0, __real__ x);
+ 	  __imag__ res = __copysignl (M_PI_2l, __imag__ x);
++#endif
+ 	}
+       else if (rcls == FP_INFINITE || rcls == FP_ZERO)
+ 	{
+ 	  __real__ res = __copysignl (0.0, __real__ x);
+ 	  if (icls >= FP_ZERO)
++#ifdef __powerpc64__
++	    {
++	      long double t = M_PI_2l;
++	      asm ("" : "+f" (t));
++	      __imag__ res = __copysignl (t, __imag__ x);
++	    }
++#else
+ 	    __imag__ res = __copysignl (M_PI_2l, __imag__ x);
++#endif
+ 	  else
+ 	    __imag__ res = __nanl ("");
+ 	}
+--- libc/math/s_cacoshl.c.jj	2006-08-03 22:35:41.000000000 +0200
++++ libc/math/s_cacoshl.c	2008-05-05 10:08:57.000000000 +0200
+@@ -48,8 +48,18 @@ __cacoshl (__complex__ long double x)
+ 	  __real__ res = HUGE_VALL;
+ 
+ 	  if (icls >= FP_ZERO)
++#ifdef __powerpc64__
++	    {
++	      long double t = 0.0;
++	      asm ("" : "+f" (t));
++	      if (signbit (__real__ x))
++		t = M_PIl;
++	      __imag__ res = __copysignl (t, __imag__ x);
++	    }
++#else
+ 	    __imag__ res = __copysignl (signbit (__real__ x) ? M_PIl : 0.0,
+ 					__imag__ x);
++#endif
+ 	  else
+ 	    __imag__ res = __nanl ("");
+ 	}
+--- libc/math/s_clogl.c.jj	2005-12-14 11:21:13.000000000 +0100
++++ libc/math/s_clogl.c	2008-05-05 09:56:42.000000000 +0200
+@@ -34,7 +34,15 @@ __clogl (__complex__ long double x)
+   if (rcls == FP_ZERO && icls == FP_ZERO)
+     {
+       /* Real and imaginary part are 0.0.  */
++#ifdef __powerpc64__
++      long double t = 0.0;
++      asm ("" : "+f" (t));
++      if (signbit (__real__ x))
++	t = M_PIl;
++      __imag__ result = t;
++#else
+       __imag__ result = signbit (__real__ x) ? M_PIl : 0.0;
++#endif
+       __imag__ result = __copysignl (__imag__ result, __imag__ x);
+       /* Yes, the following line raises an exception.  */
+       __real__ result = -1.0 / fabsl (__real__ x);
+--- libc/fedora/glibc_post_upgrade.c.jj	2008-04-10 21:21:05.000000000 +0200
++++ libc/fedora/glibc_post_upgrade.c	2008-05-05 10:39:24.000000000 +0200
+@@ -170,8 +170,8 @@ main (void)
+   /* Check if telinit is available and either SysVInit fifo,
+      or upstart telinit.  */
+   if (access ("/sbin/telinit", X_OK)
+-      || (access ("/dev/initctl", F_OK)
+-	  && access ("/sbin/initctl", X_OK)))
++      || ((!!access ("/dev/initctl", F_OK))
++	   ^ !access ("/sbin/initctl", X_OK)))
+     _exit (0);
+   /* Check if we are not inside of some chroot, because we'd just
+      timeout and leave /etc/initrunlvl.  */

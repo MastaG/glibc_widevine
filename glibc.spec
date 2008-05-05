@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 2
+Release: 3
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -692,7 +692,7 @@ cd ..
 %if %{buildxen}
 echo ====================TESTING -mno-tls-direct-seg-refs=============
 cd build-%{nptl_target_cpu}-linuxnptl-nosegneg
-( make -j$numprocs -k check PARALLELMFLAGS=-s 2>&1
+( make %{?_smp_mflags} -k check PARALLELMFLAGS=-s 2>&1
   sleep 10s
   teepid="`ps -eo ppid,pid,command | awk '($1 == '${parent}' && $3 ~ /^tee/) { print $2 }'`"
   [ -n "$teepid" ] && kill $teepid
@@ -705,7 +705,7 @@ cd build-%{nptl_target_cpu}-linuxnptl-power6
 ( if [ -d ../power6emul ]; then
     export LD_PRELOAD=`cd ../power6emul; pwd`/\$LIB/power6emul.so
   fi
-  make -j$numprocs -k check PARALLELMFLAGS=-s 2>&1
+  make %{?_smp_mflags} -k check PARALLELMFLAGS=-s 2>&1
   sleep 10s
   teepid="`ps -eo ppid,pid,command | awk '($1 == '${parent}' && $3 ~ /^tee/) { print $2 }'`"
   [ -n "$teepid" ] && kill $teepid
@@ -980,6 +980,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon May  5 2008 Jakub Jelinek <jakub@redhat.com> 2.8-3
+- don't run telinit u in %post if both /dev/initctl and
+  /sbin/initctl exist (#444978)
+- workaround GCC ppc64 miscompilation of c{log{,10},acosh,atan}l
+  (#444996)
+
 * Wed Apr 30 2008 Jakub Jelinek <jakub@redhat.com> 2.8-2
 - fix nscd races during GC (BZ#5381)
 - rebuilt with fixed GCC to fix regex miscompilation on power6
