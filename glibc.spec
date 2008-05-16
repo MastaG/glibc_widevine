@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 3
+Release: 4
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -270,14 +270,14 @@ GCC="gcc -m32"
 GXX="g++ -m32"
 %endif
 %ifarch sparc64
-BuildFlags="-mcpu=ultrasparc -mvis -fcall-used-g6"
-GCC="gcc -m64"
-GXX="g++ -m64"
+BuildFlags="-mvis -fcall-used-g6"
+GCC="gcc -m64 -mcpu=ultrasparc"
+GXX="g++ -m64 -mcpu=ultrasparc"
 %endif
 %ifarch sparc64v
-BuildFlags="-mcpu=niagara -mvis -fcall-used-g6"
-GCC="gcc -m64"
-GXX="g++ -m64"
+BuildFlags="-mvis -fcall-used-g6"
+GCC="gcc -m64 -mcpu=niagara"
+GXX="g++ -m64 -mcpu=niagara"
 %endif
 %ifarch ppc64
 BuildFlags="-mno-minimal-toc"
@@ -980,6 +980,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri May 16 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.8-4
+- sparc64 gets unhappy unless the -mcpu= flag is in the GCC invocation,
+  not just in BuildFlags. This is probably a compiler issue (-m64 
+  should infer -mcpu=ultrasparc), but to get things building, we'll 
+  work around it like this for now.
+
 * Mon May  5 2008 Jakub Jelinek <jakub@redhat.com> 2.8-3
 - don't run telinit u in %post if both /dev/initctl and
   /sbin/initctl exist (#444978)
