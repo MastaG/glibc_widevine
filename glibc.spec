@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 4
+Release: 5
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -285,7 +285,13 @@ GCC="gcc -m64"
 GXX="g++ -m64"
 %endif
 
+# Applying -fasynchronous-unwind-tables to everything is definitely wrong on sparc arches, probably wrong everywhere.
+# FIXME
+%ifarch sparc sparcv9 sparcv9v sparc64 sparc64v
+BuildFlags="$BuildFlags -DNDEBUG=1"
+%else
 BuildFlags="$BuildFlags -DNDEBUG=1 -fasynchronous-unwind-tables"
+%endif
 #BuildFlags="$BuildFlags -fasynchronous-unwind-tables"
 EnableKernel="--enable-kernel=%{enablekernel}"
 echo "$GCC" > Gcc
@@ -980,6 +986,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun May 18 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.8-5
+- fasynchronous-unwind-tables causes failures on sparc arches, dont use it
+
 * Fri May 16 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.8-4
 - sparc64 gets unhappy unless the -mcpu= flag is in the GCC invocation,
   not just in BuildFlags. This is probably a compiler issue (-m64 
