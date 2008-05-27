@@ -1,0 +1,12 @@
+diff -up glibc-20080412T0741/elf/Makefile.BAD glibc-20080412T0741/elf/Makefile
+--- glibc-20080412T0741/elf/Makefile.BAD	2008-05-26 20:09:30.000000000 -0500
++++ glibc-20080412T0741/elf/Makefile	2008-05-26 20:10:19.000000000 -0500
+@@ -389,6 +389,8 @@ CFLAGS-ldconfig.c = $(SYSCONF-FLAGS) -D'
+ 		    -D'SLIBDIR="$(slibdir)"' -DIS_IN_ldconfig=1
+ CFLAGS-dl-cache.c = $(SYSCONF-FLAGS)
+ CFLAGS-cache.c = $(SYSCONF-FLAGS)
++CFLAGS-soinit.c += -fno-asynchronous-unwind-tables
++CFLAGS-sofini.c += -fno-asynchronous-unwind-tables
+ 
+ CPPFLAGS-.os += $(if $(filter $(@F),$(patsubst %,%.os,$(all-rtld-routines))),-DNOT_IN_libc=1 -DIS_IN_rtld=1)
+ 

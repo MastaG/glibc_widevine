@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 5
+Release: 6
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -41,6 +41,7 @@ Source2: %(echo %{glibcsrcdir} | sed s/glibc-/glibc-libidn-/).tar.bz2
 Source3: %{glibcname}-fedora-%{glibcdate}.tar.bz2
 Patch0: %{glibcname}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
+Patch2: glibc-sparcv9v-fix-async-unwind-tables.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -220,6 +221,7 @@ package or when debugging this package.
 %patch1 -p1
 %endif
 %endif
+%patch2 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -285,13 +287,7 @@ GCC="gcc -m64"
 GXX="g++ -m64"
 %endif
 
-# Applying -fasynchronous-unwind-tables to everything is definitely wrong on sparc arches, probably wrong everywhere.
-# FIXME
-%ifarch sparc sparcv9 sparcv9v sparc64 sparc64v
-BuildFlags="$BuildFlags -DNDEBUG=1"
-%else
 BuildFlags="$BuildFlags -DNDEBUG=1 -fasynchronous-unwind-tables"
-%endif
 #BuildFlags="$BuildFlags -fasynchronous-unwind-tables"
 EnableKernel="--enable-kernel=%{enablekernel}"
 echo "$GCC" > Gcc
@@ -986,6 +982,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon May 26 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.8-6
+- disable async-unwind-tables for soinit.c and sofini.c
+- re-enable fasynchronous-unwind-tables 
+
 * Sun May 18 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.8-5
 - fasynchronous-unwind-tables causes failures on sparc arches, dont use it
 
