@@ -1,0 +1,1152 @@
+2008-06-18  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/connections.c (main_loop_poll): Fix test for read error.
+	(main_loop_epoll): Likewise.
+
+2008-06-13  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/connections.c: Also recognize and handle changes to the
+	resolver configuration file.
+
+2008-06-12  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/nscd.h (struct database_dyn): Add inotify_descr and clear_cache
+	fields.
+	* nscd/connections.c (inotify_fd): New variable.
+	(nscd_init): Try to open an inotify descriptor.
+	If successful, watch files for databases using inotify instead of
+	having prune threads stat the files.
+	(nscd_run_prune): Recognize clear_cache flag being set and call
+	prune_cache appropriately.
+	(main_loop_poll): Add inotify descriptor to wait set and handle the
+	reported changes.
+	(main_loop_epoll): Likewise.
+	* nscd/cache.c (prune_cache): Don't stat files for databases if
+	inotify is used.
+	* sysdeps/unix/sysv/linux/Makefile [subdir=nscd]
+	(CFLAGS-connections.c): Add -DHAVE_INOTIFY.
+
+	* nscd/grpcache.c (cache_addgr): Correctly compute size of
+	fixed-size portion of the record.
+	* nscd/servicescache.c (cache_addserv): Likewise.
+	* nscd/pwdcache.c (cache_addpw): Likewise.
+	* nscd/initgrcache.c (addinitgroupsX): Likewise.
+
+2008-06-11  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/mem.c (gc): Initialize obstack earlier so that if we jump
+	out we don't use uninitialized memory.
+
+	* nscd/hstcache.c (cache_addhst): Send correct number of bytes to
+	the client.
+
+2008-05-18  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/cache.c (cache_add): Take additional parameter specifying
+	whether this is in response of a cache refill.  Check alignment
+	of package data.  Revamp waking of pruning thread.
+	(prune_cache): Small optimization.
+	* nscd/nscd.h: Adjust cache_add prototypes.
+	* nscd/aicache.c: Adjust cache_add calls.
+	* nscd/grpcache.c: Likewise.
+	* nscd/hstcache.c: Likewise.
+	* nscd/initgrcache.c: Likewise.
+	* nscd/pwdcache.c: Likewise.
+	* nscd/servicescache.c: Likewise.
+	* nscd/connections.c (restart): Really disable cache use before
+	exec attempt.  If it fails, reenable cache.
+	(nscd_run_prune): Initialize wakeup_time.  After wakeup, set wakeup
+	time to max to be able to notice concurrent cache additions.  Unlock
+	prune_lock while performing gc.  Afterwards compute wakeup time with
+	current wakeup_time value in mind.
+
+2008-05-17  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/mem.c (gc): Avoid stack overflow when allocating move list.
+
+	* nscd/mem.c (gc): Correctly determine highest used array element
+	in mark.
+
+	* nscd/mem.c (markrange): Add assert to check entries are all
+	aligned.  Small cleanup in bitmap use.
+
+	* nscd/nscd.h (mem_in_flight): Replace blockaddr field with
+	blockoff of type nscd_ssize_t.
+	* nscd/mem.c (gc): Simplify markrange call for on-flight blocks.
+	(mempoll_alloc): Record block offset and not address.
+
+	* nscd/mem.c (gc): Fix test for stack overuse.
+
+2008-05-10  Ulrich Drepper  <drepper@redhat.com>
+
+	* nscd/cache.c (cache_add): Before returning with failure and this
+	is the first use of the record, mark it as unusable.
+	* nscd/aicache.c: Don't touch the dataset after cache_add returns
+	reporting a failure.
+	* nscd/grpcache.c: Likewise
+	* nscd/hstcache.c: Likewise.
+	* nscd/initgrcache.c: Likewise.
+	* nscd/pwdcache.c: Likewise.
+	* nscd/servicescache.c: Likewise.
+
+--- libc/nscd/aicache.c	19 Apr 2008 16:42:32 -0000	1.18
++++ libc/nscd/aicache.c	18 May 2008 21:54:07 -0000	1.22
+@@ -468,10 +468,8 @@ addhstaiX (struct database_dyn *db, int 
+       /* Now get the lock to safely insert the records.  */
+       pthread_rwlock_rdlock (&db->lock);
+ 
+-      if (cache_add (req->type, key_copy, req->key_len, &dataset->head, true,
+-		     db, uid) < 0)
+-	/* Ensure the data can be recovered.  */
+-	dataset->head.usable = false;
++      (void) cache_add (req->type, key_copy, req->key_len, &dataset->head,
++			true, db, uid, he == NULL);
+ 
+       pthread_rwlock_unlock (&db->lock);
+ 
+--- libc/nscd/cache.c	19 Apr 2008 16:41:46 -0000	1.36
++++ libc/nscd/cache.c	12 Jun 2008 22:39:47 -0000	1.39
+@@ -135,7 +135,7 @@ cache_search (request_type type, void *k
+ int
+ cache_add (int type, const void *key, size_t len, struct datahead *packet,
+ 	   bool first, struct database_dyn *table,
+-	   uid_t owner)
++	   uid_t owner, bool prune_wakeup)
+ {
+   if (__builtin_expect (debug_level >= 2, 0))
+     {
+@@ -161,6 +161,11 @@ cache_add (int type, const void *key, si
+     {
+       ++table->head->addfailed;
+ 
++      /* If necessary mark the entry as unusable so that lookups will
++	 not use it.  */
++      if (first)
++	packet->usable = false;
++
+       /* Mark the in-flight memory as unused.  */
+       for (enum in_flight idx = 0; idx < IDX_record_data; ++idx)
+ 	mem_in_flight.block[idx].dbidx = -1;
+@@ -175,6 +180,7 @@ cache_add (int type, const void *key, si
+   assert (newp->key + newp->len <= table->head->first_free);
+   newp->owner = owner;
+   newp->packet = (char *) packet - table->data;
++  assert ((newp->packet & BLOCK_ALIGN_M1) == 0);
+ 
+   /* Put the new entry in the first position.  */
+   do
+@@ -206,19 +212,27 @@ cache_add (int type, const void *key, si
+ 	   (char *) &table->head->array[hash] - (char *) table->head
+ 	   + sizeof (ref_t), MS_ASYNC);
+ 
+-  /* Perhaps the prune thread for the data is not running in a long
+-     time.  Wake it if necessary.  */
+-  time_t next_wakeup = table->wakeup_time;
+-  while (next_wakeup + CACHE_PRUNE_INTERVAL > packet->timeout)
+-    if (atomic_compare_and_exchange_bool_acq (&table->wakeup_time,
+-					      packet->timeout,
+-					      next_wakeup) == 0)
+-      {
++  /* We do not have to worry about the pruning thread if we are
++     re-adding the data since this is done by the pruning thread.  We
++     also do not have to do anything in case this is not the first
++     time the data is entered since different data heads all have the
++     same timeout.  */
++  if (first && prune_wakeup)
++    {
++      /* Perhaps the prune thread for the table is not running in a long
++	 time.  Wake it if necessary.  */
++      pthread_mutex_lock (&table->prune_lock);
++      time_t next_wakeup = table->wakeup_time;
++      bool do_wakeup = false;
++      if (next_wakeup > packet->timeout + CACHE_PRUNE_INTERVAL)
++	{
++	  table->wakeup_time = packet->timeout;
++	  do_wakeup = true;
++	}
++      pthread_mutex_unlock (&table->prune_lock);
++      if (do_wakeup)
+ 	pthread_cond_signal (&table->prune_cond);
+-	break;
+-      }
+-    else
+-      next_wakeup = table->wakeup_time;
++    }
+ 
+   /* Mark the in-flight memory as unused.  */
+   for (enum in_flight idx = 0; idx < IDX_last; ++idx)
+@@ -260,7 +274,7 @@ prune_cache (struct database_dyn *table,
+ 
+   /* If we check for the modification of the underlying file we invalidate
+      the entries also in this case.  */
+-  if (table->check_file && now != LONG_MAX)
++  if (table->inotify_descr < 0 && table->check_file && now != LONG_MAX)
+     {
+       struct stat64 st;
+ 
+@@ -431,7 +445,8 @@ prune_cache (struct database_dyn *table,
+ 	      ref_t *old = &table->head->array[first];
+ 	      ref_t run = table->head->array[first];
+ 
+-	      while (run != ENDREF)
++	      assert (run != ENDREF);
++	      do
+ 		{
+ 		  struct hashentry *runp = (struct hashentry *) (data + run);
+ 		  struct datahead *dh
+@@ -457,6 +472,7 @@ prune_cache (struct database_dyn *table,
+ 		      run = runp->next;
+ 		    }
+ 		}
++	      while (run != ENDREF);
+ 	    }
+ 
+ 	  ++first;
+--- libc/nscd/connections.c	22 Apr 2008 15:53:45 -0000	1.111
++++ libc/nscd/connections.c	18 Jun 2008 22:28:42 -0000	1.115
+@@ -35,6 +35,9 @@
+ #ifdef HAVE_EPOLL
+ # include <sys/epoll.h>
+ #endif
++#ifdef HAVE_INOTIFY
++# include <sys/inotify.h>
++#endif
+ #include <sys/mman.h>
+ #include <sys/param.h>
+ #include <sys/poll.h>
+@@ -48,6 +51,7 @@
+ #include "nscd.h"
+ #include "dbg_log.h"
+ #include "selinux.h"
++#include <resolv/resolv.h>
+ #ifdef HAVE_SENDFILE
+ # include <kernel-features.h>
+ #endif
+@@ -222,6 +226,14 @@ int max_nthreads = 32;
+ /* Socket for incoming connections.  */
+ static int sock;
+ 
++#ifdef HAVE_INOTIFY
++/* Inotify descriptor.  */
++static int inotify_fd = -1;
++
++/* Watch descriptor for resolver configuration file.  */
++static int resolv_conf_descr = -1;
++#endif
++
+ /* Number of times clients had to wait.  */
+ unsigned long int client_queued;
+ 
+@@ -503,6 +515,13 @@ nscd_init (void)
+     /* No configuration for this value, assume a default.  */
+     nthreads = 4;
+ 
++#ifdef HAVE_INOTIFY
++  /* Use inotify to recognize changed files.  */
++  inotify_fd = inotify_init ();
++  if (inotify_fd != -1)
++    fcntl (inotify_fd, F_SETFL, O_NONBLOCK);
++#endif
++
+   for (size_t cnt = 0; cnt < lastdb; ++cnt)
+     if (dbs[cnt].enabled)
+       {
+@@ -805,21 +824,39 @@ cannot set socket to close on exec: %s; 
+ 	    assert (dbs[cnt].ro_fd == -1);
+ 	  }
+ 
++	dbs[cnt].inotify_descr = -1;
+ 	if (dbs[cnt].check_file)
+ 	  {
+-	    /* We need the modification date of the file.  */
+-	    struct stat64 st;
+-
+-	    if (stat64 (dbs[cnt].filename, &st) < 0)
++#ifdef HAVE_INOTIFY
++	    if (inotify_fd < 0
++		|| (dbs[cnt].inotify_descr
++		    = inotify_add_watch (inotify_fd, dbs[cnt].filename,
++					 IN_DELETE_SELF | IN_MODIFY)) < 0)
++	      /* We cannot notice changes in the main thread.  */
++#endif
+ 	      {
+-		/* We cannot stat() the file, disable file checking.  */
+-		dbg_log (_("cannot stat() file `%s': %s"),
+-			 dbs[cnt].filename, strerror (errno));
+-		dbs[cnt].check_file = 0;
++		/* We need the modification date of the file.  */
++		struct stat64 st;
++
++		if (stat64 (dbs[cnt].filename, &st) < 0)
++		  {
++		    /* We cannot stat() the file, disable file checking.  */
++		    dbg_log (_("cannot stat() file `%s': %s"),
++			     dbs[cnt].filename, strerror (errno));
++		    dbs[cnt].check_file = 0;
++		  }
++		else
++		  dbs[cnt].file_mtime = st.st_mtime;
+ 	      }
+-	    else
+-	      dbs[cnt].file_mtime = st.st_mtime;
+ 	  }
++
++#ifdef HAVE_INOTIFY
++	if (cnt == hstdb && inotify_fd >= -1)
++	  /* We also monitor the resolver configuration file.  */
++	  resolv_conf_descr = inotify_add_watch (inotify_fd,
++						 _PATH_RESCONF,
++						 IN_DELETE_SELF | IN_MODIFY);
++#endif
+       }
+ 
+   /* Create the socket.  */
+@@ -1330,11 +1367,14 @@ cannot change to old working directory: 
+     }
+ 
+   /* Synchronize memory.  */
++  int32_t certainly[lastdb];
+   for (int cnt = 0; cnt < lastdb; ++cnt)
+     if (dbs[cnt].enabled)
+       {
+ 	/* Make sure nobody keeps using the database.  */
+ 	dbs[cnt].head->timestamp = 0;
++	certainly[cnt] = dbs[cnt].head->nscd_certainly_running;
++	dbs[cnt].head->nscd_certainly_running = 0;
+ 
+ 	if (dbs[cnt].persistent)
+ 	  // XXX async OK?
+@@ -1357,6 +1397,15 @@ cannot change to old working directory: 
+     dbg_log (_("cannot change current working directory to \"/\": %s"),
+ 	     strerror (errno));
+   paranoia = 0;
++
++  /* Reenable the databases.  */
++  time_t now = time (NULL);
++  for (int cnt = 0; cnt < lastdb; ++cnt)
++    if (dbs[cnt].enabled)
++      {
++	dbs[cnt].head->timestamp = now;
++	dbs[cnt].head->nscd_certainly_running = certainly[cnt];
++      }
+ }
+ 
+ 
+@@ -1394,42 +1443,75 @@ nscd_run_prune (void *p)
+ 
+   int dont_need_update = setup_thread (&dbs[my_number]);
+ 
++  time_t now = time (NULL);
++
+   /* We are running.  */
+-  dbs[my_number].head->timestamp = time (NULL);
++  dbs[my_number].head->timestamp = now;
+ 
+   struct timespec prune_ts;
+-  if (clock_gettime (timeout_clock, &prune_ts) == -1)
++  if (__builtin_expect (clock_gettime (timeout_clock, &prune_ts) == -1, 0))
+     /* Should never happen.  */
+     abort ();
+ 
+   /* Compute the initial timeout time.  Prevent all the timers to go
+      off at the same time by adding a db-based value.  */
+   prune_ts.tv_sec += CACHE_PRUNE_INTERVAL + my_number;
++  dbs[my_number].wakeup_time = now + CACHE_PRUNE_INTERVAL + my_number;
+ 
+-  pthread_mutex_lock (&dbs[my_number].prune_lock);
++  pthread_mutex_t *prune_lock = &dbs[my_number].prune_lock;
++  pthread_cond_t *prune_cond = &dbs[my_number].prune_cond;
++
++  pthread_mutex_lock (prune_lock);
+   while (1)
+     {
+       /* Wait, but not forever.  */
+-      int e = pthread_cond_timedwait (&dbs[my_number].prune_cond,
+-				      &dbs[my_number].prune_lock,
+-				      &prune_ts);
+-      assert (e == 0 || e == ETIMEDOUT);
++      int e = 0;
++      if (! dbs[my_number].clear_cache)
++	e = pthread_cond_timedwait (prune_cond, prune_lock, &prune_ts);
++      assert (__builtin_expect (e == 0 || e == ETIMEDOUT, 1));
+ 
+       time_t next_wait;
+-      time_t now = time (NULL);
+-      if (e == ETIMEDOUT || now >= dbs[my_number].wakeup_time)
+-	{
+-	  next_wait = prune_cache (&dbs[my_number], now, -1);
++      now = time (NULL);
++      if (e == ETIMEDOUT || now >= dbs[my_number].wakeup_time
++	  || dbs[my_number].clear_cache)
++	{
++	  /* We will determine the new timout values based on the
++	     cache content.  Should there be concurrent additions to
++	     the cache which are not accounted for in the cache
++	     pruning we want to know about it.  Therefore set the
++	     timeout to the maximum.  It will be descreased when adding
++	     new entries to the cache, if necessary.  */
++	  if (sizeof (time_t) == sizeof (long int))
++	    dbs[my_number].wakeup_time = LONG_MAX;
++	  else
++	    dbs[my_number].wakeup_time = INT_MAX;
++
++	  /* Unconditionally reset the flag.  */
++	  time_t prune_now = dbs[my_number].clear_cache ? LONG_MAX : now;
++	  dbs[my_number].clear_cache = 0;
++
++	  pthread_mutex_unlock (prune_lock);
++
++	  next_wait = prune_cache (&dbs[my_number], prune_now, -1);
++
+ 	  next_wait = MAX (next_wait, CACHE_PRUNE_INTERVAL);
+ 	  /* If clients cannot determine for sure whether nscd is running
+ 	     we need to wake up occasionally to update the timestamp.
+ 	     Wait 90% of the update period.  */
+ #define UPDATE_MAPPING_TIMEOUT (MAPPING_TIMEOUT * 9 / 10)
+ 	  if (__builtin_expect (! dont_need_update, 0))
+-	    next_wait = MIN (UPDATE_MAPPING_TIMEOUT, next_wait);
++	    {
++	      next_wait = MIN (UPDATE_MAPPING_TIMEOUT, next_wait);
++	      dbs[my_number].head->timestamp = now;
++	    }
++
++	  pthread_mutex_lock (prune_lock);
+ 
+ 	  /* Make it known when we will wake up again.  */
+-	  dbs[my_number].wakeup_time = now + next_wait;
++	  if (now + next_wait < dbs[my_number].wakeup_time)
++	    dbs[my_number].wakeup_time = now + next_wait;
++	  else
++	    next_wait = dbs[my_number].wakeup_time - now;
+ 	}
+       else
+ 	/* The cache was just pruned.  Do not do it again now.  Just
+@@ -1665,6 +1747,16 @@ main_loop_poll (void)
+   size_t nused = 1;
+   size_t firstfree = 1;
+ 
++#ifdef HAVE_INOTIFY
++  if (inotify_fd != -1)
++    {
++      conns[1].fd = inotify_fd;
++      conns[1].events = POLLRDNORM;
++      nused = 2;
++      firstfree = 2;
++    }
++#endif
++
+   while (1)
+     {
+       /* Wait for any event.  We wait at most a couple of seconds so
+@@ -1712,7 +1804,52 @@ main_loop_poll (void)
+ 	      --n;
+ 	    }
+ 
+-	  for (size_t cnt = 1; cnt < nused && n > 0; ++cnt)
++	  size_t first = 1;
++#ifdef HAVE_INOTIFY
++	  if (conns[1].fd == inotify_fd)
++	    {
++	      if (conns[1].revents != 0)
++		{
++		  bool done[lastdb] = { false, };
++		  union
++		  {
++		    struct inotify_event i;
++		    char buf[100];
++		  } inev;
++
++		  while (TEMP_FAILURE_RETRY (read (inotify_fd, &inev,
++						   sizeof (inev)))
++			 >= (ssize_t) sizeof (struct inotify_event))
++		    {
++		      /* Check which of the files changed.  */
++		      for (size_t dbcnt = 0; dbcnt < lastdb; ++dbcnt)
++			if (!done[dbcnt]
++			    && (inev.i.wd == dbs[dbcnt].inotify_descr
++				|| (dbcnt == hstdb
++				    && inev.i.wd == resolv_conf_descr)))
++			  {
++			    if (dbcnt == hstdb
++				&& inev.i.wd == resolv_conf_descr)
++			      res_init ();
++
++			    pthread_mutex_lock (&dbs[dbcnt].prune_lock);
++			    dbs[dbcnt].clear_cache = 1;
++			    pthread_mutex_unlock (&dbs[dbcnt].prune_lock);
++			    pthread_cond_signal (&dbs[dbcnt].prune_cond);
++
++			    done[dbcnt] = true;
++			    break;
++			  }
++		    }
++
++		  --n;
++		}
++
++	      first = 2;
++	    }
++#endif
++
++	  for (size_t cnt = first; cnt < nused && n > 0; ++cnt)
+ 	    if (conns[cnt].revents != 0)
+ 	      {
+ 		fd_ready (conns[cnt].fd);
+@@ -1778,6 +1915,18 @@ main_loop_epoll (int efd)
+     /* We cannot use epoll.  */
+     return;
+ 
++#ifdef HAVE_INOTIFY
++  if (inotify_fd != -1)
++    {
++      ev.events = EPOLLRDNORM;
++      ev.data.fd = inotify_fd;
++      if (epoll_ctl (efd, EPOLL_CTL_ADD, inotify_fd, &ev) == -1)
++	/* We cannot use epoll.  */
++	return;
++      nused = 2;
++    }
++#endif
++
+   while (1)
+     {
+       struct epoll_event revs[100];
+@@ -1814,6 +1963,32 @@ main_loop_epoll (int efd)
+ 		  }
+ 	      }
+ 	  }
++#ifdef HAVE_INOTIFY
++	else if (revs[cnt].data.fd == inotify_fd)
++	  {
++	    union
++	    {
++	      struct inotify_event i;
++	      char buf[100];
++	    } inev;
++
++	    while (TEMP_FAILURE_RETRY (read (inotify_fd, &inev,
++					     sizeof (inev)))
++		   >= (ssize_t) sizeof (struct inotify_event))
++	      {
++		/* Check which of the files changed.  */
++		for (size_t dbcnt = 0; dbcnt < lastdb; ++dbcnt)
++		  if (inev.i.wd == dbs[dbcnt].inotify_descr)
++		    {
++		      pthread_mutex_trylock (&dbs[dbcnt].prune_lock);
++		      dbs[dbcnt].clear_cache = 1;
++		      pthread_mutex_unlock (&dbs[dbcnt].prune_lock);
++		      pthread_cond_signal (&dbs[dbcnt].prune_cond);
++		      break;
++		    }
++	      }
++	  }
++#endif
+ 	else
+ 	  {
+ 	    /* Remove the descriptor from the epoll descriptor.  */
+--- libc/nscd/grpcache.c	19 Apr 2008 16:42:32 -0000	1.51
++++ libc/nscd/grpcache.c	12 Jun 2008 16:03:36 -0000	1.54
+@@ -146,10 +146,8 @@ cache_addgr (struct database_dyn *db, in
+ 	      /* Now get the lock to safely insert the records.  */
+ 	      pthread_rwlock_rdlock (&db->lock);
+ 
+-	      if (cache_add (req->type, &dataset->strdata, req->key_len,
+-			     &dataset->head, true, db, owner) < 0)
+-		/* Ensure the data can be recovered.  */
+-		dataset->head.usable = false;
++	      (void) cache_add (req->type, &dataset->strdata, req->key_len,
++				&dataset->head, true, db, owner, he == NULL);
+ 
+ 	      pthread_rwlock_unlock (&db->lock);
+ 
+@@ -192,7 +190,7 @@ cache_addgr (struct database_dyn *db, in
+ 	  gr_mem_len_total += gr_mem_len[gr_mem_cnt];
+ 	}
+ 
+-      written = total = (sizeof (struct dataset)
++      written = total = (offsetof (struct dataset, strdata)
+ 			 + gr_mem_cnt * sizeof (uint32_t)
+ 			 + gr_name_len + gr_passwd_len + gr_mem_len_total);
+ 
+@@ -254,6 +252,9 @@ cache_addgr (struct database_dyn *db, in
+       char *key_copy = cp + key_offset;
+       assert (key_copy == (char *) rawmemchr (cp, '\0') + 1);
+ 
++      assert (cp == dataset->strdata + total - offsetof (struct dataset,
++							 strdata));
++
+       /* Now we can determine whether on refill we have to create a new
+ 	 record or not.  */
+       if (he != NULL)
+@@ -355,13 +356,8 @@ cache_addgr (struct database_dyn *db, in
+ 	  if (req->type == GETGRBYGID)
+ 	    {
+ 	      if (cache_add (GETGRBYGID, cp, key_offset, &dataset->head, true,
+-			     db, owner) < 0)
+-		{
+-		  /* Could not allocate memory.  Make sure the data gets
+-		     discarded.  */
+-		  dataset->head.usable = false;
+-		  goto out;
+-		}
++			     db, owner, he == NULL) < 0)
++		goto out;
+ 
+ 	      first = false;
+ 	    }
+@@ -369,13 +365,8 @@ cache_addgr (struct database_dyn *db, in
+ 	  else if (strcmp (key_copy, gr_name) != 0)
+ 	    {
+ 	      if (cache_add (GETGRBYNAME, key_copy, key_len + 1,
+-			     &dataset->head, true, db, owner) < 0)
+-		{
+-		  /* Could not allocate memory.  Make sure the data gets
+-		     discarded.  */
+-		  dataset->head.usable = false;
+-		  goto out;
+-		}
++			     &dataset->head, true, db, owner, he == NULL) < 0)
++		goto out;
+ 
+ 	      first = false;
+ 	    }
+@@ -384,17 +375,14 @@ cache_addgr (struct database_dyn *db, in
+ 	  if ((req->type == GETGRBYNAME || db->propagate)
+ 	      && __builtin_expect (cache_add (GETGRBYNAME, gr_name,
+ 					      gr_name_len,
+-					      &dataset->head, first, db, owner)
++					      &dataset->head, first, db, owner,
++					      he == NULL)
+ 				   == 0, 1))
+ 	    {
+ 	      if (req->type == GETGRBYNAME && db->propagate)
+ 		(void) cache_add (GETGRBYGID, cp, key_offset, &dataset->head,
+-				  req->type != GETGRBYNAME, db, owner);
++				  false, db, owner, false);
+ 	    }
+-	  else if (first)
+-	    /* Could not allocate memory.  Make sure the data gets
+-	       discarded.  */
+-	    dataset->head.usable = false;
+ 
+ 	out:
+ 	  pthread_rwlock_unlock (&db->lock);
+--- libc/nscd/hstcache.c	19 Apr 2008 16:42:32 -0000	1.47
++++ libc/nscd/hstcache.c	12 Jun 2008 04:51:51 -0000	1.50
+@@ -83,8 +83,7 @@ cache_addhst (struct database_dyn *db, i
+ 	      struct hashentry *he, struct datahead *dh, int errval,
+ 	      int32_t ttl)
+ {
+-  ssize_t total;
+-  ssize_t written;
++  bool all_written = true;
+   time_t t = time (NULL);
+ 
+   /* We allocate all data in one memory block: the iov vector,
+@@ -108,18 +107,17 @@ cache_addhst (struct database_dyn *db, i
+ 	  if (reload_count != UINT_MAX)
+ 	    /* Do not reset the value if we never not reload the record.  */
+ 	    dh->nreloads = reload_count - 1;
+-
+-	  written = total = 0;
+ 	}
+       else
+ 	{
+ 	  /* We have no data.  This means we send the standard reply for this
+ 	     case.  */
+-	  written = total = sizeof (notfound);
++	  ssize_t total = sizeof (notfound);
+ 
+-	  if (fd != -1)
+-	    written = TEMP_FAILURE_RETRY (send (fd, &notfound, total,
+-						MSG_NOSIGNAL));
++	  if (fd != -1 &&
++	      TEMP_FAILURE_RETRY (send (fd, &notfound, total,
++					MSG_NOSIGNAL)) != total)
++	    all_written = false;
+ 
+ 	  dataset = mempool_alloc (db, sizeof (struct dataset) + req->key_len,
+ 				   IDX_result_data);
+@@ -155,10 +153,8 @@ cache_addhst (struct database_dyn *db, i
+ 	      /* Now get the lock to safely insert the records.  */
+ 	      pthread_rwlock_rdlock (&db->lock);
+ 
+-	      if (cache_add (req->type, &dataset->strdata, req->key_len,
+-			     &dataset->head, true, db, owner) < 0)
+-		/* Ensure the data can be recovered.  */
+-		dataset->head.usable = false;
++	      (void) cache_add (req->type, &dataset->strdata, req->key_len,
++				&dataset->head, true, db, owner, he == NULL);
+ 
+ 	      pthread_rwlock_unlock (&db->lock);
+ 
+@@ -183,6 +179,7 @@ cache_addhst (struct database_dyn *db, i
+       char *key_copy = NULL;
+       char *cp;
+       size_t cnt;
++      ssize_t total;
+ 
+       /* Determine the number of aliases.  */
+       h_aliases_cnt = 0;
+@@ -210,7 +207,6 @@ cache_addhst (struct database_dyn *db, i
+ 		+ h_name_len
+ 		+ h_aliases_cnt * sizeof (uint32_t)
+ 		+ h_addr_list_cnt * hst->h_length);
+-      written = total;
+ 
+       /* If we refill the cache, first assume the reconrd did not
+ 	 change.  Allocate memory on the cache since it is likely
+@@ -262,6 +258,9 @@ cache_addhst (struct database_dyn *db, i
+       dataset->resp.h_addr_list_cnt = h_addr_list_cnt;
+       dataset->resp.error = NETDB_SUCCESS;
+ 
++      /* Make sure there is no gap.  */
++      assert ((char *) (&dataset->resp.error + 1) == dataset->strdata);
++
+       cp = dataset->strdata;
+ 
+       cp = mempcpy (cp, hst->h_name, h_name_len);
+@@ -288,6 +287,8 @@ cache_addhst (struct database_dyn *db, i
+ 	 we explicitly add the name here.  */
+       key_copy = memcpy (cp, key, req->key_len);
+ 
++      assert ((char *) &dataset->resp + dataset->head.recsize == cp);
++
+       /* Now we can determine whether on refill we have to create a new
+ 	 record or not.  */
+       if (he != NULL)
+@@ -353,20 +354,27 @@ cache_addhst (struct database_dyn *db, i
+ 		      <= (sizeof (struct database_pers_head)
+ 			  + db->head->module * sizeof (ref_t)
+ 			  + db->head->data_size));
+-	      written = sendfileall (fd, db->wr_fd,
+-				     (char *) &dataset->resp
+-				     - (char *) db->head, total);
++	      ssize_t written = sendfileall (fd, db->wr_fd,
++					     (char *) &dataset->resp
++					     - (char *) db->head,
++					     dataset->head.recsize);
++	      if (written != dataset->head.recsize)
++		{
+ # ifndef __ASSUME_SENDFILE
+-	      if (written == -1 && errno == ENOSYS)
+-		goto use_write;
++		  if (written == -1 && errno == ENOSYS)
++		    goto use_write;
+ # endif
++		  all_written = false;
++		}
+ 	    }
+ 	  else
+ # ifndef __ASSUME_SENDFILE
+ 	  use_write:
+ # endif
+ #endif
+-	    written = writeall (fd, &dataset->resp, total);
++	    if (writeall (fd, &dataset->resp, dataset->head.recsize)
++		!= dataset->head.recsize)
++	      all_written = false;
+ 	}
+ 
+       /* Add the record to the database.  But only if it has not been
+@@ -409,17 +417,14 @@ cache_addhst (struct database_dyn *db, i
+ 		  || req->type == GETHOSTBYADDR
+ 		  || req->type == GETHOSTBYADDRv6);
+ 
+-	  if (cache_add (req->type, key_copy, req->key_len,
+-			 &dataset->head, true, db, owner) < 0)
+-	    /* Could not allocate memory.  Make sure the
+-	       data gets discarded.  */
+-	    dataset->head.usable = false;
++	  (void) cache_add (req->type, key_copy, req->key_len,
++			    &dataset->head, true, db, owner, he == NULL);
+ 
+ 	  pthread_rwlock_unlock (&db->lock);
+ 	}
+     }
+ 
+-  if (__builtin_expect (written != total, 0) && debug_level > 0)
++  if (__builtin_expect (!all_written, 0) && debug_level > 0)
+     {
+       char buf[256];
+       dbg_log (_("short write in %s: %s"),  __FUNCTION__,
+--- libc/nscd/initgrcache.c	19 Apr 2008 16:42:32 -0000	1.13
++++ libc/nscd/initgrcache.c	12 Jun 2008 16:04:05 -0000	1.16
+@@ -230,10 +230,8 @@ addinitgroupsX (struct database_dyn *db,
+ 	      /* Now get the lock to safely insert the records.  */
+ 	      pthread_rwlock_rdlock (&db->lock);
+ 
+-	      if (cache_add (req->type, key_copy, req->key_len,
+-			     &dataset->head, true, db, uid) < 0)
+-		/* Ensure the data can be recovered.  */
+-		dataset->head.usable = false;
++	      (void) cache_add (req->type, key_copy, req->key_len,
++				&dataset->head, true, db, uid, he == NULL);
+ 
+ 	      pthread_rwlock_unlock (&db->lock);
+ 
+@@ -248,7 +246,8 @@ addinitgroupsX (struct database_dyn *db,
+   else
+     {
+ 
+-      written = total = sizeof (struct dataset) + start * sizeof (int32_t);
++      written = total = (offsetof (struct dataset, strdata)
++			 + start * sizeof (int32_t));
+ 
+       /* If we refill the cache, first assume the reconrd did not
+ 	 change.  Allocate memory on the cache since it is likely
+@@ -309,6 +308,9 @@ addinitgroupsX (struct database_dyn *db,
+       /* Finally the user name.  */
+       memcpy (cp, key, req->key_len);
+ 
++      assert (cp == dataset->strdata + total - offsetof (struct dataset,
++							 strdata));
++
+       /* Now we can determine whether on refill we have to create a new
+ 	 record or not.  */
+       if (he != NULL)
+@@ -399,11 +401,8 @@ addinitgroupsX (struct database_dyn *db,
+ 	  /* Now get the lock to safely insert the records.  */
+ 	  pthread_rwlock_rdlock (&db->lock);
+ 
+-	  if (cache_add (INITGROUPS, cp, req->key_len, &dataset->head, true,
+-			 db, uid) < 0)
+-	    /* Could not allocate memory.  Make sure the data gets
+-	       discarded.  */
+-	    dataset->head.usable = false;
++	  (void) cache_add (INITGROUPS, cp, req->key_len, &dataset->head, true,
++			    db, uid, he == NULL);
+ 
+ 	  pthread_rwlock_unlock (&db->lock);
+ 	}
+--- libc/nscd/mem.c	19 Apr 2008 16:41:32 -0000	1.13
++++ libc/nscd/mem.c	12 Jun 2008 04:52:27 -0000	1.19
+@@ -24,6 +24,7 @@
+ #include <inttypes.h>
+ #include <libintl.h>
+ #include <limits.h>
++#include <obstack.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
+@@ -79,6 +80,7 @@ static void
+ markrange (BITMAP_T *mark, ref_t start, size_t len)
+ {
+   /* Adjust parameters for block alignment.  */
++  assert ((start & BLOCK_ALIGN_M1) == 0);
+   start /= BLOCK_ALIGN;
+   len = (len + BLOCK_ALIGN_M1) / BLOCK_ALIGN;
+ 
+@@ -93,7 +95,7 @@ markrange (BITMAP_T *mark, ref_t start, 
+ 	  return;
+ 	}
+ 
+-      mark[elem++] |= 0xff << (start % BITS);
++      mark[elem++] |= ALLBITS << (start % BITS);
+       len -= BITS - (start % BITS);
+     }
+ 
+@@ -130,14 +132,14 @@ gc (struct database_dyn *db)
+   size_t stack_used = sizeof (bool) * db->head->module;
+   if (__builtin_expect (stack_used > MAX_STACK_USE, 0))
+     stack_used = 0;
+-  size_t memory_needed = ((db->head->first_free / BLOCK_ALIGN + BITS - 1)
+-			  / BITS) * sizeof (BITMAP_T);
+-  if (memory_needed <= MAX_STACK_USE)
++  size_t nmark = (db->head->first_free / BLOCK_ALIGN + BITS - 1) / BITS;
++  size_t memory_needed = nmark * sizeof (BITMAP_T);
++  if (stack_used + memory_needed <= MAX_STACK_USE)
+     {
+       mark = (BITMAP_T *) alloca (memory_needed);
+       mark_use_malloc = false;
+       memset (mark, '\0', memory_needed);
+-      stack_used = memory_needed;
++      stack_used += memory_needed;
+     }
+   else
+     {
+@@ -156,6 +158,7 @@ gc (struct database_dyn *db)
+       he = alloca (db->head->nentries * sizeof (struct hashentry *));
+       he_data = alloca (db->head->nentries * sizeof (struct hashentry *));
+       he_use_malloc = false;
++      stack_used += memory_needed;
+     }
+   else
+     {
+@@ -212,11 +215,12 @@ gc (struct database_dyn *db)
+       for (enum in_flight idx = IDX_result_data;
+ 	   idx < IDX_last && mrunp->block[idx].dbidx == db - dbs; ++idx)
+ 	{
+-	 assert ((char *) mrunp->block[idx].blockaddr > db->data);
+-	 assert ((char *) mrunp->block[idx].blockaddr
+-		 + mrunp->block[0].blocklen <= db->data + db->memsize);
+-	 markrange (mark, (char *) mrunp->block[idx].blockaddr -  db->data,
+-		    mrunp->block[idx].blocklen);
++	  assert (mrunp->block[idx].blockoff >= 0);
++	  assert (mrunp->block[idx].blocklen < db->memsize);
++	  assert (mrunp->block[idx].blockoff
++		  + mrunp->block[0].blocklen <= db->memsize);
++	  markrange (mark, mrunp->block[idx].blockoff,
++		     mrunp->block[idx].blocklen);
+ 	}
+ 
+       mrunp = mrunp->next;
+@@ -231,8 +235,13 @@ gc (struct database_dyn *db)
+   /* Sort the entries by their address.  */
+   qsort (he, cnt, sizeof (struct hashentry *), sort_he);
+ 
++#define obstack_chunk_alloc xmalloc
++#define obstack_chunk_free free
++  struct obstack ob;
++  obstack_init (&ob);
++
+   /* Determine the highest used address.  */
+-  size_t high = sizeof (mark);
++  size_t high = nmark;
+   while (high > 0 && mark[high - 1] == 0)
+     --high;
+ 
+@@ -363,8 +372,14 @@ gc (struct database_dyn *db)
+ 	 displacement.  */
+       ref_t disp = off_alloc - off_free;
+ 
+-      struct moveinfo *new_move
+-	= (struct moveinfo *) alloca (sizeof (*new_move));
++      struct moveinfo *new_move;
++      if (stack_used + sizeof (*new_move) <= MAX_STACK_USE)
++	{
++	  new_move = alloca (sizeof (*new_move));
++	  stack_used += sizeof (*new_move);
++	}
++      else
++	new_move = obstack_alloc (&ob, sizeof (*new_move));
+       new_move->from = db->data + off_alloc;
+       new_move->to = db->data + off_free;
+       new_move->size = off_allocend - off_alloc;
+@@ -524,6 +539,8 @@ gc (struct database_dyn *db)
+     free (he);
+   if (mark_use_malloc)
+     free (mark);
++
++  obstack_free (&ob, NULL);
+ }
+ 
+ 
+@@ -589,15 +606,16 @@ mempool_alloc (struct database_dyn *db, 
+     }
+   else
+     {
+-      db->head->first_free += len;
+-
+-      db->last_alloc_failed = false;
+-
+       /* Remember that we have allocated this memory.  */
+       assert (idx >= 0 && idx < IDX_last);
+       mem_in_flight.block[idx].dbidx = db - dbs;
+       mem_in_flight.block[idx].blocklen = len;
+-      mem_in_flight.block[idx].blockaddr = res;
++      mem_in_flight.block[idx].blockoff = db->head->first_free;
++
++      db->head->first_free += len;
++
++      db->last_alloc_failed = false;
++
+     }
+ 
+   pthread_mutex_unlock (&db->memlock);
+--- libc/nscd/nscd.h	22 Apr 2008 15:53:29 -0000	1.35
++++ libc/nscd/nscd.h	12 Jun 2008 22:39:21 -0000	1.38
+@@ -73,6 +73,8 @@ struct database_dyn
+ 
+   int enabled;
+   int check_file;
++  int inotify_descr;
++  int clear_cache;
+   int persistent;
+   int shared;
+   int propagate;
+@@ -197,7 +199,7 @@ extern __thread struct mem_in_flight
+   {
+     int dbidx;
+     nscd_ssize_t blocklen;
+-    void *blockaddr;
++    nscd_ssize_t blockoff;
+   } block[IDX_last];
+ 
+   struct mem_in_flight *next;
+@@ -231,7 +233,8 @@ extern struct datahead *cache_search (re
+ 				      uid_t owner);
+ extern int cache_add (int type, const void *key, size_t len,
+ 		      struct datahead *packet, bool first,
+-		      struct database_dyn *table, uid_t owner);
++		      struct database_dyn *table, uid_t owner,
++		      bool prune_wakeup);
+ extern time_t prune_cache (struct database_dyn *table, time_t now, int fd);
+ 
+ /* pwdcache.c */
+--- libc/nscd/pwdcache.c	19 Apr 2008 16:42:32 -0000	1.49
++++ libc/nscd/pwdcache.c	12 Jun 2008 16:04:22 -0000	1.52
+@@ -153,11 +153,8 @@ cache_addpw (struct database_dyn *db, in
+ 	      /* Now get the lock to safely insert the records.  */
+ 	      pthread_rwlock_rdlock (&db->lock);
+ 
+-	      if (cache_add (req->type, key_copy, req->key_len,
+-			     &dataset->head, true, db, owner) < 0)
+-		/* Ensure the data can be recovered.  */
+-		dataset->head.usable = false;
+-
++	      (void) cache_add (req->type, key_copy, req->key_len,
++				&dataset->head, true, db, owner, he == NULL);
+ 
+ 	      pthread_rwlock_unlock (&db->lock);
+ 
+@@ -188,7 +185,8 @@ cache_addpw (struct database_dyn *db, in
+       n = snprintf (buf, buf_len, "%d%c%n%s", pwd->pw_uid, '\0',
+ 		    &key_offset, (char *) key) + 1;
+ 
+-      written = total = (sizeof (struct dataset) + pw_name_len + pw_passwd_len
++      written = total = (offsetof (struct dataset, strdata)
++			 + pw_name_len + pw_passwd_len
+ 			 + pw_gecos_len + pw_dir_len + pw_shell_len);
+ 
+       /* If we refill the cache, first assume the reconrd did not
+@@ -250,16 +248,28 @@ cache_addpw (struct database_dyn *db, in
+       char *key_copy = cp + key_offset;
+       assert (key_copy == (char *) rawmemchr (cp, '\0') + 1);
+ 
++      assert (cp == dataset->strdata + total - offsetof (struct dataset,
++							 strdata));
++
+       /* Now we can determine whether on refill we have to create a new
+ 	 record or not.  */
+       if (he != NULL)
+ 	{
+ 	  assert (fd == -1);
+ 
+-	  if (total + n == dh->allocsize
+-	      && total - offsetof (struct dataset, resp) == dh->recsize
++#if 0
++	  if (dataset->head.datasize == dh->allocsize
++	      && dataset->head.recsize == dh->recsize
+ 	      && memcmp (&dataset->resp, dh->data,
+ 			 dh->allocsize - offsetof (struct dataset, resp)) == 0)
++#else
++	  if (dataset->head.allocsize != dh->allocsize)
++	    goto nnn;
++	  if (dataset->head.recsize != dh->recsize)
++	    goto nnn;
++	  if(memcmp (&dataset->resp, dh->data,
++			 dh->allocsize - offsetof (struct dataset, resp)) == 0)
++#endif
+ 	    {
+ 	      /* The data has not changed.  We will just bump the
+ 		 timeout value.  Note that the new record has been
+@@ -269,6 +279,7 @@ cache_addpw (struct database_dyn *db, in
+ 	    }
+ 	  else
+ 	    {
++ nnn:;
+ 	      /* We have to create a new record.  Just allocate
+ 		 appropriate memory and copy it.  */
+ 	      struct dataset *newp
+@@ -351,13 +362,8 @@ cache_addpw (struct database_dyn *db, in
+ 	  if (req->type == GETPWBYUID)
+ 	    {
+ 	      if (cache_add (GETPWBYUID, cp, key_offset, &dataset->head, true,
+-			     db, owner) < 0)
+-		{
+-		  /* Could not allocate memory.  Make sure the data gets
+-		     discarded.  */
+-		  dataset->head.usable = false;
+-		  goto out;
+-		}
++			     db, owner, he == NULL) < 0)
++		goto out;
+ 
+ 	      first = false;
+ 	    }
+@@ -365,13 +371,8 @@ cache_addpw (struct database_dyn *db, in
+ 	  else if (strcmp (key_copy, dataset->strdata) != 0)
+ 	    {
+ 	      if (cache_add (GETPWBYNAME, key_copy, key_len + 1,
+-			     &dataset->head, true, db, owner) < 0)
+-		{
+-		  /* Could not allocate memory.  Make sure the data gets
+-		     discarded.  */
+-		  dataset->head.usable = false;
+-		  goto out;
+-		}
++			     &dataset->head, true, db, owner, he == NULL) < 0)
++		goto out;
+ 
+ 	      first = false;
+ 	    }
+@@ -380,16 +381,13 @@ cache_addpw (struct database_dyn *db, in
+ 	  if ((req->type == GETPWBYNAME || db->propagate)
+ 	      && __builtin_expect (cache_add (GETPWBYNAME, dataset->strdata,
+ 					      pw_name_len, &dataset->head,
+-					      first, db, owner) == 0, 1))
++					      first, db, owner, he == NULL)
++				   == 0, 1))
+ 	    {
+ 	      if (req->type == GETPWBYNAME && db->propagate)
+ 		(void) cache_add (GETPWBYUID, cp, key_offset, &dataset->head,
+-				  req->type != GETPWBYNAME, db, owner);
++				  false, db, owner, false);
+ 	    }
+-	  else if (first)
+-	    /* Could not allocate memory.  Make sure the data gets
+-	       discarded.  */
+-	    dataset->head.usable = false;
+ 
+ 	out:
+ 	  pthread_rwlock_unlock (&db->lock);
+--- libc/nscd/servicescache.c	19 Apr 2008 16:42:32 -0000	1.6
++++ libc/nscd/servicescache.c	12 Jun 2008 16:04:37 -0000	1.9
+@@ -136,10 +136,8 @@ cache_addserv (struct database_dyn *db, 
+ 	      /* Now get the lock to safely insert the records.  */
+ 	      pthread_rwlock_rdlock (&db->lock);
+ 
+-	      if (cache_add (req->type, &dataset->strdata, req->key_len,
+-			     &dataset->head, true, db, owner) < 0)
+-		/* Ensure the data can be recovered.  */
+-		dataset->head.usable = false;
++	      (void) cache_add (req->type, &dataset->strdata, req->key_len,
++				&dataset->head, true, db, owner, he == NULL);
+ 
+ 	      pthread_rwlock_unlock (&db->lock);
+ 
+@@ -175,7 +173,7 @@ cache_addserv (struct database_dyn *db, 
+ 	  total += s_aliases_len[cnt];
+ 	}
+ 
+-      total += (sizeof (struct dataset)
++      total += (offsetof (struct dataset, strdata)
+ 		+ s_name_len
+ 		+ s_proto_len
+ 		+ s_aliases_cnt * sizeof (uint32_t));
+@@ -332,11 +330,8 @@ cache_addserv (struct database_dyn *db, 
+ 	  /* Now get the lock to safely insert the records.  */
+ 	  pthread_rwlock_rdlock (&db->lock);
+ 
+-	  if (cache_add (req->type, key_copy, req->key_len,
+-			 &dataset->head, true, db, owner) < 0)
+-	    /* Could not allocate memory.  Make sure the
+-	       data gets discarded.  */
+-	    dataset->head.usable = false;
++	  (void) cache_add (req->type, key_copy, req->key_len,
++			    &dataset->head, true, db, owner, he == NULL);
+ 
+ 	  pthread_rwlock_unlock (&db->lock);
+ 	}
+--- libc/sysdeps/unix/sysv/linux/Makefile	10 Feb 2008 19:43:32 -0000	1.159
++++ libc/sysdeps/unix/sysv/linux/Makefile	12 Jun 2008 22:40:01 -0000	1.160
+@@ -154,7 +154,7 @@ CFLAGS-mq_receive.c += -fexceptions
+ endif
+ 
+ ifeq ($(subdir),nscd)
+-CFLAGS-connections.c += -DHAVE_EPOLL -DHAVE_SENDFILE
++CFLAGS-connections.c += -DHAVE_EPOLL -DHAVE_SENDFILE -DHAVE_INOTIFY
+ CFLAGS-pwdcache.c += -DHAVE_SENDFILE
+ CFLAGS-grpcache.c += -DHAVE_SENDFILE
+ CFLAGS-hstcache.c += -DHAVE_SENDFILE

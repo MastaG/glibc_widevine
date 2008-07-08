@@ -58,6 +58,7 @@ Patch15: glibc-rh450790.patch
 Patch16: glibc-rwlock-pshared.patch
 Patch17: glibc-sparc.patch
 Patch18: glibc-tls-getaddr.patch
+Patch19: glibc-bz6719.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -254,6 +255,7 @@ package or when debugging this package.
 %patch16 -p1
 %patch17 -p1
 %patch18 -p1
+%patch19 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1016,7 +1018,7 @@ rm -f *.filelist*
 %changelog
 * Tue Jul  8 2008 Jakub Jelinek <jakub@redhat.com> 2.8-7
 - assorted nscd fixes (#450704, #445656, #449358)
-- misc upstream fixes (BZ#3406, BZ#6461, BZ#6472, BZ#6612, BZ#6657, BZ#6723)
+- misc fixes (BZ#3406, BZ#6461, BZ#6472, BZ#6612, BZ#6657, BZ#6723, BZ#6719)
 - fix *scanf in -std=c99 mode
 - add lt translations
 - some SPARC fixes

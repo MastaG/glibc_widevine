@@ -1,0 +1,147 @@
+2008-06-13  Ulrich Drepper  <drepper@redhat.com>
+
+	* sysdeps/posix/getaddrinfo.c: Move _res_hconf_init call to a
+	better place so it is not called when nscd is used.
+
+2008-05-14  Ulrich Drepper  <drepper@redhat.com>
+
+	* sysdeps/posix/getaddrinfo.c (getaddrinfo): Call _res_hconf_init
+	if necessary.
+	* posix/tst-rfc3484.c: Add dummy definition of _res_hconf_init.
+	* posix/tst-rfc3484-2.c: Likewise.
+	* posix/tst-rfc3484-3.c: Likewise.
+
+--- libc/sysdeps/posix/getaddrinfo.c	10 May 2008 23:27:32 -0000	1.126
++++ libc/sysdeps/posix/getaddrinfo.c	14 May 2008 22:46:55 -0000	1.131
+@@ -61,6 +61,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBI
+ #include <not-cancel.h>
+ #include <nscd/nscd-client.h>
+ #include <nscd/nscd_proto.h>
++#include <resolv/res_hconf.h>
+ 
+ #ifdef HAVE_LIBIDN
+ extern int __idna_to_ascii_lz (const char *input, char **output, int flags);
+@@ -684,6 +684,9 @@ gaih_inet (const char *name, const struc
+ 					     "dns [!UNAVAIL=return] files",
+ 					     &nip);
+ 
++	  /* Initialize configurations.  */
++	  if (__builtin_expect (!_res_hconf.initialized, 0))
++	    _res_hconf_init ();
+ 	  if (__res_maybe_init (&_res, 0) == -1)
+ 	    no_more = 1;
+ 
+--- libc/posix/tst-rfc3484-2.c	10 Jan 2008 20:00:37 -0000	1.11
++++ libc/posix/tst-rfc3484-2.c	15 May 2008 03:06:05 -0000	1.12
+@@ -18,24 +18,35 @@ __check_pf (bool *p1, bool *p2, struct i
+   *in6ai = NULL;
+   *in6ailen = 0;
+ }
++
+ void
+ attribute_hidden
+ __check_native (uint32_t a1_index, int *a1_native,
+ 		uint32_t a2_index, int *a2_native)
+ {
+ }
++
+ int
++attribute_hidden
+ __idna_to_ascii_lz (const char *input, char **output, int flags)
+ {
+   return 0;
+ }
++
+ int
++attribute_hidden
+ __idna_to_unicode_lzlz (const char *input, char **output, int flags)
+ {
+   *output = NULL;
+   return 0;
+ }
+ 
++void
++attribute_hidden
++_res_hconf_init (void)
++{
++}
++
+ #include "../sysdeps/posix/getaddrinfo.c"
+ 
+ service_user *__nss_hosts_database attribute_hidden;
+--- libc/posix/tst-rfc3484-3.c	10 Jan 2008 20:00:37 -0000	1.2
++++ libc/posix/tst-rfc3484-3.c	15 May 2008 03:06:05 -0000	1.3
+@@ -18,24 +18,35 @@ __check_pf (bool *p1, bool *p2, struct i
+   *in6ai = NULL;
+   *in6ailen = 0;
+ }
++
+ void
+ attribute_hidden
+ __check_native (uint32_t a1_index, int *a1_native,
+ 		uint32_t a2_index, int *a2_native)
+ {
+ }
++
+ int
++attribute_hidden
+ __idna_to_ascii_lz (const char *input, char **output, int flags)
+ {
+   return 0;
+ }
++
+ int
++attribute_hidden
+ __idna_to_unicode_lzlz (const char *input, char **output, int flags)
+ {
+   *output = NULL;
+   return 0;
+ }
+ 
++void
++attribute_hidden
++_res_hconf_init (void)
++{
++}
++
+ #include "../sysdeps/posix/getaddrinfo.c"
+ 
+ service_user *__nss_hosts_database attribute_hidden;
+--- libc/posix/tst-rfc3484.c	10 Jan 2008 20:00:37 -0000	1.11
++++ libc/posix/tst-rfc3484.c	15 May 2008 03:06:05 -0000	1.12
+@@ -18,24 +18,35 @@ __check_pf (bool *p1, bool *p2, struct i
+   *in6ai = NULL;
+   *in6ailen = 0;
+ }
++
+ void
+ attribute_hidden
+ __check_native (uint32_t a1_index, int *a1_native,
+ 		uint32_t a2_index, int *a2_native)
+ {
+ }
++
+ int
++attribute_hidden
+ __idna_to_ascii_lz (const char *input, char **output, int flags)
+ {
+   return 0;
+ }
++
+ int
++attribute_hidden
+ __idna_to_unicode_lzlz (const char *input, char **output, int flags)
+ {
+   *output = NULL;
+   return 0;
+ }
+ 
++void
++attribute_hidden
++_res_hconf_init (void)
++{
++}
++
+ #include "../sysdeps/posix/getaddrinfo.c"
+ 
+ service_user *__nss_hosts_database attribute_hidden;

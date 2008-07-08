@@ -1,0 +1,48 @@
+2008-05-14  Ulrich Drepper  <drepper@redhat.com>
+
+	[BZ #6472]
+	* sysdeps/posix/getaddrinfo.c (get_scope): Loopback addresses have
+	to be treated like link-local addresses.
+	(match_prefix): Don't treat IPv4 loopback address special when
+	converting to v4 mapped addressed.
+
+--- libc/sysdeps/posix/getaddrinfo.c	14 May 2008 21:53:40 -0000	1.129
++++ libc/sysdeps/posix/getaddrinfo.c	14 May 2008 22:46:55 -0000	1.131
+@@ -1112,7 +1112,10 @@ get_scope (const struct sockaddr_in6 *in
+     {
+       if (! IN6_IS_ADDR_MULTICAST (&in6->sin6_addr))
+ 	{
+-	  if (IN6_IS_ADDR_LINKLOCAL (&in6->sin6_addr))
++	  if (IN6_IS_ADDR_LINKLOCAL (&in6->sin6_addr)
++	      /* RFC 4291 2.5.3 says that the loopback address is to be
++		 treated like a link-local address.  */
++	      || IN6_IS_ADDR_LOOPBACK (&in6->sin6_addr))
+ 	    scope = 2;
+ 	  else if (IN6_IS_ADDR_SITELOCAL (&in6->sin6_addr))
+ 	    scope = 5;
+@@ -1245,20 +1248,14 @@ match_prefix (const struct sockaddr_in6 
+     {
+       const struct sockaddr_in *in = (const struct sockaddr_in *) in6;
+ 
+-      /* Convert to IPv6 address.  */
++      /* Construct a V4-to-6 mapped address.  */
+       in6_mem.sin6_family = PF_INET6;
+       in6_mem.sin6_port = in->sin_port;
+       in6_mem.sin6_flowinfo = 0;
+-      if (in->sin_addr.s_addr == htonl (0x7f000001))
+-	in6_mem.sin6_addr = (struct in6_addr) IN6ADDR_LOOPBACK_INIT;
+-      else
+-	{
+-	  /* Construct a V4-to-6 mapped address.  */
+-	  memset (&in6_mem.sin6_addr, '\0', sizeof (in6_mem.sin6_addr));
+-	  in6_mem.sin6_addr.s6_addr16[5] = 0xffff;
+-	  in6_mem.sin6_addr.s6_addr32[3] = in->sin_addr.s_addr;
+-	  in6_mem.sin6_scope_id = 0;
+-	}
++      memset (&in6_mem.sin6_addr, '\0', sizeof (in6_mem.sin6_addr));
++      in6_mem.sin6_addr.s6_addr16[5] = 0xffff;
++      in6_mem.sin6_addr.s6_addr32[3] = in->sin_addr.s_addr;
++      in6_mem.sin6_scope_id = 0;
+ 
+       in6 = &in6_mem;
+     }

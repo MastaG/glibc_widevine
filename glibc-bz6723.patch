@@ -1,0 +1,18 @@
+2008-07-06  Ulrich Drepper  <drepper@redhat.com>
+
+	[BZ #6723]
+	* time/mktime.c (__mktime_internal): Normalize tp->tm_isdst value.
+
+--- libc/time/mktime.c	12 Dec 2007 18:21:29 -0000	1.68
++++ libc/time/mktime.c	6 Jul 2008 21:17:58 -0000	1.69
+@@ -293,7 +293,9 @@ __mktime_internal (struct tm *tp,
+   int mday = tp->tm_mday;
+   int mon = tp->tm_mon;
+   int year_requested = tp->tm_year;
+-  int isdst = tp->tm_isdst;
++  /* Normalize the value.  */
++  int isdst = ((tp->tm_isdst >> (8 * sizeof (tp->tm_isdst) - 1))
++	       | (tp->tm_isdst != 0));
+ 
+   /* 1 if the previous probe was DST.  */
+   int dst2;

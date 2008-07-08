@@ -1,0 +1,82 @@
+2008-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* sysdeps/powerpc/powerpc64/fpu/s_llround.S (__llround): Avoid using
+	cr[34] registers.
+	* sysdeps/powerpc/powerpc64/fpu/s_llroundf.S (__llroundf): Likewise.
+	* sysdeps/powerpc/powerpc32/power4/fpu/s_llround.S (__llround):
+	Likewise.
+	* sysdeps/powerpc/powerpc32/fpu/s_lround.S (__lround): Avoid using cr3
+	register.
+
+--- libc/sysdeps/powerpc/powerpc32/fpu/s_lround.S	11 Apr 2008 19:30:46 -0000	1.8
++++ libc/sysdeps/powerpc/powerpc32/fpu/s_lround.S	13 Jun 2008 01:18:11 -0000	1.9
+@@ -65,10 +65,10 @@ ENTRY (__lround)
+ 	fabs	fp2, fp1	/* Get the absolute value of x.  */
+ 	fsub	fp12,fp10,fp10	/* Compute 0.0.  */
+ 	fcmpu	cr6, fp2, fp10	/* if |x| < 0.5  */
+-	fcmpu	cr3, fp1, fp12	/* x is negative? x < 0.0  */
++	fcmpu	cr7, fp1, fp12	/* x is negative? x < 0.0  */
+ 	blt-	cr6,.Lretzero
+ 	fadd	fp3,fp2,fp10	/* |x|+=0.5 bias to prepare to round.  */
+-	bge	cr3,.Lconvert	/* x is positive so don't negate x.  */
++	bge	cr7,.Lconvert	/* x is positive so don't negate x.  */
+ 	fnabs	fp3,fp3		/* -(|x|+=0.5)  */ 
+ .Lconvert:
+ 	fctiwz	fp4,fp3		/* Convert to Integer word lround toward 0.  */
+--- libc/sysdeps/powerpc/powerpc32/power4/fpu/s_llround.S	11 Apr 2008 19:31:08 -0000	1.2
++++ libc/sysdeps/powerpc/powerpc32/power4/fpu/s_llround.S	13 Jun 2008 01:18:11 -0000	1.3
+@@ -75,12 +75,12 @@ ENTRY (__llround)
+ 	fabs	fp2,fp1		/* Get the absolute value of x.  */
+ 	fsub	fp12,fp10,fp10	/* Compute 0.0 into fpr12.  */
+ 	fcmpu	cr6,fp2,fp10	/* if |x| < 0.5  */
+-	fcmpu	cr4,fp2,fp9	/* if |x| >= 2^52  */
+-	fcmpu	cr3,fp1,fp12	/* x is negative? x < 0.0  */
++	fcmpu	cr7,fp2,fp9	/* if |x| >= 2^52  */
++	fcmpu	cr1,fp1,fp12	/* x is negative? x < 0.0  */
+ 	blt-	cr6,.Lretzero	/* 0.5 > x < -0.5 so just return 0.  */
+-	bge-	cr4,.Lnobias	/* 2^52 > x < -2^52 just convert with no bias.  */
++	bge-	cr7,.Lnobias	/* 2^52 > x < -2^52 just convert with no bias.  */
+ 	fadd	fp3,fp2,fp10	/* |x|+=0.5 bias to prepare to round.  */
+-	bge	cr3,.Lconvert	/* x is positive so don't negate x.  */
++	bge	cr1,.Lconvert	/* x is positive so don't negate x.  */
+ 	fnabs	fp3,fp3		/* -(|x|+=0.5)  */
+ .Lconvert:
+ 	fctidz	fp4,fp3		/* Convert to Integer double word round toward 0.  */
+--- libc/sysdeps/powerpc/powerpc64/fpu/s_llround.S	11 Apr 2008 19:31:51 -0000	1.4
++++ libc/sysdeps/powerpc/powerpc64/fpu/s_llround.S	13 Jun 2008 01:18:11 -0000	1.5
+@@ -52,12 +52,12 @@ ENTRY (__llround)
+ 	fabs	fp2,fp1		/* Get the absolute value of x.  */
+ 	fsub	fp12,fp10,fp10	/* Compute 0.0 into fp12.  */
+ 	fcmpu	cr6,fp2,fp10	/* if |x| < 0.5  */
+-	fcmpu	cr4,fp2,fp9	/* if |x| >= 2^52  */
+-	fcmpu	cr3,fp1,fp12	/* x is negative? x < 0.0  */
++	fcmpu	cr7,fp2,fp9	/* if |x| >= 2^52  */
++	fcmpu	cr1,fp1,fp12	/* x is negative? x < 0.0  */
+ 	blt-	cr6,.Lretzero	/* 0.5 > x < -0.5 so just return 0.  */
+-	bge-	cr4,.Lnobias	/* 2^52 > x < -2^52 just convert with no bias.  */
++	bge-	cr7,.Lnobias	/* 2^52 > x < -2^52 just convert with no bias.  */
+ 	fadd	fp3,fp2,fp10	/* |x|+=0.5 bias to prepare to round.  */
+-	bge	cr3,.Lconvert	/* x is positive so don't negate x.  */
++	bge	cr1,.Lconvert	/* x is positive so don't negate x.  */
+ 	fnabs	fp3,fp3		/* -(|x|+=0.5)  */
+ .Lconvert:
+ 	fctidz	fp4,fp3		/* Convert to Integer double word round toward 0.  */
+--- libc/sysdeps/powerpc/powerpc64/fpu/s_llroundf.S	11 Apr 2008 19:31:51 -0000	1.4
++++ libc/sysdeps/powerpc/powerpc64/fpu/s_llroundf.S	13 Jun 2008 01:18:11 -0000	1.5
+@@ -51,12 +51,12 @@ ENTRY (__llroundf)
+ 	fabs	fp2,fp1		/* Get the absolute value of x.  */
+ 	fsub	fp12,fp10,fp10	/* Compute 0.0 into fp12.  */
+ 	fcmpu	cr6,fp2,fp10	/* if |x| < 0.5  */
+-	fcmpu	cr4,fp2,fp9	/* if |x| >= 2^23  */
+-	fcmpu	cr3,fp1,fp12	/* x is negative? x < 0.0  */
++	fcmpu	cr7,fp2,fp9	/* if |x| >= 2^23  */
++	fcmpu	cr1,fp1,fp12	/* x is negative? x < 0.0  */
+ 	blt-	cr6,.Lretzero	/* 0.5 > x < -0.5 so just return 0.  */
+-	bge-	cr4,.Lnobias	/* 2^23 > x < -2^23 just convert with no bias.  */
++	bge-	cr7,.Lnobias	/* 2^23 > x < -2^23 just convert with no bias.  */
+ 	fadd	fp3,fp2,fp10	/* |x|+=0.5 bias to prepare to round.  */
+-	bge	cr3,.Lconvert	/* x is positive so don't negate x.  */
++	bge	cr1,.Lconvert	/* x is positive so don't negate x.  */
+ 	fnabs	fp3,fp3		/* -(|x|+=0.5)  */
+ .Lconvert:
+ 	fctidz	fp4,fp3		/* Convert to Integer double word round toward 0.  */
