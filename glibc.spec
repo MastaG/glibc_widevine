@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 6
+Release: 7
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -42,6 +42,22 @@ Source3: %{glibcname}-fedora-%{glibcdate}.tar.bz2
 Patch0: %{glibcname}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
 Patch2: glibc-sparcv9v-fix-async-unwind-tables.patch
+Patch3: glibc-bz3406.patch
+Patch4: glibc-bz6461.patch
+Patch5: glibc-bz6472.patch
+Patch6: glibc-bz6612.patch
+Patch7: glibc-bz6657.patch
+Patch8: glibc-bz6723.patch
+Patch9: glibc-c99-scanf.patch
+Patch10: glibc-lt-l10n.patch
+Patch11: glibc-nscd.patch
+Patch12: glibc-res-hconf-init.patch
+Patch13: glibc-rh446406.patch
+Patch14: glibc-rh449358.patch
+Patch15: glibc-rh450790.patch
+Patch16: glibc-rwlock-pshared.patch
+Patch17: glibc-sparc.patch
+Patch18: glibc-tls-getaddr.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -222,6 +238,22 @@ package or when debugging this package.
 %endif
 %endif
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
+%patch18 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -982,6 +1014,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jul  8 2008 Jakub Jelinek <jakub@redhat.com> 2.8-7
+- assorted nscd fixes (#450704, #445656, #449358)
+- misc upstream fixes (BZ#3406, BZ#6461, BZ#6472, BZ#6612, BZ#6657, BZ#6723)
+- fix *scanf in -std=c99 mode
+- add lt translations
+- some SPARC fixes
+- fix regexp.h (#446406)
+- fix powerpc {,l}lround{,f} assembly from clobbering %cr[34]
+  registers (#450790)
+
 * Mon May 26 2008 Tom "spot" Callaway <tcallawa@redhat.com> 2.8-6
 - disable async-unwind-tables for soinit.c and sofini.c
 - re-enable fasynchronous-unwind-tables 
