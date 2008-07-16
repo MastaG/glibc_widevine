@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 7
+Release: 8
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -59,6 +59,8 @@ Patch16: glibc-rwlock-pshared.patch
 Patch17: glibc-sparc.patch
 Patch18: glibc-tls-getaddr.patch
 Patch19: glibc-bz6719.patch
+Patch20: glibc-nscd-inotify-fix.patch
+Patch21: glibc-rh455360.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -256,6 +258,8 @@ package or when debugging this package.
 %patch17 -p1
 %patch18 -p1
 %patch19 -p1
+%patch20 -p1
+%patch21 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1016,6 +1020,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul 16 2008 Jakub Jelinek <jakub@redhat.com> 2.8-8
+- another nscd fix
+- fix unbuffered vfprintf (#455360)
+
 * Tue Jul  8 2008 Jakub Jelinek <jakub@redhat.com> 2.8-7
 - assorted nscd fixes (#450704, #445656, #449358)
 - misc fixes (BZ#3406, BZ#6461, BZ#6472, BZ#6612, BZ#6657, BZ#6723, BZ#6719)
