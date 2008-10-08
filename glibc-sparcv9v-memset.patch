@@ -1,0 +1,20 @@
+--- libc/sysdeps/sparc/sparc64/sparcv9v/memset.S.jj	2006-03-06 02:33:03.000000000 +0100
++++ libc/sysdeps/sparc/sparc64/sparcv9v/memset.S	2008-10-07 23:52:22.000000000 +0200
+@@ -1,5 +1,5 @@
+ /* Set a block of memory to some byte value.  For SUN4V Niagara.
+-   Copyright (C) 2006 Free Software Foundation, Inc.
++   Copyright (C) 2006, 2008 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+    Contributed by David S. Miller (davem@davemloft.net)
+ 
+@@ -49,6 +49,9 @@ END(memset)
+ 
+ ENTRY(__bzero)
+ 	clr		%o2
++#ifndef USE_BRP
++	srl		%o1, 0, %o1
++#endif
+ 1:	brz,pn		%o1, 90f
+ 	 mov		%o0, %o3
+ 
+
