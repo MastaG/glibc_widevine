@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.8
-Release: 9
+Release: 10
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1022,6 +1022,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Oct 09 2008 Dennis Gilmore <dennis@ausil.us> 2.8-10
+- updated memset patch  from davem and jakub
+
 * Tue Oct 07 2008 Dennis Gilmore <dennis@ausil.us> 2.8-9
 - apply patch from Jakub for sparcv9v memset issue
 
