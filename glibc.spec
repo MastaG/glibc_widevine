@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.9
-Release: 2
+Release: 3
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -41,6 +41,8 @@ Source2: %(echo %{glibcsrcdir} | sed s/glibc-/glibc-libidn-/).tar.bz2
 Source3: %{glibcname}-fedora-%{glibcdate}.tar.bz2
 Patch0: %{glibcname}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
+Patch2: glibc-fixes1.patch
+Patch3: glibc-nss_dns-gethostbyname4-disable.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -222,6 +224,8 @@ package or when debugging this package.
 %patch1 -p1
 %endif
 %endif
+%patch2 -p1
+%patch3 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -988,6 +992,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Dec  8 2008 Jakub Jelinek <jakub@redhat.com> 2.9-3
+- temporarily disable _nss_dns_gethostbyname4_r (#459756)
+- NIS hostname lookup fixes (#473073, #474800, BZ#7058)
+- fix unsetenv (#472941)
+
 * Thu Nov 13 2008 Jakub Jelinek <jakub@redhat.com> 2.9-2
 - glibc 2.9 release
 - fix CPU_ALLOC_SIZE on 32-bit arches (BZ#7029)
