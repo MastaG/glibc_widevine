@@ -1,6 +1,6 @@
-%define glibcdate 20090414T2104
+%define glibcdate 20090415T1619
 %define glibcname glibc
-%define glibcsrcdir glibc-20090414T2104
+%define glibcsrcdir glibc-20090415T1619
 %define glibc_release_tarballs 0
 %define run_glibc_tests 1
 %define auxarches i686 athlon sparcv9v sparc64v alphaev6
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.9.90
-Release: 16
+Release: 17
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1013,6 +1013,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Apr 15 2009 Jakub Jelinek <jakub@redhat.com> 2.9.90-17
+- update from trunk
+  - if threads have very small stack sizes, use much smaller buffer
+    in __get_nprocs when called from within malloc (#494631)
+
 * Tue Apr 14 2009 Jakub Jelinek <jakub@redhat.com> 2.9.90-16
 - update from trunk
 
