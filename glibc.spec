@@ -1,6 +1,6 @@
-%define glibcdate 20090424T0747
+%define glibcdate 20090424T1908
 %define glibcname glibc
-%define glibcsrcdir glibc-20090424T0747
+%define glibcsrcdir glibc-20090424T1908
 %define glibc_release_tarballs 0
 %define run_glibc_tests 1
 %define auxarches i686 athlon sparcv9v sparc64v alphaev6
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.9.90
-Release: 20
+Release: 21
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1013,6 +1013,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Apr 24 2009 Jakub Jelinek <jakub@redhat.com> 2.9.90-21
+- update from trunk
+  - fix localedef
+  - fix SHIFT_JIS iconv EILSEQ handling (#497267)
+  - misc fixes (BZ#10093, BZ#10100)
+
 * Fri Apr 24 2009 Jakub Jelinek <jakub@redhat.com> 2.9.90-20
 - update from trunk
   - fix p{read,write}v{,64} (#497429, #497434)

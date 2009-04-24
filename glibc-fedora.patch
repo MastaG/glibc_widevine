@@ -2090,3 +2090,27 @@
  
  	cfi_startproc;
  PSEUDO_END (BP_SYM (__clone))
+--- libc/fedora/build-locale-archive.c	24 May 2007 10:33:02 -0000	1.1.2.4
++++ libc/fedora/build-locale-archive.c	24 Apr 2009 20:06:55 -0000
+@@ -112,15 +112,16 @@ open_tmpl_archive (struct locarhandle *a
+     error (EXIT_FAILURE, errno, "cannot read archive header");
+ 
+   ah->fd = fd;
+-  ah->len = (head.sumhash_offset
+-	     + head.sumhash_size * sizeof (struct sumhashent));
+-  if (ah->len > st.st_size)
++  ah->mmaped = (head.sumhash_offset
++		+ head.sumhash_size * sizeof (struct sumhashent));
++  if (ah->mmaped > st.st_size)
+     error (EXIT_FAILURE, 0, "locale archite template file truncated");
+-  ah->len = st.st_size;
++  ah->mmaped = st.st_size;
++  ah->reserved = st.st_size;
+ 
+   /* Now we know how large the administrative information part is.
+      Map all of it.  */
+-  ah->addr = mmap64 (NULL, ah->len, PROT_READ, MAP_SHARED, fd, 0);
++  ah->addr = mmap64 (NULL, ah->mmaped, PROT_READ, MAP_SHARED, fd, 0);
+   if (ah->addr == MAP_FAILED)
+     error (EXIT_FAILURE, errno, "cannot map archive header");
+ }
