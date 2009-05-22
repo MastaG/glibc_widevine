@@ -1,0 +1,152 @@
+2009-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* sysdeps/unix/sysv/linux/accept4.c: Include kernel-features.h.
+	(accept4): If __NR_accept4 is not defined, but __NR_socketcall
+	is, either do nothing at all if __ASSUME_ACCEPT4, or
+	call __internal_accept4 and handle EINVAL -> ENOSYS translation.
+	* sysdeps/unix/sysv/linux/internal_accept4.S: New file.
+	* sysdeps/unix/sysv/linux/i386/accept4.S (SOCKOP_accept4): Don't
+	define.
+	* sysdeps/unix/sysv/linux/i386/internal_accept4.S: New file.
+	* sysdeps/unix/sysv/linux/Makefile (sysdep-routines): Add
+	internal_accept4 in socket directory.
+
+2009-05-21  Ulrich Drepper  <drepper@redhat.com>
+
+	* sysdeps/unix/sysv/linux/kernel-features.h: Don't define
+	__ASSUME_ACCEPT4 for IA-64.
+
+2009-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* sysdeps/unix/sysv/linux/accept4.c (__NR_accept4): Don't define.
+
+	* sysdeps/unix/sysv/linux/socketcall.h (SOCKOP_paccept): Remove.
+	(SOCKOP_accept4): Define.
+
+--- libc/sysdeps/unix/sysv/linux/Makefile
++++ libc/sysdeps/unix/sysv/linux/Makefile
+@@ -11,6 +11,10 @@ ifeq ($(subdir),malloc)
+ CFLAGS-malloc.c += -DMORECORE_CLEARS=2
+ endif
+ 
++ifeq ($(subdir),socket)
++sysdep_routines += internal_accept4
++endif
++
+ ifeq ($(subdir),misc)
+ sysdep_routines += sysctl clone llseek umount umount2 readahead \
+ 		   setfsuid setfsgid makedev epoll_pwait signalfd \
+--- libc/sysdeps/unix/sysv/linux/accept4.c
++++ libc/sysdeps/unix/sysv/linux/accept4.c
+@@ -23,8 +23,7 @@
+ 
+ #include <sysdep-cancel.h>
+ #include <sys/syscall.h>
+-
+-#define __NR_accept4                            288
++#include <kernel-features.h>
+ 
+ 
+ #ifdef __NR_accept4
+@@ -43,6 +42,50 @@ accept4 (int fd, __SOCKADDR_ARG addr, socklen_t *addr_len, int flags)
+ 
+   return result;
+ }
++#elif defined __NR_socketcall
++# ifndef __ASSUME_ACCEPT4
++extern int __internal_accept4 (int fd, __SOCKADDR_ARG addr,
++			       socklen_t *addr_len, int flags)
++     attribute_hidden;
++
++static int have_accept4;
++
++int
++accept4 (int fd, __SOCKADDR_ARG addr, socklen_t *addr_len, int flags)
++{
++  if (__builtin_expect (have_accept4 >= 0, 1))
++    {
++      int ret = __internal_accept4 (fd, addr, addr_len, flags);
++      /* The kernel returns -EINVAL for unknown socket operations.
++	 We need to convert that error to an ENOSYS error.  */
++      if (__builtin_expect (ret < 0, 0)
++	  && have_accept4 == 0
++	  && errno == EINVAL)
++	{
++	  /* Try another call, this time with the FLAGS parameter
++	     cleared and an invalid file descriptor.  This call will not
++	     cause any harm and it will return immediately.  */
++	  ret = __internal_accept4 (-1, addr, addr_len, 0);
++	  if (errno == EINVAL)
++	    {
++	      have_accept4 = -1;
++	      __set_errno (ENOSYS);
++	    }
++	  else
++	    {
++	      have_accept4 = 1;
++	      __set_errno (EINVAL);
++	    }
++	  return -1;
++	}
++      return ret;
++    }
++  __set_errno (ENOSYS);
++  return -1;
++}
++# else
++/* When __ASSUME_ACCEPT4 accept4 is defined in internal_accept4.S.  */
++# endif
+ #else
+ int
+ accept4 (int fd, __SOCKADDR_ARG addr, socklen_t *addr_len, int flags)
+--- libc/sysdeps/unix/sysv/linux/i386/accept4.S
++++ libc/sysdeps/unix/sysv/linux/i386/accept4.S
+@@ -24,10 +24,6 @@
+ #define EINVAL	22
+ #define ENOSYS	38
+ 
+-#ifndef SOCKOP_accept4
+-# define SOCKOP_accept4 18
+-#endif
+-
+ #ifdef __ASSUME_ACCEPT4
+ # define errlabel SYSCALL_ERROR_LABEL
+ #else
+--- libc/sysdeps/unix/sysv/linux/internal_accept4.S
++++ libc/sysdeps/unix/sysv/linux/internal_accept4.S
+@@ -0,0 +1,14 @@
++#include <kernel-features.h>
++#include <sys/syscall.h>
++#if !defined __NR_accept4 && defined __NR_socketcall
++# define socket	accept4
++# ifdef __ASSUME_ACCEPT4
++#  define __socket accept4
++# else
++#  define __socket __internal_accept4
++# endif
++# define NARGS 4
++# define NEED_CANCELLATION
++# define NO_WEAK_ALIAS
++# include <socket.S>
++#endif
+--- libc/sysdeps/unix/sysv/linux/kernel-features.h
++++ libc/sysdeps/unix/sysv/linux/kernel-features.h
+@@ -521,7 +521,7 @@
+ /* Support for the accept4 syscall was added in 2.6.28.  */
+ #if __LINUX_KERNEL_VERSION >= 0x02061c \
+     && (defined __i386__ || defined __x86_64__ || defined __powerpc__ \
+-	|| defined __ia64__ || defined __sparc__ || defined __s390__)
++	|| defined __sparc__ || defined __s390__)
+ # define __ASSUME_ACCEPT4	1
+ #endif
+ 
+--- libc/sysdeps/unix/sysv/linux/socketcall.h
++++ libc/sysdeps/unix/sysv/linux/socketcall.h
+@@ -43,6 +43,6 @@
+ #define SOCKOP_getsockopt	15
+ #define SOCKOP_sendmsg		16
+ #define SOCKOP_recvmsg		17
+-#define SOCKOP_paccept		18
++#define SOCKOP_accept4		18
+ 
+ #endif /* sys/socketcall.h */

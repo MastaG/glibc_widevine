@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: 2.10.1
-Release: 1
+Release: 2
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -41,6 +41,12 @@ Source2: %(echo %{glibcsrcdir} | sed s/glibc-/glibc-libidn-/).tar.bz2
 Source3: %{glibcname}-fedora-%{glibcdate}.tar.bz2
 Patch0: %{glibcname}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
+Patch2: glibc-accept4.patch
+Patch3: glibc-bz10162.patch
+Patch4: glibc-nscd-avc_destroy.patch
+Patch5: glibc-nscd-cache-search.patch
+Patch6: glibc-ppc-math-errno.patch
+Patch7: glibc-sunrpc-license.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -232,6 +238,12 @@ package or when debugging this package.
 %patch1 -p1
 %endif
 %endif
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1013,6 +1025,15 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri May 22 2009 Jakub Jelinek <jakub@redhat.com> 2.10.1-2
+- fix accept4 on architectures other than i?86/x86_64
+- robustify nscd client code during server GC
+- fix up nscd segfaults during daemon shutdown
+- fix memchr on ia64 (BZ#10162)
+- replace the Sun RPC license with the BSD license, with the explicit
+  permission of Sun Microsystems
+- fix up powerpc long double errno reporting
+
 * Sun May 10 2009 Jakub Jelinek <jakub@redhat.com> 2.10.1-1
 - fix up getsgent_r and getsgnam_r exports on i?86 and ppc
 

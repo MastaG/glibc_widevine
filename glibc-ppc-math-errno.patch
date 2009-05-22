@@ -1,0 +1,101 @@
+2009-05-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* sysdeps/ieee754/ldbl-128ibm/s_sinl.c: Set errno for ±Inf.
+	* sysdeps/ieee754/ldbl-128ibm/s_cosl.c: Likewise.
+	* sysdeps/ieee754/ldbl-128ibm/s_tanl.c: Likewise.
+	* sysdeps/ieee754/ldbl-128ibm/s_expm1l.c: Set errno for overflow.
+
+--- libc/sysdeps/ieee754/ldbl-128ibm/s_cosl.c
++++ libc/sysdeps/ieee754/ldbl-128ibm/s_cosl.c
+@@ -44,6 +44,7 @@
+  *	TRIG(x) returns trig(x) nearly rounded
+  */
+ 
++#include <errno.h>
+ #include "math.h"
+ #include "math_private.h"
+ #include <math_ldbl_opt.h>
+@@ -67,9 +68,11 @@
+ 	  return __kernel_cosl(x,z);
+ 
+     /* cos(Inf or NaN) is NaN */
+-	else if (ix>=0x7ff0000000000000LL)
++	else if (ix>=0x7ff0000000000000LL) {
++	    if (ix == 0x7ff0000000000000LL)
++		__set_errno (EDOM);
+ 	    return x-x;
+-
++	}
+     /* argument reduction needed */
+ 	else {
+ 	    n = __ieee754_rem_pio2l(x,y);
+--- libc/sysdeps/ieee754/ldbl-128ibm/s_expm1l.c
++++ libc/sysdeps/ieee754/ldbl-128ibm/s_expm1l.c
+@@ -51,6 +51,7 @@
+     License along with this library; if not, write to the Free Software
+     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+ 
++#include <errno.h>
+ #include "math.h"
+ #include "math_private.h"
+ #include <math_ldbl_opt.h>
+@@ -120,7 +121,10 @@ __expm1l (long double x)
+ 
+   /* Overflow.  */
+   if (x > maxlog)
+-    return (big * big);
++    {
++      __set_errno (ERANGE);
++      return (big * big);
++    }
+ 
+   /* Minimum value.  */
+   if (x < minarg)
+--- libc/sysdeps/ieee754/ldbl-128ibm/s_sinl.c
++++ libc/sysdeps/ieee754/ldbl-128ibm/s_sinl.c
+@@ -44,6 +44,7 @@
+  *	TRIG(x) returns trig(x) nearly rounded
+  */
+ 
++#include <errno.h>
+ #include "math.h"
+ #include "math_private.h"
+ #include <math_ldbl_opt.h>
+@@ -67,8 +68,11 @@
+ 	  return __kernel_sinl(x,z,0);
+ 
+     /* sin(Inf or NaN) is NaN */
+-	else if (ix>=0x7ff0000000000000LL) return x-x;
+-
++	else if (ix>=0x7ff0000000000000LL) {
++	    if (ix == 0x7ff0000000000000LL)
++		__set_errno (EDOM);
++	    return x-x;
++	}
+     /* argument reduction needed */
+ 	else {
+ 	    n = __ieee754_rem_pio2l(x,y);
+--- libc/sysdeps/ieee754/ldbl-128ibm/s_tanl.c
++++ libc/sysdeps/ieee754/ldbl-128ibm/s_tanl.c
+@@ -44,6 +44,7 @@
+  *	TRIG(x) returns trig(x) nearly rounded
+  */
+ 
++#include <errno.h>
+ #include "math.h"
+ #include "math_private.h"
+ #include <math_ldbl_opt.h>
+@@ -66,8 +67,11 @@
+ 	if(ix <= 0x3fe921fb54442d10LL) return __kernel_tanl(x,z,1);
+ 
+     /* tanl(Inf or NaN) is NaN */
+-	else if (ix>=0x7ff0000000000000LL) return x-x;		/* NaN */
+-
++	else if (ix>=0x7ff0000000000000LL) {
++	    if (ix == 0x7ff0000000000000LL)
++		__set_errno (EDOM);
++	    return x-x;		/* NaN */
++	}
+     /* argument reduction needed */
+ 	else {
+ 	    n = __ieee754_rem_pio2l(x,y);
