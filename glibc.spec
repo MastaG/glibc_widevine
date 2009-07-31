@@ -1,7 +1,6 @@
-%define glibcdate 20090510T1842
-%define glibcname glibc
-%define glibcsrcdir glibc-20090510T1842
-%define glibc_release_tarballs 0
+%define glibcsrcdir glibc-2.10.1-65-gc97164f
+%define glibcversion 2.10.1
+### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches i686 athlon sparcv9v sparc64v alphaev6
 %define xenarches i686 athlon
@@ -20,10 +19,11 @@
 %define rtkaioarches %{ix86} x86_64 ia64 ppc ppc64 s390 s390x
 %define debuginfocommonarches %{ix86} alpha alphaev6 sparc sparcv9 sparcv9v sparc64 sparc64v
 %define _unpackaged_files_terminate_build 0
+
 Summary: The GNU libc libraries
 Name: glibc
-Version: 2.10.1
-Release: 2
+Version: %{glibcversion}
+Release: 3
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -32,21 +32,16 @@ Release: 2
 License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+
 Group: System Environment/Libraries
 URL: http://sources.redhat.com/glibc/
-Source0: %{glibcsrcdir}.tar.bz2
-%if %{glibc_release_tarballs}
-Source1: %(echo %{glibcsrcdir} | sed s/glibc-/glibc-linuxthreads-/).tar.bz2
-Source2: %(echo %{glibcsrcdir} | sed s/glibc-/glibc-libidn-/).tar.bz2
-%define glibc_release_unpack -a1 -a2
+Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.bz2
+%if 0%{?glibc_release_url:1}
+%define glibc_libidn_srcdir %(echo %{glibcsrcdir} | sed s/glibc-/glibc-libidn-/)
+Source1: %{glibc_release_url}%{glibc_libidn_srcdir}.tar.bz2
+%define glibc_release_unpack -a1
+%define glibc_release_setup mv %{glibc_libidn_srcdir} libidn
 %endif
-Source3: %{glibcname}-fedora-%{glibcdate}.tar.bz2
-Patch0: %{glibcname}-fedora.patch
+Source2: %{glibcsrcdir}-fedora.tar.bz2
+Patch0: %{name}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
-Patch2: glibc-accept4.patch
-Patch3: glibc-bz10162.patch
-Patch4: glibc-nscd-avc_destroy.patch
-Patch5: glibc-nscd-cache-search.patch
-Patch6: glibc-ppc-math-errno.patch
-Patch7: glibc-sunrpc-license.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -231,19 +226,14 @@ package or when debugging this package.
 %endif
 
 %prep
-%setup -q -n %{glibcsrcdir} %{glibc_release_unpack} -a3
+%setup -q -n %{glibcsrcdir} %{?glibc_release_unpack} -b2
+%{?glibc_release_setup}
 %patch0 -E -p1
 %ifarch ia64
 %if "%{_lib}" == "lib64"
 %patch1 -p1
 %endif
 %endif
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1025,6 +1015,26 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul 31 2009 Andreas Schwab <schwab@redhat.com> - 2.10.1-3
+- Update from release/2.10/master.
+  - handle missing NSS modules (#513698)
+  - Handle SERVFAIL, NOTIMP, REFUSED replies from DNS server better
+  - Fix handling of xmm6 in ld.so audit hooks on x86-64
+  - Fix possible race when freeing object in fast bin list
+  - Fix NIS and NIS+ getnetbyaddr backends
+  - Fix getent networks lookup and resulting incorrect NSS change
+  - Fix getnetbyaddr implementation
+  - Fix cfa offset for saved registers in PPC sqrt implementations
+  - Handle empty TZ strings at the end of new-style timzeone files correctly
+  - Add 802.15.4 definitions to header files
+  - Fix incorrect use of cmpldi in 32-bit PPC code
+  - Define week, first_weekday, first_workday in de_AT locale (BZ#10011)
+  - Fix permission of slave device on devpts if necessary
+  - When iterating over CPU bitmask, don't try more than CPU_SETSIZE
+  - Fix memory leak when batch-reading large NIS password maps
+  - Handle leap seconds even if no DST rule exists
+  - Fix errno for IBM long double
+
 * Fri May 22 2009 Jakub Jelinek <jakub@redhat.com> 2.10.1-2
 - fix accept4 on architectures other than i?86/x86_64
 - robustify nscd client code during server GC
