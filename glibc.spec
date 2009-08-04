@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.10.1-65-gc97164f
+%define glibcsrcdir glibc-2.10.1-68-gc87c885
 %define glibcversion 2.10.1
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3
+Release: 4
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -622,7 +622,7 @@ grep -v '%{_prefix}/%{_lib}/lib.*\.a' < rpm.filelist.full |
 
 grep '%{_prefix}/bin' < rpm.filelist >> common.filelist
 #grep '%{_prefix}/lib/locale' < rpm.filelist | grep -v /locale-archive.tmpl >> common.filelist
-grep '%{_prefix}/libexec/pt_chown' < rpm.filelist >> common.filelist
+#grep '%{_prefix}/libexec/pt_chown' < rpm.filelist >> common.filelist
 grep '%{_prefix}/sbin/[^gi]' < rpm.filelist >> common.filelist
 grep '%{_prefix}/share' < rpm.filelist | \
   grep -v '%{_prefix}/share/zoneinfo' >> common.filelist
@@ -970,6 +970,7 @@ rm -f *.filelist*
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
+%attr(4711,root,root) %{_prefix}/libexec/pt_chown
 %doc documentation/*
 
 %files -f devel.filelist devel
@@ -1015,6 +1016,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Aug  4 2009 Andreas Schwab <schwab@redhat.com> - 2.10.1-4
+- Reenable setuid on pt_chown.
+
 * Wed Jul 31 2009 Andreas Schwab <schwab@redhat.com> - 2.10.1-3
 - Update from release/2.10/master.
   - handle missing NSS modules (#513698)
