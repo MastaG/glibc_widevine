@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.10.1-68-gc87c885
+%define glibcsrcdir glibc-2.10.1-69-gaa152ec
 %define glibcversion 2.10.1
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4
+Release: 5
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1016,6 +1016,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 19 2009 Andreas Schwab <schwab@redhat.com> - 2.10.1-5
+- Update from release/2.10/master.
+  - handle missing nss module for biarch systems (#512309)
+
 * Tue Aug  4 2009 Andreas Schwab <schwab@redhat.com> - 2.10.1-4
 - Reenable setuid on pt_chown.
 
