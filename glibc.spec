@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.10-343-gf450806
+%define glibcsrcdir glibc-2.10-355-g1abedcd
 %define glibcversion 2.10.90
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -24,7 +24,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24
+Release: 25
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -68,6 +68,7 @@ BuildRequires: gcc >= 3.2
 %ifarch %{multiarcharches}
 # Need STT_IFUNC support
 BuildRequires: binutils >= 2.19.51.0.10
+Conflicts: binutils < 2.19.51.0.10
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
 %else
@@ -1029,6 +1030,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Oct 12 2009 Andreas Schwab <schwab@redhat.com> - 2.10.90-25
+- Update from master
+  - Fix descriptor leak when calling dlopen with RTLD_NOLOAD (#527409).
+  - Fix week-1stday in C locale.
+  - Check for integer overflows in formatting functions.
+  - Fix locale program error handling (#525363).
+
 * Mon Sep 28 2009 Andreas Schwab <schwab@redhat.com> - 2.10.90-24
 - Update from master.
   - Fix missing reloc dependency (#517001).

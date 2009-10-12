@@ -1,6 +1,24 @@
---- glibc-2.10-343-gf450806/ChangeLog
-+++ glibc-2.10.90-23/ChangeLog
-@@ -639,6 +639,11 @@
+--- glibc-2.10-355-g1abedcd/ChangeLog
++++ glibc-2.10.90-24/ChangeLog
+@@ -34,17 +34,6 @@
+ 	* locale/C-time.c: Revert week-1stday back to 19971130 and set
+ 	first_weekday to 1 and first_workday to 2.
+ 
+-2009-10-01  Ulrich Drepper  <drepper@redhat.com>
+-
+-	* sysdeps/unix/sysv/linux/sh/bits/fcntl.h: Define F_SETOWN_EX and
+-	F_GETOWN_EX.
+-	* sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/sparc/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/ia64/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/i386/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/s390/bits/fcntl.h: Likewise.
+-
+ 2009-09-28  Andreas Schwab  <schwab@redhat.com>
+ 
+ 	* stdio-common/printf_fp.c: Check for and avoid integer overflows.
+@@ -702,6 +691,11 @@
  	* sysdeps/generic/ldsodefs.h (struct rtld_global): The map element in
  	the unique symbol hash table should not be const.
  
@@ -12,7 +30,7 @@
  2009-07-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/x86_64/multiarch/strstr.c: Minor cleanups.  Remove
-@@ -904,6 +909,11 @@
+@@ -967,6 +961,11 @@
  	out common code into new function get_common_indeces. Determine
  	extended family and model for Intel processors.
  
@@ -24,21 +42,7 @@
  2009-06-26  Ulrich Drepper  <drepper@redhat.com>
  
  	* resolv/resolv.h: Define RES_SNGLKUPREOP.
-@@ -9302,6 +9312,13 @@
- 	* include/sys/cdefs.h: Redefine __nonnull so that test for
- 	incorrect parameters in the libc code itself are not omitted.
- 
-+2006-07-02  Jakub Jelinek  <jakub@redhat.com>
-+
-+	* nscd/connections.c (sighup_pending): New variable.
-+	(nscd_run): If sighup_pending, prune all 3 caches.
-+	(sighup_handler): Don't prune caches here, rather just set
-+	sighup_pending flag.
-+
- 2007-05-09  Jakub Jelinek  <jakub@redhat.com>
- 
- 	* sysdeps/ia64/fpu/fraiseexcpt.c (feraiseexcept): Don't raise overflow
-@@ -9597,6 +9614,10 @@
+@@ -9660,6 +9659,10 @@
  	[BZ #4368]
  	* stdlib/stdlib.h: Remove obsolete part of comment for realpath.
  
@@ -49,7 +53,7 @@
  2007-04-16  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #4364]
-@@ -10854,6 +10875,15 @@
+@@ -10917,6 +10920,15 @@
  	separators also if no non-zero digits found.
  	* stdlib/Makefile (tests): Add tst-strtod3.
  
@@ -65,8 +69,8 @@
  2006-12-09  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #3632]
---- glibc-2.10-343-gf450806/ChangeLog.15
-+++ glibc-2.10.90-23/ChangeLog.15
+--- glibc-2.10-355-g1abedcd/ChangeLog.15
++++ glibc-2.10.90-24/ChangeLog.15
 @@ -477,6 +477,14 @@
  
  2004-11-26  Jakub Jelinek  <jakub@redhat.com>
@@ -132,68 +136,19 @@
  2004-08-30  Roland McGrath  <roland@frob.com>
  
  	* scripts/extract-abilist.awk: If `lastversion' variable defined, omit
---- glibc-2.10-343-gf450806/ChangeLog.16
-+++ glibc-2.10.90-23/ChangeLog.16
-@@ -171,6 +171,11 @@
- 	[BZ #2611]
- 	* stdio-common/renameat.c (renameat): Fix typo.
- 
-+2006-04-27  Jakub Jelinek  <jakub@redhat.com>
-+
-+	* nscd/connections.c (sighup_handler): Only run prune_cache on
-+	enabled databases.
-+
- 2006-04-26  Roland McGrath  <roland@redhat.com>
- 
- 	* Makeconfig (%.v.i rule): Don't use -DASSEMBLER.
-@@ -1030,6 +1035,34 @@
- 	_SC_CPUTIME and _SC_THREAD_CPUTIME here.
- 	* sysdeps/unix/sysv/linux/x86_64/sysconf.c (__sysconf): Likewise.
- 
-+2006-03-04  Jakub Jelinek  <jakub@redhat.com>
-+	    Roland McGrath  <roland@redhat.com>
-+
-+	* sysdeps/unix/sysv/linux/i386/lowlevellock.h
-+	(LLL_STUB_UNWIND_INFO_START, LLL_STUB_UNWIND_INFO_END,
-+	LLL_STUB_UNWIND_INFO_3, LLL_STUB_UNWIND_INFO_4): Define.
-+	(lll_mutex_lock, lll_robust_mutex_lock, lll_mutex_cond_lock,
-+	lll_robust_mutex_cond_lock, lll_mutex_timedlock,
-+	lll_robust_mutex_timedlock, lll_mutex_unlock,
-+	lll_robust_mutex_unlock, lll_lock, lll_unlock): Use them.
-+	Add _L_*_ symbols around the subsection.
-+	* sysdeps/unix/sysv/linux/i386/i486/lowlevellock.S: Add unwind info.
-+	* sysdeps/unix/sysv/linux/i386/i486/lowlevelrobustlock.S: Likewise.
-+
-+2006-03-03  Jakub Jelinek  <jakub@redhat.com>
-+	    Roland McGrath  <roland@redhat.com>
-+
-+	* sysdeps/unix/sysv/linux/x86_64/lowlevellock.h
-+	(LLL_STUB_UNWIND_INFO_START, LLL_STUB_UNWIND_INFO_END,
-+	LLL_STUB_UNWIND_INFO_5, LLL_STUB_UNWIND_INFO_6): Define.
-+	(lll_mutex_lock, lll_robust_mutex_lock, lll_mutex_cond_lock,
-+	lll_robust_mutex_cond_lock, lll_mutex_timedlock,
-+	lll_robust_mutex_timedlock, lll_mutex_unlock,
-+	lll_robust_mutex_unlock, lll_lock, lll_unlock): Use them.
-+	Add _L_*_ symbols around the subsection.
-+	* sysdeps/unix/sysv/linux/x86_64/lowlevellock.S: Add unwind info.
-+	* sysdeps/unix/sysv/linux/x86_64/lowlevelrobustlock.S: Likewise.
-+
- 2006-03-05  Roland McGrath  <roland@redhat.com>
- 
- 	* malloc/malloc.c (MALLOC_ALIGNMENT): Revert to (2 * SIZE_SZ) value.
-@@ -2042,6 +2075,11 @@
+--- glibc-2.10-355-g1abedcd/ChangeLog.16
++++ glibc-2.10.90-24/ChangeLog.16
+@@ -2042,6 +2042,9 @@
  	(__MATHDECL_2): Use __REDIRECT_NTH instead of __REDIRECT
  	followed by __THROW.
  
 +	* sysdeps/unix/sysv/linux/futimesat.c (futimesat): If
 +	file == NULL, use __futimes unconditionally.
 +
-+	* manual/filesys.texi (futimes): Fix prototype.
-+
  2006-02-02  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/unix/sysv/linux/futimesat.c [__NR_futimesat]
-@@ -2101,6 +2139,11 @@
+@@ -2101,6 +2104,11 @@
  	* sysdeps/ieee754/ldbl-128/s_llrintl.c (__llrintl): Fix a typo.
  	* sysdeps/s390/fpu/libm-test-ulps: Remove llrint ulps.
  
@@ -205,57 +160,7 @@
  2006-01-19  Thomas Schwinge  <tschwinge@gnu.org>
  
  	* libio/genops.c: Include <stdbool.h>.
-@@ -4527,6 +4570,10 @@
- 
- 	* elf/order2mod2.c (init): Cast ignored value to void.
- 
-+2005-12-27  Jakub Jelinek  <jakub@redhat.com>
-+
-+	* elf/ldconfig.c (search_dir): Skip prelink temporaries.
-+
- 2005-12-27  Ulrich Drepper  <drepper@redhat.com>
- 
- 	* elf/tst-tls13.c (do_test): Avoid using the library path when
-@@ -4810,6 +4857,26 @@
- 	* sysdeps/unix/sysv/linux/time.c: If __NR_time is not defined,
- 	use sysdeps/unix/time.c implementation.
- 
-+2005-12-20  Jakub Jelinek  <jakub@redhat.com>
-+
-+	* malloc/mtrace.c (__libc_malloc, __libc_free, __libc_realloc,
-+	__libc_memalign): Add prototypes and libc_hidden_proto resp.
-+	defines for !_LIBC.
-+	(tr_freehook): Call __libc_free instead of free.
-+	(tr_mallochook): Call __libc_malloc instead of malloc.
-+	(tr_reallochook): Call __libc_realloc instead of realloc.
-+	(tr_memalignhook): Call __libc_memalign instead of memalign.
-+	* malloc/mcheck.c: Include stdlib.h.
-+	(__libc_malloc, __libc_free, __libc_realloc,
-+	__libc_memalign): Add prototypes and libc_hidden_proto resp.
-+	defines for !_LIBC.
-+	(freehook): Call __libc_free instead of free.
-+	(mallochook): Call __libc_malloc instead of malloc.
-+	(reallochook): Call __libc_realloc instead of realloc.
-+	(memalignhook): Call __libc_memalign instead of memalign.
-+	(mcheck): Call __libc_malloc and __libc_free instead of
-+	malloc and free.
-+
- 2005-12-19  Ulrich Drepper  <drepper@redhat.com>
- 
- 	[BZ #1955]
-@@ -7928,6 +7995,11 @@
- 	R_ARM_TLS_TPOFF32, R_ARM_TLS_GD32, R_ARM_TLS_LDM32,
- 	R_ARM_TLS_LDO32, R_ARM_TLS_IE32, R_ARM_TLS_LE32): New macros.
- 
-+2005-10-03  Jakub Jelinek  <jakub@redhat.com>
-+
-+	* nscd/selinux.c (audit_init): Print error string in the failure
-+	message.
-+
- 2005-10-03  Roland McGrath  <roland@redhat.com>
- 
- 	* sysdeps/powerpc/nofpu: Directory removed, saved in ports repository.
-@@ -8922,6 +8994,12 @@
+@@ -8922,6 +8930,12 @@
  	* argp/argp-help.c (__argp_error): __asprintf -> vasprintf.
  	(__argp_failure): Likewise.
  
@@ -268,7 +173,7 @@
  2005-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* nscd/cache.c (cache_add): Commit hash table and header to disk.
-@@ -9046,6 +9124,17 @@
+@@ -9046,6 +9060,17 @@
  	__syslog_chk.
  	* misc/Versions: Export __syslog_chk and __vsyslog_chk.
  
@@ -286,27 +191,8 @@
  2005-07-28  Thomas Schwinge  <schwinge@nic-nac-project.de>
  
  	[BZ #1137]
-@@ -12106,6 +12195,18 @@
- 
- 	* scripts/soversions.awk: Fix default version set handling.
- 
-+2005-02-09  Jakub Jelinek  <jakub@redhat.com>
-+
-+	* sysdeps/unix/sysv/linux/bits/termios.h (CMSPAR): Define.
-+	* sysdeps/unix/sysv/linux/alpha/bits/termios.h: Add __USE_MISC
-+	and __USE_XOPEN guards to match linux/bits/termios.h.
-+	(CMSPAR): Define.
-+	* sysdeps/unix/sysv/linux/powerpc/bits/termios.h: Add __USE_MISC
-+	and __USE_XOPEN guards to match linux/bits/termios.h.
-+	(CMSPAR): Define.
-+	* sysdeps/unix/sysv/linux/sparc/bits/termios.h: Add __USE_MISC
-+	and __USE_XOPEN guards to match linux/bits/termios.h.
-+
- 2005-02-10  Roland McGrath  <roland@redhat.com>
- 
- 	[BZ #157]
---- glibc-2.10-343-gf450806/Makeconfig
-+++ glibc-2.10.90-23/Makeconfig
+--- glibc-2.10-355-g1abedcd/Makeconfig
++++ glibc-2.10.90-24/Makeconfig
 @@ -780,12 +780,12 @@ endif
  # The assembler can generate debug information too.
  ifndef ASFLAGS
@@ -323,8 +209,8 @@
  
  ifndef BUILD_CC
  BUILD_CC = $(CC)
---- glibc-2.10-343-gf450806/csu/Makefile
-+++ glibc-2.10.90-23/csu/Makefile
+--- glibc-2.10-355-g1abedcd/csu/Makefile
++++ glibc-2.10.90-24/csu/Makefile
 @@ -93,7 +93,8 @@ omit-deps += $(crtstuff)
  $(crtstuff:%=$(objpfx)%.o): %.o: %.S $(objpfx)defs.h
  	$(compile.S) -g0 $(ASFLAGS-.os) -o $@
@@ -335,8 +221,8 @@
  
  vpath initfini.c $(sysdirs)
  
---- glibc-2.10-343-gf450806/csu/elf-init.c
-+++ glibc-2.10.90-23/csu/elf-init.c
+--- glibc-2.10-355-g1abedcd/csu/elf-init.c
++++ glibc-2.10.90-24/csu/elf-init.c
 @@ -63,6 +63,23 @@ extern void (*__init_array_end []) (int, char **, char **)
  extern void (*__fini_array_start []) (void) attribute_hidden;
  extern void (*__fini_array_end []) (void) attribute_hidden;
@@ -361,8 +247,8 @@
  
  /* These function symbols are provided for the .init/.fini section entry
     points automagically by the linker.  */
---- glibc-2.10-343-gf450806/debug/tst-chk1.c
-+++ glibc-2.10.90-23/debug/tst-chk1.c
+--- glibc-2.10-355-g1abedcd/debug/tst-chk1.c
++++ glibc-2.10.90-24/debug/tst-chk1.c
 @@ -17,6 +17,9 @@
     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA.  */
@@ -391,8 +277,8 @@
  #  define O 0
  # else
  #  define O 1
---- glibc-2.10-343-gf450806/elf/ldconfig.c
-+++ glibc-2.10.90-23/elf/ldconfig.c
+--- glibc-2.10-355-g1abedcd/elf/ldconfig.c
++++ glibc-2.10.90-24/elf/ldconfig.c
 @@ -1020,17 +1020,19 @@ search_dirs (void)
  
  
@@ -474,8 +360,8 @@
      }
  
    if (! opt_ignore_aux_cache)
---- glibc-2.10-343-gf450806/elf/tst-stackguard1.c
-+++ glibc-2.10.90-23/elf/tst-stackguard1.c
+--- glibc-2.10-355-g1abedcd/elf/tst-stackguard1.c
++++ glibc-2.10.90-24/elf/tst-stackguard1.c
 @@ -160,17 +160,21 @@ do_test (void)
       the 16 runs, something is very wrong.  */
    int ndifferences = 0;
@@ -500,16 +386,16 @@
      {
        puts ("stack guard canaries are not randomized enough");
        puts ("nor equal to the default canary value");
---- glibc-2.10-343-gf450806/include/bits/stdlib-ldbl.h
-+++ glibc-2.10.90-23/include/bits/stdlib-ldbl.h
+--- glibc-2.10-355-g1abedcd/include/bits/stdlib-ldbl.h
++++ glibc-2.10.90-24/include/bits/stdlib-ldbl.h
 @@ -0,0 +1 @@
 +#include <stdlib/bits/stdlib-ldbl.h>
---- glibc-2.10-343-gf450806/include/bits/wchar-ldbl.h
-+++ glibc-2.10.90-23/include/bits/wchar-ldbl.h
+--- glibc-2.10-355-g1abedcd/include/bits/wchar-ldbl.h
++++ glibc-2.10.90-24/include/bits/wchar-ldbl.h
 @@ -0,0 +1 @@
 +#include <wcsmbs/bits/wchar-ldbl.h>
---- glibc-2.10-343-gf450806/include/features.h
-+++ glibc-2.10.90-23/include/features.h
+--- glibc-2.10-355-g1abedcd/include/features.h
++++ glibc-2.10.90-24/include/features.h
 @@ -299,8 +299,13 @@
  #endif
  
@@ -526,8 +412,8 @@
  #  define __USE_FORTIFY_LEVEL 2
  # else
  #  define __USE_FORTIFY_LEVEL 1
---- glibc-2.10-343-gf450806/intl/locale.alias
-+++ glibc-2.10.90-23/intl/locale.alias
+--- glibc-2.10-355-g1abedcd/intl/locale.alias
++++ glibc-2.10.90-24/intl/locale.alias
 @@ -57,8 +57,6 @@ korean		ko_KR.eucKR
  korean.euc 	ko_KR.eucKR
  ko_KR		ko_KR.eucKR
@@ -537,8 +423,8 @@
  norwegian       nb_NO.ISO-8859-1
  nynorsk		nn_NO.ISO-8859-1
  polish          pl_PL.ISO-8859-2
---- glibc-2.10-343-gf450806/libio/stdio.h
-+++ glibc-2.10.90-23/libio/stdio.h
+--- glibc-2.10-355-g1abedcd/libio/stdio.h
++++ glibc-2.10.90-24/libio/stdio.h
 @@ -145,10 +145,12 @@ typedef _G_fpos64_t fpos64_t;
  extern struct _IO_FILE *stdin;		/* Standard input stream.  */
  extern struct _IO_FILE *stdout;		/* Standard output stream.  */
@@ -552,8 +438,8 @@
  
  __BEGIN_NAMESPACE_STD
  /* Remove file FILENAME.  */
---- glibc-2.10-343-gf450806/locale/iso-4217.def
-+++ glibc-2.10.90-23/locale/iso-4217.def
+--- glibc-2.10-355-g1abedcd/locale/iso-4217.def
++++ glibc-2.10.90-24/locale/iso-4217.def
 @@ -8,6 +8,7 @@
   *
   * !!! The list has to be sorted !!!
@@ -645,8 +531,8 @@
  DEFINE_INT_CURR("PYG")		/* Paraguay Guarani  */
  DEFINE_INT_CURR("QAR")		/* Qatar Rial  */
  DEFINE_INT_CURR("ROL")		/* Romanian Leu  */
---- glibc-2.10-343-gf450806/locale/programs/locarchive.c
-+++ glibc-2.10.90-23/locale/programs/locarchive.c
+--- glibc-2.10-355-g1abedcd/locale/programs/locarchive.c
++++ glibc-2.10.90-24/locale/programs/locarchive.c
 @@ -241,9 +241,9 @@ oldlocrecentcmp (const void *a, const void *b)
  /* forward decls for below */
  static uint32_t add_locale (struct locarhandle *ah, const char *name,
@@ -678,8 +564,8 @@
  add_alias (struct locarhandle *ah, const char *alias, bool replace,
  	   const char *oldname, uint32_t *locrec_offset_p)
  {
---- glibc-2.10-343-gf450806/localedata/Makefile
-+++ glibc-2.10.90-23/localedata/Makefile
+--- glibc-2.10-355-g1abedcd/localedata/Makefile
++++ glibc-2.10.90-24/localedata/Makefile
 @@ -225,6 +225,7 @@ $(INSTALL-SUPPORTED-LOCALES): install-locales-dir
  	echo -n '...'; \
  	input=`echo $$locale | sed 's/\([^.]*\)[^@]*\(.*\)/\1\2/'`; \
@@ -688,8 +574,8 @@
  		     -i locales/$$input -c -f charmaps/$$charset \
  		     $(addprefix --prefix=,$(install_root)) $$locale; \
  	echo ' done'; \
---- glibc-2.10-343-gf450806/localedata/SUPPORTED
-+++ glibc-2.10.90-23/localedata/SUPPORTED
+--- glibc-2.10-355-g1abedcd/localedata/SUPPORTED
++++ glibc-2.10.90-24/localedata/SUPPORTED
 @@ -84,6 +84,7 @@ cy_GB.UTF-8/UTF-8 \
  cy_GB/ISO-8859-14 \
  da_DK.UTF-8/UTF-8 \
@@ -731,8 +617,8 @@
  ta_IN/UTF-8 \
  te_IN/UTF-8 \
  tg_TJ.UTF-8/UTF-8 \
---- glibc-2.10-343-gf450806/localedata/locales/cy_GB
-+++ glibc-2.10.90-23/localedata/locales/cy_GB
+--- glibc-2.10-355-g1abedcd/localedata/locales/cy_GB
++++ glibc-2.10.90-24/localedata/locales/cy_GB
 @@ -248,8 +248,11 @@ mon         "<U0049><U006F><U006E><U0061><U0077><U0072>";/
  d_t_fmt     "<U0044><U0079><U0064><U0064><U0020><U0025><U0041><U0020><U0025><U0064><U0020><U006d><U0069><U0073><U0020><U0025><U0042><U0020><U0025><U0059><U0020><U0025><U0054><U0020><U0025><U005A>"
  d_fmt       "<U0025><U0064><U002E><U0025><U006D><U002E><U0025><U0079>"
@@ -747,8 +633,8 @@
  END LC_TIME
  
  LC_MESSAGES
---- glibc-2.10-343-gf450806/localedata/locales/en_GB
-+++ glibc-2.10.90-23/localedata/locales/en_GB
+--- glibc-2.10-355-g1abedcd/localedata/locales/en_GB
++++ glibc-2.10.90-24/localedata/locales/en_GB
 @@ -116,8 +116,8 @@ mon         "<U004A><U0061><U006E><U0075><U0061><U0072><U0079>";/
  d_t_fmt     "<U0025><U0061><U0020><U0025><U0064><U0020><U0025><U0062><U0020><U0025><U0059><U0020><U0025><U0054><U0020><U0025><U005A>"
  d_fmt       "<U0025><U0064><U002F><U0025><U006D><U002F><U0025><U0079>"
@@ -760,8 +646,8 @@
  date_fmt	"<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065>/
  <U0020><U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053><U0020>/
  <U0025><U005A><U0020><U0025><U0059>"
---- glibc-2.10-343-gf450806/localedata/locales/no_NO
-+++ glibc-2.10.90-23/localedata/locales/no_NO
+--- glibc-2.10-355-g1abedcd/localedata/locales/no_NO
++++ glibc-2.10.90-24/localedata/locales/no_NO
 @@ -0,0 +1,69 @@
 +escape_char	/
 +comment_char    %
@@ -832,8 +718,8 @@
 +LC_ADDRESS
 +copy "nb_NO"
 +END LC_ADDRESS
---- glibc-2.10-343-gf450806/localedata/locales/zh_TW
-+++ glibc-2.10.90-23/localedata/locales/zh_TW
+--- glibc-2.10-355-g1abedcd/localedata/locales/zh_TW
++++ glibc-2.10.90-24/localedata/locales/zh_TW
 @@ -1,7 +1,7 @@
  comment_char %
  escape_char /
@@ -861,8 +747,8 @@
  revision   "0.2"
  date       "2000-08-02"
  %
---- glibc-2.10-343-gf450806/malloc/mcheck.c
-+++ glibc-2.10.90-23/malloc/mcheck.c
+--- glibc-2.10-355-g1abedcd/malloc/mcheck.c
++++ glibc-2.10.90-24/malloc/mcheck.c
 @@ -24,9 +24,25 @@
  # include <mcheck.h>
  # include <stdint.h>
@@ -938,8 +824,8 @@
  
        old_free_hook = __free_hook;
        __free_hook = freehook;
---- glibc-2.10-343-gf450806/manual/libc.texinfo
-+++ glibc-2.10.90-23/manual/libc.texinfo
+--- glibc-2.10-355-g1abedcd/manual/libc.texinfo
++++ glibc-2.10.90-24/manual/libc.texinfo
 @@ -5,7 +5,7 @@
  @c setchapternewpage odd
  
@@ -949,8 +835,8 @@
  @direntry
  * Libc: (libc).                 C library.
  @end direntry
---- glibc-2.10-343-gf450806/misc/sys/cdefs.h
-+++ glibc-2.10.90-23/misc/sys/cdefs.h
+--- glibc-2.10-355-g1abedcd/misc/sys/cdefs.h
++++ glibc-2.10.90-24/misc/sys/cdefs.h
 @@ -132,7 +132,10 @@
  #define __bos(ptr) __builtin_object_size (ptr, __USE_FORTIFY_LEVEL > 1)
  #define __bos0(ptr) __builtin_object_size (ptr, 0)
@@ -994,16 +880,16 @@
  # define __va_arg_pack() __builtin_va_arg_pack ()
  # define __va_arg_pack_len() __builtin_va_arg_pack_len ()
  #endif
---- glibc-2.10-343-gf450806/nis/nss
-+++ glibc-2.10.90-23/nis/nss
+--- glibc-2.10-355-g1abedcd/nis/nss
++++ glibc-2.10.90-24/nis/nss
 @@ -25,4 +25,4 @@
  #  memory with every getXXent() call.  Otherwise each getXXent() call
  #  might result into a network communication with the server to get
  #  the next entry.
 -#SETENT_BATCH_READ=TRUE
 +SETENT_BATCH_READ=TRUE
---- glibc-2.10-343-gf450806/nptl/ChangeLog
-+++ glibc-2.10.90-23/nptl/ChangeLog
+--- glibc-2.10-355-g1abedcd/nptl/ChangeLog
++++ glibc-2.10.90-24/nptl/ChangeLog
 @@ -3717,6 +3717,15 @@
  	Use __sigfillset.  Document that sigfillset does the right thing wrt
  	to SIGSETXID.
@@ -1044,8 +930,8 @@
  2003-07-25  Jakub Jelinek  <jakub@redhat.com>
  
  	* tst-cancel17.c (do_test): Check if aio_cancel failed.
---- glibc-2.10-343-gf450806/nptl/Makefile
-+++ glibc-2.10.90-23/nptl/Makefile
+--- glibc-2.10-355-g1abedcd/nptl/Makefile
++++ glibc-2.10.90-24/nptl/Makefile
 @@ -339,7 +339,8 @@ endif
  extra-objs += $(crti-objs) $(crtn-objs)
  omit-deps += crti crtn
@@ -1078,8 +964,8 @@
  else
  $(addprefix $(objpfx),$(tests) $(test-srcs)): $(objpfx)libpthread.a
  endif
---- glibc-2.10-343-gf450806/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
-+++ glibc-2.10.90-23/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
+--- glibc-2.10-355-g1abedcd/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
++++ glibc-2.10.90-24/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
 @@ -189,4 +189,7 @@
  /* Typed memory objects are not available.  */
  #define _POSIX_TYPED_MEMORY_OBJECTS	-1
@@ -1088,8 +974,8 @@
 +#define _XOPEN_STREAMS	-1
 +
  #endif /* bits/posix_opt.h */
---- glibc-2.10-343-gf450806/nptl/sysdeps/unix/sysv/linux/kernel-features.h
-+++ glibc-2.10.90-23/nptl/sysdeps/unix/sysv/linux/kernel-features.h
+--- glibc-2.10-355-g1abedcd/nptl/sysdeps/unix/sysv/linux/kernel-features.h
++++ glibc-2.10.90-24/nptl/sysdeps/unix/sysv/linux/kernel-features.h
 @@ -0,0 +1,6 @@
 +#include_next <kernel-features.h>
 +
@@ -1097,8 +983,8 @@
 +#ifndef __ASSUME_CLONE_THREAD_FLAGS
 +# define __ASSUME_CLONE_THREAD_FLAGS	1
 +#endif
---- glibc-2.10-343-gf450806/nptl/tst-stackguard1.c
-+++ glibc-2.10.90-23/nptl/tst-stackguard1.c
+--- glibc-2.10-355-g1abedcd/nptl/tst-stackguard1.c
++++ glibc-2.10.90-24/nptl/tst-stackguard1.c
 @@ -190,17 +190,21 @@ do_test (void)
       the 16 runs, something is very wrong.  */
    int ndifferences = 0;
@@ -1123,8 +1009,8 @@
      {
        puts ("stack guard canaries are not randomized enough");
        puts ("nor equal to the default canary value");
---- glibc-2.10-343-gf450806/nscd/nscd.conf
-+++ glibc-2.10.90-23/nscd/nscd.conf
+--- glibc-2.10-355-g1abedcd/nscd/nscd.conf
++++ glibc-2.10.90-24/nscd/nscd.conf
 @@ -33,7 +33,7 @@
  #	logfile			/var/log/nscd.log
  #	threads			4
@@ -1134,8 +1020,8 @@
  #	stat-user		somebody
  	debug-level		0
  #	reload-count		5
---- glibc-2.10-343-gf450806/nscd/nscd.init
-+++ glibc-2.10.90-23/nscd/nscd.init
+--- glibc-2.10-355-g1abedcd/nscd/nscd.init
++++ glibc-2.10.90-24/nscd/nscd.init
 @@ -9,6 +9,7 @@
  #		slow naming services like NIS, NIS+, LDAP, or hesiod.
  # processname: /usr/sbin/nscd
@@ -1207,8 +1093,8 @@
  	;;
      *)
  	echo $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
---- glibc-2.10-343-gf450806/posix/Makefile
-+++ glibc-2.10.90-23/posix/Makefile
+--- glibc-2.10-355-g1abedcd/posix/Makefile
++++ glibc-2.10.90-24/posix/Makefile
 @@ -302,15 +302,8 @@ $(inst_libexecdir)/getconf: $(inst_bindir)/getconf \
  	  mv -f $@/$$spec.new $@/$$spec; \
  	done < $(objpfx)getconf.speclist
@@ -1229,8 +1115,8 @@
 +	  | sed -n -e '/START_OF_STRINGS/,$${/\(POSIX_V[67]\|_XBS5\)_/{s/^[^"]*"//;s/".*$$//;p}}' \
 +	  > $@.new
  	mv -f $@.new $@
---- glibc-2.10-343-gf450806/posix/getconf.speclist.h
-+++ glibc-2.10.90-23/posix/getconf.speclist.h
+--- glibc-2.10-355-g1abedcd/posix/getconf.speclist.h
++++ glibc-2.10.90-24/posix/getconf.speclist.h
 @@ -0,0 +1,39 @@
 +#include <unistd.h>
 +const char *START_OF_STRINGS =
@@ -1271,8 +1157,8 @@
 +"XBS5_LPBIG_OFFBIG"
 +#endif
 +"";
---- glibc-2.10-343-gf450806/streams/Makefile
-+++ glibc-2.10.90-23/streams/Makefile
+--- glibc-2.10-355-g1abedcd/streams/Makefile
++++ glibc-2.10.90-24/streams/Makefile
 @@ -21,7 +21,7 @@
  #
  subdir	:= streams
@@ -1282,8 +1168,8 @@
  routines	= isastream getmsg getpmsg putmsg putpmsg fattach fdetach
  
  include ../Rules
---- glibc-2.10-343-gf450806/sysdeps/generic/dl-cache.h
-+++ glibc-2.10.90-23/sysdeps/generic/dl-cache.h
+--- glibc-2.10-355-g1abedcd/sysdeps/generic/dl-cache.h
++++ glibc-2.10.90-24/sysdeps/generic/dl-cache.h
 @@ -36,6 +36,14 @@
  # define add_system_dir(dir) add_dir (dir)
  #endif
@@ -1299,8 +1185,8 @@
  #define CACHEMAGIC "ld.so-1.7.0"
  
  /* libc5 and glibc 2.0/2.1 use the same format.  For glibc 2.2 another
---- glibc-2.10-343-gf450806/sysdeps/i386/Makefile
-+++ glibc-2.10.90-23/sysdeps/i386/Makefile
+--- glibc-2.10-355-g1abedcd/sysdeps/i386/Makefile
++++ glibc-2.10.90-24/sysdeps/i386/Makefile
 @@ -2,6 +2,8 @@
  # Every i386 port in use uses gas syntax (I think).
  asm-CPPFLAGS += -DGAS_SYNTAX
@@ -1325,8 +1211,8 @@
  endif
  
  ifeq ($(subdir),elf)
---- glibc-2.10-343-gf450806/sysdeps/ia64/Makefile
-+++ glibc-2.10.90-23/sysdeps/ia64/Makefile
+--- glibc-2.10-355-g1abedcd/sysdeps/ia64/Makefile
++++ glibc-2.10.90-24/sysdeps/ia64/Makefile
 @@ -12,8 +12,8 @@ elide-routines.os += hp-timing
  
  ifeq (yes,$(build-shared))
@@ -1338,8 +1224,8 @@
  endif
  endif
  
---- glibc-2.10-343-gf450806/sysdeps/ia64/ia64libgcc.S
-+++ glibc-2.10.90-23/sysdeps/ia64/ia64libgcc.S
+--- glibc-2.10-355-g1abedcd/sysdeps/ia64/ia64libgcc.S
++++ glibc-2.10.90-24/sysdeps/ia64/ia64libgcc.S
 @@ -1,350 +0,0 @@
 -/* From the Intel IA-64 Optimization Guide, choose the minimum latency
 -   alternative.  */
@@ -1691,8 +1577,8 @@
 -	.symver	___multi3, __multi3@GLIBC_2.2
 -
 -#endif
---- glibc-2.10-343-gf450806/sysdeps/ia64/libgcc-compat.c
-+++ glibc-2.10.90-23/sysdeps/ia64/libgcc-compat.c
+--- glibc-2.10-355-g1abedcd/sysdeps/ia64/libgcc-compat.c
++++ glibc-2.10.90-24/sysdeps/ia64/libgcc-compat.c
 @@ -0,0 +1,84 @@
 +/* pre-.hidden libgcc compatibility
 +   Copyright (C) 2002 Free Software Foundation, Inc.
@@ -1778,8 +1664,8 @@
 +symbol_version (INTUSE (__multi3), __multi3, GLIBC_2.2);
 +
 +#endif
---- glibc-2.10-343-gf450806/sysdeps/powerpc/powerpc64/Makefile
-+++ glibc-2.10.90-23/sysdeps/powerpc/powerpc64/Makefile
+--- glibc-2.10-355-g1abedcd/sysdeps/powerpc/powerpc64/Makefile
++++ glibc-2.10.90-24/sysdeps/powerpc/powerpc64/Makefile
 @@ -30,6 +30,7 @@ ifneq ($(elf),no)
  # we use -fpic instead which is much better.
  CFLAGS-initfini.s += -fpic -O1
@@ -1788,8 +1674,8 @@
  endif
  
  ifeq ($(subdir),elf)
---- glibc-2.10-343-gf450806/sysdeps/unix/nice.c
-+++ glibc-2.10.90-23/sysdeps/unix/nice.c
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/nice.c
++++ glibc-2.10.90-24/sysdeps/unix/nice.c
 @@ -42,7 +42,12 @@ nice (int incr)
  	__set_errno (save);
      }
@@ -1804,8 +1690,8 @@
    if (result == -1)
      {
        if (errno == EACCES)
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/check_pf.c
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/check_pf.c
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/check_pf.c
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/check_pf.c
 @@ -27,13 +27,10 @@
  #include <unistd.h>
  #include <sys/socket.h>
@@ -1821,8 +1707,8 @@
  
  #ifndef IFA_F_HOMEADDRESS
  # define IFA_F_HOMEADDRESS 0
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/dl-osinfo.h
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/dl-osinfo.h
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/dl-osinfo.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/dl-osinfo.h
 @@ -17,10 +17,13 @@
     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA.  */
@@ -1870,8 +1756,8 @@
      }
    else
  #endif
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/futimesat.c
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/futimesat.c
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/futimesat.c
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/futimesat.c
 @@ -37,14 +37,14 @@ futimesat (fd, file, tvp)
  {
    int result;
@@ -1914,8 +1800,28 @@
      {
        size_t filelen = strlen (file);
        static const char procfd[] = "/proc/self/fd/%d/%s";
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/i386/clone.S
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/i386/clone.S
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/i386/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/i386/bits/fcntl.h
+@@ -85,15 +85,13 @@
+ #define F_SETLKW64	14	/* Set record locking info (blocking).	*/
+ 
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_SETOWN	8	/* Get owner (process receiving SIGIO).  */
+-# define F_GETOWN	9	/* Set owner (process receiving SIGIO).  */
++# define F_SETOWN	8	/* Get owner of socket (receiver of SIGIO).  */
++# define F_GETOWN	9	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_SETOWN_EX	12	/* Get owner (thread receiving SIGIO).  */
+-# define F_GETOWN_EX	13	/* Set owner (thread receiving SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/i386/clone.S
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/i386/clone.S
 @@ -120,9 +120,6 @@ L(pseudo_end):
  	ret
  
@@ -1934,8 +1840,8 @@
  
  	cfi_startproc
  PSEUDO_END (BP_SYM (__clone))
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/i386/dl-cache.h
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/i386/dl-cache.h
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/i386/dl-cache.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/i386/dl-cache.h
 @@ -0,0 +1,59 @@
 +/* Support for reading /etc/ld.so.cache files written by Linux ldconfig.
 +   Copyright (C) 2004 Free Software Foundation, Inc.
@@ -1996,8 +1902,28 @@
 +  } while (0)
 +
 +#include_next <dl-cache.h>
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/ia64/dl-cache.h
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/ia64/dl-cache.h
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/ia64/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/ia64/bits/fcntl.h
+@@ -81,15 +81,13 @@
+ #define F_SETLKW64	7	/* Set record locking info (blocking).	*/
+ 
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_SETOWN	8	/* Get owner (process receiving SIGIO).  */
+-# define F_GETOWN	9	/* Set owner (process receiving SIGIO).  */
++# define F_SETOWN	8	/* Get owner of socket (receiver of SIGIO).  */
++# define F_GETOWN	9	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_SETOWN_EX	12	/* Get owner (thread receiving SIGIO).  */
+-# define F_GETOWN_EX	13	/* Set owner (thread receiving SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/ia64/dl-cache.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/ia64/dl-cache.h
 @@ -22,4 +22,31 @@
  #define _dl_cache_check_flags(flags) \
    ((flags) == _DL_CACHE_DEFAULT_ID)
@@ -2030,29 +1956,29 @@
 +  } while (0)
 +
  #include_next <dl-cache.h>
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
 @@ -0,0 +1,5 @@
 +#ifdef IS_IN_ldconfig
 +#include <sysdeps/i386/dl-procinfo.c>
 +#else
 +#include <sysdeps/generic/dl-procinfo.c>
 +#endif
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
 @@ -0,0 +1,5 @@
 +#ifdef IS_IN_ldconfig
 +#include <sysdeps/unix/sysv/linux/i386/dl-procinfo.h>
 +#else
 +#include <sysdeps/generic/dl-procinfo.h>
 +#endif
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
 @@ -1 +1 @@
 -s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 \2\3"_
 +s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 /emul/ia32-linux\2\3"_
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/netlinkaccess.h
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/netlinkaccess.h
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/netlinkaccess.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/netlinkaccess.h
 @@ -25,6 +25,24 @@
  
  #include <kernel-features.h>
@@ -2078,8 +2004,8 @@
  
  struct netlink_res
  {
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/paths.h
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/paths.h
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/paths.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/paths.h
 @@ -62,7 +62,7 @@
  #define	_PATH_TTY	"/dev/tty"
  #define	_PATH_UNIX	"/boot/vmlinux"
@@ -2089,8 +2015,90 @@
  #define _PATH_WTMP	"/var/log/wtmp"
  
  /* Provide trailing slash, since mostly used for building pathnames. */
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/tcsetattr.c
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/tcsetattr.c
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
+@@ -85,15 +85,13 @@
+ #define F_SETLKW64	14	/* Set record locking info (blocking).	*/
+ 
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_SETOWN	8	/* Get owner (process receiving of SIGIO).  */
+-# define F_GETOWN	9	/* Set owner (process receiving of SIGIO).  */
++# define F_SETOWN	8	/* Get owner of socket (receiver of SIGIO).  */
++# define F_GETOWN	9	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_SETOWN_EX	12	/* Get owner (thread receiving SIGIO).  */
+-# define F_GETOWN_EX	13	/* Set owner (thread receiving SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/s390/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/s390/bits/fcntl.h
+@@ -100,15 +100,13 @@
+ #endif
+ 
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_SETOWN	8	/* Get owner (process receiving SIGIO).  */
+-# define F_GETOWN	9	/* Set owner (process receiving SIGIO).  */
++# define F_SETOWN	8	/* Get owner of socket (receiver of SIGIO).  */
++# define F_GETOWN	9	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_SETOWN_EX	12	/* Get owner (thread receiving SIGIO).  */
+-# define F_GETOWN_EX	13	/* Set owner (thread receiving SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/sh/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/sh/bits/fcntl.h
+@@ -85,15 +85,13 @@
+ #define F_SETLKW64	14	/* Set record locking info (blocking).	*/
+ 
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_SETOWN	8	/* Get owner (process receiving of SIGIO).  */
+-# define F_GETOWN	9	/* Set owner (process receiving of SIGIO).  */
++# define F_SETOWN	8	/* Get owner of socket (receiver of SIGIO).  */
++# define F_GETOWN	9	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_SETOWN_EX	12	/* Get owner (thread receiving of SIGIO).  */
+-# define F_GETOWN_EX	13	/* Set owner (thread receiving of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/sparc/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/sparc/bits/fcntl.h
+@@ -83,8 +83,8 @@
+ #define F_GETFL		3	/* Get file status flags.  */
+ #define F_SETFL		4	/* Set file status flags.  */
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_GETOWN	5	/* Get owner (process receiving SIGIO).  */
+-# define F_SETOWN	6	/* Set owner (process receiving SIGIO).  */
++# define F_GETOWN	5	/* Get owner of socket (receiver of SIGIO).  */
++# define F_SETOWN	6	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ #ifndef __USE_FILE_OFFSET64
+ # define F_GETLK	7	/* Get record locking info.  */
+@@ -99,8 +99,6 @@
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_GETOWN_EX	12	/* Get owner (thread receiving SIGIO).  */
+-# define F_SETOWN_EX	13	/* Set owner (thread receiving SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/tcsetattr.c
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/tcsetattr.c
 @@ -49,6 +49,7 @@ tcsetattr (fd, optional_actions, termios_p)
  {
    struct __kernel_termios k_termios;
@@ -2136,8 +2144,28 @@
 +  return retval;
  }
  libc_hidden_def (tcsetattr)
---- glibc-2.10-343-gf450806/sysdeps/unix/sysv/linux/x86_64/clone.S
-+++ glibc-2.10.90-23/sysdeps/unix/sysv/linux/x86_64/clone.S
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h
+@@ -99,15 +99,13 @@
+ #endif
+ 
+ #if defined __USE_BSD || defined __USE_UNIX98
+-# define F_SETOWN	8	/* Get owner (process receiving of SIGIO).  */
+-# define F_GETOWN	9	/* Set owner (process receiving of SIGIO).  */
++# define F_SETOWN	8	/* Get owner of socket (receiver of SIGIO).  */
++# define F_GETOWN	9	/* Set owner of socket (receiver of SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+ # define F_SETSIG	10	/* Set number of signal to be sent.  */
+ # define F_GETSIG	11	/* Get number of signal to be sent.  */
+-# define F_SETOWN_EX	12	/* Get owner (thread receiving SIGIO).  */
+-# define F_GETOWN_EX	13	/* Set owner (thread receiving SIGIO).  */
+ #endif
+ 
+ #ifdef __USE_GNU
+--- glibc-2.10-355-g1abedcd/sysdeps/unix/sysv/linux/x86_64/clone.S
++++ glibc-2.10.90-24/sysdeps/unix/sysv/linux/x86_64/clone.S
 @@ -89,9 +89,6 @@ L(pseudo_end):
  	ret
  
@@ -2156,8 +2184,8 @@
  
  	cfi_startproc;
  PSEUDO_END (BP_SYM (__clone))
---- glibc-2.10-343-gf450806/timezone/zic.c
-+++ glibc-2.10.90-23/timezone/zic.c
+--- glibc-2.10-355-g1abedcd/timezone/zic.c
++++ glibc-2.10.90-24/timezone/zic.c
 @@ -1921,7 +1921,7 @@ const int			zonecount;
  		if (stdrp != NULL && stdrp->r_hiyear == 2037)
  			return;

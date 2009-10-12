@@ -32,3 +32,4 @@ glibc-2_10_90-21:HEAD:glibc-2.10.90-21.src.rpm:1252314102
 glibc-2_10_90-22:HEAD:glibc-2.10.90-22.src.rpm:1252930886
 glibc-2_10_90-23:HEAD:glibc-2.10.90-23.src.rpm:1253528881
 glibc-2_10_90-24:HEAD:glibc-2.10.90-24.src.rpm:1254140947
+glibc-2_10_90-25:F-12:glibc-2.10.90-25.src.rpm:1255355210
