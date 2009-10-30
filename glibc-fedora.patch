@@ -1,6 +1,29 @@
---- glibc-2.10-357-ga0902db/ChangeLog
-+++ glibc-2.10.90-26/ChangeLog
-@@ -44,17 +44,6 @@
+--- glibc-2.10-405-g3a83202/ChangeLog
++++ glibc-2.10.90-27/ChangeLog
+@@ -195,22 +195,6 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
+ 	* sysdeps/generic/netinet/ip.h: Define IPTOS_ENC* and IPTOS_DSCP*
+ 	macros.  Patch by Philip Prindeville <philipp@redfish-solutions.com>.
+ 
+-	[BZ #10840]
+-	* sysdeps/unix/sysv/linux/kernel-features.h: Define
+-	__ASSUME_F_GETOWN_EX.
+-	* sysdeps/unix/sysv/linux/fcntl.c: Implement F_GETOWN using F_GETOWN_EX
+-	if possible.
+-	* sysdeps/unix/sysv/linux/i386/fcntl.c: Likewise.
+-
+-	* sysdeps/unix/sysv/linux/sh/bits/fcntl.h: Define F_OWNER_*
+-	and f_owner_ex.
+-	* sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/sparc/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/ia64/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/i386/bits/fcntl.h: Likewise.
+-	* sysdeps/unix/sysv/linux/s390/bits/fcntl.h: Likewise.
+-
+ 	[BZ #10847]
+ 	* sysdeps/gnu/getutmp.c: Allow compatibility code to play around with
+ 	getutmpx symbol.
+@@ -298,17 +282,6 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	* locale/C-time.c: Revert week-1stday back to 19971130 and set
  	first_weekday to 1 and first_workday to 2.
  
@@ -18,7 +41,7 @@
  2009-09-28  Andreas Schwab  <schwab@redhat.com>
  
  	* stdio-common/printf_fp.c: Check for and avoid integer overflows.
-@@ -712,6 +701,11 @@
+@@ -966,6 +939,11 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	* sysdeps/generic/ldsodefs.h (struct rtld_global): The map element in
  	the unique symbol hash table should not be const.
  
@@ -30,7 +53,7 @@
  2009-07-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/x86_64/multiarch/strstr.c: Minor cleanups.  Remove
-@@ -977,6 +971,11 @@
+@@ -1231,6 +1209,11 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	out common code into new function get_common_indeces. Determine
  	extended family and model for Intel processors.
  
@@ -42,7 +65,7 @@
  2009-06-26  Ulrich Drepper  <drepper@redhat.com>
  
  	* resolv/resolv.h: Define RES_SNGLKUPREOP.
-@@ -9670,6 +9669,10 @@
+@@ -9924,6 +9907,10 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	[BZ #4368]
  	* stdlib/stdlib.h: Remove obsolete part of comment for realpath.
  
@@ -53,7 +76,7 @@
  2007-04-16  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #4364]
-@@ -10927,6 +10930,15 @@
+@@ -11181,6 +11168,15 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	separators also if no non-zero digits found.
  	* stdlib/Makefile (tests): Add tst-strtod3.
  
@@ -69,8 +92,8 @@
  2006-12-09  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #3632]
---- glibc-2.10-357-ga0902db/ChangeLog.15
-+++ glibc-2.10.90-26/ChangeLog.15
+--- glibc-2.10-405-g3a83202/ChangeLog.15
++++ glibc-2.10.90-27/ChangeLog.15
 @@ -477,6 +477,14 @@
  
  2004-11-26  Jakub Jelinek  <jakub@redhat.com>
@@ -136,8 +159,8 @@
  2004-08-30  Roland McGrath  <roland@frob.com>
  
  	* scripts/extract-abilist.awk: If `lastversion' variable defined, omit
---- glibc-2.10-357-ga0902db/ChangeLog.16
-+++ glibc-2.10.90-26/ChangeLog.16
+--- glibc-2.10-405-g3a83202/ChangeLog.16
++++ glibc-2.10.90-27/ChangeLog.16
 @@ -2042,6 +2042,9 @@
  	(__MATHDECL_2): Use __REDIRECT_NTH instead of __REDIRECT
  	followed by __THROW.
@@ -191,8 +214,8 @@
  2005-07-28  Thomas Schwinge  <schwinge@nic-nac-project.de>
  
  	[BZ #1137]
---- glibc-2.10-357-ga0902db/Makeconfig
-+++ glibc-2.10.90-26/Makeconfig
+--- glibc-2.10-405-g3a83202/Makeconfig
++++ glibc-2.10.90-27/Makeconfig
 @@ -780,12 +780,12 @@ endif
  # The assembler can generate debug information too.
  ifndef ASFLAGS
@@ -209,8 +232,8 @@
  
  ifndef BUILD_CC
  BUILD_CC = $(CC)
---- glibc-2.10-357-ga0902db/csu/Makefile
-+++ glibc-2.10.90-26/csu/Makefile
+--- glibc-2.10-405-g3a83202/csu/Makefile
++++ glibc-2.10.90-27/csu/Makefile
 @@ -93,7 +93,8 @@ omit-deps += $(crtstuff)
  $(crtstuff:%=$(objpfx)%.o): %.o: %.S $(objpfx)defs.h
  	$(compile.S) -g0 $(ASFLAGS-.os) -o $@
@@ -221,8 +244,8 @@
  
  vpath initfini.c $(sysdirs)
  
---- glibc-2.10-357-ga0902db/csu/elf-init.c
-+++ glibc-2.10.90-26/csu/elf-init.c
+--- glibc-2.10-405-g3a83202/csu/elf-init.c
++++ glibc-2.10.90-27/csu/elf-init.c
 @@ -63,6 +63,23 @@ extern void (*__init_array_end []) (int, char **, char **)
  extern void (*__fini_array_start []) (void) attribute_hidden;
  extern void (*__fini_array_end []) (void) attribute_hidden;
@@ -247,8 +270,8 @@
  
  /* These function symbols are provided for the .init/.fini section entry
     points automagically by the linker.  */
---- glibc-2.10-357-ga0902db/debug/tst-chk1.c
-+++ glibc-2.10.90-26/debug/tst-chk1.c
+--- glibc-2.10-405-g3a83202/debug/tst-chk1.c
++++ glibc-2.10.90-27/debug/tst-chk1.c
 @@ -17,6 +17,9 @@
     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA.  */
@@ -277,8 +300,8 @@
  #  define O 0
  # else
  #  define O 1
---- glibc-2.10-357-ga0902db/elf/ldconfig.c
-+++ glibc-2.10.90-26/elf/ldconfig.c
+--- glibc-2.10-405-g3a83202/elf/ldconfig.c
++++ glibc-2.10.90-27/elf/ldconfig.c
 @@ -1020,17 +1020,19 @@ search_dirs (void)
  
  
@@ -360,8 +383,8 @@
      }
  
    if (! opt_ignore_aux_cache)
---- glibc-2.10-357-ga0902db/elf/tst-stackguard1.c
-+++ glibc-2.10.90-26/elf/tst-stackguard1.c
+--- glibc-2.10-405-g3a83202/elf/tst-stackguard1.c
++++ glibc-2.10.90-27/elf/tst-stackguard1.c
 @@ -160,17 +160,21 @@ do_test (void)
       the 16 runs, something is very wrong.  */
    int ndifferences = 0;
@@ -386,16 +409,16 @@
      {
        puts ("stack guard canaries are not randomized enough");
        puts ("nor equal to the default canary value");
---- glibc-2.10-357-ga0902db/include/bits/stdlib-ldbl.h
-+++ glibc-2.10.90-26/include/bits/stdlib-ldbl.h
+--- glibc-2.10-405-g3a83202/include/bits/stdlib-ldbl.h
++++ glibc-2.10.90-27/include/bits/stdlib-ldbl.h
 @@ -0,0 +1 @@
 +#include <stdlib/bits/stdlib-ldbl.h>
---- glibc-2.10-357-ga0902db/include/bits/wchar-ldbl.h
-+++ glibc-2.10.90-26/include/bits/wchar-ldbl.h
+--- glibc-2.10-405-g3a83202/include/bits/wchar-ldbl.h
++++ glibc-2.10.90-27/include/bits/wchar-ldbl.h
 @@ -0,0 +1 @@
 +#include <wcsmbs/bits/wchar-ldbl.h>
---- glibc-2.10-357-ga0902db/include/features.h
-+++ glibc-2.10.90-26/include/features.h
+--- glibc-2.10-405-g3a83202/include/features.h
++++ glibc-2.10.90-27/include/features.h
 @@ -299,8 +299,13 @@
  #endif
  
@@ -412,8 +435,8 @@
  #  define __USE_FORTIFY_LEVEL 2
  # else
  #  define __USE_FORTIFY_LEVEL 1
---- glibc-2.10-357-ga0902db/intl/locale.alias
-+++ glibc-2.10.90-26/intl/locale.alias
+--- glibc-2.10-405-g3a83202/intl/locale.alias
++++ glibc-2.10.90-27/intl/locale.alias
 @@ -57,8 +57,6 @@ korean		ko_KR.eucKR
  korean.euc 	ko_KR.eucKR
  ko_KR		ko_KR.eucKR
@@ -423,8 +446,8 @@
  norwegian       nb_NO.ISO-8859-1
  nynorsk		nn_NO.ISO-8859-1
  polish          pl_PL.ISO-8859-2
---- glibc-2.10-357-ga0902db/libio/stdio.h
-+++ glibc-2.10.90-26/libio/stdio.h
+--- glibc-2.10-405-g3a83202/libio/stdio.h
++++ glibc-2.10.90-27/libio/stdio.h
 @@ -145,10 +145,12 @@ typedef _G_fpos64_t fpos64_t;
  extern struct _IO_FILE *stdin;		/* Standard input stream.  */
  extern struct _IO_FILE *stdout;		/* Standard output stream.  */
@@ -438,8 +461,8 @@
  
  __BEGIN_NAMESPACE_STD
  /* Remove file FILENAME.  */
---- glibc-2.10-357-ga0902db/locale/iso-4217.def
-+++ glibc-2.10.90-26/locale/iso-4217.def
+--- glibc-2.10-405-g3a83202/locale/iso-4217.def
++++ glibc-2.10.90-27/locale/iso-4217.def
 @@ -8,6 +8,7 @@
   *
   * !!! The list has to be sorted !!!
@@ -531,8 +554,8 @@
  DEFINE_INT_CURR("PYG")		/* Paraguay Guarani  */
  DEFINE_INT_CURR("QAR")		/* Qatar Rial  */
  DEFINE_INT_CURR("ROL")		/* Romanian Leu  */
---- glibc-2.10-357-ga0902db/locale/programs/locarchive.c
-+++ glibc-2.10.90-26/locale/programs/locarchive.c
+--- glibc-2.10-405-g3a83202/locale/programs/locarchive.c
++++ glibc-2.10.90-27/locale/programs/locarchive.c
 @@ -241,9 +241,9 @@ oldlocrecentcmp (const void *a, const void *b)
  /* forward decls for below */
  static uint32_t add_locale (struct locarhandle *ah, const char *name,
@@ -564,8 +587,8 @@
  add_alias (struct locarhandle *ah, const char *alias, bool replace,
  	   const char *oldname, uint32_t *locrec_offset_p)
  {
---- glibc-2.10-357-ga0902db/localedata/Makefile
-+++ glibc-2.10.90-26/localedata/Makefile
+--- glibc-2.10-405-g3a83202/localedata/Makefile
++++ glibc-2.10.90-27/localedata/Makefile
 @@ -225,6 +225,7 @@ $(INSTALL-SUPPORTED-LOCALES): install-locales-dir
  	echo -n '...'; \
  	input=`echo $$locale | sed 's/\([^.]*\)[^@]*\(.*\)/\1\2/'`; \
@@ -574,8 +597,8 @@
  		     -i locales/$$input -c -f charmaps/$$charset \
  		     $(addprefix --prefix=,$(install_root)) $$locale; \
  	echo ' done'; \
---- glibc-2.10-357-ga0902db/localedata/SUPPORTED
-+++ glibc-2.10.90-26/localedata/SUPPORTED
+--- glibc-2.10-405-g3a83202/localedata/SUPPORTED
++++ glibc-2.10.90-27/localedata/SUPPORTED
 @@ -84,6 +84,7 @@ cy_GB.UTF-8/UTF-8 \
  cy_GB/ISO-8859-14 \
  da_DK.UTF-8/UTF-8 \
@@ -609,7 +632,7 @@
  nr_ZA/UTF-8 \
  nso_ZA/UTF-8 \
  oc_FR.UTF-8/UTF-8 \
-@@ -362,6 +367,7 @@ sv_FI/ISO-8859-1 \
+@@ -363,6 +368,7 @@ sv_FI/ISO-8859-1 \
  sv_FI@euro/ISO-8859-15 \
  sv_SE.UTF-8/UTF-8 \
  sv_SE/ISO-8859-1 \
@@ -617,8 +640,8 @@
  ta_IN/UTF-8 \
  te_IN/UTF-8 \
  tg_TJ.UTF-8/UTF-8 \
---- glibc-2.10-357-ga0902db/localedata/locales/cy_GB
-+++ glibc-2.10.90-26/localedata/locales/cy_GB
+--- glibc-2.10-405-g3a83202/localedata/locales/cy_GB
++++ glibc-2.10.90-27/localedata/locales/cy_GB
 @@ -248,8 +248,11 @@ mon         "<U0049><U006F><U006E><U0061><U0077><U0072>";/
  d_t_fmt     "<U0044><U0079><U0064><U0064><U0020><U0025><U0041><U0020><U0025><U0064><U0020><U006d><U0069><U0073><U0020><U0025><U0042><U0020><U0025><U0059><U0020><U0025><U0054><U0020><U0025><U005A>"
  d_fmt       "<U0025><U0064><U002E><U0025><U006D><U002E><U0025><U0079>"
@@ -633,8 +656,8 @@
  END LC_TIME
  
  LC_MESSAGES
---- glibc-2.10-357-ga0902db/localedata/locales/en_GB
-+++ glibc-2.10.90-26/localedata/locales/en_GB
+--- glibc-2.10-405-g3a83202/localedata/locales/en_GB
++++ glibc-2.10.90-27/localedata/locales/en_GB
 @@ -116,8 +116,8 @@ mon         "<U004A><U0061><U006E><U0075><U0061><U0072><U0079>";/
  d_t_fmt     "<U0025><U0061><U0020><U0025><U0064><U0020><U0025><U0062><U0020><U0025><U0059><U0020><U0025><U0054><U0020><U0025><U005A>"
  d_fmt       "<U0025><U0064><U002F><U0025><U006D><U002F><U0025><U0079>"
@@ -646,8 +669,8 @@
  date_fmt	"<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065>/
  <U0020><U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053><U0020>/
  <U0025><U005A><U0020><U0025><U0059>"
---- glibc-2.10-357-ga0902db/localedata/locales/no_NO
-+++ glibc-2.10.90-26/localedata/locales/no_NO
+--- glibc-2.10-405-g3a83202/localedata/locales/no_NO
++++ glibc-2.10.90-27/localedata/locales/no_NO
 @@ -0,0 +1,69 @@
 +escape_char	/
 +comment_char    %
@@ -718,8 +741,8 @@
 +LC_ADDRESS
 +copy "nb_NO"
 +END LC_ADDRESS
---- glibc-2.10-357-ga0902db/localedata/locales/zh_TW
-+++ glibc-2.10.90-26/localedata/locales/zh_TW
+--- glibc-2.10-405-g3a83202/localedata/locales/zh_TW
++++ glibc-2.10.90-27/localedata/locales/zh_TW
 @@ -1,7 +1,7 @@
  comment_char %
  escape_char /
@@ -747,8 +770,8 @@
  revision   "0.2"
  date       "2000-08-02"
  %
---- glibc-2.10-357-ga0902db/malloc/mcheck.c
-+++ glibc-2.10.90-26/malloc/mcheck.c
+--- glibc-2.10-405-g3a83202/malloc/mcheck.c
++++ glibc-2.10.90-27/malloc/mcheck.c
 @@ -24,9 +24,25 @@
  # include <mcheck.h>
  # include <stdint.h>
@@ -824,8 +847,8 @@
  
        old_free_hook = __free_hook;
        __free_hook = freehook;
---- glibc-2.10-357-ga0902db/manual/libc.texinfo
-+++ glibc-2.10.90-26/manual/libc.texinfo
+--- glibc-2.10-405-g3a83202/manual/libc.texinfo
++++ glibc-2.10.90-27/manual/libc.texinfo
 @@ -5,7 +5,7 @@
  @c setchapternewpage odd
  
@@ -835,8 +858,8 @@
  @direntry
  * Libc: (libc).                 C library.
  @end direntry
---- glibc-2.10-357-ga0902db/misc/sys/cdefs.h
-+++ glibc-2.10.90-26/misc/sys/cdefs.h
+--- glibc-2.10-405-g3a83202/misc/sys/cdefs.h
++++ glibc-2.10.90-27/misc/sys/cdefs.h
 @@ -132,7 +132,10 @@
  #define __bos(ptr) __builtin_object_size (ptr, __USE_FORTIFY_LEVEL > 1)
  #define __bos0(ptr) __builtin_object_size (ptr, 0)
@@ -880,17 +903,17 @@
  # define __va_arg_pack() __builtin_va_arg_pack ()
  # define __va_arg_pack_len() __builtin_va_arg_pack_len ()
  #endif
---- glibc-2.10-357-ga0902db/nis/nss
-+++ glibc-2.10.90-26/nis/nss
+--- glibc-2.10-405-g3a83202/nis/nss
++++ glibc-2.10.90-27/nis/nss
 @@ -25,4 +25,4 @@
  #  memory with every getXXent() call.  Otherwise each getXXent() call
  #  might result into a network communication with the server to get
  #  the next entry.
 -#SETENT_BATCH_READ=TRUE
 +SETENT_BATCH_READ=TRUE
---- glibc-2.10-357-ga0902db/nptl/ChangeLog
-+++ glibc-2.10.90-26/nptl/ChangeLog
-@@ -3717,6 +3717,15 @@
+--- glibc-2.10-405-g3a83202/nptl/ChangeLog
++++ glibc-2.10.90-27/nptl/ChangeLog
+@@ -3725,6 +3725,15 @@
  	Use __sigfillset.  Document that sigfillset does the right thing wrt
  	to SIGSETXID.
  
@@ -906,7 +929,7 @@
  2005-07-11  Jakub Jelinek  <jakub@redhat.com>
  
  	[BZ #1102]
-@@ -4453,6 +4462,11 @@
+@@ -4461,6 +4470,11 @@
  	Move definition inside libpthread, libc, librt check.  Provide
  	definition for rtld.
  
@@ -918,7 +941,7 @@
  2004-09-02  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/alpha/jmpbuf-unwind.h: Define __libc_unwind_longjmp.
-@@ -6527,6 +6541,11 @@
+@@ -6535,6 +6549,11 @@
  
  	* Makefile [$(build-shared) = yes] (tests): Depend on $(test-modules).
  
@@ -930,8 +953,8 @@
  2003-07-25  Jakub Jelinek  <jakub@redhat.com>
  
  	* tst-cancel17.c (do_test): Check if aio_cancel failed.
---- glibc-2.10-357-ga0902db/nptl/Makefile
-+++ glibc-2.10.90-26/nptl/Makefile
+--- glibc-2.10-405-g3a83202/nptl/Makefile
++++ glibc-2.10.90-27/nptl/Makefile
 @@ -339,7 +339,8 @@ endif
  extra-objs += $(crti-objs) $(crtn-objs)
  omit-deps += crti crtn
@@ -964,8 +987,8 @@
  else
  $(addprefix $(objpfx),$(tests) $(test-srcs)): $(objpfx)libpthread.a
  endif
---- glibc-2.10-357-ga0902db/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
-+++ glibc-2.10.90-26/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
+--- glibc-2.10-405-g3a83202/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
++++ glibc-2.10.90-27/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
 @@ -189,4 +189,7 @@
  /* Typed memory objects are not available.  */
  #define _POSIX_TYPED_MEMORY_OBJECTS	-1
@@ -974,8 +997,8 @@
 +#define _XOPEN_STREAMS	-1
 +
  #endif /* bits/posix_opt.h */
---- glibc-2.10-357-ga0902db/nptl/sysdeps/unix/sysv/linux/kernel-features.h
-+++ glibc-2.10.90-26/nptl/sysdeps/unix/sysv/linux/kernel-features.h
+--- glibc-2.10-405-g3a83202/nptl/sysdeps/unix/sysv/linux/kernel-features.h
++++ glibc-2.10.90-27/nptl/sysdeps/unix/sysv/linux/kernel-features.h
 @@ -0,0 +1,6 @@
 +#include_next <kernel-features.h>
 +
@@ -983,8 +1006,8 @@
 +#ifndef __ASSUME_CLONE_THREAD_FLAGS
 +# define __ASSUME_CLONE_THREAD_FLAGS	1
 +#endif
---- glibc-2.10-357-ga0902db/nptl/tst-stackguard1.c
-+++ glibc-2.10.90-26/nptl/tst-stackguard1.c
+--- glibc-2.10-405-g3a83202/nptl/tst-stackguard1.c
++++ glibc-2.10.90-27/nptl/tst-stackguard1.c
 @@ -190,17 +190,21 @@ do_test (void)
       the 16 runs, something is very wrong.  */
    int ndifferences = 0;
@@ -1009,8 +1032,8 @@
      {
        puts ("stack guard canaries are not randomized enough");
        puts ("nor equal to the default canary value");
---- glibc-2.10-357-ga0902db/nscd/nscd.conf
-+++ glibc-2.10.90-26/nscd/nscd.conf
+--- glibc-2.10-405-g3a83202/nscd/nscd.conf
++++ glibc-2.10.90-27/nscd/nscd.conf
 @@ -33,7 +33,7 @@
  #	logfile			/var/log/nscd.log
  #	threads			4
@@ -1020,8 +1043,8 @@
  #	stat-user		somebody
  	debug-level		0
  #	reload-count		5
---- glibc-2.10-357-ga0902db/nscd/nscd.init
-+++ glibc-2.10.90-26/nscd/nscd.init
+--- glibc-2.10-405-g3a83202/nscd/nscd.init
++++ glibc-2.10.90-27/nscd/nscd.init
 @@ -9,6 +9,7 @@
  #		slow naming services like NIS, NIS+, LDAP, or hesiod.
  # processname: /usr/sbin/nscd
@@ -1093,8 +1116,8 @@
  	;;
      *)
  	echo $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
---- glibc-2.10-357-ga0902db/posix/Makefile
-+++ glibc-2.10.90-26/posix/Makefile
+--- glibc-2.10-405-g3a83202/posix/Makefile
++++ glibc-2.10.90-27/posix/Makefile
 @@ -302,15 +302,8 @@ $(inst_libexecdir)/getconf: $(inst_bindir)/getconf \
  	  mv -f $@/$$spec.new $@/$$spec; \
  	done < $(objpfx)getconf.speclist
@@ -1115,8 +1138,8 @@
 +	  | sed -n -e '/START_OF_STRINGS/,$${/\(POSIX_V[67]\|_XBS5\)_/{s/^[^"]*"//;s/".*$$//;p}}' \
 +	  > $@.new
  	mv -f $@.new $@
---- glibc-2.10-357-ga0902db/posix/getconf.speclist.h
-+++ glibc-2.10.90-26/posix/getconf.speclist.h
+--- glibc-2.10-405-g3a83202/posix/getconf.speclist.h
++++ glibc-2.10.90-27/posix/getconf.speclist.h
 @@ -0,0 +1,39 @@
 +#include <unistd.h>
 +const char *START_OF_STRINGS =
@@ -1157,8 +1180,8 @@
 +"XBS5_LPBIG_OFFBIG"
 +#endif
 +"";
---- glibc-2.10-357-ga0902db/streams/Makefile
-+++ glibc-2.10.90-26/streams/Makefile
+--- glibc-2.10-405-g3a83202/streams/Makefile
++++ glibc-2.10.90-27/streams/Makefile
 @@ -21,7 +21,7 @@
  #
  subdir	:= streams
@@ -1168,8 +1191,8 @@
  routines	= isastream getmsg getpmsg putmsg putpmsg fattach fdetach
  
  include ../Rules
---- glibc-2.10-357-ga0902db/sysdeps/generic/dl-cache.h
-+++ glibc-2.10.90-26/sysdeps/generic/dl-cache.h
+--- glibc-2.10-405-g3a83202/sysdeps/generic/dl-cache.h
++++ glibc-2.10.90-27/sysdeps/generic/dl-cache.h
 @@ -36,6 +36,14 @@
  # define add_system_dir(dir) add_dir (dir)
  #endif
@@ -1185,8 +1208,8 @@
  #define CACHEMAGIC "ld.so-1.7.0"
  
  /* libc5 and glibc 2.0/2.1 use the same format.  For glibc 2.2 another
---- glibc-2.10-357-ga0902db/sysdeps/i386/Makefile
-+++ glibc-2.10.90-26/sysdeps/i386/Makefile
+--- glibc-2.10-405-g3a83202/sysdeps/i386/Makefile
++++ glibc-2.10.90-27/sysdeps/i386/Makefile
 @@ -2,6 +2,8 @@
  # Every i386 port in use uses gas syntax (I think).
  asm-CPPFLAGS += -DGAS_SYNTAX
@@ -1211,8 +1234,8 @@
  endif
  
  ifeq ($(subdir),elf)
---- glibc-2.10-357-ga0902db/sysdeps/ia64/Makefile
-+++ glibc-2.10.90-26/sysdeps/ia64/Makefile
+--- glibc-2.10-405-g3a83202/sysdeps/ia64/Makefile
++++ glibc-2.10.90-27/sysdeps/ia64/Makefile
 @@ -12,8 +12,8 @@ elide-routines.os += hp-timing
  
  ifeq (yes,$(build-shared))
@@ -1224,8 +1247,8 @@
  endif
  endif
  
---- glibc-2.10-357-ga0902db/sysdeps/ia64/ia64libgcc.S
-+++ glibc-2.10.90-26/sysdeps/ia64/ia64libgcc.S
+--- glibc-2.10-405-g3a83202/sysdeps/ia64/ia64libgcc.S
++++ glibc-2.10.90-27/sysdeps/ia64/ia64libgcc.S
 @@ -1,350 +0,0 @@
 -/* From the Intel IA-64 Optimization Guide, choose the minimum latency
 -   alternative.  */
@@ -1577,8 +1600,8 @@
 -	.symver	___multi3, __multi3@GLIBC_2.2
 -
 -#endif
---- glibc-2.10-357-ga0902db/sysdeps/ia64/libgcc-compat.c
-+++ glibc-2.10.90-26/sysdeps/ia64/libgcc-compat.c
+--- glibc-2.10-405-g3a83202/sysdeps/ia64/libgcc-compat.c
++++ glibc-2.10.90-27/sysdeps/ia64/libgcc-compat.c
 @@ -0,0 +1,84 @@
 +/* pre-.hidden libgcc compatibility
 +   Copyright (C) 2002 Free Software Foundation, Inc.
@@ -1664,8 +1687,8 @@
 +symbol_version (INTUSE (__multi3), __multi3, GLIBC_2.2);
 +
 +#endif
---- glibc-2.10-357-ga0902db/sysdeps/powerpc/powerpc64/Makefile
-+++ glibc-2.10.90-26/sysdeps/powerpc/powerpc64/Makefile
+--- glibc-2.10-405-g3a83202/sysdeps/powerpc/powerpc64/Makefile
++++ glibc-2.10.90-27/sysdeps/powerpc/powerpc64/Makefile
 @@ -30,6 +30,7 @@ ifneq ($(elf),no)
  # we use -fpic instead which is much better.
  CFLAGS-initfini.s += -fpic -O1
@@ -1674,8 +1697,8 @@
  endif
  
  ifeq ($(subdir),elf)
---- glibc-2.10-357-ga0902db/sysdeps/unix/nice.c
-+++ glibc-2.10.90-26/sysdeps/unix/nice.c
+--- glibc-2.10-405-g3a83202/sysdeps/unix/nice.c
++++ glibc-2.10.90-27/sysdeps/unix/nice.c
 @@ -42,7 +42,12 @@ nice (int incr)
  	__set_errno (save);
      }
@@ -1690,8 +1713,8 @@
    if (result == -1)
      {
        if (errno == EACCES)
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/check_pf.c
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/check_pf.c
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/check_pf.c
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/check_pf.c
 @@ -27,13 +27,10 @@
  #include <unistd.h>
  #include <sys/socket.h>
@@ -1707,8 +1730,8 @@
  
  #ifndef IFA_F_HOMEADDRESS
  # define IFA_F_HOMEADDRESS 0
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/dl-osinfo.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/dl-osinfo.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/dl-osinfo.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/dl-osinfo.h
 @@ -17,10 +17,13 @@
     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA.  */
@@ -1756,8 +1779,80 @@
      }
    else
  #endif
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/futimesat.c
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/futimesat.c
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/fcntl.c
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/fcntl.c
+@@ -1,4 +1,4 @@
+-/* Copyright (C) 2000, 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
++/* Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
+    The GNU C Library is free software; you can redistribute it and/or
+@@ -23,40 +23,6 @@
+ #include <stdarg.h>
+ 
+ #include <sys/syscall.h>
+-#include <kernel-features.h>
+-
+-
+-#ifdef __ASSUME_F_GETOWN_EX
+-# define miss_F_GETOWN_EX 0
+-#else
+-static int miss_F_GETOWN_EX;
+-#endif
+-
+-
+-static int
+-do_fcntl (int fd, int cmd, void *arg)
+-{
+-  if (cmd != F_GETOWN || miss_F_GETOWN_EX)
+-    return INLINE_SYSCALL (fcntl, 3, fd, cmd, arg);
+-
+-  INTERNAL_SYSCALL_DECL (err);
+-  struct f_owner_ex fex;
+-  int res = INTERNAL_SYSCALL (fcntl, err, 3, fd, F_GETOWN_EX, &fex);
+-  if (!INTERNAL_SYSCALL_ERROR_P (res, err))
+-    return fex.type == F_OWNER_GID ? -fex.pid : fex.pid;
+-
+-#ifndef __ASSUME_F_GETOWN_EX
+-  if (INTERNAL_SYSCALL_ERRNO (res, err) == EINVAL)
+-    {
+-      res = INLINE_SYSCALL (fcntl, 3, fd, F_GETOWN, arg);
+-      miss_F_GETOWN_EX = 1;
+-      return res;
+-    }
+-#endif
+-
+-  __set_errno (INTERNAL_SYSCALL_ERRNO (res, err));
+-  return -1;
+-}
+ 
+ 
+ #ifndef NO_CANCELLATION
+@@ -70,7 +36,7 @@ __fcntl_nocancel (int fd, int cmd, ...)
+   arg = va_arg (ap, void *);
+   va_end (ap);
+ 
+-  return do_fcntl (fd, cmd, arg);
++  return INLINE_SYSCALL (fcntl, 3, fd, cmd, arg);
+ }
+ #endif
+ 
+@@ -86,11 +52,11 @@ __libc_fcntl (int fd, int cmd, ...)
+   va_end (ap);
+ 
+   if (SINGLE_THREAD_P || cmd != F_SETLKW)
+-    return do_fcntl (fd, cmd, arg);
++    return INLINE_SYSCALL (fcntl, 3, fd, cmd, arg);
+ 
+   int oldtype = LIBC_CANCEL_ASYNC ();
+ 
+-  int result = do_fcntl (fd, cmd, arg);
++  int result = INLINE_SYSCALL (fcntl, 3, fd, cmd, arg);
+ 
+   LIBC_CANCEL_RESET (oldtype);
+ 
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/futimesat.c
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/futimesat.c
 @@ -37,14 +37,14 @@ futimesat (fd, file, tvp)
  {
    int result;
@@ -1799,9 +1894,16 @@
 +  if (fd != AT_FDCWD && file[0] != '/')
      {
        size_t filelen = strlen (file);
-       static const char procfd[] = "/proc/self/fd/%d/%s";
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/i386/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/i386/bits/fcntl.h
+       if (__builtin_expect (filelen == 0, 0))
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/i386/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/i386/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux.
+-   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2004, 2006, 2007, 2009
++   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2004, 2006, 2007
+    Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
 @@ -85,15 +85,13 @@
  #define F_SETLKW64	14	/* Set record locking info (blocking).	*/
  
@@ -1820,8 +1922,32 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/i386/clone.S
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/i386/clone.S
+@@ -168,23 +166,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+ #ifdef	__USE_BSD
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/i386/clone.S
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/i386/clone.S
 @@ -120,9 +120,6 @@ L(pseudo_end):
  	ret
  
@@ -1840,8 +1966,8 @@
  
  	cfi_startproc
  PSEUDO_END (BP_SYM (__clone))
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/i386/dl-cache.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/i386/dl-cache.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/i386/dl-cache.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/i386/dl-cache.h
 @@ -0,0 +1,59 @@
 +/* Support for reading /etc/ld.so.cache files written by Linux ldconfig.
 +   Copyright (C) 2004 Free Software Foundation, Inc.
@@ -1902,8 +2028,64 @@
 +  } while (0)
 +
 +#include_next <dl-cache.h>
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/ia64/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/ia64/bits/fcntl.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/i386/fcntl.c
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/i386/fcntl.c
+@@ -1,4 +1,4 @@
+-/* Copyright (C) 2000,2002,2003,2004,2006,2009 Free Software Foundation, Inc.
++/* Copyright (C) 2000,2002,2003,2004,2006 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
+    The GNU C Library is free software; you can redistribute it and/or
+@@ -30,13 +30,6 @@
+ int __have_no_fcntl64;
+ #endif
+ 
+-#ifdef __ASSUME_F_GETOWN_EX
+-# define miss_F_GETOWN_EX 0
+-#else
+-static int miss_F_GETOWN_EX;
+-#endif
+-
+-
+ #if defined NO_CANCELLATION && __ASSUME_FCNTL64 == 0
+ # define __fcntl_nocancel  __libc_fcntl
+ #endif
+@@ -126,26 +119,6 @@ __fcntl_nocancel (int fd, int cmd, ...)
+ 	assert (F_SETLK - F_SETLKW == F_SETLK64 - F_SETLKW64);
+ 	return INLINE_SYSCALL (fcntl, 3, fd, cmd + F_SETLK - F_SETLK64, &fl);
+       }
+-    case F_GETOWN:
+-      if (! miss_F_GETOWN_EX)
+-	{
+-	  INTERNAL_SYSCALL_DECL (err);
+-	  struct f_owner_ex fex;
+-	  int res = INTERNAL_SYSCALL (fcntl, err, 3, fd, F_GETOWN_EX, &fex);
+-	  if (!INTERNAL_SYSCALL_ERROR_P (res, err))
+-	    return fex.type == F_OWNER_GID ? -fex.pid : fex.pid;
+-
+-#ifndef __ASSUME_F_GETOWN_EX
+-	  if (INTERNAL_SYSCALL_ERRNO (res, err) == EINVAL)
+-	    miss_F_GETOWN_EX = 1;
+-	  else
+-#endif
+-	    {
+-	      __set_errno (INTERNAL_SYSCALL_ERRNO (res, err));
+-	      return -1;
+-	    }
+-	}
+-      /* FALLTHROUGH */
+     default:
+       return INLINE_SYSCALL (fcntl, 3, fd, cmd, arg);
+     }
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/ia64/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/ia64/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux/IA64.
+-   Copyright (C) 1999,2000,2004,2006,2007,2009 Free Software Foundation, Inc.
++   Copyright (C) 1999, 2000, 2004, 2006, 2007 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
+    The GNU C Library is free software; you can redistribute it and/or
 @@ -81,15 +81,13 @@
  #define F_SETLKW64	7	/* Set record locking info (blocking).	*/
  
@@ -1922,8 +2104,32 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/ia64/dl-cache.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/ia64/dl-cache.h
+@@ -161,23 +159,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ 
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/ia64/dl-cache.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/ia64/dl-cache.h
 @@ -22,4 +22,31 @@
  #define _dl_cache_check_flags(flags) \
    ((flags) == _DL_CACHE_DEFAULT_ID)
@@ -1956,29 +2162,40 @@
 +  } while (0)
 +
  #include_next <dl-cache.h>
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
 @@ -0,0 +1,5 @@
 +#ifdef IS_IN_ldconfig
 +#include <sysdeps/i386/dl-procinfo.c>
 +#else
 +#include <sysdeps/generic/dl-procinfo.c>
 +#endif
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
 @@ -0,0 +1,5 @@
 +#ifdef IS_IN_ldconfig
 +#include <sysdeps/unix/sysv/linux/i386/dl-procinfo.h>
 +#else
 +#include <sysdeps/generic/dl-procinfo.h>
 +#endif
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
 @@ -1 +1 @@
 -s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 \2\3"_
 +s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 /emul/ia32-linux\2\3"_
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/netlinkaccess.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/netlinkaccess.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/kernel-features.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/kernel-features.h
+@@ -542,8 +542,3 @@
+ # define __ASSUME_PREADV	1
+ # define __ASSUME_PWRITEV	1
+ #endif
+-
+-/* Support for F_GETOWN_EX was introduced in 2.6.32.  */
+-#if __LINUX_KERNEL_VERSION >= 0x020620
+-# define __ASSUME_F_GETOWN_EX	1
+-#endif
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/netlinkaccess.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/netlinkaccess.h
 @@ -25,6 +25,24 @@
  
  #include <kernel-features.h>
@@ -2004,8 +2221,8 @@
  
  struct netlink_res
  {
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/paths.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/paths.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/paths.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/paths.h
 @@ -62,7 +62,7 @@
  #define	_PATH_TTY	"/dev/tty"
  #define	_PATH_UNIX	"/boot/vmlinux"
@@ -2015,8 +2232,15 @@
  #define _PATH_WTMP	"/var/log/wtmp"
  
  /* Provide trailing slash, since mostly used for building pathnames. */
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux/PowerPC.
+-   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2003, 2004, 2006, 2007, 2009
++   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2003, 2004, 2006, 2007
+    Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
 @@ -85,15 +85,13 @@
  #define F_SETLKW64	14	/* Set record locking info (blocking).	*/
  
@@ -2035,8 +2259,39 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/s390/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/s390/bits/fcntl.h
+@@ -168,23 +166,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+ #ifdef	__USE_BSD
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/s390/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/s390/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux.
+-   Copyright (C) 2000,2001,2002,2004,2006,2007,2009 Free Software Foundation, Inc.
++   Copyright (C) 2000,2001,2002,2004,2006,2007 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
+    The GNU C Library is free software; you can redistribute it and/or
 @@ -100,15 +100,13 @@
  #endif
  
@@ -2055,8 +2310,39 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/sh/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/sh/bits/fcntl.h
+@@ -183,23 +181,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+ #ifdef	__USE_BSD
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/sh/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/sh/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux.
+-   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2004, 2006, 2007, 2009
++   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2004, 2006, 2007
+    Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
 @@ -85,15 +85,13 @@
  #define F_SETLKW64	14	/* Set record locking info (blocking).	*/
  
@@ -2075,8 +2361,39 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/sparc/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/sparc/bits/fcntl.h
+@@ -168,23 +166,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+ #ifdef	__USE_BSD
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/sparc/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/sparc/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux/SPARC.
+-   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2003, 2004, 2006, 2007, 2009
++   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2003, 2004, 2006, 2007
+    Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
 @@ -83,8 +83,8 @@
  #define F_GETFL		3	/* Get file status flags.  */
  #define F_SETFL		4	/* Set file status flags.  */
@@ -2097,8 +2414,32 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/tcsetattr.c
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/tcsetattr.c
+@@ -187,23 +185,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+ #ifdef	__USE_BSD
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/tcsetattr.c
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/tcsetattr.c
 @@ -49,6 +49,7 @@ tcsetattr (fd, optional_actions, termios_p)
  {
    struct __kernel_termios k_termios;
@@ -2144,8 +2485,15 @@
 +  return retval;
  }
  libc_hidden_def (tcsetattr)
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/x86_64/bits/fcntl.h
+@@ -1,5 +1,5 @@
+ /* O_*, F_*, FD_* bit values for Linux/x86-64.
+-   Copyright (C) 2001,2002,2004,2006,2007,2009 Free Software Foundation, Inc.
++   Copyright (C) 2001, 2002, 2004, 2006, 2007 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
+    The GNU C Library is free software; you can redistribute it and/or
 @@ -99,15 +99,13 @@
  #endif
  
@@ -2164,8 +2512,32 @@
  #endif
  
  #ifdef __USE_GNU
---- glibc-2.10-357-ga0902db/sysdeps/unix/sysv/linux/x86_64/clone.S
-+++ glibc-2.10.90-26/sysdeps/unix/sysv/linux/x86_64/clone.S
+@@ -182,23 +180,6 @@ struct flock64
+   };
+ #endif
+ 
+-#ifdef __USE_GNU
+-/* Owner types.  */
+-enum __pid_type
+-  {
+-    F_OWNER_TID = 0,	/* Kernel thread.  */
+-    F_OWNER_PID,	/* Process.  */
+-    F_OWNER_GID		/* Process group.  */
+-  };
+-
+-/* Structure to use with F_GETOWN_EX and F_SETOWN_EX.  */
+-struct f_owner_ex
+-  {
+-    enum __pid_type type;	/* Owner type of ID.  */
+-    __pid_t pid;		/* ID of owner.  */
+-  };
+-#endif
+-
+ /* Define some more compatibility macros to be backward compatible with
+    BSD systems which did not managed to hide these kernel macros.  */
+ #ifdef	__USE_BSD
+--- glibc-2.10-405-g3a83202/sysdeps/unix/sysv/linux/x86_64/clone.S
++++ glibc-2.10.90-27/sysdeps/unix/sysv/linux/x86_64/clone.S
 @@ -89,9 +89,6 @@ L(pseudo_end):
  	ret
  
@@ -2184,8 +2556,8 @@
  
  	cfi_startproc;
  PSEUDO_END (BP_SYM (__clone))
---- glibc-2.10-357-ga0902db/timezone/zic.c
-+++ glibc-2.10.90-26/timezone/zic.c
+--- glibc-2.10-405-g3a83202/timezone/zic.c
++++ glibc-2.10.90-27/timezone/zic.c
 @@ -1921,7 +1921,7 @@ const int			zonecount;
  		if (stdrp != NULL && stdrp->r_hiyear == 2037)
  			return;
