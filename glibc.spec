@@ -1,5 +1,6 @@
-%define glibcsrcdir glibc-2.10.1-69-gaa152ec
-%define glibcversion 2.10.1
+%define glibcsrcdir glibc-2.10.2
+%define glibc_release_url ftp://sources.redhat.com/pub/glibc/releases/
+%define glibcversion 2.10.2
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches i686 athlon sparcv9v sparc64v alphaev6
@@ -23,7 +24,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5
+Release: 1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -33,13 +34,7 @@ License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+
 Group: System Environment/Libraries
 URL: http://sources.redhat.com/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.bz2
-%if 0%{?glibc_release_url:1}
-%define glibc_libidn_srcdir %(echo %{glibcsrcdir} | sed s/glibc-/glibc-libidn-/)
-Source1: %{glibc_release_url}%{glibc_libidn_srcdir}.tar.bz2
-%define glibc_release_unpack -a1
-%define glibc_release_setup mv %{glibc_libidn_srcdir} libidn
-%endif
-Source2: %{glibcsrcdir}-fedora.tar.bz2
+Source1: %{glibcsrcdir}-fedora.tar.bz2
 Patch0: %{name}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -226,8 +221,7 @@ package or when debugging this package.
 %endif
 
 %prep
-%setup -q -n %{glibcsrcdir} %{?glibc_release_unpack} -b2
-%{?glibc_release_setup}
+%setup -q -n %{glibcsrcdir} -b1
 %patch0 -E -p1
 %ifarch ia64
 %if "%{_lib}" == "lib64"
@@ -1016,6 +1010,18 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Nov 20 2009 Andreas Schwab <schwab@redhat.com> - 2.10.2-1
+- Update to glibc-2.10.2 release.
+  - Correct readahead syscall wrapper on powerpc32
+  - Fix preadv, pwritev and fallocate for -D_FILE_OFFSET_BITS=64 (#533063)
+  - Fix endless loop in localedef
+  - Handle POSIX2_LINE_MAX in getconf
+  - Fix timer_create to initialize timer_t properly
+  - Fix lookup of group names in hesiod initgroups
+  - Fix fsetpos on wide streams
+  - Fix overflow handling in fdim
+  - Recognize ill-formed { } expressions in regcomp
+
 * Wed Aug 19 2009 Andreas Schwab <schwab@redhat.com> - 2.10.1-5
 - Update from release/2.10/master.
   - handle missing nss module for biarch systems (#512309)
