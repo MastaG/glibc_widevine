@@ -1,5 +1,6 @@
-%define glibcsrcdir glibc-2.11-25-g8d7c09b
-%define glibcversion 2.11
+%define glibcsrcdir glibc-2.11.1
+%define glibc_release_url ftp://sources.redhat.com/pub/glibc/releases/
+%define glibcversion 2.11.1
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon sparcv9v sparc64v alphaev6
@@ -28,7 +29,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4
+Release: 1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1037,6 +1038,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Dec 14 2009 Andreas Schwab <schwab@redhat.com> - 2.11.1-1
+- Update to 2.11.1 release.
+  - Locale updates.
+  - Don't reuse RPC XIDs across forks.
+
 * Mon Nov 30 2009 Andreas Schwab <schwab@redhat.com> - 2.11-4
 - Update from 2.11 branch
   - Fix sync_file_range on ppc/ppc64.
