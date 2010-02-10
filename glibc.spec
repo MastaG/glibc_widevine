@@ -29,7 +29,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1
+Release: 2
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -42,6 +42,7 @@ Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.bz2
 Source1: %{glibcsrcdir}-fedora.tar.bz2
 Patch0: %{name}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
+Patch2: sparc-shared-mapping.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -247,6 +248,7 @@ package or when debugging this package.
 %prep
 %setup -q -n %{glibcsrcdir} -b1
 %patch0 -E -p1
+%patch2 -p1
 %ifarch ia64
 %if "%{_lib}" == "lib64"
 %patch1 -p1
@@ -1038,6 +1040,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Feb 10 2010 Dennis Gilmore <dennis@ausil.us> - 2.11.1-2
+- add sparc locale patch commited upstream to the fedora branch
+
 * Mon Dec 14 2009 Andreas Schwab <schwab@redhat.com> - 2.11.1-1
 - Update to 2.11.1 release.
   - Locale updates.
