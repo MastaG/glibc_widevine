@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.11-188-g0cbcca8
+%define glibcsrcdir glibc-2.11-215-g199428c
 %define glibcversion 2.11.90
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -24,7 +24,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12
+Release: 13
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -950,12 +950,10 @@ rm -f *.filelist*
 %endif
 %endif
 %ifarch s390x
-%dir /lib
 /lib/ld64.so.1
 %endif
 %ifarch ia64
 %if "%{_lib}" == "lib64"
-%dir /lib
 /lib/ld-linux-ia64.so.2
 %endif
 %endif
@@ -982,7 +980,6 @@ rm -f *.filelist*
 %ifnarch %{auxarches}
 %files -f common.filelist common
 %defattr(-,root,root)
-%dir %{_prefix}/lib/locale
 %attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
@@ -1033,6 +1030,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Feb 22 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-13
+- Update from master
+  - Use CPUID_OFFSET instead of FEATURE_OFFSET
+  - Add 32bit memcmp/strcmp/strncmp optimized for SSSE3/SSS4.2
+  - Fix file descriotor leak in nftw with FTW_CHDIR (BZ#11271)
+  - Add Sparc STT_GNU_IFUNC support
+  - Add power7-optimized classification functions
+- Reapply "Optimize 32bit memset/memcpy with SSE2/SSSE3."
+- Use unsigned comparison in sse memcpy/memset
+
 * Mon Feb  8 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-12
 - Update from master
   - Update constants in <sys/mount.h> for current kernels (#11235)

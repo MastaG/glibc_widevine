@@ -44,3 +44,4 @@ glibc-2_11_90-9:HEAD:glibc-2.11.90-9.src.rpm:1263553804
 glibc-2_11_90-10:HEAD:glibc-2.11.90-10.src.rpm:1264006094
 glibc-2_11_90-11:HEAD:glibc-2.11.90-11.src.rpm:1265032871
 glibc-2_11_90-12:HEAD:glibc-2.11.90-12.src.rpm:1265642830
+glibc-2_11_90-13:F-13:glibc-2.11.90-13.src.rpm:1266853673
