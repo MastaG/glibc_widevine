@@ -1,6 +1,18 @@
---- glibc-2.11-215-g199428c/ChangeLog
-+++ glibc-2.11.90-13/ChangeLog
-@@ -179,6 +179,30 @@
+--- glibc-2.11-222-ge2f4aa5/ChangeLog
++++ glibc-2.11.90-14/ChangeLog
+@@ -30,6 +30,11 @@
+ 	* sysdeps/sparc/sparc64/dl-machine.h (elf_machine_runtime_setup):
+ 	Adjust rela->r_offset by l->l_addr when rewriting PLT.
+ 
++2010-02-21  H.J. Lu  <hongjiu.lu@intel.com>
++
++	* sysdeps/i386/i686/multiarch/memcpy-ssse3-rep.S: Properly
++	decrement ECX when jumping to copy_page_by_rep.
++
+ 2010-02-19  Carl Fredrik Hammar  <hammy.lite@gmail.com>
+ 
+ 	* hurd/hurdioctl.c (tiocsctty): Call `do_tiocsctty' instead of
+@@ -211,6 +216,30 @@
  	* sysdeps/x86_64/fpu/fegetenv.c: Likewise
  	* sysdeps/s390/fpu/fegetenv.c: Likewise.  Remove unused headers.
  
@@ -31,7 +43,7 @@
  2010-02-05  H.J. Lu  <hongjiu.lu@intel.com>
  
  	[BZ #11230]
-@@ -2121,6 +2145,11 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
+@@ -2153,6 +2182,11 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	* sysdeps/generic/ldsodefs.h (struct rtld_global): The map element in
  	the unique symbol hash table should not be const.
  
@@ -43,7 +55,7 @@
  2009-07-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* sysdeps/x86_64/multiarch/strstr.c: Minor cleanups.  Remove
-@@ -2386,6 +2415,11 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
+@@ -2418,6 +2452,11 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	out common code into new function get_common_indeces. Determine
  	extended family and model for Intel processors.
  
@@ -55,7 +67,7 @@
  2009-06-26  Ulrich Drepper  <drepper@redhat.com>
  
  	* resolv/resolv.h: Define RES_SNGLKUPREOP.
-@@ -11079,6 +11113,10 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
+@@ -11111,6 +11150,10 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	[BZ #4368]
  	* stdlib/stdlib.h: Remove obsolete part of comment for realpath.
  
@@ -66,7 +78,7 @@
  2007-04-16  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #4364]
-@@ -12336,6 +12374,15 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
+@@ -12368,6 +12411,15 @@ d2009-10-30  Ulrich Drepper  <drepper@redhat.com>
  	separators also if no non-zero digits found.
  	* stdlib/Makefile (tests): Add tst-strtod3.
  
@@ -82,8 +94,8 @@
  2006-12-09  Ulrich Drepper  <drepper@redhat.com>
  
  	[BZ #3632]
---- glibc-2.11-215-g199428c/ChangeLog.15
-+++ glibc-2.11.90-13/ChangeLog.15
+--- glibc-2.11-222-ge2f4aa5/ChangeLog.15
++++ glibc-2.11.90-14/ChangeLog.15
 @@ -477,6 +477,14 @@
  
  2004-11-26  Jakub Jelinek  <jakub@redhat.com>
@@ -149,8 +161,8 @@
  2004-08-30  Roland McGrath  <roland@frob.com>
  
  	* scripts/extract-abilist.awk: If `lastversion' variable defined, omit
---- glibc-2.11-215-g199428c/ChangeLog.16
-+++ glibc-2.11.90-13/ChangeLog.16
+--- glibc-2.11-222-ge2f4aa5/ChangeLog.16
++++ glibc-2.11.90-14/ChangeLog.16
 @@ -2042,6 +2042,9 @@
  	(__MATHDECL_2): Use __REDIRECT_NTH instead of __REDIRECT
  	followed by __THROW.
@@ -204,8 +216,8 @@
  2005-07-28  Thomas Schwinge  <schwinge@nic-nac-project.de>
  
  	[BZ #1137]
---- glibc-2.11-215-g199428c/Makeconfig
-+++ glibc-2.11.90-13/Makeconfig
+--- glibc-2.11-222-ge2f4aa5/Makeconfig
++++ glibc-2.11.90-14/Makeconfig
 @@ -780,12 +780,12 @@ endif
  # The assembler can generate debug information too.
  ifndef ASFLAGS
@@ -222,8 +234,8 @@
  
  ifndef BUILD_CC
  BUILD_CC = $(CC)
---- glibc-2.11-215-g199428c/csu/Makefile
-+++ glibc-2.11.90-13/csu/Makefile
+--- glibc-2.11-222-ge2f4aa5/csu/Makefile
++++ glibc-2.11.90-14/csu/Makefile
 @@ -93,7 +93,8 @@ omit-deps += $(crtstuff)
  $(crtstuff:%=$(objpfx)%.o): %.o: %.S $(objpfx)defs.h
  	$(compile.S) -g0 $(ASFLAGS-.os) -o $@
@@ -234,8 +246,8 @@
  
  vpath initfini.c $(sysdirs)
  
---- glibc-2.11-215-g199428c/csu/elf-init.c
-+++ glibc-2.11.90-13/csu/elf-init.c
+--- glibc-2.11-222-ge2f4aa5/csu/elf-init.c
++++ glibc-2.11.90-14/csu/elf-init.c
 @@ -63,6 +63,23 @@ extern void (*__init_array_end []) (int, char **, char **)
  extern void (*__fini_array_start []) (void) attribute_hidden;
  extern void (*__fini_array_end []) (void) attribute_hidden;
@@ -260,8 +272,8 @@
  
  /* These function symbols are provided for the .init/.fini section entry
     points automagically by the linker.  */
---- glibc-2.11-215-g199428c/debug/tst-chk1.c
-+++ glibc-2.11.90-13/debug/tst-chk1.c
+--- glibc-2.11-222-ge2f4aa5/debug/tst-chk1.c
++++ glibc-2.11.90-14/debug/tst-chk1.c
 @@ -17,6 +17,9 @@
     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA.  */
@@ -290,8 +302,8 @@
  #  define O 0
  # else
  #  define O 1
---- glibc-2.11-215-g199428c/elf/ldconfig.c
-+++ glibc-2.11.90-13/elf/ldconfig.c
+--- glibc-2.11-222-ge2f4aa5/elf/ldconfig.c
++++ glibc-2.11.90-14/elf/ldconfig.c
 @@ -1020,17 +1020,19 @@ search_dirs (void)
  
  
@@ -373,8 +385,8 @@
      }
  
    if (! opt_ignore_aux_cache)
---- glibc-2.11-215-g199428c/elf/tst-stackguard1.c
-+++ glibc-2.11.90-13/elf/tst-stackguard1.c
+--- glibc-2.11-222-ge2f4aa5/elf/tst-stackguard1.c
++++ glibc-2.11.90-14/elf/tst-stackguard1.c
 @@ -160,17 +160,21 @@ do_test (void)
       the 16 runs, something is very wrong.  */
    int ndifferences = 0;
@@ -399,16 +411,16 @@
      {
        puts ("stack guard canaries are not randomized enough");
        puts ("nor equal to the default canary value");
---- glibc-2.11-215-g199428c/include/bits/stdlib-ldbl.h
-+++ glibc-2.11.90-13/include/bits/stdlib-ldbl.h
+--- glibc-2.11-222-ge2f4aa5/include/bits/stdlib-ldbl.h
++++ glibc-2.11.90-14/include/bits/stdlib-ldbl.h
 @@ -0,0 +1 @@
 +#include <stdlib/bits/stdlib-ldbl.h>
---- glibc-2.11-215-g199428c/include/bits/wchar-ldbl.h
-+++ glibc-2.11.90-13/include/bits/wchar-ldbl.h
+--- glibc-2.11-222-ge2f4aa5/include/bits/wchar-ldbl.h
++++ glibc-2.11.90-14/include/bits/wchar-ldbl.h
 @@ -0,0 +1 @@
 +#include <wcsmbs/bits/wchar-ldbl.h>
---- glibc-2.11-215-g199428c/include/features.h
-+++ glibc-2.11.90-13/include/features.h
+--- glibc-2.11-222-ge2f4aa5/include/features.h
++++ glibc-2.11.90-14/include/features.h
 @@ -308,8 +308,13 @@
  #endif
  
@@ -425,8 +437,8 @@
  #  define __USE_FORTIFY_LEVEL 2
  # else
  #  define __USE_FORTIFY_LEVEL 1
---- glibc-2.11-215-g199428c/intl/locale.alias
-+++ glibc-2.11.90-13/intl/locale.alias
+--- glibc-2.11-222-ge2f4aa5/intl/locale.alias
++++ glibc-2.11.90-14/intl/locale.alias
 @@ -57,8 +57,6 @@ korean		ko_KR.eucKR
  korean.euc 	ko_KR.eucKR
  ko_KR		ko_KR.eucKR
@@ -436,8 +448,8 @@
  norwegian       nb_NO.ISO-8859-1
  nynorsk		nn_NO.ISO-8859-1
  polish          pl_PL.ISO-8859-2
---- glibc-2.11-215-g199428c/libio/stdio.h
-+++ glibc-2.11.90-13/libio/stdio.h
+--- glibc-2.11-222-ge2f4aa5/libio/stdio.h
++++ glibc-2.11.90-14/libio/stdio.h
 @@ -165,10 +165,12 @@ typedef _G_fpos64_t fpos64_t;
  extern struct _IO_FILE *stdin;		/* Standard input stream.  */
  extern struct _IO_FILE *stdout;		/* Standard output stream.  */
@@ -451,8 +463,8 @@
  
  __BEGIN_NAMESPACE_STD
  /* Remove file FILENAME.  */
---- glibc-2.11-215-g199428c/locale/iso-4217.def
-+++ glibc-2.11.90-13/locale/iso-4217.def
+--- glibc-2.11-222-ge2f4aa5/locale/iso-4217.def
++++ glibc-2.11.90-14/locale/iso-4217.def
 @@ -8,6 +8,7 @@
   *
   * !!! The list has to be sorted !!!
@@ -544,8 +556,8 @@
  DEFINE_INT_CURR("PYG")		/* Paraguay Guarani  */
  DEFINE_INT_CURR("QAR")		/* Qatar Rial  */
  DEFINE_INT_CURR("ROL")		/* Romanian Leu  */
---- glibc-2.11-215-g199428c/locale/programs/locarchive.c
-+++ glibc-2.11.90-13/locale/programs/locarchive.c
+--- glibc-2.11-222-ge2f4aa5/locale/programs/locarchive.c
++++ glibc-2.11.90-14/locale/programs/locarchive.c
 @@ -134,7 +134,7 @@ create_archive (const char *archivefname, struct locarhandle *ah)
    size_t reserved = RESERVE_MMAP_SIZE;
    int xflags = 0;
@@ -604,8 +616,8 @@
  add_alias (struct locarhandle *ah, const char *alias, bool replace,
  	   const char *oldname, uint32_t *locrec_offset_p)
  {
---- glibc-2.11-215-g199428c/localedata/Makefile
-+++ glibc-2.11.90-13/localedata/Makefile
+--- glibc-2.11-222-ge2f4aa5/localedata/Makefile
++++ glibc-2.11.90-14/localedata/Makefile
 @@ -225,6 +225,7 @@ $(INSTALL-SUPPORTED-LOCALES): install-locales-dir
  	echo -n '...'; \
  	input=`echo $$locale | sed 's/\([^.]*\)[^@]*\(.*\)/\1\2/'`; \
@@ -614,8 +626,8 @@
  		     -i locales/$$input -c -f charmaps/$$charset \
  		     $(addprefix --prefix=,$(install_root)) $$locale; \
  	echo ' done'; \
---- glibc-2.11-215-g199428c/localedata/SUPPORTED
-+++ glibc-2.11.90-13/localedata/SUPPORTED
+--- glibc-2.11-222-ge2f4aa5/localedata/SUPPORTED
++++ glibc-2.11.90-14/localedata/SUPPORTED
 @@ -84,6 +84,7 @@ cy_GB.UTF-8/UTF-8 \
  cy_GB/ISO-8859-14 \
  da_DK.UTF-8/UTF-8 \
@@ -657,8 +669,8 @@
  ta_IN/UTF-8 \
  te_IN/UTF-8 \
  tg_TJ.UTF-8/UTF-8 \
---- glibc-2.11-215-g199428c/localedata/locales/cy_GB
-+++ glibc-2.11.90-13/localedata/locales/cy_GB
+--- glibc-2.11-222-ge2f4aa5/localedata/locales/cy_GB
++++ glibc-2.11.90-14/localedata/locales/cy_GB
 @@ -248,8 +248,11 @@ mon         "<U0049><U006F><U006E><U0061><U0077><U0072>";/
  d_t_fmt     "<U0044><U0079><U0064><U0064><U0020><U0025><U0041><U0020><U0025><U0064><U0020><U006d><U0069><U0073><U0020><U0025><U0042><U0020><U0025><U0059><U0020><U0025><U0054><U0020><U0025><U005A>"
  d_fmt       "<U0025><U0064><U002E><U0025><U006D><U002E><U0025><U0079>"
@@ -673,8 +685,8 @@
  END LC_TIME
  
  LC_MESSAGES
---- glibc-2.11-215-g199428c/localedata/locales/en_GB
-+++ glibc-2.11.90-13/localedata/locales/en_GB
+--- glibc-2.11-222-ge2f4aa5/localedata/locales/en_GB
++++ glibc-2.11.90-14/localedata/locales/en_GB
 @@ -116,8 +116,8 @@ mon         "<U004A><U0061><U006E><U0075><U0061><U0072><U0079>";/
  d_t_fmt     "<U0025><U0061><U0020><U0025><U0064><U0020><U0025><U0062><U0020><U0025><U0059><U0020><U0025><U0054><U0020><U0025><U005A>"
  d_fmt       "<U0025><U0064><U002F><U0025><U006D><U002F><U0025><U0079>"
@@ -686,8 +698,8 @@
  date_fmt	"<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065>/
  <U0020><U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053><U0020>/
  <U0025><U005A><U0020><U0025><U0059>"
---- glibc-2.11-215-g199428c/localedata/locales/no_NO
-+++ glibc-2.11.90-13/localedata/locales/no_NO
+--- glibc-2.11-222-ge2f4aa5/localedata/locales/no_NO
++++ glibc-2.11.90-14/localedata/locales/no_NO
 @@ -0,0 +1,69 @@
 +escape_char	/
 +comment_char    %
@@ -758,8 +770,8 @@
 +LC_ADDRESS
 +copy "nb_NO"
 +END LC_ADDRESS
---- glibc-2.11-215-g199428c/localedata/locales/zh_TW
-+++ glibc-2.11.90-13/localedata/locales/zh_TW
+--- glibc-2.11-222-ge2f4aa5/localedata/locales/zh_TW
++++ glibc-2.11.90-14/localedata/locales/zh_TW
 @@ -1,7 +1,7 @@
  comment_char %
  escape_char /
@@ -787,8 +799,8 @@
  revision   "0.2"
  date       "2000-08-02"
  %
---- glibc-2.11-215-g199428c/malloc/mcheck.c
-+++ glibc-2.11.90-13/malloc/mcheck.c
+--- glibc-2.11-222-ge2f4aa5/malloc/mcheck.c
++++ glibc-2.11.90-14/malloc/mcheck.c
 @@ -24,9 +24,25 @@
  # include <mcheck.h>
  # include <stdint.h>
@@ -864,8 +876,8 @@
  
        old_free_hook = __free_hook;
        __free_hook = freehook;
---- glibc-2.11-215-g199428c/manual/libc.texinfo
-+++ glibc-2.11.90-13/manual/libc.texinfo
+--- glibc-2.11-222-ge2f4aa5/manual/libc.texinfo
++++ glibc-2.11.90-14/manual/libc.texinfo
 @@ -5,7 +5,7 @@
  @c setchapternewpage odd
  
@@ -875,8 +887,8 @@
  @direntry
  * Libc: (libc).                 C library.
  @end direntry
---- glibc-2.11-215-g199428c/misc/sys/cdefs.h
-+++ glibc-2.11.90-13/misc/sys/cdefs.h
+--- glibc-2.11-222-ge2f4aa5/misc/sys/cdefs.h
++++ glibc-2.11.90-14/misc/sys/cdefs.h
 @@ -132,7 +132,10 @@
  #define __bos(ptr) __builtin_object_size (ptr, __USE_FORTIFY_LEVEL > 1)
  #define __bos0(ptr) __builtin_object_size (ptr, 0)
@@ -920,16 +932,16 @@
  # define __va_arg_pack() __builtin_va_arg_pack ()
  # define __va_arg_pack_len() __builtin_va_arg_pack_len ()
  #endif
---- glibc-2.11-215-g199428c/nis/nss
-+++ glibc-2.11.90-13/nis/nss
+--- glibc-2.11-222-ge2f4aa5/nis/nss
++++ glibc-2.11.90-14/nis/nss
 @@ -25,4 +25,4 @@
  #  memory with every getXXent() call.  Otherwise each getXXent() call
  #  might result into a network communication with the server to get
  #  the next entry.
 -#SETENT_BATCH_READ=TRUE
 +SETENT_BATCH_READ=TRUE
---- glibc-2.11-215-g199428c/nptl/ChangeLog
-+++ glibc-2.11.90-13/nptl/ChangeLog
+--- glibc-2.11-222-ge2f4aa5/nptl/ChangeLog
++++ glibc-2.11.90-14/nptl/ChangeLog
 @@ -3834,6 +3834,15 @@
  	Use __sigfillset.  Document that sigfillset does the right thing wrt
  	to SIGSETXID.
@@ -970,8 +982,8 @@
  2003-07-25  Jakub Jelinek  <jakub@redhat.com>
  
  	* tst-cancel17.c (do_test): Check if aio_cancel failed.
---- glibc-2.11-215-g199428c/nptl/Makefile
-+++ glibc-2.11.90-13/nptl/Makefile
+--- glibc-2.11-222-ge2f4aa5/nptl/Makefile
++++ glibc-2.11.90-14/nptl/Makefile
 @@ -339,7 +339,8 @@ endif
  extra-objs += $(crti-objs) $(crtn-objs)
  omit-deps += crti crtn
@@ -1004,8 +1016,8 @@
  else
  $(addprefix $(objpfx),$(tests) $(test-srcs)): $(objpfx)libpthread.a
  endif
---- glibc-2.11-215-g199428c/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
-+++ glibc-2.11.90-13/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
+--- glibc-2.11-222-ge2f4aa5/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
++++ glibc-2.11.90-14/nptl/sysdeps/unix/sysv/linux/bits/posix_opt.h
 @@ -189,4 +189,7 @@
  /* Typed memory objects are not available.  */
  #define _POSIX_TYPED_MEMORY_OBJECTS	-1
@@ -1014,8 +1026,8 @@
 +#define _XOPEN_STREAMS	-1
 +
  #endif /* bits/posix_opt.h */
---- glibc-2.11-215-g199428c/nptl/sysdeps/unix/sysv/linux/kernel-features.h
-+++ glibc-2.11.90-13/nptl/sysdeps/unix/sysv/linux/kernel-features.h
+--- glibc-2.11-222-ge2f4aa5/nptl/sysdeps/unix/sysv/linux/kernel-features.h
++++ glibc-2.11.90-14/nptl/sysdeps/unix/sysv/linux/kernel-features.h
 @@ -0,0 +1,6 @@
 +#include_next <kernel-features.h>
 +
@@ -1023,8 +1035,8 @@
 +#ifndef __ASSUME_CLONE_THREAD_FLAGS
 +# define __ASSUME_CLONE_THREAD_FLAGS	1
 +#endif
---- glibc-2.11-215-g199428c/nptl/tst-stackguard1.c
-+++ glibc-2.11.90-13/nptl/tst-stackguard1.c
+--- glibc-2.11-222-ge2f4aa5/nptl/tst-stackguard1.c
++++ glibc-2.11.90-14/nptl/tst-stackguard1.c
 @@ -190,17 +190,21 @@ do_test (void)
       the 16 runs, something is very wrong.  */
    int ndifferences = 0;
@@ -1049,8 +1061,8 @@
      {
        puts ("stack guard canaries are not randomized enough");
        puts ("nor equal to the default canary value");
---- glibc-2.11-215-g199428c/nscd/nscd.conf
-+++ glibc-2.11.90-13/nscd/nscd.conf
+--- glibc-2.11-222-ge2f4aa5/nscd/nscd.conf
++++ glibc-2.11.90-14/nscd/nscd.conf
 @@ -33,7 +33,7 @@
  #	logfile			/var/log/nscd.log
  #	threads			4
@@ -1060,8 +1072,8 @@
  #	stat-user		somebody
  	debug-level		0
  #	reload-count		5
---- glibc-2.11-215-g199428c/nscd/nscd.init
-+++ glibc-2.11.90-13/nscd/nscd.init
+--- glibc-2.11-222-ge2f4aa5/nscd/nscd.init
++++ glibc-2.11.90-14/nscd/nscd.init
 @@ -9,6 +9,7 @@
  #		slow naming services like NIS, NIS+, LDAP, or hesiod.
  # processname: /usr/sbin/nscd
@@ -1133,8 +1145,8 @@
  	;;
      *)
  	echo $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
---- glibc-2.11-215-g199428c/posix/Makefile
-+++ glibc-2.11.90-13/posix/Makefile
+--- glibc-2.11-222-ge2f4aa5/posix/Makefile
++++ glibc-2.11.90-14/posix/Makefile
 @@ -303,15 +303,8 @@ $(inst_libexecdir)/getconf: $(inst_bindir)/getconf \
  	  mv -f $@/$$spec.new $@/$$spec; \
  	done < $(objpfx)getconf.speclist
@@ -1155,8 +1167,8 @@
 +	  | sed -n -e '/START_OF_STRINGS/,$${/\(POSIX_V[67]\|_XBS5\)_/{s/^[^"]*"//;s/".*$$//;p}}' \
 +	  > $@.new
  	mv -f $@.new $@
---- glibc-2.11-215-g199428c/posix/getconf.speclist.h
-+++ glibc-2.11.90-13/posix/getconf.speclist.h
+--- glibc-2.11-222-ge2f4aa5/posix/getconf.speclist.h
++++ glibc-2.11.90-14/posix/getconf.speclist.h
 @@ -0,0 +1,39 @@
 +#include <unistd.h>
 +const char *START_OF_STRINGS =
@@ -1197,8 +1209,8 @@
 +"XBS5_LPBIG_OFFBIG"
 +#endif
 +"";
---- glibc-2.11-215-g199428c/streams/Makefile
-+++ glibc-2.11.90-13/streams/Makefile
+--- glibc-2.11-222-ge2f4aa5/streams/Makefile
++++ glibc-2.11.90-14/streams/Makefile
 @@ -21,7 +21,7 @@
  #
  subdir	:= streams
@@ -1208,8 +1220,8 @@
  routines	= isastream getmsg getpmsg putmsg putpmsg fattach fdetach
  
  include ../Rules
---- glibc-2.11-215-g199428c/sysdeps/generic/dl-cache.h
-+++ glibc-2.11.90-13/sysdeps/generic/dl-cache.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/generic/dl-cache.h
++++ glibc-2.11.90-14/sysdeps/generic/dl-cache.h
 @@ -36,6 +36,14 @@
  # define add_system_dir(dir) add_dir (dir)
  #endif
@@ -1225,8 +1237,8 @@
  #define CACHEMAGIC "ld.so-1.7.0"
  
  /* libc5 and glibc 2.0/2.1 use the same format.  For glibc 2.2 another
---- glibc-2.11-215-g199428c/sysdeps/i386/Makefile
-+++ glibc-2.11.90-13/sysdeps/i386/Makefile
+--- glibc-2.11-222-ge2f4aa5/sysdeps/i386/Makefile
++++ glibc-2.11.90-14/sysdeps/i386/Makefile
 @@ -2,6 +2,8 @@
  # Every i386 port in use uses gas syntax (I think).
  asm-CPPFLAGS += -DGAS_SYNTAX
@@ -1251,8 +1263,8 @@
  endif
  
  ifeq ($(subdir),elf)
---- glibc-2.11-215-g199428c/sysdeps/i386/i686/multiarch/memcpy-ssse3-rep.S
-+++ glibc-2.11.90-13/sysdeps/i386/i686/multiarch/memcpy-ssse3-rep.S
+--- glibc-2.11-222-ge2f4aa5/sysdeps/i386/i686/multiarch/memcpy-ssse3-rep.S
++++ glibc-2.11.90-14/sysdeps/i386/i686/multiarch/memcpy-ssse3-rep.S
 @@ -128,7 +128,7 @@ ENTRY (MEMCPY)
  	jb	L(copy_forward)
  	je	L(fwd_write_0bytes)
@@ -1512,7 +1524,21 @@
  
  	movdqa	16(%eax, %edi), %xmm2
  	sub	$32, %ecx
-@@ -1298,7 +1297,7 @@ L(large_page_loop):
+@@ -1250,11 +1249,12 @@ L(large_page):
+ 	movdqu	%xmm0, (%esi)
+ 	movntdq	%xmm1, (%edx)
+ 	lea	16(%edx), %edx
++	lea	-16(%ecx), %ecx
+ 	cmp	%al, %dl
+ 	je	L(copy_page_by_rep)
+ L(large_page_loop_init):
+ 	POP (%esi)
+-	lea	-0x90(%ecx), %ecx
++	lea	-0x80(%ecx), %ecx
+ 	POP (%edi)
+ L(large_page_loop):
+ 	prefetchnta	0x1c0(%eax)
+@@ -1298,7 +1298,7 @@ L(large_page_loop):
  	sub	$0x40, %ecx
  L(large_page_less_64bytes):
  	cmp	$32, %ecx
@@ -1521,7 +1547,7 @@
  	movdqu	(%eax), %xmm0
  	movdqu	0x10(%eax), %xmm1
  	lea	0x20(%eax), %eax
-@@ -1665,11 +1664,11 @@ L(copy_backward):
+@@ -1665,11 +1665,11 @@ L(copy_backward):
  
  L(bk_aligned_4):
  	cmp	$64, %ecx
@@ -1535,7 +1561,7 @@
  
  L(bk_write_more32bytes):
  	/* Copy 32 bytes at a time.  */
-@@ -1704,7 +1703,7 @@ L(bk_write_less32bytes_2):
+@@ -1704,7 +1704,7 @@ L(bk_write_less32bytes_2):
  	ALIGN (4)
  L(bk_align):
  	cmp	$8, %ecx
@@ -1544,7 +1570,7 @@
  	testl	$1, %edx
  	/* We get here only if (EDX & 3 ) != 0 so if (EDX & 1) ==0,
  	   then (EDX & 2) must be != 0.  */
-@@ -1760,7 +1759,7 @@ L(bk_ssse3_align):
+@@ -1760,7 +1760,7 @@ L(bk_ssse3_align):
  
  L(bk_ssse3_cpy_pre):
  	cmp	$64, %ecx
@@ -1553,7 +1579,7 @@
  
  L(bk_ssse3_cpy):
  	sub	$64, %esi
-@@ -1775,7 +1774,7 @@ L(bk_ssse3_cpy):
+@@ -1775,7 +1775,7 @@ L(bk_ssse3_cpy):
  	movdqu	(%esi), %xmm0
  	movdqa	%xmm0, (%edx)
  	cmp	$64, %ecx
@@ -1562,8 +1588,8 @@
  	jmp	L(bk_write_64bytesless)
  
  #endif
---- glibc-2.11-215-g199428c/sysdeps/i386/i686/multiarch/memcpy-ssse3.S
-+++ glibc-2.11.90-13/sysdeps/i386/i686/multiarch/memcpy-ssse3.S
+--- glibc-2.11-222-ge2f4aa5/sysdeps/i386/i686/multiarch/memcpy-ssse3.S
++++ glibc-2.11.90-14/sysdeps/i386/i686/multiarch/memcpy-ssse3.S
 @@ -128,7 +128,7 @@ ENTRY (MEMCPY)
  	jb	L(copy_forward)
  	je	L(fwd_write_0bytes)
@@ -1873,8 +1899,8 @@
  	jmp	L(bk_write_64bytesless)
  
  #endif
---- glibc-2.11-215-g199428c/sysdeps/i386/i686/multiarch/memset-sse2-rep.S
-+++ glibc-2.11.90-13/sysdeps/i386/i686/multiarch/memset-sse2-rep.S
+--- glibc-2.11-222-ge2f4aa5/sysdeps/i386/i686/multiarch/memset-sse2-rep.S
++++ glibc-2.11.90-14/sysdeps/i386/i686/multiarch/memset-sse2-rep.S
 @@ -261,7 +261,7 @@ L(not_aligned_16):
  	ALIGN (4)
  L(aligned_16):
@@ -1902,8 +1928,8 @@
  
  L(128bytesless_normal):
  	POP (%edi)
---- glibc-2.11-215-g199428c/sysdeps/i386/i686/multiarch/memset-sse2.S
-+++ glibc-2.11.90-13/sysdeps/i386/i686/multiarch/memset-sse2.S
+--- glibc-2.11-222-ge2f4aa5/sysdeps/i386/i686/multiarch/memset-sse2.S
++++ glibc-2.11.90-14/sysdeps/i386/i686/multiarch/memset-sse2.S
 @@ -261,7 +261,7 @@ L(not_aligned_16):
  	ALIGN (4)
  L(aligned_16):
@@ -1958,8 +1984,8 @@
  	sfence
  L(shared_cache_loop_end):
  #if defined DATA_CACHE_SIZE || !defined SHARED
---- glibc-2.11-215-g199428c/sysdeps/ia64/Makefile
-+++ glibc-2.11.90-13/sysdeps/ia64/Makefile
+--- glibc-2.11-222-ge2f4aa5/sysdeps/ia64/Makefile
++++ glibc-2.11.90-14/sysdeps/ia64/Makefile
 @@ -12,8 +12,8 @@ elide-routines.os += hp-timing
  
  ifeq (yes,$(build-shared))
@@ -1971,8 +1997,8 @@
  endif
  endif
  
---- glibc-2.11-215-g199428c/sysdeps/ia64/ia64libgcc.S
-+++ glibc-2.11.90-13/sysdeps/ia64/ia64libgcc.S
+--- glibc-2.11-222-ge2f4aa5/sysdeps/ia64/ia64libgcc.S
++++ glibc-2.11.90-14/sysdeps/ia64/ia64libgcc.S
 @@ -1,350 +0,0 @@
 -/* From the Intel IA-64 Optimization Guide, choose the minimum latency
 -   alternative.  */
@@ -2324,8 +2350,8 @@
 -	.symver	___multi3, __multi3@GLIBC_2.2
 -
 -#endif
---- glibc-2.11-215-g199428c/sysdeps/ia64/libgcc-compat.c
-+++ glibc-2.11.90-13/sysdeps/ia64/libgcc-compat.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/ia64/libgcc-compat.c
++++ glibc-2.11.90-14/sysdeps/ia64/libgcc-compat.c
 @@ -0,0 +1,84 @@
 +/* pre-.hidden libgcc compatibility
 +   Copyright (C) 2002 Free Software Foundation, Inc.
@@ -2411,8 +2437,8 @@
 +symbol_version (INTUSE (__multi3), __multi3, GLIBC_2.2);
 +
 +#endif
---- glibc-2.11-215-g199428c/sysdeps/powerpc/powerpc64/Makefile
-+++ glibc-2.11.90-13/sysdeps/powerpc/powerpc64/Makefile
+--- glibc-2.11-222-ge2f4aa5/sysdeps/powerpc/powerpc64/Makefile
++++ glibc-2.11.90-14/sysdeps/powerpc/powerpc64/Makefile
 @@ -30,6 +30,7 @@ ifneq ($(elf),no)
  # we use -fpic instead which is much better.
  CFLAGS-initfini.s += -fpic -O1
@@ -2421,8 +2447,8 @@
  endif
  
  ifeq ($(subdir),elf)
---- glibc-2.11-215-g199428c/sysdeps/unix/nice.c
-+++ glibc-2.11.90-13/sysdeps/unix/nice.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/nice.c
++++ glibc-2.11.90-14/sysdeps/unix/nice.c
 @@ -42,7 +42,12 @@ nice (int incr)
  	__set_errno (save);
      }
@@ -2437,8 +2463,8 @@
    if (result == -1)
      {
        if (errno == EACCES)
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/check_pf.c
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/check_pf.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/check_pf.c
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/check_pf.c
 @@ -27,13 +27,10 @@
  #include <unistd.h>
  #include <sys/socket.h>
@@ -2454,8 +2480,8 @@
  
  #ifndef IFA_F_HOMEADDRESS
  # define IFA_F_HOMEADDRESS 0
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/dl-osinfo.h
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/dl-osinfo.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/dl-osinfo.h
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/dl-osinfo.h
 @@ -17,10 +17,13 @@
     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
     02111-1307 USA.  */
@@ -2503,8 +2529,8 @@
      }
    else
  #endif
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/futimesat.c
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/futimesat.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/futimesat.c
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/futimesat.c
 @@ -37,14 +37,14 @@ futimesat (fd, file, tvp)
  {
    int result;
@@ -2547,8 +2573,8 @@
      {
        size_t filelen = strlen (file);
        if (__builtin_expect (filelen == 0, 0))
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/i386/dl-cache.h
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/i386/dl-cache.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/i386/dl-cache.h
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/i386/dl-cache.h
 @@ -0,0 +1,59 @@
 +/* Support for reading /etc/ld.so.cache files written by Linux ldconfig.
 +   Copyright (C) 2004 Free Software Foundation, Inc.
@@ -2609,8 +2635,8 @@
 +  } while (0)
 +
 +#include_next <dl-cache.h>
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/ia64/dl-cache.h
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/ia64/dl-cache.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/ia64/dl-cache.h
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/ia64/dl-cache.h
 @@ -22,4 +22,31 @@
  #define _dl_cache_check_flags(flags) \
    ((flags) == _DL_CACHE_DEFAULT_ID)
@@ -2643,29 +2669,29 @@
 +  } while (0)
 +
  #include_next <dl-cache.h>
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/ia64/dl-procinfo.c
 @@ -0,0 +1,5 @@
 +#ifdef IS_IN_ldconfig
 +#include <sysdeps/i386/dl-procinfo.c>
 +#else
 +#include <sysdeps/generic/dl-procinfo.c>
 +#endif
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/ia64/dl-procinfo.h
 @@ -0,0 +1,5 @@
 +#ifdef IS_IN_ldconfig
 +#include <sysdeps/unix/sysv/linux/i386/dl-procinfo.h>
 +#else
 +#include <sysdeps/generic/dl-procinfo.h>
 +#endif
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/ia64/ldd-rewrite.sed
 @@ -1 +1 @@
 -s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 \2\3"_
 +s_^\(RTLDLIST=\)\([^ 	]*\)-ia64\(\.so\.[0-9.]*\)[ 	]*$_\1"\2-ia64\3 /emul/ia32-linux\2\3"_
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/netlinkaccess.h
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/netlinkaccess.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/netlinkaccess.h
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/netlinkaccess.h
 @@ -25,6 +25,24 @@
  
  #include <kernel-features.h>
@@ -2691,8 +2717,8 @@
  
  struct netlink_res
  {
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/paths.h
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/paths.h
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/paths.h
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/paths.h
 @@ -62,7 +62,7 @@
  #define	_PATH_TTY	"/dev/tty"
  #define	_PATH_UNIX	"/boot/vmlinux"
@@ -2702,13 +2728,13 @@
  #define _PATH_WTMP	"/var/log/wtmp"
  
  /* Provide trailing slash, since mostly used for building pathnames. */
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
 @@ -1 +1 @@
 -#include "../../fxstat.c"
 +#include "../../i386/fxstat.c"
---- glibc-2.11-215-g199428c/sysdeps/unix/sysv/linux/tcsetattr.c
-+++ glibc-2.11.90-13/sysdeps/unix/sysv/linux/tcsetattr.c
+--- glibc-2.11-222-ge2f4aa5/sysdeps/unix/sysv/linux/tcsetattr.c
++++ glibc-2.11.90-14/sysdeps/unix/sysv/linux/tcsetattr.c
 @@ -49,6 +49,7 @@ tcsetattr (fd, optional_actions, termios_p)
  {
    struct __kernel_termios k_termios;
@@ -2754,8 +2780,8 @@
 +  return retval;
  }
  libc_hidden_def (tcsetattr)
---- glibc-2.11-215-g199428c/timezone/zic.c
-+++ glibc-2.11.90-13/timezone/zic.c
+--- glibc-2.11-222-ge2f4aa5/timezone/zic.c
++++ glibc-2.11.90-14/timezone/zic.c
 @@ -1921,7 +1921,7 @@ const int			zonecount;
  		if (stdrp != NULL && stdrp->r_hiyear == 2037)
  			return;

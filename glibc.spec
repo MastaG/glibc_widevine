@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.11-215-g199428c
+%define glibcsrcdir glibc-2.11-222-ge2f4aa5
 %define glibcversion 2.11.90
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -24,7 +24,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13
+Release: 14
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1030,6 +1030,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Feb 23 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-14
+- Update from master
+  - Sparc updates
+- Fix SSSE3 memcpy (#556584)
+
 * Mon Feb 22 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-13
 - Update from master
   - Use CPUID_OFFSET instead of FEATURE_OFFSET
