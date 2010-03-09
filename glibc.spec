@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.11-222-ge2f4aa5
+%define glibcsrcdir glibc-2.11-255-g462a522
 %define glibcversion 2.11.90
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -19,12 +19,11 @@
 %define rtkaioarches %{ix86} x86_64 ia64 ppc ppc64 s390 s390x
 %define debuginfocommonarches alpha alphaev6 sparc sparcv9 sparcv9v sparc64 sparc64v
 %define multiarcharches ppc ppc64 %{ix86} x86_64
-%define _unpackaged_files_terminate_build 0
 
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14
+Release: 15
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -527,6 +526,7 @@ chmod 644 $RPM_BUILD_ROOT/etc/ld.so.conf
 mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
 mkdir -p $RPM_BUILD_ROOT/etc/sysconfig
 > $RPM_BUILD_ROOT/etc/sysconfig/nscd
+> $RPM_BUILD_ROOT/etc/gai.conf
 
 # Include %{_prefix}/%{_lib}/gconv/gconv-modules.cache
 > $RPM_BUILD_ROOT%{_prefix}/%{_lib}/gconv/gconv-modules.cache
@@ -569,8 +569,6 @@ rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss-*.so.1
 # Ugly hack for buggy rpm
 ln -f ${RPM_BUILD_ROOT}%{_sbindir}/iconvconfig{,.%{_target_cpu}}
 
-rm -f $RPM_BUILD_ROOT/etc/gai.conf
-
 # In F7+ this is provided by rpcbind rpm
 rm -f $RPM_BUILD_ROOT%{_sbindir}/rpcinfo
 
@@ -588,7 +586,6 @@ rm -f $RPM_BUILD_ROOT%{_sbindir}/rpcinfo
   find $RPM_BUILD_ROOT -type d \
        \( -path '*%{_prefix}/share/*' ! -path '*%{_infodir}' -o \
 	  -path "*%{_prefix}/include/*" -o \
-	  -path "*%{_prefix}/lib/locale/*" \
        \) -printf "%%%%dir /%%P\n"
 } | {
 
@@ -645,7 +642,8 @@ grep '%{_prefix}/bin' < rpm.filelist >> common.filelist
 #grep '%{_prefix}/libexec/pt_chown' < rpm.filelist >> common.filelist
 grep '%{_prefix}/sbin/[^gi]' < rpm.filelist >> common.filelist
 grep '%{_prefix}/share' < rpm.filelist | \
-  grep -v '%{_prefix}/share/zoneinfo' >> common.filelist
+  grep -v -e '%{_prefix}/share/zoneinfo' -e '%%dir %{prefix}/share' \
+       >> common.filelist
 
 sed -i -e '\|%{_prefix}/bin|d' \
        -e '\|%{_prefix}/lib/locale|d' \
@@ -985,6 +983,7 @@ rm -f *.filelist*
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %attr(4711,root,root) %{_prefix}/libexec/pt_chown
+%attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/gai.conf
 %doc documentation/*
 
 %files -f devel.filelist devel
@@ -1030,6 +1029,19 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Mar  9 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-15
+- Update from master
+  - sparc64: Fix handling of R_SPARC_TLS_LE_* relocations (#571551)
+  - Handle ext4 and logfs in statvfs functions
+  - Fix setxid race with thread creation
+  - Pass -mtune=i686 to assembler when compiling for i686
+  - Fix R_X86_64_PC32 overflow detection
+  - Fix msgrcv on sparc64
+  - Fix unwind info in x86 strcmp-sse4.S (BZ#11332)
+  - sparc: Add multiarch support for memset/bzero/memcpy
+- Remove directories owned by filesystem (#569414)
+- Add %%ghost /etc/gai.conf to glibc-common (#567748)
+
 * Tue Feb 23 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-14
 - Update from master
   - Sparc updates
