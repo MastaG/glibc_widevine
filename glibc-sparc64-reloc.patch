@@ -1,4 +1,3 @@
-@@ -, +, @@ 
  ChangeLog                          |    6 ++++++
  sysdeps/sparc/sparc64/dl-machine.h |   10 ++++++----
  2 files changed, 12 insertions(+), 4 deletions(-)
