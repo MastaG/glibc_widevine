@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4
+Release: 5
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -41,6 +41,7 @@ Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.bz2
 Source1: %{glibcsrcdir}-fedora.tar.bz2
 Patch0: %{name}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
+Patch2: %{name}-sparc64-msgrcv-fix.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
@@ -251,6 +252,7 @@ package or when debugging this package.
 %patch1 -p1
 %endif
 %endif
+%patch2 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1037,6 +1039,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Mar 31 2010 Tom "spot" Callaway <tcallawa@redhat.com> - 2.11.1-5
+- Fix for sparc64 msgrcv from upstream trunk
+
 * Wed Mar 17 2010 Andreas Schwab <schwab@redhat.com> - 2.11.1-4
 - Update from 2.11 branch
   - regcomp.c: do not ignore memory allocation failure (BZ#11127)
