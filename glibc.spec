@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.11-382-g1cdb215
-%define glibcversion 2.11.90
+%define glibcsrcdir glibc-2.12-2-gc4ccff1
+%define glibcversion 2.12
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon sparcv9v sparc64v alphaev6
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20
+Release: 1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -409,7 +409,7 @@ cd build-%{nptl_target_cpu}-linuxnptl && \
 librtso=`basename $RPM_BUILD_ROOT/%{_lib}/librt.so.*`
 
 %ifarch %{rtkaioarches}
-rm -f $RPM_BUILD_ROOT{,%{_prefix}}/%{_lib}/librtkaio.so*
+rm -f $RPM_BUILD_ROOT{,%{_prefix}}/%{_lib}/librtkaio.*
 rm -f $RPM_BUILD_ROOT%{_prefix}/%{_lib}/librt.so.*
 mkdir -p $RPM_BUILD_ROOT/%{_lib}/rtkaio
 mv $RPM_BUILD_ROOT/%{_lib}/librtkaio-*.so $RPM_BUILD_ROOT/%{_lib}/rtkaio/
@@ -1029,6 +1029,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue May  4 2010 Roland McGrath <roland@redhat.com> - 2.12-1
+- Update to 2.12 release.
+  - Fix ldconfig chroot handling.
+  - Don't deadlock in __dl_iterate_phdr while (un)loading objects.
+  - Fix handling of newline in addmntent.
+  - Fix AIO when thread creation failed.
+
 * Fri Apr 16 2010 Andreas Schwab <schwab@redhat.com> - 2.11.90-20
 - Update from master
   - Fix bugs in x86-32 strcmp-sse4.S and strcmp-ssse3.S
