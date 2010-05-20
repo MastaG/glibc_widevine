@@ -1,5 +1,6 @@
-%define glibcsrcdir glibc-2.11.1-61-g6d27018
-%define glibcversion 2.11.1
+%define glibcsrcdir glibc-2.11.2
+%define glibc_release_url ftp://sources.redhat.com/pub/glibc/releases/
+%define glibcversion 2.11.2
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon sparcv9v sparc64v alphaev6
@@ -28,7 +29,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7
+Release: 1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1037,6 +1038,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu May 20 2010 Andreas Schwab <schwab@redhat.com> - 2.11.2-1
+- Update to 2.11.2 release
+
 * Fri May 14 2010 Andreas Schwab <schwab@redhat.com> - 2.11.1-7
 - Update from 2.11 branch
   - Fix ldconfig to handle symlinks in chroot correctly (BZ#11149)
