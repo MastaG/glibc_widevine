@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.12-2-gc4ccff1
+%define glibcsrcdir glibc-2.12-22-g6f8d0c6
 %define glibcversion 2.12
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1
+Release: 2
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -176,7 +176,7 @@ libraries, as well as national language (locale) support.
 Summary: A Name Service Caching Daemon (nscd).
 Group: System Environment/Daemons
 Requires: libselinux >= 1.17.10-1, audit-libs >= 1.1.3
-Requires(pre): /sbin/chkconfig, /usr/sbin/useradd, /usr/sbin/userdel, sh-utils
+Requires(pre): /sbin/chkconfig, /usr/sbin/useradd, /usr/sbin/userdel, coreutils
 
 %description -n nscd
 Nscd caches name service lookups and can dramatically improve
@@ -585,7 +585,7 @@ rm -f $RPM_BUILD_ROOT%{_sbindir}/rpcinfo
 	 ! -path "*/lib/debug/*" -printf "/%%P\n" \)
   find $RPM_BUILD_ROOT -type d \
        \( -path '*%{_prefix}/share/*' ! -path '*%{_infodir}' -o \
-	  -path "*%{_prefix}/include/*" -o \
+	  -path "*%{_prefix}/include/*" \
        \) -printf "%%%%dir /%%P\n"
 } | {
 
@@ -897,8 +897,10 @@ fi
 %postun utils -p /sbin/ldconfig
 
 %pre -n nscd
-/usr/sbin/useradd -M -o -r -d / -s /sbin/nologin \
-  -c "NSCD Daemon" -u 28 nscd > /dev/null 2>&1 || :
+getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
+getent passwd nscd >/dev/null ||
+  /usr/sbin/useradd -M -o -r -d / -s /sbin/nologin \
+		    -c "NSCD Daemon" -u 28 -g nscd nscd
 
 %post -n nscd
 /sbin/chkconfig --add nscd
@@ -1029,6 +1031,22 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun  1 2010 Andreas Schwab <schwab@redhat.com> - 2.12-2
+- Update from 2.12 branch
+  - Correct x86 CPU family and model check (BZ#11640, #596554)
+  - Don't crash on unresolved weak symbol reference
+  - Implement recvmmsg also as socketcall
+  - sunrpc: Fix spurious fall-through
+  - Make <sys/timex.h> compatible with C++ (#593762)
+  - Enable IDN support in getent
+  - Fix race in free sanity check (#594784)
+  - Fix lookup of collation sequence value during regexp matching
+  - Fix name of tt_RU.UTF-8@iqtelif locale (#589138)
+  - Handle too-small buffers in Linux getlogin_r (BZ#11571, #589946)
+- Fix users and groups creation in nscd %%post script
+- Require coreutils instead of sh-utils
+- Fix typo causing missing directory ownership
+
 * Tue May  4 2010 Roland McGrath <roland@redhat.com> - 2.12-1
 - Update to 2.12 release.
   - Fix ldconfig chroot handling.
