@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.12-26-g9a98163
-%define glibcversion 2.12
+%define glibcsrcdir glibc-2.12.1-3-gd8d583f
+%define glibcversion 2.12.1
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon sparcv9v sparc64v alphaev6
@@ -23,7 +23,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3
+Release: 1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1031,6 +1031,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Aug 17 2010 Andreas Schwab <schwab@redhat.com> - 2.12.1-1
+- Update from 2.12 branch
+  - 2.12.1 release
+  - Fix error handling in getlogin_r (#580709)
+
 * Tue Jul  6 2010 Andreas Schwab <schwab@redhat.com> - 2.12-3
 - Update from 2.12 branch
   - Fix use of extend_alloca in NIS
