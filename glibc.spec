@@ -24,7 +24,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1
+Release: 2
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -351,8 +351,14 @@ configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
 	--prefix=%{_prefix} \
 	--enable-add-ons=../%{glibcportsdir},nptl$AddOns \
 	--with-headers=%{_prefix}/include $EnableKernel --enable-bind-now \
-	--with-tls --with-__thread --build %{nptl_target_cpu}-redhat-linux \
-	--host %{nptl_target_cpu}-redhat-linux \
+	--with-tls --with-__thread \
+%ifarch %{arm}
+        --build %{nptl_target_cpu}-redhat-linux-gnueabi \
+        --host %{nptl_target_cpu}-redhat-linux-gnueabi \
+%else
+        --build %{nptl_target_cpu}-redhat-linux \
+        --host %{nptl_target_cpu}-redhat-linux \
+%endif
 %ifarch %{multiarcharches}
 	--enable-multi-arch \
 %endif
@@ -1034,6 +1040,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat May 04 2011 Dennis Gilmore <dennis@ausil.us> - 2.13-2
+- build for redhat-linux-gnueabi on arm arches
+
 * Tue Jan 18 2011 Andreas Schwab <schwab@redhat.com> - 2.13-1
 - Update to 2.13 release
   - Define AT_NO_AUTOMOUNT
