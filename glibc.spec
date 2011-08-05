@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.13
+%define glibcsrcdir glibc-2.13-13-g943515f
 %define glibcversion 2.13
-%define glibcportsdir glibc-ports-2.12-54-gbd44238
+%define glibcportsdir glibc-ports-2.13-5-g4f32a56
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -56,10 +56,9 @@ BuildRequires: /bin/ps, /bin/kill, /bin/awk
 BuildRequires: gcc >= 3.2
 %define enablekernel 2.6.32
 Conflicts: kernel < %{enablekernel}
-%ifarch i386
-%define nptl_target_cpu i486
-%else
-%define nptl_target_cpu %{_target_cpu}
+%define target %{_target_cpu}-redhat-linux
+%ifarch %{arm}
+%define target %{_target_cpu}-redhat-linuxeabi
 %endif
 %ifarch %{multiarcharches}
 # Need STT_IFUNC support
@@ -277,7 +276,7 @@ touch locale/programs/*-kw.h
 GCC=gcc
 GXX=g++
 %ifarch %{ix86}
-BuildFlags="-march=%{nptl_target_cpu} -mtune=generic"
+BuildFlags="-march=%{_target_cpu} -mtune=generic"
 %endif
 %ifarch i686
 BuildFlags="-march=i686 -mtune=generic"
@@ -337,10 +336,10 @@ AddOns=`echo */configure | sed -e 's!/configure!!g;s!\(linuxthreads\|nptl\|rtkai
 AddOns=,rtkaio$AddOns
 %endif
 
-build_nptl()
+build()
 {
-builddir=build-%{nptl_target_cpu}-$1
-shift
+builddir=build-%{target}${1:+-$1}
+${1+shift}
 rm -rf $builddir
 mkdir $builddir ; cd $builddir
 build_CFLAGS="$BuildFlags -g -O3 $*"
@@ -351,14 +350,7 @@ configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
 	--prefix=%{_prefix} \
 	--enable-add-ons=../%{glibcportsdir},nptl$AddOns \
 	--with-headers=%{_prefix}/include $EnableKernel --enable-bind-now \
-	--with-tls --with-__thread \
-%ifarch %{arm}
-        --build %{nptl_target_cpu}-redhat-linux-gnueabi \
-        --host %{nptl_target_cpu}-redhat-linux-gnueabi \
-%else
-        --build %{nptl_target_cpu}-redhat-linux \
-        --host %{nptl_target_cpu}-redhat-linux \
-%endif
+	--with-tls --with-__thread --build=%{target} \
 %ifarch %{multiarcharches}
 	--enable-multi-arch \
 %endif
@@ -370,10 +362,10 @@ make %{?_smp_mflags} -r CFLAGS="$build_CFLAGS" PARALLELMFLAGS=-s
 cd ..
 }
 
-build_nptl linuxnptl
+build
 
 %if %{buildxen}
-build_nptl linuxnptl-nosegneg -mno-tls-direct-seg-refs
+build nosegneg -mno-tls-direct-seg-refs
 %endif
 
 %if %{buildpower6}
@@ -393,11 +385,11 @@ fi
 AddOns="$AddOns --with-cpu=power6"
 GCC="$GCC -mcpu=power6"
 GXX="$GXX -mcpu=power6"
-build_nptl linuxnptl-power6
+build power6
 )
 %endif
 
-cd build-%{nptl_target_cpu}-linuxnptl
+cd build-%{target}
 $GCC -static -L. -Os -g ../fedora/glibc_post_upgrade.c -o glibc_post_upgrade.%{_target_cpu} \
   -DNO_SIZE_OPTIMIZATION \
   '-DLIBTLS="/%{_lib}/tls/"' \
@@ -411,9 +403,9 @@ GCC=`cat Gcc`
 
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
-make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{nptl_target_cpu}-linuxnptl PARALLELMFLAGS=-s
+make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target} PARALLELMFLAGS=-s
 %ifnarch %{auxarches}
-cd build-%{nptl_target_cpu}-linuxnptl && \
+cd build-%{target} && \
   make %{?_smp_mflags} install_root=$RPM_BUILD_ROOT install-locales -C ../localedata objdir=`pwd` && \
   cd ..
 %endif
@@ -434,7 +426,7 @@ ln -sf `basename $RPM_BUILD_ROOT/%{_lib}/rtkaio/librtkaio-*.so` $RPM_BUILD_ROOT/
 %define nosegneg_subdir_base i686
 %define nosegneg_subdir i686/nosegneg
 %define nosegneg_subdir_up ../..
-cd build-%{nptl_target_cpu}-linuxnptl-nosegneg
+cd build-%{target}-nosegneg
 destdir=$RPM_BUILD_ROOT/%{_lib}/%{nosegneg_subdir}
 mkdir -p $destdir
 for lib in libc math/libm nptl/libpthread rt/librt nptl_db/libthread_db
@@ -442,7 +434,7 @@ do
   libbase=${lib#*/}
   libbaseso=$(basename $RPM_BUILD_ROOT/%{_lib}/${libbase}-*.so)
   # Only install if different from base lib
-  if cmp -s ${lib}.so ../build-%{nptl_target_cpu}-linuxnptl/${lib}.so; then
+  if cmp -s ${lib}.so ../build-%{target}/${lib}.so; then
     ln -sf %{nosegneg_subdir_up}/$libbaseso $destdir/$libbaseso
   else
     cp -a ${lib}.so $destdir/$libbaseso
@@ -453,7 +445,7 @@ done
 destdir=$RPM_BUILD_ROOT/%{_lib}/rtkaio/%{nosegneg_subdir}
 mkdir -p $destdir
 librtkaioso=$(basename $RPM_BUILD_ROOT/%{_lib}/librt-*.so | sed s/librt-/librtkaio-/)
-if cmp -s rtkaio/librtkaio.so ../build-%{nptl_target_cpu}-linuxnptl/rtkaio/librtkaio.so; then
+if cmp -s rtkaio/librtkaio.so ../build-%{target}/rtkaio/librtkaio.so; then
   ln -s %{nosegneg_subdir_up}/$librtkaioso $destdir/$librtkaioso
 else
   cp -a rtkaio/librtkaio.so $destdir/$librtkaioso
@@ -464,7 +456,7 @@ cd ..
 %endif
 
 %if %{buildpower6}
-cd build-%{nptl_target_cpu}-linuxnptl-power6
+cd build-%{target}-power6
 destdir=$RPM_BUILD_ROOT/%{_lib}/power6
 mkdir -p ${destdir}
 for lib in libc math/libm nptl/libpthread rt/librt nptl_db/libthread_db
@@ -542,7 +534,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/sysconfig
 chmod 644 $RPM_BUILD_ROOT%{_prefix}/%{_lib}/gconv/gconv-modules.cache
 
 # Install the upgrade program
-install -m 700 build-%{nptl_target_cpu}-linuxnptl/glibc_post_upgrade.%{_target_cpu} \
+install -m 700 build-%{target}/glibc_post_upgrade.%{_target_cpu} \
   $RPM_BUILD_ROOT/usr/sbin/glibc_post_upgrade.%{_target_cpu}
 
 strip -g $RPM_BUILD_ROOT%{_prefix}/%{_lib}/*.o
@@ -564,9 +556,9 @@ pushd ${RPM_BUILD_ROOT}%{_prefix}/lib/locale
 rm locale-archive || :
 # Intentionally we do not pass --alias-file=, aliases will be added
 # by build-locale-archive.
-$olddir/build-%{nptl_target_cpu}-linuxnptl/elf/ld.so \
-  --library-path $olddir/build-%{nptl_target_cpu}-linuxnptl/ \
-  $olddir/build-%{nptl_target_cpu}-linuxnptl/locale/localedef \
+$olddir/build-%{target}/elf/ld.so \
+  --library-path $olddir/build-%{target}/ \
+  $olddir/build-%{target}/locale/localedef \
     --prefix ${RPM_BUILD_ROOT} --add-to-archive \
     *_*
 rm -rf *_*
@@ -694,13 +686,13 @@ touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
 
 cd fedora
 $GCC -Os -g -static -o build-locale-archive build-locale-archive.c \
-  ../build-%{nptl_target_cpu}-linuxnptl/locale/locarchive.o \
-  ../build-%{nptl_target_cpu}-linuxnptl/locale/md5.o \
+  ../build-%{target}/locale/locarchive.o \
+  ../build-%{target}/locale/md5.o \
   -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
-  -L../build-%{nptl_target_cpu}-linuxnptl
+  -L../build-%{target}
 install -m 700 build-locale-archive $RPM_BUILD_ROOT/usr/sbin/build-locale-archive
 $GCC -Os -g -static -o tzdata-update tzdata-update.c \
-  -L../build-%{nptl_target_cpu}-linuxnptl
+  -L../build-%{target}
 install -m 700 tzdata-update $RPM_BUILD_ROOT/usr/sbin/tzdata-update
 cd ..
 
@@ -732,7 +724,7 @@ ln -sf /%{_lib}/ld-linux-ia64.so.2 $RPM_BUILD_ROOT/lib/ld-linux-ia64.so.2
 export TIMEOUTFACTOR=16
 parent=$$
 echo ====================TESTING=========================
-cd build-%{nptl_target_cpu}-linuxnptl
+cd build-%{target}
 ( make %{?_smp_mflags} -k check PARALLELMFLAGS=-s 2>&1
   sleep 10s
   teepid="`ps -eo ppid,pid,command | awk '($1 == '${parent}' && $3 ~ /^tee/) { print $2 }'`"
@@ -741,7 +733,7 @@ cd build-%{nptl_target_cpu}-linuxnptl
 cd ..
 %if %{buildxen}
 echo ====================TESTING -mno-tls-direct-seg-refs=============
-cd build-%{nptl_target_cpu}-linuxnptl-nosegneg
+cd build-%{target}-nosegneg
 ( make %{?_smp_mflags} -k check PARALLELMFLAGS=-s 2>&1
   sleep 10s
   teepid="`ps -eo ppid,pid,command | awk '($1 == '${parent}' && $3 ~ /^tee/) { print $2 }'`"
@@ -751,7 +743,7 @@ cd ..
 %endif
 %if %{buildpower6}
 echo ====================TESTING -mcpu=power6=============
-cd build-%{nptl_target_cpu}-linuxnptl-power6
+cd build-%{target}-power6
 ( if [ -d ../power6emul ]; then
     export LD_PRELOAD=`cd ../power6emul; pwd`/\$LIB/power6emul.so
   fi
@@ -1040,8 +1032,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Sat May 04 2011 Dennis Gilmore <dennis@ausil.us> - 2.13-2
-- build for redhat-linux-gnueabi on arm arches
+* Thu Aug  4 2011 Andreas Schwab <schwab@redhat.com> - 2.13-2
+- Update from 2.13 branch
+  - Fix static linking with checking x86/x86-64 memcpy (BZ#12653)
+  - Fix passing symbol value to pltexit callbacks when ld.so auditing
+  - Fix range error handling in sgetspent
+  - Fix ordering of DSO constructors and destructors (BZ#11724)
+- Use eabi for arm
 
 * Tue Jan 18 2011 Andreas Schwab <schwab@redhat.com> - 2.13-1
 - Update to 2.13 release
