@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.14-34-ge2a3090
+%define glibcsrcdir glibc-2.14-38-g4eddf93
 %define glibcversion 2.14
 %define glibcportsdir glibc-ports-2.14-1-g2408627
 ### glibc.spec.in follows:
@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5
+Release: 6
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -90,8 +90,7 @@ BuildRequires: gcc >= 4.1.0-0.17
 BuildRequires: elfutils >= 0.72
 BuildRequires: rpm >= 4.2-0.56
 %endif
-%define __find_provides %{_builddir}/%{glibcsrcdir}/find_provides.sh
-%define _filter_GLIBC_PRIVATE 1
+%global __filter_GLIBC_PRIVATE 1
 
 %description
 The glibc package contains standard libraries which are used by
@@ -269,12 +268,6 @@ rm -f sysdeps/powerpc/powerpc32/power4/hp-timing.[ch]
 %endif
 
 find . -type f -size 0 -o -name "*.orig" -exec rm -f {} \;
-cat > find_provides.sh <<EOF
-#!/bin/sh
-/usr/lib/rpm/find-provides | grep -v GLIBC_PRIVATE
-exit 0
-EOF
-chmod +x find_provides.sh
 touch `find . -name configure`
 touch locale/programs/*-kw.h
 
@@ -1049,6 +1042,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 15 2011 Andreas Schwab <schwab@redhat.com> - 2.14-6
+- Update from 2.14 branch
+  - Locale-independent parsing in libintl (#726536)
+  - Fix stack alignment on x86_64 (#728762)
+- Filter out GLIBC_PRIVATE symbols again
+
 * Fri Aug  5 2011 Andreas Schwab <schwab@redhat.com> - 2.14-5
 - Update from 2.14 branch
   - Properly tokenize nameserver line for servers with IPv6 address
