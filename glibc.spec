@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.14-38-g4eddf93
+%define glibcsrcdir glibc-2.14-48-g69c1dfc
 %define glibcversion 2.14
-%define glibcportsdir glibc-ports-2.14-1-g2408627
+%define glibcportsdir glibc-ports-2.14-2-g8eafc36
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6
+Release: 7
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1042,6 +1042,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Sep  8 2011 Andreas Schwab <schwab@redhat.com> - 2.14-7
+- Update from 2.14 branch
+  - Fix cfi directive in audit trampoline code
+  - Correct cycle detection during dependency sorting (BZ#11724)
+  - Fix fopen (non-existing-file, "re") errno (BZ#13114)
+  - Fix CFI info in x86-64 trampolines
+
 * Mon Aug 15 2011 Andreas Schwab <schwab@redhat.com> - 2.14-6
 - Update from 2.14 branch
   - Locale-independent parsing in libintl (#726536)
