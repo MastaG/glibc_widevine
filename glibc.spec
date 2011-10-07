@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.14-48-g69c1dfc
-%define glibcversion 2.14
+%define glibcsrcdir glibc-2.14.1
+%define glibcversion 2.14.1
 %define glibcportsdir glibc-ports-2.14-2-g8eafc36
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7
+Release: 1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1042,6 +1042,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Oct  7 2011 Andreas Schwab <schwab@redhat.com> - 2.14.1-1
+- Update to 2.14.1 release
+  - Correctly reparse group line after enlarging the buffer (#739360)
+  - Avoid race between {,__de}allocate_stack and __reclaim_stacks during fork
+
 * Thu Sep  8 2011 Andreas Schwab <schwab@redhat.com> - 2.14-7
 - Update from 2.14 branch
   - Fix cfi directive in audit trampoline code
