@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.14.1
 %define glibcversion 2.14.1
-%define glibcportsdir glibc-ports-2.14-2-g8eafc36
+%define glibcportsdir glibc-ports-2.14.1-1-g3eb1dbf
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1
+Release: 2
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -661,7 +661,6 @@ sed -i -e '\|/%{_lib}/%{nosegneg_subdir}|d' rpm.filelist
 %endif
 
 echo '%{_prefix}/sbin/build-locale-archive' >> common.filelist
-echo '%{_prefix}/sbin/tzdata-update' >> common.filelist
 echo '%{_prefix}/sbin/nscd' > nscd.filelist
 
 cat > utils.filelist <<EOF
@@ -693,9 +692,6 @@ $GCC -Os -g -static -o build-locale-archive build-locale-archive.c \
   -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
   -L../build-%{target}
 install -m 700 build-locale-archive $RPM_BUILD_ROOT/usr/sbin/build-locale-archive
-$GCC -Os -g -static -o tzdata-update tzdata-update.c \
-  -L../build-%{target}
-install -m 700 tzdata-update $RPM_BUILD_ROOT/usr/sbin/tzdata-update
 cd ..
 
 # the last bit: more documentation
@@ -886,7 +882,44 @@ end
 
 %post common -p /usr/sbin/build-locale-archive
 
-%triggerin common -p /usr/sbin/tzdata-update -- tzdata
+%triggerin common -p <lua> -- tzdata
+function update (filename, new_data)
+  local fd = io.open(filename)
+  if not fd then return end
+  local data = fd:read("*a")
+  fd:close()
+  if not data then return end
+  -- Don't update the file unnecessarily.
+  if data == new_data then return end
+  local tempfilename = filename .. ".tzupdate"
+  fd = io.open(tempfilename, "w")
+  if not fd then return end
+  fd:write(new_data)
+  fd:close()
+  posix.chmod(tempfilename, 0644)
+  if not os.rename(tempfilename, filename) then
+    os.remove(tempfilename)
+  end
+end
+fd = io.open("/etc/sysconfig/clock")
+if not fd then return end
+zonename = nil
+for l in fd:lines() do
+  zone = string.match(l, "^[ \t]*ZONE[ \t]*=[ \t]*\"?([^ \t\n\"]*)");
+  if zone then
+    zonename = "/usr/share/zoneinfo/" .. zone
+    break
+  end
+end
+fd:close()
+if not zonename then return end
+fd = io.open(zonename)
+if not fd then return end
+data = fd:read("*a")
+fd:close()
+if not data then return end
+update("/etc/localtime", data)
+update("/var/spool/postfix/etc/localtime", data)
 
 %post devel
 /sbin/install-info %{_infodir}/libc.info.gz %{_infodir}/dir > /dev/null 2>&1 || :
@@ -1042,6 +1075,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Oct 28 2011 Andreas Schwab <schwab@redhat.com> - 2.14.1-2
+- Convert tzdata-update to lua (#743034)
+- Mark __clone as .cantunwind (#749556)
+
 * Fri Oct  7 2011 Andreas Schwab <schwab@redhat.com> - 2.14.1-1
 - Update to 2.14.1 release
   - Correctly reparse group line after enlarging the buffer (#739360)
