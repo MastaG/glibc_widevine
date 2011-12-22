@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}.3
+Release: 24%{?dist}.4
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -284,7 +284,9 @@ rm -rf %{glibcportsdir}
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
-%patch13 -p1
+# Causing multiple problems in Fedora & Debian.  Disabled until issues
+# are properly diagnosed and resolved.
+#%patch13 -p1
 %patch14 -p1
 
 # A lot of programs still misuse memcpy when they have to use
@@ -1138,6 +1140,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Dec 22 2011 Jeff Law <law@redhat.com> - 2.14.90-24.fc16.4
+  - Revert change for 552960, it's causing multiple problems.
+
 * Sun Dec 18 2011 Jeff Law <law@redhat.com> - 2.14.90-24.fc16.3
   - Check values from TZ file header (#767696)
   - Handle EAGAIN from FUTEX_WAIT_REQUEUE_PI (#552960)
