@@ -1,0 +1,24 @@
+commit d2daaa1eb6deaa17f6c9bc110cf7d927d8dcd767
+Author: Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+Date:   Wed Dec 21 13:27:09 2011 -0800
+
+    Define x86_64 feraiseexcept inline only under __USE_EXTERN_INLINES.
+
+2011-12-19  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
+	* sysdeps/x86_64/fpu/bits/fenv.h (feraiseexcept): Define it only
+	under [__USE_EXTERN_INLINES].
+
+diff --git a/sysdeps/x86_64/fpu/bits/fenv.h b/sysdeps/x86_64/fpu/bits/fenv.h
+index 4af1643..d73859c 100644
+--- a/sysdeps/x86_64/fpu/bits/fenv.h
++++ b/sysdeps/x86_64/fpu/bits/fenv.h
+@@ -97,7 +97,7 @@ fenv_t;
+ #endif
+ 
+ 
+-#ifdef __OPTIMIZE__
++#ifdef __USE_EXTERN_INLINES
+ __BEGIN_DECLS
+ 
+ /* Optimized versions.  */
