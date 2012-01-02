@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4
+Release: 5
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -93,7 +93,8 @@ BuildRequires: gcc >= 4.1.0-0.17
 BuildRequires: elfutils >= 0.72
 BuildRequires: rpm >= 4.2-0.56
 %endif
-%global __filter_GLIBC_PRIVATE 1
+%define __find_provides %{_builddir}/%{glibcsrcdir}/find_provides.sh
+%define _filter_GLIBC_PRIVATE 1
 
 %description
 The glibc package contains standard libraries which are used by
@@ -272,6 +273,11 @@ rm -f sysdeps/powerpc/powerpc32/power4/hp-timing.[ch]
 %endif
 
 find . -type f -size 0 -o -name "*.orig" -exec rm -f {} \;
+cat > find_provides.sh <<EOF
+#!/bin/sh
+/usr/lib/rpm/find-provides | grep -v GLIBC_PRIVATE
+exit 0
+EOF
 touch `find . -name configure`
 touch locale/programs/*-kw.h
 
@@ -1079,6 +1085,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Jan 1 2012 Jeff Law  <law@redhat.com> - 2.14.1-5
+- Revert change from -6 which filtered out GLIBC_PRIVATE symbols.
+
 * Sun Dec 19 2011 Jeff Law  <law@redhat.com> - 2.14.1-4
 - Check values from TZ file header (#767696)
 
