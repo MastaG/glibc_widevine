@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}.4
+Release: 24%{?dist}.5
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -55,6 +55,9 @@ Patch11: %{name}-rh758252.patch
 Patch12: %{name}-rh767746.patch
 Patch13: %{name}-rh552960.patch
 Patch14: %{name}-rh767696.patch
+Patch15: %{name}-rh552960-2.patch
+Patch16: %{name}-rh769993.patch
+
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Obsoletes: nss_db
@@ -284,10 +287,10 @@ rm -rf %{glibcportsdir}
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
-# Causing multiple problems in Fedora & Debian.  Disabled until issues
-# are properly diagnosed and resolved.
-#%patch13 -p1
+%patch13 -p1
 %patch14 -p1
+%patch15 -p1
+%patch16 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1140,6 +1143,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Feb 10 2012 Jeff Law <law@redhat.com> - 2.14.90-24.fc16.5
+  - Fix lost wakeups in pthread_cond_*.  (#552960, #769421)
+  - Define x86_64 feraiseexcept inline only under __USE_EXTERN_INLINES (#769993).
+
 * Thu Dec 22 2011 Jeff Law <law@redhat.com> - 2.14.90-24.fc16.4
   - Revert change for 552960, it's causing multiple problems.
 
