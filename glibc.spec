@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5
+Release: 6
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -42,6 +42,7 @@ Source2: %{glibcsrcdir}-fedora.tar.xz
 Patch0: %{name}-fedora.patch
 Patch1: %{name}-ia64-lib64.patch
 Patch2: %{name}-rh767696.patch
+Patch3: %{name}-rh794797.patch
 
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -260,6 +261,7 @@ rm -rf %{glibcportsdir}
 %endif
 %endif
 %patch2 -p1
+%patch3 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1085,6 +1087,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Feb 20 2012 Jeff Law  <law@redhat.com> - 2.14.1-6
+  - Avoid "nargs" integer overflow which could be used to bypass FORTIFY_SOURCE (#794797)
+
 * Sun Jan 1 2012 Jeff Law  <law@redhat.com> - 2.14.1-5
 - Revert change from -6 which filtered out GLIBC_PRIVATE symbols.
 
