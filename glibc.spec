@@ -1331,7 +1331,7 @@ rm -f *.filelist*
 
 %changelog
 * Tue Jun  5 2012 Patsy Franklin <patsy@redhat.com> - 2.15.41
-  - Remove redundant hunk from patch. (#823905)
+  - Fix DoS in RPC implementation (#767693)
 
 * Tue Jun  5 2012 Patsy Franklin <patsy@redhat.com> - 2.15.40
   - Fix iconv() segfault when the invalid multibyte character 0xffff is input
