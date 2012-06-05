@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 41%{?dist}
+Release: 42%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -477,6 +477,7 @@ popd
 
 %patch2056 -p1
 %patch2057 -p1
+%patch2058 -p1
 %patch2059 -p1
 
 # A lot of programs still misuse memcpy when they have to use
@@ -1330,6 +1331,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun  5 2012 Patsy Franklin <patsy@redhat.com> - 2.15.42
+  - Last edit accidently removed %patch2058.  
+
 * Tue Jun  5 2012 Patsy Franklin <patsy@redhat.com> - 2.15.41
   - Fix DoS in RPC implementation (#767693)
 
