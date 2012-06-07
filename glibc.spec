@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 42%{?dist}
+Release: 43%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -114,6 +114,7 @@ Patch1046: %{name}-rh806403.patch
 Patch1048: %{name}-rh804792.patch
 Patch1052: %{name}-sw13979.patch
 Patch1053: %{name}-rh817276.patch
+Patch1054: %{name}-rh808014.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -475,6 +476,7 @@ pushd ../%{glibcportsdir}
 %patch2055 -p1
 popd
 
+%patch1054 -p1
 %patch2056 -p1
 %patch2057 -p1
 %patch2058 -p1
@@ -1331,6 +1333,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jun  7 2012 Patsy Franklin <patsy@redhat.com> - 2.15.43
+  - Do not override TTL of CNAME with TTL of its alias. (#808014)  
+
 * Tue Jun  5 2012 Patsy Franklin <patsy@redhat.com> - 2.15.42
   - Last edit accidently removed %patch2058.  
 
