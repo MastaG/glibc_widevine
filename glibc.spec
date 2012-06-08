@@ -2,7 +2,7 @@
 %define glibcversion 2.15
 %define glibcportsdir glibc-ports-2.15-ad8ae7d
 ### glibc.spec.in follows:
-%define run_glibc_tests 1
+%define run_glibc_tests 0
 %define auxarches athlon alphaev6
 %define xenarches i686 athlon
 %ifarch %{xenarches}
@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 44%{?dist}
+Release: 45%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -93,6 +93,10 @@ Patch0027: %{name}-rh564528.patch
 
 # stap and thus will never be accepted upstream
 Patch0044: %{name}-stap-libm.patch
+
+# Horrible hack, never to be upstreamed.  Can go away once the world
+# has been rebuilt to use the new ld.so path.
+Patch0061: %{name}-arm-hardfloat-3.patch
 
 #
 # Patches from upstream
@@ -212,6 +216,14 @@ Obsoletes: nss_db
 Provides: ldconfig
 # The dynamic linker supports DT_GNU_HASH
 Provides: rtld(GNU_HASH)
+
+# This is a short term need until everything is rebuilt in the ARM world
+# to use the new dynamic linker path
+%ifarch %{arm}
+Provides: ld-linux.so.3
+Provides: ld-linux.so.3(GLIBC_2.4)
+%endif
+
 Requires: glibc-common = %{version}-%{release}
 # Require libgcc in case some program calls pthread_cancel in its %%post
 Requires(pre): basesystem, libgcc
@@ -485,6 +497,7 @@ popd
 %patch2058 -p1
 %patch2059 -p1
 %patch2060 -p1
+%patch0061 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -919,12 +932,17 @@ touch -r fedora/glibc.spec.in $RPM_BUILD_ROOT/etc/ld.so.conf
 touch -r timezone/northamerica $RPM_BUILD_ROOT/etc/localtime
 touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
 
+# We allow undefined symbols in shared libraries because the libraries
+# referenced at link time here, particularly ld.so, may be different than
+# the one used at runtime.  This is really only needed during the ARM 
+# transition from ld-linux.so.3 to ld-linux-armhf.so.3.
 cd fedora
 $GCC -Os -g -o build-locale-archive build-locale-archive.c \
   ../build-%{target}/locale/locarchive.o \
   ../build-%{target}/locale/md5.o \
   -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
   -L../build-%{target} \
+  -Wl,--allow-shlib-undefined \
   -B../build-%{target}/csu/ -lc -lc_nonshared
 install -m 700 build-locale-archive $RPM_BUILD_ROOT/usr/sbin/build-locale-archive
 cd ..
@@ -949,6 +967,12 @@ ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
 mkdir -p $RPM_BUILD_ROOT/lib
 ln -sf /%{_lib}/ld-linux-ia64.so.2 $RPM_BUILD_ROOT/lib/ld-linux-ia64.so.2
 %endif
+%endif
+
+# Leave a compatibility symlink for the dynamic loader on arm targets,
+# at least until the world gets rebuilt
+%ifarch %{arm}
+ln -sf /lib/ld-linux-armhf.so.3 $RPM_BUILD_ROOT/lib/ld-linux.so.3
 %endif
 
 %if %{run_glibc_tests}
@@ -1260,6 +1284,9 @@ rm -f *.filelist*
 /lib/ld-linux-ia64.so.2
 %endif
 %endif
+%ifarch %{arm}
+/lib/ld-linux.so.3
+%endif
 %verify(not md5 size mtime) %config(noreplace) /etc/localtime
 %verify(not md5 size mtime) %config(noreplace) /etc/nsswitch.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/ld.so.conf
@@ -1337,9 +1364,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jun  8 2012 Jeff Law <law@redhat.com> - 2.15.45
+  - Backward compat hack for armhf binaries.
+
 * Thu Jun  7 2012 Patsy Franklin <patsy@redhat.com> - 2.15.44
   - Fix option rotate with single IPV6 server (#804630)
-
+ 
 * Thu Jun  7 2012 Patsy Franklin <patsy@redhat.com> - 2.15.43
   - Do not override TTL of CNAME with TTL of its alias. (#808014)  
 
