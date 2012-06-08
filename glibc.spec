@@ -2,7 +2,7 @@
 %define glibcversion 2.15
 %define glibcportsdir glibc-ports-2.15-ad8ae7d
 ### glibc.spec.in follows:
-%define run_glibc_tests 0
+%define run_glibc_tests 1
 %define auxarches athlon alphaev6
 %define xenarches i686 athlon
 %ifarch %{xenarches}
