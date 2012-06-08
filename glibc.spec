@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 43%{?dist}
+Release: 44%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -202,6 +202,9 @@ Patch2058: %{name}-rh823905.patch
 
 # See http://sourceware.org/ml/libc-alpha/2012-06/msg00074.html
 Patch2059: %{name}-rh767693-2.patch
+
+# Upstream BZ 13027
+Patch2060: %{name}-rh804630.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -481,6 +484,7 @@ popd
 %patch2057 -p1
 %patch2058 -p1
 %patch2059 -p1
+%patch2060 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1333,6 +1337,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jun  7 2012 Patsy Franklin <patsy@redhat.com> - 2.15.44
+  - Fix option rotate with single IPV6 server (#804630)
+
 * Thu Jun  7 2012 Patsy Franklin <patsy@redhat.com> - 2.15.43
   - Do not override TTL of CNAME with TTL of its alias. (#808014)  
 
