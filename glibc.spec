@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 45%{?dist}
+Release: 46%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -219,7 +219,7 @@ Provides: rtld(GNU_HASH)
 
 # This is a short term need until everything is rebuilt in the ARM world
 # to use the new dynamic linker path
-%ifarch %{arm}
+%ifarch armv7hl armv7hnl
 Provides: ld-linux.so.3
 Provides: ld-linux.so.3(GLIBC_2.4)
 %endif
@@ -969,9 +969,9 @@ ln -sf /%{_lib}/ld-linux-ia64.so.2 $RPM_BUILD_ROOT/lib/ld-linux-ia64.so.2
 %endif
 %endif
 
-# Leave a compatibility symlink for the dynamic loader on arm targets,
+# Leave a compatibility symlink for the dynamic loader on armhfp targets,
 # at least until the world gets rebuilt
-%ifarch %{arm}
+%ifarch armv7hl armv7hnl
 ln -sf /lib/ld-linux-armhf.so.3 $RPM_BUILD_ROOT/lib/ld-linux.so.3
 %endif
 
@@ -1284,7 +1284,7 @@ rm -f *.filelist*
 /lib/ld-linux-ia64.so.2
 %endif
 %endif
-%ifarch %{arm}
+%ifarch armv7hl armv7hnl 
 /lib/ld-linux.so.3
 %endif
 %verify(not md5 size mtime) %config(noreplace) /etc/localtime
@@ -1364,6 +1364,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jun 11 2012 Dennis Gilmore <dennis@ausil.us> - 2.15-46
+- only deal with the arm linker compat hack on armhfp arches 
+- armsfp arches do not have a linker change
+
 * Fri Jun  8 2012 Jeff Law <law@redhat.com> - 2.15.45
   - Backward compat hack for armhf binaries.
 
