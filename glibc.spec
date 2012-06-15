@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 46%{?dist}
+Release: 47%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -209,6 +209,9 @@ Patch2059: %{name}-rh767693-2.patch
 
 # Upstream BZ 13027
 Patch2060: %{name}-rh804630.patch
+
+# Upstream BZ 14247
+Patch2061: %{name}-rh827510.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -498,6 +501,7 @@ popd
 %patch2059 -p1
 %patch2060 -p1
 %patch0061 -p1
+%patch2061 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1364,6 +1368,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jun 15 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.47
+  - Delay setting DECIDED field in locale file structure until
+    we have read the file's data (#827510).
+
 * Mon Jun 11 2012 Dennis Gilmore <dennis@ausil.us> - 2.15-46
 - only deal with the arm linker compat hack on armhfp arches 
 - armsfp arches do not have a linker change
