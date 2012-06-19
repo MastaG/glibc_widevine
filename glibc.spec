@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 47%{?dist}
+Release: 48%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -93,10 +93,6 @@ Patch0027: %{name}-rh564528.patch
 
 # stap and thus will never be accepted upstream
 Patch0044: %{name}-stap-libm.patch
-
-# Horrible hack, never to be upstreamed.  Can go away once the world
-# has been rebuilt to use the new ld.so path.
-Patch0061: %{name}-arm-hardfloat-3.patch
 
 #
 # Patches from upstream
@@ -190,10 +186,6 @@ Patch2050: %{name}-rh682500.patch
 
 # Upstream BZ 13761
 Patch2051: %{name}-rh788989-2.patch
-
-# Upstream, see libc-alpha posting from Carlos O'Donell 5/5/2012
-Patch2054: %{name}-arm-hardfloat-1.patch
-Patch2055: %{name}-arm-hardfloat-2.patch
 
 # Upstream BZ 13753, probably will be fixed differently
 Patch2056: %{name}-rh801650-3.patch
@@ -487,11 +479,9 @@ rm -rf %{glibcportsdir}
 %patch2050 -p1
 %patch2051 -p1
 %patch1052 -p1
-%patch2054 -p1
 
 pushd ../%{glibcportsdir}
 %patch1053 -p1
-%patch2055 -p1
 popd
 
 %patch1054 -p1
@@ -500,7 +490,6 @@ popd
 %patch2058 -p1
 %patch2059 -p1
 %patch2060 -p1
-%patch0061 -p1
 %patch2061 -p1
 
 # A lot of programs still misuse memcpy when they have to use
@@ -1368,6 +1357,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun 19 2012 Dennis Gilmore <dennis@ausil.us> - 2.15-48
+- remove armhfp linker changes  needs more testing in rawhide before we consider backporting to f17 
+
 * Fri Jun 15 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.47
   - Delay setting DECIDED field in locale file structure until
     we have read the file's data (#827510).
