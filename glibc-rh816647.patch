@@ -1,0 +1,25 @@
+2012-06-21  Jeff Law  <law@redhat.com>
+
+	* intl/dcigettext.c (_nl_find_msg): Do not dereference memory
+	that may have just been free'd.
+
+diff --git a/intl/dcigettext.c b/intl/dcigettext.c
+index f6b7573..9c673d4 100644
+--- a/intl/dcigettext.c
++++ b/intl/dcigettext.c
+@@ -1149,13 +1149,14 @@ _nl_find_msg (domain_file, domainbinding, msgid, convert, lengthp)
+ 		  /* We must allocate a new buffer or resize the old one.  */
+ 		  if (malloc_count > 0)
+ 		    {
++		      struct transmem_list *next = transmem_list->next;
+ 		      ++malloc_count;
+ 		      freemem_size = malloc_count * INITIAL_BLOCK_SIZE;
+ 		      newmem = (transmem_block_t *) realloc (transmem_list,
+ 							     freemem_size);
+ # ifdef _LIBC
+ 		      if (newmem != NULL)
+-			transmem_list = transmem_list->next;
++			transmem_list = next;
+ 		      else
+ 			{
+ 			  struct transmem_list *old = transmem_list;
