@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 51%{?dist}
+Release: 52%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -94,7 +94,6 @@ Patch0027: %{name}-rh564528.patch
 # stap and thus will never be accepted upstream
 Patch0044: %{name}-stap-libm.patch
 
-Patch0063: %{name}-rh835090.patch
 #
 # Patches from upstream
 #
@@ -200,9 +199,6 @@ Patch2058: %{name}-rh823905.patch
 # See http://sourceware.org/ml/libc-alpha/2012-06/msg00074.html
 Patch2059: %{name}-rh767693-2.patch
 
-# Upstream BZ 13027
-Patch2060: %{name}-rh804630.patch
-
 # Upstream BZ 14247
 Patch2061: %{name}-rh827510.patch
 
@@ -211,6 +207,9 @@ Patch2062: %{name}-rh816647.patch
 
 # Extracted from upstream sources
 Patch2064: %{name}-rh829011.patch
+
+# Upstream BZ 13028
+Patch0065: %{name}-rh841787.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -496,11 +495,10 @@ popd
 %patch2057 -p1
 %patch2058 -p1
 %patch2059 -p1
-%patch2060 -p1
 %patch2061 -p1
 %patch2062 -p1
-%patch0063 -p1
 %patch2064 -p1
+%patch0065 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1367,6 +1365,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jul 25 2012 Jeff Law <law@redhat.com> - 2.15.52
+  - Revert recent changes to res_send (804630, 835090).
+  - Fix memcpy args in res_send (#841787).
+
 * Tue Jul 3 2012 Jeff Law <law@redhat.com> - 2.15.51
   - Fix FMA4 detection (#829011)
 

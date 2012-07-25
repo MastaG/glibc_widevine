@@ -1,0 +1,12 @@
+diff -rup a/resolv/res_send.c b/resolv/res_send.c
+--- a/resolv/res_send.c	2010-05-04 05:27:23.000000000 -0600
++++ b/resolv/res_send.c	2012-03-01 12:11:13.065605342 -0700
+@@ -441,7 +441,7 @@ __libc_res_nsend(res_state statp, const
+ 				    malloc(sizeof (struct sockaddr_in6));
+ 			if (EXT(statp).nsaddrs[n] != NULL) {
+ 				memset (mempcpy(EXT(statp).nsaddrs[n],
+-						&statp->nsaddr_list[n],
++						&statp->nsaddr_list[ns],
+ 						sizeof (struct sockaddr_in)),
+ 					'\0',
+ 					sizeof (struct sockaddr_in6)
