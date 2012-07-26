@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 52%{?dist}
+Release: 53%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -93,6 +93,9 @@ Patch0027: %{name}-rh564528.patch
 
 # stap and thus will never be accepted upstream
 Patch0044: %{name}-stap-libm.patch
+
+# Needs to be submitted upstream
+Patch0066:  %{name}-rh841318.patch
 
 #
 # Patches from upstream
@@ -161,9 +164,6 @@ Patch2029: %{name}-rh790298.patch
 # Upstream BZ 13698
 Patch2030: %{name}-rh791161.patch
 
-# Upstream BZ 12377
-Patch2031: %{name}-rh697149.patch
-
 # Upstream BZ 9954
 Patch2032: %{name}-rh739743.patch
 
@@ -209,7 +209,7 @@ Patch2062: %{name}-rh816647.patch
 Patch2064: %{name}-rh829011.patch
 
 # Upstream BZ 13028
-Patch0065: %{name}-rh841787.patch
+Patch2065: %{name}-rh841787.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -463,7 +463,6 @@ rm -rf %{glibcportsdir}
 %patch2028 -p1
 %patch2029 -p1
 %patch2030 -p1
-%patch2031 -p1
 %patch2032 -p1
 %patch2033 -p1
 %patch1034 -p1
@@ -498,7 +497,8 @@ popd
 %patch2061 -p1
 %patch2062 -p1
 %patch2064 -p1
-%patch0065 -p1
+%patch2065 -p1
+%patch0066 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1365,6 +1365,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul 26 2012 Jeff Law <law@redhat.com> - 2.15.53
+  - Revert patch for BZ696143, it made it impossible to use IPV6
+    addresses explicitly in getaddrinfo, which in turn broke
+    ssh, apache and other code. (#808147)
+  - Avoid unbound alloca in vfprintf (#841318)
+
 * Tue Jul 25 2012 Jeff Law <law@redhat.com> - 2.15.52
   - Revert recent changes to res_send (804630, 835090).
   - Fix memcpy args in res_send (#841787).
