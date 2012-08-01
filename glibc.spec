@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}.7
+Release: 24%{?dist}.8
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -59,6 +59,7 @@ Patch15: %{name}-rh552960-2.patch
 Patch16: %{name}-rh769993.patch
 Patch17: %{name}-rh794797.patch
 Patch18: %{name}-rh730856.patch
+Patch19: %{name}-rh841318.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -295,6 +296,7 @@ rm -rf %{glibcportsdir}
 %patch16 -p1
 %patch17 -p1
 %patch18 -p1
+%patch19 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1147,6 +1149,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jul 31 2012 Patsy Franklin <patsy@redhat.com> - 2.14.90-24.fc16.8
+  - Avoid unbound alloca in vfprintf.  (#841318)
+
 * Wed May 9 2012 Patsy Franklin <patsy@redhat.com> - 2.14.90-24.fc16.7
   - Fix reply buffer mismanagement in resolver.  (#730856)
 
