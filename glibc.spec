@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 53%{?dist}
+Release: 54%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -96,6 +96,7 @@ Patch0044: %{name}-stap-libm.patch
 
 # Needs to be submitted upstream
 Patch0066:  %{name}-rh841318.patch
+Patch0067:  %{name}-rh841318-2.patch
 
 #
 # Patches from upstream
@@ -499,6 +500,7 @@ popd
 %patch2064 -p1
 %patch2065 -p1
 %patch0066 -p1
+%patch0067 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1365,6 +1367,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Aug 3 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.54
+  - Remove two extraneous lines from previous patch for BZ841318 (#841318)
+
 * Wed Jul 26 2012 Jeff Law <law@redhat.com> - 2.15.53
   - Revert patch for BZ696143, it made it impossible to use IPV6
     addresses explicitly in getaddrinfo, which in turn broke
