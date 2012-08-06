@@ -1367,6 +1367,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 6 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.55
+  - Pack IPv4 servers at the start of nsaddr_list and
+    only track the number of IPV4 servers in EXT(statp->nscounti (#808147)
+
 * Fri Aug 3 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.54
   - Remove two extraneous lines from previous patch for BZ841318 (#841318)
 
