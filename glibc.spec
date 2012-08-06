@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 54%{?dist}
+Release: 55%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -119,6 +119,7 @@ Patch1048: %{name}-rh804792.patch
 Patch1052: %{name}-sw13979.patch
 Patch1053: %{name}-rh817276.patch
 Patch1054: %{name}-rh808014.patch
+Patch1068: %{name}-rh845960.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -501,6 +502,7 @@ popd
 %patch2065 -p1
 %patch0066 -p1
 %patch0067 -p1
+%patch1068 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1367,9 +1369,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Mon Aug 6 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.55
+* Mon Aug 6 2012 Jeff Law <law@redhat.com> - 2.15.55
   - Pack IPv4 servers at the start of nsaddr_list and
     only track the number of IPV4 servers in EXT(statp->nscounti (#808147)
+  - Mark set*uid, set*gid as __wur (warn unused result) (#845960)
 
 * Fri Aug 3 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15.54
   - Remove two extraneous lines from previous patch for BZ841318 (#841318)
