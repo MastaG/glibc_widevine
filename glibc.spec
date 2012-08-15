@@ -506,7 +506,7 @@ popd
 %patch0066 -p1
 %patch0067 -p1
 %patch1068 -p1
-%patch1069 -p1
+%patch2069 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
