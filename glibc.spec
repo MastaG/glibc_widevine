@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -167,6 +167,9 @@ Patch2032: %{name}-rh819430.patch
 
 # See http://sourceware.org/ml/libc-alpha/2012-06/msg00074.html
 Patch2033: %{name}-rh767693-2.patch
+
+# Upstream BZ 14459
+Patch2036: %{name}-rh847718.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -424,6 +427,7 @@ rm -rf %{glibcportsdir}
 %patch2033 -p1
 %patch0034 -p1
 %patch1035 -p1
+%patch2036 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1308,6 +1312,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 25 2012 Jeff Law <law@redhat.com> - 2.16-8
+  - Fix integer overflow leading to buffer overflow in strto* (#847718)
+
 * Wed Jul 25 2012 Jeff Law <law@redhat.com> - 2.16-7
   - Pack IPv4 servers at the start of nsaddr_list and
     only track the number of IPV4 servers in EXT(statp->nscounti (#808147)
