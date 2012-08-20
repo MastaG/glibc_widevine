@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1314,10 +1314,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Fri Aug 25 2012 Jeff Law <law@redhat.com> - 2.16-9
+* Mon Aug 20 2012 Jeff Law <law@redhat.com> - 2.16-10
+  - Use upstream accepted changes for 179072 (stap linker probes).
+
+* Fri Aug 17 2012 Jeff Law <law@redhat.com> - 2.16-9
   - Fix race in intl/* testsuite (#849203)
 
-* Wed Aug 25 2012 Jeff Law <law@redhat.com> - 2.16-8
+* Wed Aug 15 2012 Jeff Law <law@redhat.com> - 2.16-8
   - Fix integer overflow leading to buffer overflow in strto* (#847718)
 
 * Wed Jul 25 2012 Jeff Law <law@redhat.com> - 2.16-7
