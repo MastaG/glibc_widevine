@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1177,24 +1177,16 @@ getent passwd nscd >/dev/null ||
 		    -c "NSCD Daemon" -u 28 -g nscd nscd
 
 %post -n nscd
-if test $1 -eq 1; then
-  /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
+%systemd_post nscd.service
 
 %preun -n nscd
-if test $1 -eq 0; then
-  /bin/systemctl --no-reload disable nscd.service > /dev/null 2>&1 || :
-  /bin/systemctl stop nscd.service > /dev/null 2>&1 || :
-fi
+%systemd_preun nscd.service
 
 %postun -n nscd
 if test $1 = 0; then
   /usr/sbin/userdel nscd > /dev/null 2>&1 || :
 fi
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if test $1 -ge 1; then
-  /bin/systemctl try-restart nscd.service >/dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart nscd.service
 
 %if %{xenpackage}
 %post xen -p /sbin/ldconfig
@@ -1314,6 +1306,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Aug 21 2012 Jeff Law <law@redhat.com> - 2.16-11
+  - Replace manual systemd scriptlets with macroized scriptlets (#850129)
+
 * Mon Aug 20 2012 Jeff Law <law@redhat.com> - 2.16-10
   - Use upstream accepted changes for 179072 (stap linker probes).
 
