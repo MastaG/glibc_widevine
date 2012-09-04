@@ -17,10 +17,10 @@
 %else
 %define buildpower6 0
 %endif
-%define rtkaioarches %{ix86} x86_64 ia64 ppc ppc64 s390 s390x
-%define biarcharches %{ix86} x86_64 ppc ppc64 s390 s390x
+%define rtkaioarches %{ix86} x86_64 ia64 ppc %{power64} s390 s390x
+%define biarcharches %{ix86} x86_64 ppc %{power64} s390 s390x
 %define debuginfocommonarches %{biarcharches} alpha alphaev6
-%define multiarcharches ppc ppc64 %{ix86} x86_64 %{sparc}
+%define multiarcharches ppc %{power64} %{ix86} x86_64 %{sparc}
 %define systemtaparches %{ix86} x86_64
 # Remove -s to get verbose output.
 %define silentrules PARALLELMFLAGS=-s
@@ -209,9 +209,12 @@ Conflicts: kernel < %{enablekernel}
 %ifarch %{arm}
 %define target %{_target_cpu}-redhat-linuxeabi
 %endif
+%ifarch %{power64}
+%define target ppc64-redhat-linux
+%endif
 %ifarch %{multiarcharches}
 # Need STT_IFUNC support
-%ifarch ppc ppc64
+%ifarch ppc %{power64}
 BuildRequires: binutils >= 2.20.51.0.2
 Conflicts: binutils < 2.20.51.0.2
 %else
@@ -487,7 +490,7 @@ BuildFlags="-mcpu=niagara -mvis -fcall-used-g6"
 GCC="gcc -m64"
 GXX="g++ -m64"
 %endif
-%ifarch ppc64
+%ifarch %{power64}
 BuildFlags="-mno-minimal-toc"
 GCC="gcc -m64"
 GXX="g++ -m64"
@@ -529,6 +532,9 @@ configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
 	--enable-obsolete-rpc \
 %ifarch %{systemtaparches}
 	--enable-systemtap \
+%endif
+%ifarch ppc64p7
+	--with-cpu=power7 \
 %endif
 	--disable-profile --enable-nss-crypt ||
 { cat config.log; false; }
@@ -1312,6 +1318,7 @@ rm -f *.filelist*
 
 %changelog
 * Tue Sep 4 2012 Jeff Law <law@redhat.com> - 2.16-12
+  - Incorporate ppc64p7 arch changes (#854250)
   - Fix fseek in wide mode (#854337)
   - Pick up s390/s390x IFUNC support.
 
