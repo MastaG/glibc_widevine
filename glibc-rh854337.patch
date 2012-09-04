@@ -1,0 +1,323 @@
+From libc-alpha-return-32469-listarch-libc-alpha=sources dot redhat dot com at sourceware dot org Tue Sep 04 16:35:13 2012
+Return-Path: <libc-alpha-return-32469-listarch-libc-alpha=sources dot redhat dot com at sourceware dot org>
+Delivered-To: listarch-libc-alpha at sources dot redhat dot com
+Received: (qmail 31908 invoked by alias); 4 Sep 2012 16:35:07 -0000
+Received: (qmail 31178 invoked by uid 22791); 4 Sep 2012 16:35:03 -0000
+X-SWARE-Spam-Status: No, hits=-6.8 required=5.0
+	tests=AWL,BAYES_00,KHOP_RCVD_UNTRUST,RCVD_IN_DNSWL_HI,RCVD_IN_HOSTKARMA_W,RP_MATCHES_RCVD,SPF_HELO_PASS,TW_SW,TW_TV,TW_TW,TW_VB
+X-Spam-Check-By: sourceware.org
+Date: Tue, 4 Sep 2012 22:03:55 +0530
+From: Siddhesh Poyarekar <siddhesh at redhat dot com>
+To: libc-alpha at sourceware dot org
+Subject: [PATCH][BZ #14543] Fix fseek behaviour when called in wide mode
+Message-ID: <20120904220355.5ef5d279@spoyarek>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_/nT+8opq/57jsIpH2GwJ_t+V"
+Mailing-List: contact libc-alpha-help at sourceware dot org; run by ezmlm
+Precedence: bulk
+List-Id: <libc-alpha.sourceware.org>
+List-Subscribe: <mailto:libc-alpha-subscribe at sourceware dot org>
+List-Archive: <http://sourceware.org/ml/libc-alpha/>
+List-Post: <mailto:libc-alpha at sourceware dot org>
+List-Help: <mailto:libc-alpha-help at sourceware dot org>, <http://sourceware dot org/ml/#faqs>
+Sender: libc-alpha-owner at sourceware dot org
+Delivered-To: mailing list libc-alpha at sourceware dot org
+
+--MP_/nT+8opq/57jsIpH2GwJ_t+V
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,
+
+This is a patch to fix the problem Jeff Law had posted about in July:
+
+http://sourceware.org/ml/libc-alpha/2012-07/msg00179.html
+
+When fseek is called in wide mode, i.e. when the locale uses a
+multibyte character set, it does not set the internal buffer state
+correctly due to which, an ftell following it returns an invalid file
+offset. This can be reproduced reliably with the reproducer program in
+the bugzilla.
+
+The attached patch sets the internal buffer state correctly whenever
+the external buffer state is modified by fseek. This involves either
+computing the current _IO_read_ptr/end for the internal buffer based on
+the new _IO_read_ptr in the external buffer or converting the content
+read into the external buffer, up to the extent of the requested fseek
+offset.
+
+The patch also includes a test case that verifies the fix. I have
+verified that the patch does not cause a regression in the testsuite on
+my F16 x86_64.
+
+Regards,
+Siddhesh
+
+ChangeLog:
+
+	* libio/Makefile (tests): New test case tst-fseek.
+	* libio/tst-fseek.c: New test case to verify that fseek/ftell
+	combination works in wide mode.
+	* libio/wfileops.c (_IO_wfile_seekoff): Adjust internal buffer
+	state when the external buffer state changes.
+
+
+--MP_/nT+8opq/57jsIpH2GwJ_t+V
+Content-Type: text/x-patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=wide-fseek.patch
+
+diff --git a/libio/Makefile b/libio/Makefile
+index c555dd0..e760ddc 100644
+--- a/libio/Makefile
++++ b/libio/Makefile
+@@ -57,7 +57,7 @@ tests = tst_swprintf tst_wprintf tst_swscanf tst_wscanf tst_getwc tst_putwc   \
+ 	tst-memstream1 tst-memstream2 \
+ 	tst-wmemstream1 tst-wmemstream2 \
+ 	bug-memstream1 bug-wmemstream1 \
+-	tst-setvbuf1 tst-popen1 tst-fgetwc bug-wsetpos bug-fclose1
++	tst-setvbuf1 tst-popen1 tst-fgetwc bug-wsetpos bug-fclose1 tst-fseek
+ test-srcs = test-freopen
+ 
+ all: # Make this the default target; it will be defined in Rules.
+diff --git a/libio/tst-fseek.c b/libio/tst-fseek.c
+new file mode 100644
+index 0000000..e7984b0
+--- /dev/null
++++ b/libio/tst-fseek.c
+@@ -0,0 +1,152 @@
++/* Verify that fseek/ftell combination works for wide chars.
++
++   Copyright (C) 2012 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <locale.h>
++#include <errno.h>
++#include <wchar.h>
++#include <unistd.h>
++
++/* Defined in test-skeleton.c.  */
++static int create_temp_file (const char *base, char **filename);
++
++
++static int
++do_seek_end (FILE *fp)
++{
++  long save;
++
++  if (fp == NULL)
++    {
++      printf ("do_seek_end: fopen: %s\n", strerror (errno));
++      return 1;
++    }
++
++  if (fputws (L"abc\n", fp) == -1)
++    {
++      printf ("do_seek_end: fputws: %s\n", strerror (errno));
++      return 1;
++    }
++
++  save = ftell (fp);
++  rewind (fp);
++
++  if (fseek (fp, 0, SEEK_END) == -1)
++    {
++      printf ("do_seek_end: fseek: %s\n", strerror (errno));
++      return 1;
++    }
++
++  if (save != ftell (fp))
++    {
++      printf ("save = %ld, ftell = %ld\n", save, ftell (fp));
++      return 1;
++    }
++
++  return 0;
++}
++
++int
++do_seek_set (FILE *fp)
++{
++  long save;
++
++  if (fputws (L"abc\n", fp) == -1)
++    {
++      printf ("seek_set: fputws: %s\n", strerror (errno));
++      return 1;
++    }
++
++  save = ftell (fp);
++
++  if (fputws (L"xyz\n", fp) == -1)
++    {
++      printf ("seek_set: fputws: %s\n", strerror (errno));
++      return 1;
++    }
++
++  if (fseek (fp, save, SEEK_SET) == -1)
++    {
++      printf ("seek_set: fseek: %s\n", strerror (errno));
++      return 1;
++    }
++
++  if (save != ftell (fp))
++    {
++      printf ("save = %ld, ftell = %ld\n", save, ftell (fp));
++      return 1;
++    }
++
++  return 0;
++}
++
++static int
++do_test (void)
++{
++  if (setlocale (LC_ALL, "en_US.utf8") == NULL)
++    {
++      printf ("Cannot set en_US.utf8 locale.\n");
++      exit (1);
++    }
++
++  int ret = 0;
++  char *filename;
++  int fd = create_temp_file ("tst-fseek.out", &filename);
++
++  if (fd == -1)
++    return 1;
++
++  FILE *fp = fdopen (fd, "w+");
++  if (fp == NULL)
++    {
++      printf ("seek_set: fopen: %s\n", strerror (errno));
++      close (fd);
++      return 1;
++    }
++
++  if (do_seek_set (fp))
++    {
++      printf ("SEEK_SET test failed\n");
++      ret = 1;
++    }
++
++  /* Reopen the file.  */
++  fclose (fp);
++  fp = fopen (filename, "w+");
++  if (fp == NULL)
++    {
++      printf ("seek_end: fopen: %s\n", strerror (errno));
++      return 1;
++    }
++
++  if (do_seek_end (fp))
++    {
++      printf ("SEEK_END test failed\n");
++      ret = 1;
++    }
++
++  fclose (fp);
++
++  return ret;
++}
++
++
++#define TEST_FUNCTION do_test ()
++#include "../test-skeleton.c"
+diff --git a/libio/wfileops.c b/libio/wfileops.c
+index 3f628bf..96debc6 100644
+--- a/libio/wfileops.c
++++ b/libio/wfileops.c
+@@ -684,13 +684,25 @@ _IO_wfile_seekoff (fp, offset, dir, mode)
+ 				  - (fp->_IO_read_end - fp->_IO_buf_base));
+       if (offset >= start_offset && offset < fp->_offset)
+ 	{
++	  struct _IO_codecvt *cv = fp->_codecvt;
++	  _IO_off64_t off;
++
+ 	  _IO_setg (fp, fp->_IO_buf_base,
+ 		    fp->_IO_buf_base + (offset - start_offset),
+ 		    fp->_IO_read_end);
+ 	  _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
++
++	  /* Get corresponding offset for the _wide_data.  */
++	  fp->_wide_data->_IO_last_state = fp->_wide_data->_IO_state;
++	  off = (*cv->__codecvt_do_length) (cv, &fp->_wide_data->_IO_state,
++					    fp->_IO_read_base, fp->_IO_read_ptr,
++					    (fp->_wide_data->_IO_buf_end
++					     - fp->_wide_data->_IO_buf_base));
++
+ 	  _IO_wsetg (fp, fp->_wide_data->_IO_buf_base,
+-		     fp->_wide_data->_IO_buf_base,
+-		     fp->_wide_data->_IO_buf_base);
++		     fp->_wide_data->_IO_buf_base + off,
++		     fp->_wide_data->_IO_buf_base + off);
++
+ 	  _IO_wsetp (fp, fp->_wide_data->_IO_buf_base,
+ 		     fp->_wide_data->_IO_buf_base);
+ 	  _IO_mask_flags (fp, 0, _IO_EOF_SEEN);
+@@ -727,11 +739,43 @@ _IO_wfile_seekoff (fp, offset, dir, mode)
+ 	  goto dumb;
+ 	}
+     }
+-  _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base + delta,
+-	    fp->_IO_buf_base + count);
+-  _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
++
++  /* Convert up to the location we're seeking to.  */
++  enum __codecvt_result status;
++  _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base,
++	    fp->_IO_buf_base + delta);
+   _IO_wsetg (fp, fp->_wide_data->_IO_buf_base,
+ 	     fp->_wide_data->_IO_buf_base, fp->_wide_data->_IO_buf_base);
++
++  do
++    {
++      struct _IO_codecvt *cv = fp->_codecvt;
++      const char *read_stop = (const char *) fp->_IO_read_ptr;
++
++      fp->_wide_data->_IO_last_state = fp->_wide_data->_IO_state;
++      status = (*cv->__codecvt_do_in) (cv, &fp->_wide_data->_IO_state,
++				       fp->_IO_read_ptr, fp->_IO_read_end,
++				       &read_stop,
++				       fp->_wide_data->_IO_read_ptr,
++				       fp->_wide_data->_IO_buf_end,
++				       &fp->_wide_data->_IO_read_end);
++
++      /* Should we return EILSEQ instead?  */
++      if (__builtin_expect (status == __codecvt_error, 0))
++	goto dumb;
++
++      fp->_IO_read_ptr = (char *) read_stop;
++    }
++  while (__builtin_expect (status == __codecvt_partial, 0));
++
++  /* Now seek to the location in the _wide data buffer.  */
++  fp->_wide_data->_IO_read_ptr = fp->_wide_data->_IO_read_end;
++
++  /* Finally, set _IO_read_end to reflect how much we have actually read in
++     from the file.  */
++  fp->_IO_read_end = fp->_IO_buf_base + count;
++
++  _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
+   _IO_wsetp (fp, fp->_wide_data->_IO_buf_base, fp->_wide_data->_IO_buf_base);
+   fp->_offset = result + count;
+   _IO_mask_flags (fp, 0, _IO_EOF_SEEN);
+
+--MP_/nT+8opq/57jsIpH2GwJ_t+V--
+

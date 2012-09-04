@@ -172,6 +172,9 @@ Patch2033: %{name}-rh767693-2.patch
 # Upstream BZ 14459
 Patch2036: %{name}-rh847718.patch
 
+# Upstream BZ 14543
+Patch2039:  %{name}-rh854337.patch
+
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Obsoletes: nss_db
@@ -431,6 +434,7 @@ rm -rf %{glibcportsdir}
 %patch2036 -p1
 %patch1037 -p1
 %patch1038 -p1
+%patch2039 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1308,6 +1312,7 @@ rm -f *.filelist*
 
 %changelog
 * Tue Sep 4 2012 Jeff Law <law@redhat.com> - 2.16-12
+  - Fix fseek in wide mode (#854337)
   - Pick up s390/s390x IFUNC support.
 
 * Tue Aug 21 2012 Jeff Law <law@redhat.com> - 2.16-11
