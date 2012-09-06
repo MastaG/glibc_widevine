@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1317,6 +1317,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Sep 4 2012 Jeff Law <law@redhat.com> - 2.16-13
+  - Update fseek fix (#854337)
+
 * Tue Sep 4 2012 Jeff Law <law@redhat.com> - 2.16-12
   - Incorporate ppc64p7 arch changes (#854250)
   - Fix fseek in wide mode (#854337)
