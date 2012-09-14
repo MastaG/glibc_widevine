@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 56%{?dist}
+Release: 57%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -215,6 +215,9 @@ Patch2065: %{name}-rh841787.patch
 
 # Upstream BZ 14459
 Patch2069: %{name}-rh847718.patch
+
+# Upstream BZ 14583
+Patch2070: %{name}-rh857236.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -507,6 +510,7 @@ popd
 %patch0067 -p1
 %patch1068 -p1
 %patch2069 -p1
+%patch2070 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1373,6 +1377,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Sep 14 2012 Jeff Law <law@redhat.com> - 2.15.57
+  - Fix prototype of sigsetjmp in pthread.h (#857236).
+
 * Wed Aug 15 2012 Jeff Law <law@redhat.com> - 2.15.56
   - Fix integer overflow leading to buffer overflow in strto* (#847718)
 
