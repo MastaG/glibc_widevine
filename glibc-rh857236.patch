@@ -6,8 +6,7 @@ diff -Nrup a/nptl/sysdeps/pthread/pthread.h b/nptl/sysdeps/pthread/pthread.h
  /* Function used in the macros.  */
  struct __jmp_buf_tag;
 -extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask) __THROW;
-+extern int __sigsetjmp (struct __jmp_buf_tag __env[1], int __savemask) __THROWNL;
-
++extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask) __THROWNL;
  
  
  /* Mutex handling.  */
