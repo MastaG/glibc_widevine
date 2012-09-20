@@ -1,0 +1,131 @@
+2012-09-20  Jeff Law <law@redhat.com>
+
+	[BZ #14594]
+	* iconv/gconv_cache.c (find_module): Demangle function pointer
+	before testing it.
+	* iconv/gconv_db.c (free_derivation): Likewise.
+	(__gconv_release_step, gen_steps, increment_counter): Likewise.
+
+diff --git a/NEWS b/NEWS
+index d9dfd20..d01c524 100644
+--- a/NEWS
++++ b/NEWS
+@@ -73,7 +73,7 @@ Version 2.16
+   14043, 14044, 14048, 14049, 14050, 14053, 14055, 14059, 14064, 14075,
+   14080, 14083, 14103, 14104, 14109, 14112, 14117, 14122, 14123, 14134,
+   14153, 14183, 14188, 14199, 14210, 14218, 14229, 14241, 14273, 14277,
+-  14278,
++  14278, 14594
+ 
+ * Support for the x32 ABI on x86-64 added.  The x32 target is selected by
+   configuring glibc with:
+diff --git a/iconv/gconv_cache.c b/iconv/gconv_cache.c
+index 90b6cff..9e23708 100644
+--- a/iconv/gconv_cache.c
++++ b/iconv/gconv_cache.c
+@@ -1,5 +1,5 @@
+ /* Cache handling for iconv modules.
+-   Copyright (C) 2001, 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
++   Copyright (C) 2001-2003, 2005, 2007, 2012 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+    Contributed by Ulrich Drepper <drepper@cygnus.com>, 2001.
+ 
+@@ -206,13 +206,13 @@ find_module (const char *directory, const char *filename,
+       result->__btowc_fct = NULL;
+       result->__data = NULL;
+ 
+-      /* Call the init function.  */
+-      if (result->__init_fct != NULL)
+-	{
+-	  __gconv_init_fct init_fct = result->__init_fct;
++      __gconv_init_fct init_fct = result->__init_fct;
+ #ifdef PTR_DEMANGLE
+-	  PTR_DEMANGLE (init_fct);
++      PTR_DEMANGLE (init_fct);
+ #endif
++      /* Call the init function.  */
++      if (init_fct != NULL)
++	{
+ 	  status = DL_CALL_FCT (init_fct, (result));
+ 
+ #ifdef PTR_MANGLE
+diff --git a/iconv/gconv_db.c b/iconv/gconv_db.c
+index 01015e8..7f91c7d 100644
+--- a/iconv/gconv_db.c
++++ b/iconv/gconv_db.c
+@@ -179,16 +179,17 @@ free_derivation (void *p)
+   size_t cnt;
+ 
+   for (cnt = 0; cnt < deriv->nsteps; ++cnt)
+-    if (deriv->steps[cnt].__counter > 0
+-	&& deriv->steps[cnt].__end_fct != NULL)
++    if (deriv->steps[cnt].__counter > 0)
+       {
+-	assert (deriv->steps[cnt].__shlib_handle != NULL);
+-
+ 	__gconv_end_fct end_fct = deriv->steps[cnt].__end_fct;
+ #ifdef PTR_DEMANGLE
+ 	PTR_DEMANGLE (end_fct);
+ #endif
+-	DL_CALL_FCT (end_fct, (&deriv->steps[cnt]));
++	if (end_fct != NULL)
++	  {
++	    assert (deriv->steps[cnt].__shlib_handle != NULL);
++	    DL_CALL_FCT (end_fct, (&deriv->steps[cnt]));
++	  }
+       }
+ 
+   /* Free the name strings.  */
+@@ -211,15 +212,15 @@ __gconv_release_step (struct __gconv_step *step)
+   /* Skip builtin modules; they are not reference counted.  */
+   if (step->__shlib_handle != NULL && --step->__counter == 0)
+     {
++      __gconv_end_fct end_fct = step->__end_fct;
++#ifdef PTR_DEMANGLE
++      PTR_DEMANGLE (end_fct);
++#endif
+       /* Call the destructor.  */
+-      if (step->__end_fct != NULL)
++      if (end_fct != NULL)
+ 	{
+ 	  assert (step->__shlib_handle != NULL);
+ 
+-	  __gconv_end_fct end_fct = step->__end_fct;
+-#ifdef PTR_DEMANGLE
+-	  PTR_DEMANGLE (end_fct);
+-#endif
+ 	  DL_CALL_FCT (end_fct, (step));
+ 	}
+ 
+@@ -293,13 +294,13 @@ gen_steps (struct derivation_step *best, const char *toset,
+ 
+ 	      /* Call the init function.  */
+ 	      __gconv_init_fct init_fct = result[step_cnt].__init_fct;
++# ifdef PTR_DEMANGLE
++	      PTR_DEMANGLE (init_fct);
++# endif
+ 	      if (init_fct != NULL)
+ 		{
+ 		  assert (result[step_cnt].__shlib_handle != NULL);
+ 
+-# ifdef PTR_DEMANGLE
+-		  PTR_DEMANGLE (init_fct);
+-# endif
+ 		  status = DL_CALL_FCT (init_fct, (&result[step_cnt]));
+ 
+ 		  if (__builtin_expect (status, __GCONV_OK) != __GCONV_OK)
+@@ -393,11 +394,11 @@ increment_counter (struct __gconv_step *steps, size_t nsteps)
+ 
+ 	  /* Call the init function.  */
+ 	  __gconv_init_fct init_fct = step->__init_fct;
+-	  if (init_fct != NULL)
+-	    {
+ #ifdef PTR_DEMANGLE
+-	      PTR_DEMANGLE (init_fct);
++	  PTR_DEMANGLE (init_fct);
+ #endif
++	  if (init_fct != NULL)
++	    {
+ 	      DL_CALL_FCT (init_fct, (step));
+ 
+ #ifdef PTR_MANGLE
