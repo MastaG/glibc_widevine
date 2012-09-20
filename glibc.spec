@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -861,11 +861,6 @@ cat > utils.filelist <<EOF
 %{_prefix}/bin/xtrace
 EOF
 
-# /etc/localtime
-rm -f $RPM_BUILD_ROOT/etc/localtime
-#cp -f $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo/US/Eastern $RPM_BUILD_ROOT/etc/localtime
-ln -sf ..%{_prefix}/share/zoneinfo/US/Eastern $RPM_BUILD_ROOT/etc/localtime
-
 rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
 
 # Make sure %config files have the same timestamp
@@ -1100,73 +1095,6 @@ if posix.access("/etc/ld.so.cache") then
   end
 end
 
-fd = io.open("/etc/sysconfig/clock")
-if not fd then return end
-zonename = nil
-for l in fd:lines() do
-  zone = string.match(l, "^[ \t]*ZONE[ \t]*=[ \t]*\"?([^\t\n\"]*)");
-  if zone then
-    zone = string.gsub (zone, " ", "_")
-    zonename = "/usr/share/zoneinfo/" .. zone
-    break
-  end
-end
-fd:close()
-if not zonename then return end
-os.remove("/etc/localtime.tzupdate")
-posix.symlink (zonename, "/etc/localtime.tzupdate")
-posix.chmod("/etc/localtime.tzupdate", 0644)
-if not os.rename("/etc/localtime.tzupdate", "/etc/localtime") then
-  os.remove("/etc/localtime.tzupdate")
-end
-
-
-%triggerin common -p <lua> -- tzdata
-function update (filename, new_data)
-  local fd = io.open(filename)
-  if not fd then return end
-  local data = fd:read("*a")
-  fd:close()
-  if not data then return end
-  -- Don't update the file unnecessarily.
-  if data == new_data then return end
-  local tempfilename = filename .. ".tzupdate"
-  fd = io.open(tempfilename, "w")
-  if not fd then return end
-  fd:write(new_data)
-  fd:close()
-  posix.chmod(tempfilename, 0644)
-  if not os.rename(tempfilename, filename) then
-    os.remove(tempfilename)
-  end
-end
-fd = io.open("/etc/sysconfig/clock")
-if not fd then return end
-zonename = nil
-for l in fd:lines() do
-  zone = string.match(l, "^[ \t]*ZONE[ \t]*=[ \t]*\"?([^\t\n\"]*)");
-  if zone then
-    zone = string.gsub (zone, " ", "_")
-    zonename = "/usr/share/zoneinfo/" .. zone
-    break
-  end
-end
-fd:close()
-if not zonename then return end
-fd = io.open(zonename)
-if not fd then return end
-data = fd:read("*a")
-fd:close()
-if not data then return end
-update("/var/spool/postfix/etc/localtime", data)
-os.remove("/etc/localtime.tzupdate")
-posix.symlink (zonename, "/etc/localtime.tzupdate")
-posix.chmod("/etc/localtime.tzupdate", 0644)
-if not os.rename("/etc/localtime.tzupdate", "/etc/localtime") then
-  os.remove("/etc/localtime.tzupdate")
-end
-
-
 %post devel
 /sbin/install-info %{_infodir}/libc.info.gz %{_infodir}/dir > /dev/null 2>&1 || :
 
@@ -1272,7 +1200,6 @@ rm -f *.filelist*
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
-%verify(not md5 size mtime) %config(noreplace) /etc/localtime
 %attr(755,root,root) %caps(cap_chown,cap_fowner=pe) %{_prefix}/libexec/pt_chown
 %doc documentation/*
 
@@ -1321,6 +1248,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Sep 20 2012 Jeff Law <law@redhat.com> - 2.16-16
+  - Remove handling of /etc/localtime and /var/spool/postfix/etc/localtime
+    as systemd will be handling them from now on (#858735).
+
 * Mon Sep 17 2012 Jeff Law <law@redhat.com> - 2.16-15
   - Move /etc/localtime into glibc-common package since glibc-common
     owns the scriptlets which update it.
