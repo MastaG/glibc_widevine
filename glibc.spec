@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -178,6 +178,8 @@ Patch2039: %{name}-rh854337.patch
 
 # Upstream BZ 14583
 Patch2040: %{name}-rh857236.patch
+
+Patch2042: %{name}-rh864820.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -444,6 +446,7 @@ rm -rf %{glibcportsdir}
 %patch2039 -p1
 %patch2040 -p1
 %patch1041 -p1
+%patch2042 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1250,6 +1253,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Oct 10 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16-19
+  - Fix Marathi names for Wednesday, September and October (#rh864820).
+
 * Mon Oct 1 2012 Jeff Law <law@redhat.com> - 2.16-18
   - Set proper max length when parsing xdr requests (#848748).
 
