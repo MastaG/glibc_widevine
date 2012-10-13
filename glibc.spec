@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -113,6 +113,7 @@ Patch1035: %{name}-rh845960.patch
 Patch1037: %{name}-rh849203.patch
 Patch1038: %{name}-rh805093.patch
 Patch1041: %{name}-rh848748.patch
+Patch1042: %{name}-rh865520.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -447,6 +448,7 @@ rm -rf %{glibcportsdir}
 %patch2040 -p1
 %patch1041 -p1
 %patch2042 -p1
+%patch1042 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1253,6 +1255,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Oct 12 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-20
+  - Backport of upstream BZ #14251: powerpc: add name_to_handle, 
+    open_by_handle, etc to PowerPC bits/fcntl.h. (#rh865520).
+
 * Wed Oct 10 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16-19
   - Fix Marathi names for Wednesday, September and October (#rh864820).
 
