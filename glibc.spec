@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -106,6 +106,11 @@ Patch0012: %{name}-stap-libm.patch
 # Needs to be sent upstream
 Patch0034: %{name}-rh841318.patch
 
+# Needs to be sent upstream
+Patch0043: %{name}-rh832694.patch
+Patch0044: %{name}-rh837695.patch
+Patch0046: %{name}-rh863453.patch
+
 #
 # Patches from upstream
 #
@@ -114,6 +119,7 @@ Patch1037: %{name}-rh849203.patch
 Patch1038: %{name}-rh805093.patch
 Patch1041: %{name}-rh848748.patch
 Patch1042: %{name}-rh865520.patch
+Patch1045: %{name}-rh852445.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -449,6 +455,10 @@ rm -rf %{glibcportsdir}
 %patch1041 -p1
 %patch2042 -p1
 %patch1042 -p1
+%patch0043 -p1
+%patch0044 -p1
+%patch1045 -p1
+%patch0046 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1255,6 +1265,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Oct 16 2012 Jeff Law <law@redhat.com> - 2.16-21
+  - Change error text for ESTALE (#832694)
+  - Increase size of temporary buffers to avoid unnecessary DNS
+    lookups (#837695)
+  - Fix gcc_asset failure in _Unwind_SetSpColumn() on ppc64.  (#852445)
+  - Don't free memory allocated by mempool allocator (#863453)
+
 * Fri Oct 12 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-20
   - Backport of upstream BZ #14251: powerpc: add name_to_handle, 
     open_by_handle, etc to PowerPC bits/fcntl.h. (#rh865520).
