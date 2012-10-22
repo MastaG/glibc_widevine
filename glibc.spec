@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 21%{?dist}
+Release: 22%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -39,7 +39,7 @@ Group: System Environment/Libraries
 URL: http://www.gnu.org/software/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.gz
 Source1: %{?glibc_release_url}%{glibcportsdir}.tar.gz
-Source2: %{glibcsrcdir}-fedora.tar.gz
+Source2: %{glibcsrcdir}-1-fedora.tar.gz
 
 # 0000-0999 for patches which are unlikely to ever go upstream or which
 # have not been analyzed to see if they ought to go upstream yet.
@@ -1265,6 +1265,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Oct 22 2012 Jeff Law <law@redhat.com> - 2.16-22
+  - Include "sss" in /etc/nsswitch.conf (#867473)
+
 * Tue Oct 16 2012 Jeff Law <law@redhat.com> - 2.16-21
   - Change error text for ESTALE (#832694)
   - Increase size of temporary buffers to avoid unnecessary DNS
