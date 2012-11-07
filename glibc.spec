@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 57%{?dist}
+Release: 58%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -120,6 +120,7 @@ Patch1052: %{name}-sw13979.patch
 Patch1053: %{name}-rh817276.patch
 Patch1054: %{name}-rh808014.patch
 Patch1068: %{name}-rh845960.patch
+Patch1071: glibc-fenvfix.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -511,6 +512,7 @@ popd
 %patch1068 -p1
 %patch2069 -p1
 %patch2070 -p1
+%patch1071 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1377,6 +1379,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Nov 7 2012 Jeff Law <law@redhat.com> - 2.15.58
+  - Fix fenv.h to work with -m32.
+
 * Fri Sep 14 2012 Jeff Law <law@redhat.com> - 2.15.57
   - Fix prototype of sigsetjmp in pthread.h (#857236).
 
