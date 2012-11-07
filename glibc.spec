@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -120,6 +120,7 @@ Patch1038: %{name}-rh805093.patch
 Patch1041: %{name}-rh848748.patch
 Patch1042: %{name}-rh865520.patch
 Patch1045: %{name}-rh852445.patch
+Patch1047: %{name}-rh804768.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -459,6 +460,7 @@ rm -rf %{glibcportsdir}
 %patch0044 -p1
 %patch1045 -p1
 %patch0046 -p1
+%patch1047 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1265,6 +1267,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Nov 7 2012 Jeff Law <law@redhat.com> - 2.16-23
+  - Sync s390[x] auxv capabilities and archs with kernel (#804768)
+
 * Mon Oct 22 2012 Jeff Law <law@redhat.com> - 2.16-22
   - Include "sss" in /etc/nsswitch.conf (#867473)
 
