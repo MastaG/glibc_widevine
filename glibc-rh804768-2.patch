@@ -1,0 +1,58 @@
+2012-11-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+        * sysdeps/s390/dl-procinfo.c (_dl_s390_cap_flags): Add "te".
+	* sysdeps/s390/dl-procinfo.h (HWCAP_S390_TE): Add enum value.
+	* sysdeps/unix/sysv/linux/s390/hwcap.h (HWCAP_S390_TE): Add macro
+	definition.
+
+diff --git a/sysdeps/s390/dl-procinfo.c b/sysdeps/s390/dl-procinfo.c
+index a22d45b..9590146 100644
+--- a/sysdeps/s390/dl-procinfo.c
++++ b/sysdeps/s390/dl-procinfo.c
+@@ -46,11 +46,11 @@
+ #if !defined PROCINFO_DECL && defined SHARED
+   ._dl_s390_cap_flags
+ #else
+-PROCINFO_CLASS const char _dl_s390_cap_flags[10][9]
++PROCINFO_CLASS const char _dl_s390_cap_flags[11][9]
+ #endif
+ #ifndef PROCINFO_DECL
+ = {
+-     "esan3", "zarch", "stfle", "msa", "ldisp", "eimm", "dfp", "edat", "etf3eh", "highgprs"
++     "esan3", "zarch", "stfle", "msa", "ldisp", "eimm", "dfp", "edat", "etf3eh", "highgprs", "te"
+   }
+ #endif
+ #if !defined SHARED || defined PROCINFO_DECL
+diff --git a/sysdeps/s390/dl-procinfo.h b/sysdeps/s390/dl-procinfo.h
+index 7221b53..97dcf07 100644
+--- a/sysdeps/s390/dl-procinfo.h
++++ b/sysdeps/s390/dl-procinfo.h
+@@ -33,7 +33,9 @@
+ 
+ /* Hardware capablity bit numbers are derived directly from the
+    facility indications as stored by the "store facility list" (STFL)
+-   instruction.  */
++   instruction.
++   highgprs is an alien in that list.  It describes a *kernel*
++   capability.  */
+ 
+ enum
+ {
+@@ -47,6 +49,7 @@ enum
+   HWCAP_S390_HPAGE = 1 << 7,
+   HWCAP_S390_ETF3EH = 1 << 8,
+   HWCAP_S390_HIGH_GPRS = 1 << 9,
++  HWCAP_S390_TE = 1 << 10,
+ };
+ 
+ #define HWCAP_IMPORTANT (HWCAP_S390_ZARCH | HWCAP_S390_LDISP \
+diff --git a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h b/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
+index 7f03ffe..59d68b0 100644
+--- a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
++++ b/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
+@@ -34,3 +34,4 @@
+ #define HWCAP_S390_HPAGE        128
+ #define HWCAP_S390_ETF3EH       256
+ #define HWCAP_S390_HIGH_GPRS    512
++#define HWCAP_S390_TE           1024
+
