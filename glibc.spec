@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 25%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -187,6 +187,9 @@ Patch2039: %{name}-rh854337.patch
 
 # Upstream BZ 14583
 Patch2040: %{name}-rh857236.patch
+
+# Upstream BZ 5298
+Patch2041: %{name}-rh577950.patch
 
 Patch2042: %{name}-rh864820.patch
 
@@ -454,6 +457,7 @@ rm -rf %{glibcportsdir}
 %patch1038 -p1
 %patch2039 -p1
 %patch2040 -p1
+%patch2041 -p1
 %patch1041 -p1
 %patch2042 -p1
 %patch1042 -p1
@@ -1269,6 +1273,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Nov 28 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-25
+  - Backport of upstream BZ #5298. Don't flush buffer for ftell.
+    Compute offsets from write pointers instead.  (#577950)
+
 * Thu Nov 8 2012 Jeff Law <law@redhat.com> - 2.16-24
   - Add hwcaps for transactional execution on s390[x] (#804768)
 
