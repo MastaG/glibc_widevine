@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 25%{?dist}
+Release: 26%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -122,6 +122,7 @@ Patch1042: %{name}-rh865520.patch
 Patch1045: %{name}-rh852445.patch
 Patch1047: %{name}-rh804768.patch
 Patch1048: %{name}-rh804768-2.patch
+Patch1049: %{name}-rh859428.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -467,6 +468,7 @@ rm -rf %{glibcportsdir}
 %patch0046 -p1
 %patch1047 -p1
 %patch1048 -p1
+%patch1049 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1273,6 +1275,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Dec  6 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16-26
+  - use uint64_t for __bswap64 (#859428).
+
 * Wed Nov 28 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-25
   - Backport of upstream BZ #5298. Don't flush buffer for ftell.
     Compute offsets from write pointers instead.  (#577950)
