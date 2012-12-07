@@ -1,0 +1,251 @@
+Reject out-of-spec salt passed to DES crypt
+
+From: Alexandre Oliva <aoliva@redhat.com>
+
+for  ChangeLog
+
+	* crypt/crypt-private.h: Include stdbool.h.
+	(_ufc_setup_salt_r): Return bool.
+	* crypt/crypt-entry.c: Include errno.h.
+	(__crypt_r): Return NULL with EINVAL for bad salt.
+	* crypt/crypt_util.c (bad_for_salt): New.
+	(_ufc_setup_salt_r): Check that salt is long enough and within
+	the specified alphabet.
+	* crypt/badsalttest.c: New file.
+	* crypt/Makefile (tests): Add it.
+	($(objpfx)badsalttest): New.
+---
+
+ crypt/Makefile        |    2 +
+ crypt/badsalttest.c   |   86 +++++++++++++++++++++++++++++++++++++++++++++++++
+ crypt/crypt-entry.c   |    7 +++-
+ crypt/crypt-private.h |    3 +-
+ crypt/crypt_util.c    |   42 ++++++++++++++++++++++--
+ 5 files changed, 133 insertions(+), 7 deletions(-)
+ create mode 100644 crypt/badsalttest.c
+
+
+diff --git a/crypt/Makefile b/crypt/Makefile
+index 3a61865..3d4f243 100644
+--- a/crypt/Makefile
++++ b/crypt/Makefile
+@@ -28,7 +28,7 @@ extra-libs-others := $(extra-libs)
+ libcrypt-routines := crypt-entry md5-crypt sha256-crypt sha512-crypt crypt \
+ 		     crypt_util
+ 
+-tests := cert md5c-test sha256c-test sha512c-test
++tests := cert md5c-test sha256c-test sha512c-test badsalttest
+ 
+ include ../Makeconfig
+ 
+diff --git a/crypt/badsalttest.c b/crypt/badsalttest.c
+new file mode 100644
+index 0000000..e0e207b
+--- /dev/null
++++ b/crypt/badsalttest.c
+@@ -0,0 +1,86 @@
++/* Test program for bad DES salt detection in crypt.
++   Copyright (C) 2012 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/mman.h>
++#include <crypt.h>
++
++static const char *tests[][2] =
++  {
++    { "no salt", "" },
++    { "single char", "/" },
++    { "first char bad", "!x" },
++    { "second char bad", "Z%" },
++    { "both chars bad", ":@" },
++    { "un$upported algorithm", "$2$" },
++    { "unsupported_algorithm", "_1" },
++    { "end of page", NULL }
++  };
++
++static int
++do_test (void)
++{
++  int result = 0;
++  struct crypt_data cd;
++  size_t n = sizeof (tests) / sizeof (*tests);
++  size_t pagesize = (size_t) sysconf (_SC_PAGESIZE);
++  char *page;
++
++  /* Check that crypt won't look at the second character if the first
++     one is invalid.  */
++  page = mmap (NULL, pagesize * 2, PROT_READ | PROT_WRITE,
++	       MAP_PRIVATE | MAP_ANON, -1, 0);
++  if (page == MAP_FAILED)
++    {
++      perror ("mmap");
++      n--;
++    }
++  else
++    {
++      if (mmap (page + pagesize, pagesize, 0,
++		MAP_PRIVATE | MAP_ANON | MAP_FIXED,
++		-1, 0) != page + pagesize)
++	perror ("mmap 2");
++      page[pagesize - 1] = '*';
++      tests[n - 1][1] = &page[pagesize - 1];
++    }
++
++  for (size_t i = 0; i < n; i++)
++    {
++      if (crypt (tests[i][0], tests[i][1]))
++	{
++	  result++;
++	  printf ("%s: crypt returned non-NULL with salt \"%s\"\n",
++		  tests[i][0], tests[i][1]);
++	}
++
++      if (crypt_r (tests[i][0], tests[i][1], &cd))
++	{
++	  result++;
++	  printf ("%s: crypt_r returned non-NULL with salt \"%s\"\n",
++		  tests[i][0], tests[i][1]);
++	}
++    }
++
++  return result;
++}
++
++#define TIMEOUT 5
++#define TEST_FUNCTION do_test ()
++#include "../test-skeleton.c"
+diff --git a/crypt/crypt-entry.c b/crypt/crypt-entry.c
+index 91e2c4e..9fb22bd 100644
+--- a/crypt/crypt-entry.c
++++ b/crypt/crypt-entry.c
+@@ -27,6 +27,7 @@
+ #include <stdio.h>
+ #endif
+ #include <string.h>
++#include <errno.h>
+ 
+ #ifndef STATIC
+ #define STATIC static
+@@ -108,7 +109,11 @@ __crypt_r (key, salt, data)
+   /*
+    * Hack DES tables according to salt
+    */
+-  _ufc_setup_salt_r (salt, data);
++  if (!_ufc_setup_salt_r (salt, data))
++    {
++      __set_errno (EINVAL);
++      return NULL;
++    }
+ 
+   /*
+    * Setup key schedule
+diff --git a/crypt/crypt-private.h b/crypt/crypt-private.h
+index b4bfa8b..54418fc 100644
+--- a/crypt/crypt-private.h
++++ b/crypt/crypt-private.h
+@@ -26,6 +26,7 @@
+ #define CRYPT_PRIVATE_H	1
+ 
+ #include <features.h>
++#include <stdbool.h>
+ 
+ /* crypt.c */
+ extern void _ufc_doit_r (ufc_long itr, struct crypt_data * __restrict __data,
+@@ -36,7 +37,7 @@ extern void _ufc_doit_r (ufc_long itr, struct crypt_data * __restrict __data,
+ extern void __init_des_r (struct crypt_data * __restrict __data);
+ extern void __init_des (void);
+ 
+-extern void _ufc_setup_salt_r (const char *s,
++extern bool _ufc_setup_salt_r (const char *s,
+ 			       struct crypt_data * __restrict __data);
+ extern void _ufc_mk_keytab_r (const char *key,
+ 			      struct crypt_data * __restrict __data);
+diff --git a/crypt/crypt_util.c b/crypt/crypt_util.c
+index a1ff88b..e08dd8f 100644
+--- a/crypt/crypt_util.c
++++ b/crypt/crypt_util.c
+@@ -596,23 +596,55 @@ shuffle_sb(k, saltbits)
+ #endif
+ 
+ /*
++ * Return false iff C is in the specified alphabet for crypt salt.
++ */
++
++static bool
++bad_for_salt (char c)
++{
++  switch (c)
++    {
++    case '0' ... '9':
++    case 'A' ... 'Z':
++    case 'a' ... 'z':
++    case '.': case '/':
++      return false;
++
++    default:
++      return true;
++    }
++}
++
++/*
+  * Setup the unit for a new salt
+  * Hopefully we'll not see a new salt in each crypt call.
++ * Return false if an unexpected character was found in s[0] or s[1].
+  */
+ 
+-void
++bool
+ _ufc_setup_salt_r(s, __data)
+      const char *s;
+      struct crypt_data * __restrict __data;
+ {
+   ufc_long i, j, saltbits;
++  char s0, s1;
+ 
+   if(__data->initialized == 0)
+     __init_des_r(__data);
+ 
+-  if(s[0] == __data->current_salt[0] && s[1] == __data->current_salt[1])
+-    return;
+-  __data->current_salt[0] = s[0]; __data->current_salt[1] = s[1];
++  s0 = s[0];
++  if(bad_for_salt (s0))
++    return false;
++
++  s1 = s[1];
++  if(bad_for_salt (s1))
++    return false;
++
++  if(s0 == __data->current_salt[0] && s1 == __data->current_salt[1])
++    return true;
++
++  __data->current_salt[0] = s0;
++  __data->current_salt[1] = s1;
+ 
+   /*
+    * This is the only crypt change to DES:
+@@ -646,6 +678,8 @@ _ufc_setup_salt_r(s, __data)
+   shuffle_sb((LONGG)__data->sb3, __data->current_saltbits ^ saltbits);
+ 
+   __data->current_saltbits = saltbits;
++
++  return true;
+ }
+ 
+ void

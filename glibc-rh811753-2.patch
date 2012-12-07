@@ -1,0 +1,216 @@
+Disable MD5 and DES crypt in FIPS mode
+
+From: Alexandre Oliva <aoliva@redhat.com>
+
+for  ChangeLog
+
+	* crypt/crypt-entry.c: Include fips-private.h.
+	(__crypt_r, __crypt): Disable MD5 and DES if FIPS is enabled.
+	* crypt/md5c-test.c (main): Tolerate disabled MD5.
+	* sysdeps/unix/sysv/linux/fips-private.h: New file.
+	* sysdeps/generic/fips-private.h: New file, dummy fallback.
+---
+
+ crypt/crypt-entry.c                    |   24 +++++++++-
+ crypt/md5c-test.c                      |    5 ++
+ sysdeps/generic/fips-private.h         |   36 ++++++++++++++++
+ sysdeps/unix/sysv/linux/fips-private.h |   74 ++++++++++++++++++++++++++++++++
+ 4 files changed, 135 insertions(+), 4 deletions(-)
+ create mode 100644 sysdeps/generic/fips-private.h
+ create mode 100644 sysdeps/unix/sysv/linux/fips-private.h
+
+
+diff --git a/crypt/crypt-entry.c b/crypt/crypt-entry.c
+index 9fb22bd..89c22e6 100644
+--- a/crypt/crypt-entry.c
++++ b/crypt/crypt-entry.c
+@@ -28,6 +28,7 @@
+ #endif
+ #include <string.h>
+ #include <errno.h>
++#include <fips-private.h>
+ 
+ #ifndef STATIC
+ #define STATIC static
+@@ -92,8 +93,16 @@ __crypt_r (key, salt, data)
+ #ifdef _LIBC
+   /* Try to find out whether we have to use MD5 encryption replacement.  */
+   if (strncmp (md5_salt_prefix, salt, sizeof (md5_salt_prefix) - 1) == 0)
+-    return __md5_crypt_r (key, salt, (char *) data,
+-			  sizeof (struct crypt_data));
++    {
++      /* FIPS rules out MD5 password encryption.  */
++      if (fips_enabled_p ())
++	{
++	  __set_errno (EPERM);
++	  return NULL;
++	}
++      return __md5_crypt_r (key, salt, (char *) data,
++			    sizeof (struct crypt_data));
++    }
+ 
+   /* Try to find out whether we have to use SHA256 encryption replacement.  */
+   if (strncmp (sha256_salt_prefix, salt, sizeof (sha256_salt_prefix) - 1) == 0)
+@@ -115,6 +124,13 @@ __crypt_r (key, salt, data)
+       return NULL;
+     }
+ 
++  /* FIPS rules out DES password encryption.  */
++  if (fips_enabled_p ())
++    {
++      __set_errno (EPERM);
++      return NULL;
++    }
++
+   /*
+    * Setup key schedule
+    */
+@@ -148,7 +164,9 @@ crypt (key, salt)
+ {
+ #ifdef _LIBC
+   /* Try to find out whether we have to use MD5 encryption replacement.  */
+-  if (strncmp (md5_salt_prefix, salt, sizeof (md5_salt_prefix) - 1) == 0)
++  if (strncmp (md5_salt_prefix, salt, sizeof (md5_salt_prefix) - 1) == 0
++      /* Let __crypt_r deal with the error code if FIPS is enabled.  */
++      && !fips_enabled_p ())
+     return __md5_crypt (key, salt);
+ 
+   /* Try to find out whether we have to use SHA256 encryption replacement.  */
+diff --git a/crypt/md5c-test.c b/crypt/md5c-test.c
+index f56d0eb..c80e402 100644
+--- a/crypt/md5c-test.c
++++ b/crypt/md5c-test.c
+@@ -9,7 +9,10 @@ main (int argc, char *argv[])
+   int result = 0;
+ 
+   cp = crypt ("Hello world!", salt);
+-  result |= strcmp ("$1$saltstri$YMyguxXMBpd2TEZ.vS/3q1", cp);
++
++  /* MD5 is disabled in FIPS mode.  */
++  if (cp)
++    result |= strcmp ("$1$saltstri$YMyguxXMBpd2TEZ.vS/3q1", cp);
+ 
+   return result;
+ }
+diff --git a/sysdeps/generic/fips-private.h b/sysdeps/generic/fips-private.h
+new file mode 100644
+index 0000000..0dff087
+--- /dev/null
++++ b/sysdeps/generic/fips-private.h
+@@ -0,0 +1,36 @@
++/* Dummy implementation of FIPS compliance status test.
++   Copyright (C) 2012 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#ifndef _FIPS_PRIVATE_H
++#define _FIPS_PRIVATE_H
++
++#include <stdbool.h>
++
++/* Return true if compliance with the FIPS security standards is
++   enabled.
++
++   This is only relevant within crypt, to tell whether MD5 and DES
++   algorithms should be rejected.  */
++
++static inline bool
++fips_enabled_p (void)
++{
++  return false;
++}
++
++#endif /* _FIPS_PRIVATE_H */
+diff --git a/sysdeps/unix/sysv/linux/fips-private.h b/sysdeps/unix/sysv/linux/fips-private.h
+new file mode 100644
+index 0000000..81d1b61
+--- /dev/null
++++ b/sysdeps/unix/sysv/linux/fips-private.h
+@@ -0,0 +1,74 @@
++/* FIPS compliance status test for GNU/Linux systems.
++   Copyright (C) 2012 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#ifndef _FIPS_PRIVATE_H
++#define _FIPS_PRIVATE_H
++
++#include <errno.h>
++#include <fcntl.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <not-cancel.h>
++#include <stdbool.h>
++
++/* Return true if FIPS mode is enabled.  See
++   sysdeps/generic/fips-private.h for more information.  */
++
++static inline bool
++fips_enabled_p (void)
++{
++  static enum
++  {
++    FIPS_UNTESTED = 0,
++    FIPS_ENABLED = 1,
++    FIPS_DISABLED = -1,
++    FIPS_TEST_FAILED = -2
++  } checked;
++
++  if (checked == FIPS_UNTESTED)
++    {
++      int fd = open_not_cancel_2 ("/proc/sys/crypto/fips_enabled", O_RDONLY);
++
++      if (fd != -1)
++	{
++	  /* This is more than enough, the file contains a single integer.  */
++	  char buf[32];
++	  ssize_t n;
++	  n = TEMP_FAILURE_RETRY (read_not_cancel (fd, buf, sizeof (buf) - 1));
++	  close_not_cancel_no_status (fd);
++
++	  if (n > 0)
++	    {
++	      /* Terminate the string.  */
++	      buf[n] = '\0';
++
++	      char *endp;
++	      long int res = strtol (buf, &endp, 10);
++	      if (endp != buf && (*endp == '\0' || *endp == '\n'))
++		checked = (res > 0) ? FIPS_ENABLED : FIPS_DISABLED;
++	    }
++	}
++
++      if (checked == FIPS_UNTESTED)
++	checked = FIPS_TEST_FAILED;
++    }
++
++  return checked == FIPS_ENABLED;
++}
++
++#endif /* _FIPS_PRIVATE_H */

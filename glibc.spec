@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 26%{?dist}
+Release: 27%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -123,6 +123,8 @@ Patch1045: %{name}-rh852445.patch
 Patch1047: %{name}-rh804768.patch
 Patch1048: %{name}-rh804768-2.patch
 Patch1049: %{name}-rh859428.patch
+Patch1050: %{name}-rh811753.patch
+Patch1051: %{name}-rh811753-2.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -209,6 +211,8 @@ Provides: ld-linux.so.3(GLIBC_2.4)
 %endif
 
 Requires: glibc-common = %{version}-%{release}
+# crypto changes require an nss-softokn fix to work correctly
+Requires: nss-softokn >= 3.14-5 
 # Require libgcc in case some program calls pthread_cancel in its %%post
 Requires(pre): basesystem, libgcc
 # This is for building auxiliary programs like memusage, nscd
@@ -469,6 +473,8 @@ rm -rf %{glibcportsdir}
 %patch1047 -p1
 %patch1048 -p1
 %patch1049 -p1
+%patch1050 -p1
+%patch1051 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1275,6 +1281,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Dec 7 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-27
+  - Backport crypto support from upstream. (#811753)
+
 * Thu Dec  6 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16-26
   - use uint64_t for __bswap64 (#859428).
 
