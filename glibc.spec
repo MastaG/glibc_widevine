@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 27%{?dist}
+Release: 28%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -195,6 +195,9 @@ Patch2040: %{name}-rh857236.patch
 Patch2041: %{name}-rh577950.patch
 
 Patch2042: %{name}-rh864820.patch
+
+#See http://sourceware.org/ml/libc-alpha/2012-11/msg00747.html
+Patch2043: %{name}-rh878913.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -475,6 +478,7 @@ rm -rf %{glibcportsdir}
 %patch1049 -p1
 %patch1050 -p1
 %patch1051 -p1
+%patch2043 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1281,6 +1285,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Dec 10 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-28
+  - Backport fix for nss_db crash when db contains exactly one entry.(#878913)
+
 * Thu Dec 7 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-27
   - Backport crypto support from upstream. (#811753)
 
