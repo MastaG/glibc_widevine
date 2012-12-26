@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 28%{?dist}
+Release: 29%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -125,6 +125,7 @@ Patch1048: %{name}-rh804768-2.patch
 Patch1049: %{name}-rh859428.patch
 Patch1050: %{name}-rh811753.patch
 Patch1051: %{name}-rh811753-2.patch
+Patch1052: %{name}-rh890035.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -479,6 +480,7 @@ rm -rf %{glibcportsdir}
 %patch1050 -p1
 %patch1051 -p1
 %patch2043 -p1
+%patch1052 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1285,6 +1287,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Dec 26 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16-29
+  Fix sparc build with older compilers. (#890035)
+
 * Mon Dec 10 2012 Patsy Franklin <pfrankli@redhat.com> - 2.16-28
   - Backport fix for nss_db crash when db contains exactly one entry.(#878913)
 
