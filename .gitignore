@@ -1,2 +1,4 @@
+/.build*
+/src
 /glibc-*.tar.gz
 /glibc-*.tar.xz
