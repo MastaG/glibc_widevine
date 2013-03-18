@@ -1,6 +1,6 @@
-diff -rNup a/fedora/glibc_post_upgrade.c b/fedora/glibc_post_upgrade.c
---- a/fedora/glibc_post_upgrade.c	2011-10-19 05:04:41.000000000 -0600
-+++ b/fedora/glibc_post_upgrade.c	2012-02-06 11:02:03.236713830 -0700
+diff -rNup a/releng/glibc_post_upgrade.c b/releng/glibc_post_upgrade.c
+--- a/releng/glibc_post_upgrade.c	2011-10-19 05:04:41.000000000 -0600
++++ b/releng/glibc_post_upgrade.c	2012-02-06 11:02:03.236713830 -0700
 @@ -60,6 +60,7 @@ is_ia64 (void)
  int
  main (void)

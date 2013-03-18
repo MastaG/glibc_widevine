@@ -1,6 +1,6 @@
-diff -rup a/fedora/glibc.spec.in b/fedora/glibc.spec.in
---- a/fedora/glibc.spec.in	2011-10-19 05:04:41.000000000 -0600
-+++ b/fedora/glibc.spec.in	2012-02-03 09:26:36.669828253 -0700
+diff -rup a/releng/glibc.spec.in b/releng/glibc.spec.in
+--- a/releng/glibc.spec.in	2011-10-19 05:04:41.000000000 -0600
++++ b/releng/glibc.spec.in	2012-02-03 09:26:36.669828253 -0700
 @@ -316,7 +316,7 @@ GCC="gcc -m64"
  GXX="g++ -m64"
  %endif

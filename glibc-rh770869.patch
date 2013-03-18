@@ -1,6 +1,6 @@
-diff -rup a/fedora/nscd.service b/fedora/nscd.service
---- a/fedora/nscd.service	2011-10-19 05:04:41.000000000 -0600
-+++ b/fedora/nscd.service	2012-02-03 13:40:37.070063851 -0700
+diff -rup a/releng/nscd.service b/releng/nscd.service
+--- a/releng/nscd.service	2011-10-19 05:04:41.000000000 -0600
++++ b/releng/nscd.service	2012-02-03 13:40:37.070063851 -0700
 @@ -3,16 +3,15 @@ Description=Name Service Cache Daemon
  After=syslog.target
  
