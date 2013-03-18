@@ -21,13 +21,13 @@
 %define debuginfocommonarches %{biarcharches} alpha alphaev6
 %define multiarcharches ppc %{power64} %{ix86} x86_64 %{sparc}
 %define systemtaparches %{ix86} x86_64
-# Remove -s to get verbose output.
-%define silentrules PARALLELMFLAGS=-s
+# Add -s for a less verbose build output.
+%define silentrules PARALLELMFLAGS=
 
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -54,7 +54,6 @@ Source1: %{glibcsrcdir}-releng.tar.gz
 # the changes from one bucket to another won't necessarily result in needing
 # to twiddle the patch because of dependencies on prior patches and the like.
 
-
 #
 # Patches that are highly unlikely to ever be accepted upstream.
 #
@@ -75,9 +74,6 @@ Patch0005: %{name}-rh825061.patch
 # Horrible hack, never to be upstreamed.  Can go away once the world
 # has been rebuilt to use the new ld.so path.
 Patch0006: %{name}-arm-hardfloat-3.patch
-
-
-# Needs to be sent upstream
 
 # Needs to be sent upstream
 Patch0008: %{name}-fedora-getrlimit-PLT.patch
@@ -115,7 +111,7 @@ Patch0035: %{name}-rh911307.patch
 #
 # Patches from upstream
 #
-
+Patch1000: %{name}-rh905877.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -406,6 +402,7 @@ package or when debugging this package.
 %patch0034 -p1
 %patch2028 -p1
 %patch0035 -p1
+%patch1000 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1201,6 +1198,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Mar 17 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-4
+  - Fix multibyte character processing crash in regexp (#905874, #905877, CVE-2013-0242)
+
 * Wed Feb 27 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-3
   - Renamed release engineering directory to `releng' (#903754).
   - Fix building with gcc 4.8.0 (#911307).
