@@ -22,13 +22,13 @@
 %define debuginfocommonarches %{biarcharches} alpha alphaev6
 %define multiarcharches ppc ppc64 %{ix86} x86_64 %{sparc}
 %define systemtaparches %{ix86} x86_64
-# Remove -s to get verbose output.
-%define silentrules PARALLELMFLAGS=-s
+# Add -s for a less verbose build output.
+%define silentrules PARALLELMFLAGS=
 
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 58%{?dist}
+Release: 59%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -120,7 +120,8 @@ Patch1052: %{name}-sw13979.patch
 Patch1053: %{name}-rh817276.patch
 Patch1054: %{name}-rh808014.patch
 Patch1068: %{name}-rh845960.patch
-Patch1071: glibc-fenvfix.patch
+Patch1071: %{name}-fenvfix.patch
+Patch1072: %{name}-rh905877.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -513,6 +514,7 @@ popd
 %patch2069 -p1
 %patch2070 -p1
 %patch1071 -p1
+%patch1072 -p1
 
 # A lot of programs still misuse memcpy when they have to use
 # memmove. The memcpy implementation below is not tolerant at
@@ -1379,6 +1381,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Mar 19 2013 Carlos O'Donell <carlos@redhat.com> - 2.15.59
+  - Fix multibyte character processing crash in regexp (#922889, CVE-2013-0242)
+
 * Wed Nov 7 2012 Jeff Law <law@redhat.com> - 2.15.58
   - Fix fenv.h to work with -m32.
 
