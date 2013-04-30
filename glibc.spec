@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1202,7 +1202,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Tue Apr 23 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-6
+* Tue Apr 30 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-6
+  - Test init_fct for NULL, not result->__init_fct, after demangling (#952799).
+
+* Tue Apr 23 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-5
   - Increase limits on xdr name and record requests (#892777).
   - Consistently MANGLE/DEMANGLE init_fct, end_fct and btow_fct (#952799).
 
