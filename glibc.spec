@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 30%{?dist}
+Release: 31%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1290,6 +1290,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Apr 30 2013 Patsy Franklin <pfrankli@redhat.com> - 2.16-31
+  - Update patch (#848748) for xdr request to use XDRMAXNAME and 
+    XDRMAXRECORD (#892777).
+
 * Sun Mar 17 2013 Carlos O'Donell <carlos@redhat.com> - 2.16-30
   - Fix ownership of /usr/lib[64]/audit (#894307).
   - Rename release engineering directory to `releng' (#903754).
