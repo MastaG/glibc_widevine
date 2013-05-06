@@ -28,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 31%{?dist}
+Release: 32%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -105,6 +105,7 @@ Patch0012: %{name}-stap-libm.patch
 
 # Needs to be sent upstream
 Patch0034: %{name}-rh841318.patch
+Patch0038: %{name}-rh959034.patch
 
 # Needs to be sent upstream
 Patch0043: %{name}-rh832694.patch
@@ -483,6 +484,7 @@ rm -rf %{glibcportsdir}
 %patch2043 -p1
 %patch1052 -p1
 %patch1053 -p1
+%patch0038 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1290,8 +1292,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun May  5 2013 Patsy Franklin <pfrankli@redhat.com> - 2.16-32
+  - Fix _nl_find_msg malloc failure case, and callers. (#959034).
+
 * Tue Apr 30 2013 Patsy Franklin <pfrankli@redhat.com> - 2.16-31
-  - Update patch (#848748) for xdr request to use XDRMAXNAME and 
+  - Update patch (#848748) for xdr request to use XDRMAXNAME and
     XDRMAXRECORD (#892777).
 
 * Sun Mar 17 2013 Carlos O'Donell <carlos@redhat.com> - 2.16-30
