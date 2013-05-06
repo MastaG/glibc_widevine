@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -109,6 +109,7 @@ Patch0034: %{name}-fedora-elf-init-hidden_undef.patch
 Patch0035: %{name}-rh911307.patch
 Patch0036: %{name}-rh892777.patch
 Patch0037: %{name}-rh952799.patch
+Patch0038: %{name}-rh959034.patch
 
 #
 # Patches from upstream
@@ -407,6 +408,7 @@ package or when debugging this package.
 %patch0036 -p1
 %patch0037 -p1
 %patch1000 -p1
+%patch0038 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1202,6 +1204,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun May  5 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-7
+  - Fix _nl_find_msg malloc failure case, and callers. (#959034).
+
 * Tue Apr 30 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-6
   - Test init_fct for NULL, not result->__init_fct, after demangling (#952799).
 
