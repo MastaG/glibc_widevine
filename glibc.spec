@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -145,6 +145,9 @@ Patch2027: %{name}-rh819430.patch
 
 # Upstream BZ 15006
 Patch2028: %{name}-rh905184.patch
+
+# Upstream BZ 14256
+Patch2039: glibc-rh966259.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
@@ -409,6 +412,7 @@ package or when debugging this package.
 %patch0037 -p1
 %patch1000 -p1
 %patch0038 -p1
+%patch2039 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1204,6 +1208,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun  4 2013 Jeff Law <law@redhat.com> - 2.17-8
+  - Fix ESTALE error message (#966259)
+
 * Sun May  5 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-7
   - Fix _nl_find_msg malloc failure case, and callers. (#959034).
 
