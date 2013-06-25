@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -120,6 +120,8 @@ Patch1002: %{name}-rh977870.patch
 Patch1003: %{name}-rh977872.patch
 Patch1004: %{name}-rh977874.patch
 Patch1005: %{name}-rh977875.patch
+Patch1006: %{name}-rh977887.patch
+Patch1007: %{name}-rh977887-2.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -423,6 +425,8 @@ package or when debugging this package.
 %patch1003 -p1
 %patch1004 -p1
 %patch1005 -p1
+%patch1006 -p1
+%patch1007 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1218,6 +1222,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-11
+  - Fix libm performance regression due to set/restore rounding mode (#977887).
+
 * Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-10
   - Preserve errno across _PC_CHOWN_RESTRICTED call on XFS (#977870).
   - Remove PIPE_BUF Linux-specific code (#977872).
