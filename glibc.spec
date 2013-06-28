@@ -1251,504 +1251,499 @@ rm -f *.filelist*
 - Fix buffer overflow in readdir_r (#995841, CVE-2013-4237).
 
 * Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-11
-  - Fix libm performance regression due to set/restore rounding mode (#977887).
+- Fix libm performance regression due to set/restore rounding mode (#977887).
 
 * Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-10
-  - Preserve errno across _PC_CHOWN_RESTRICTED call on XFS (#977870).
-  - Remove PIPE_BUF Linux-specific code (#977872).
-  - Fix FPE in memusagestat when malloc utilization is zero (#977874).
-  - Accept leading and trailing spaces in getdate input string (#977875).
+- Preserve errno across _PC_CHOWN_RESTRICTED call on XFS (#977870).
+- Remove PIPE_BUF Linux-specific code (#977872).
+- Fix FPE in memusagestat when malloc utilization is zero (#977874).
+- Accept leading and trailing spaces in getdate input string (#977875).
 
 * Thu Jun 20 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-9
-  - Set EAI_SYSTEM only when h_errno is NETDB_INTERNAL (#958652).
+- Set EAI_SYSTEM only when h_errno is NETDB_INTERNAL (#958652).
 
 * Tue Jun  4 2013 Jeff Law <law@redhat.com> - 2.17-8
-  - Fix ESTALE error message (#966259)
+- Fix ESTALE error message (#966259)
 
 * Sun May  5 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-7
-  - Fix _nl_find_msg malloc failure case, and callers. (#959034).
+- Fix _nl_find_msg malloc failure case, and callers. (#959034).
 
 * Tue Apr 30 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-6
-  - Test init_fct for NULL, not result->__init_fct, after demangling (#952799).
+- Test init_fct for NULL, not result->__init_fct, after demangling (#952799).
 
 * Tue Apr 23 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-5
-  - Increase limits on xdr name and record requests (#892777).
-  - Consistently MANGLE/DEMANGLE init_fct, end_fct and btow_fct (#952799).
+- Increase limits on xdr name and record requests (#892777).
+- Consistently MANGLE/DEMANGLE init_fct, end_fct and btow_fct (#952799).
 
 * Sun Mar 17 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-4
-  - Fix multibyte character processing crash in regexp (#905874, #905877, CVE-2013-0242)
+- Fix multibyte character processing crash in regexp (#905874, #905877, CVE-2013-0242)
 
 * Wed Feb 27 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-3
-  - Renamed release engineering directory to `releng' (#903754).
-  - Fix building with gcc 4.8.0 (#911307).
+- Renamed release engineering directory to `releng' (#903754).
+- Fix building with gcc 4.8.0 (#911307).
 
 * Thu Feb 7 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-2
-  - Fix ownership of /usr/lib[64]/audit (#894307).
-  - Support unmarked ARM objects in ld.so.cache and aux cache (#905184).
+- Fix ownership of /usr/lib[64]/audit (#894307).
+- Support unmarked ARM objects in ld.so.cache and aux cache (#905184).
 
 * Tue Jan 1 2013 Jeff Law <law@redhat.com> - 2.17-1
-  - Resync with official glibc-2.17 release
+- Resync with official glibc-2.17 release
 
 * Fri Dec 21 2012 Jeff Law <law@redhat.com> - 2.16.90-40
-  - Resync with master
+- Resync with master
 
 * Wed Dec 19 2012 Jeff Law <law@redhat.com> - 2.16.90-39
-  - Add rtld-debugger-interface.txt as documentation. (#872242)
+- Add rtld-debugger-interface.txt as documentation. (#872242)
 
 * Fri Dec 7 2012 Jeff Law <law@redhat.com> - 2.16.90-38
-  - Resync with master
-  - Drop patch for 731228 that is no longer needed.
+- Resync with master
+- Drop patch for 731228 that is no longer needed.
 
 * Thu Dec 6 2012 Jeff Law <law@redhat.com> - 2.16.90-37
-  - Resync with master
-  - Patch for 697421 has been submitted upstream.
-  - Drop local patch for 691912 that is no longer needed.
+- Resync with master
+- Patch for 697421 has been submitted upstream.
+- Drop local patch for 691912 that is no longer needed.
 
 * Mon Dec 3 2012 Jeff Law <law@redhat.com> - 2.16.90-36
-  - Resync with master
-  - Drop local patch for 657588 that is no longer needed.
-  - Drop local patch for 740682 that is no longer needed.
-  - Drop local patch for 770439 that is no longer needed.
-  - Drop local patch for 789209 that is no longer needed.
-  - Drop local patch for nss-files-overflow that seems
-    useless.
-  - Drop localedata-locales-fixes as they were rejected
-    upstream.
-  - Drop test-debug-gnuc-hack.patch that seems useless now.
-  - Repack patchlist.
+- Resync with master
+- Drop local patch for 657588 that is no longer needed.
+- Drop local patch for 740682 that is no longer needed.
+- Drop local patch for 770439 that is no longer needed.
+- Drop local patch for 789209 that is no longer needed.
+- Drop local patch for nss-files-overflow that seems useless.
+- Drop localedata-locales-fixes as they were rejected upstream.
+- Drop test-debug-gnuc-hack.patch that seems useless now.
+- Repack patchlist.
 
 * Fri Nov 30 2012 Jeff Law <law@redhat.com> - 2.16.90-35
-  - Resync with master (#882137).
-  - Remove local patch for strict-aliasing warnings that
-    is no longer needed.
-  - Remove local patch for 730856 that is no longer needed.
-  - Repack patchlist.
+- Resync with master (#882137).
+- Remove local patch for strict-aliasing warnings that is no longer needed.
+- Remove local patch for 730856 that is no longer needed.
+- Repack patchlist.
 
 * Thu Nov 29 2012 Jeff Law <law@redhat.com> - 2.16.90-34
-  - Remove local patch which "temporarily" re-added currences
-    obsoleted by the Euro.
-  - Remove hunks from strict-aliasing patch that are no longer
-    needed.
+- Remove local patch which "temporarily" re-added currences obsoleted by the Euro.
+- Remove hunks from strict-aliasing patch that are no longer needed.
 
 * Thu Nov 29 2012 Jeff Law <law@redhat.com> - 2.16.90-33
-  - Resync with master.
-  - Drop local patch for 788989.
-  - Repack patchlist.
+- Resync with master.
+- Drop local patch for 788989.
+- Repack patchlist.
 
 * Wed Nov 28 2012 Jeff Law <law@redhat.com> - 2.16.90-32
-  - Resync with master.
-  - Drop local patch for 878913.
-  - Drop local patch for 880666.
-  - Drop local patch for 767693.
-  - Repack patchlist.
+- Resync with master.
+- Drop local patch for 878913.
+- Drop local patch for 880666.
+- Drop local patch for 767693.
+- Repack patchlist.
 
 * Tue Nov 27 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16.90-31
-  - Ensure that hashtable size is greater than 3 (#878913).
-  - fwrite returns 0 on EOF (#880666).
+- Ensure that hashtable size is greater than 3 (#878913).
+- fwrite returns 0 on EOF (#880666).
 
 * Mon Nov 26 2012 Jeff Law <law@redhat.com> - 2.16.90-30
-  - Resync with upstream sources
-  - Drop local patch for getconf.
-  - Repack patchlist.
+- Resync with upstream sources
+- Drop local patch for getconf.
+- Repack patchlist.
 
 * Fri Nov 16 2012 Jeff Law <law@redhat.com> - 2.16.90-29
-  - Rsync with upstream sources
-  - Drop local patches for 803286, 791161, 790292, 790298
+- Rsync with upstream sources
+- Drop local patches for 803286, 791161, 790292, 790298
 
 * Wed Nov 7 2012 Jeff Law <law@redhat.com> - 2.16.90-28
-  - Resync with upstream sources (#873397)
+- Resync with upstream sources (#873397)
 
 * Mon Nov 5 2012 Jeff Law <law@redhat.com> - 2.16.90-27
-  - Resync with upstream sources.
-  - Don't use distinct patches for 770869, 787201 and 688948
-    as they all modify stuff under fedora/
-  - Repack patchlist
+- Resync with upstream sources.
+- Don't use distinct patches for 770869, 787201 and 688948
+  as they all modify stuff under fedora/
+- Repack patchlist
 
 * Thu Nov 1 2012 Jeff Law <law@redhat.com> - 2.16.90-26
-  - Resync with upstream sources (#872336)
+- Resync with upstream sources (#872336)
 
 * Mon Oct 22 2012 Jeff Law <law@redhat.com> - 2.16.90-25
-  - Rsync with upstream sources
-  - Drop 864820 patch as now that it's upstream.
-  - Add sss to /etc/nsswitch.conf (#867473)
+- Rsync with upstream sources
+- Drop 864820 patch as now that it's upstream.
+- Add sss to /etc/nsswitch.conf (#867473)
 
 * Thu Oct 11 2012 Jeff Law <law@redhat.com> - 2.16.90-24
-  - Rsync with upstream sources
-  - Drop local 552960-2 patch now that it's upstream.
-  - Drop local 858274 patch now that the root problem is fixed upstream.
-  - Repack patchlist.
+- Rsync with upstream sources
+- Drop local 552960-2 patch now that it's upstream.
+- Drop local 858274 patch now that the root problem is fixed upstream.
+- Repack patchlist.
 
 * Wed Oct 10 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16.90-23
-  - Fix Marathi names for Wednesday, September and October (#rh864820).
+- Fix Marathi names for Wednesday, September and October (#rh864820).
 
 * Fri Oct  5 2012 Jeff Law <law@redhat.com> - 2.16.90-22
-  - Resync with upstream sources
-  - Drop local 552960 patch now that it's upstream
-  - Drop local stap patch now obsolete
-  - Drop local s390 patch which avoided problems with old assemblers
-  - Drop old fortify source patch to deal with old compilers
+- Resync with upstream sources
+- Drop local 552960 patch now that it's upstream
+- Drop local stap patch now obsolete
+- Drop local s390 patch which avoided problems with old assemblers
+- Drop old fortify source patch to deal with old compilers
 
 * Thu Oct 4 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16.90-21
-  - Take mutex in cleanup only if it is not already taken.
+- Take mutex in cleanup only if it is not already taken.
 
 * Tue Oct 2 2012 Jeff Law <law@redhat.com> - 2.16.90-20
-  - Resync with upstream sources.
-  - Repack patchlist.
+- Resync with upstream sources.
+- Repack patchlist.
 
 * Mon Oct 1 2012 Jeff Law <law@redhat.com> - 2.16.90-19
-  - Resync with upstream sources to pick up fma fixes
+- Resync with upstream sources to pick up fma fixes
 
 * Fri Sep 28 2012 Jeff Law <law@redhat.com> - 2.16.90-18
-  - Resync with upstream sources.
-  - Drop fedora-cdefs-gnuc.patch, it's not needed anymore.
-  - Drop fedora-gai-rfc1918.patch, it's upstream now.
-  - Drop fedora-localedata-no_NO.patch, it was supposed to be
-    temporary -- that was back in 2003.   This should have been
-    sorted out long ago.  We'll just have to deal with the
-    fallout.
-  - Drop fedora-vfprintf-sw6530.patch, it's upstream now.
-  - Drop rh769421.patch; Siddhesh has fixed this properly with 552960.
+- Resync with upstream sources.
+- Drop fedora-cdefs-gnuc.patch, it's not needed anymore.
+- Drop fedora-gai-rfc1918.patch, it's upstream now.
+- Drop fedora-localedata-no_NO.patch, it was supposed to be
+  temporary -- that was back in 2003.   This should have been
+  sorted out long ago.  We'll just have to deal with the
+  fallout.
+- Drop fedora-vfprintf-sw6530.patch, it's upstream now.
+- Drop rh769421.patch; Siddhesh has fixed this properly with 552960.
 
 * Fri Sep 28 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16.90-17
-  - Release mutex before going back to wait for PI mutexes (#552960).
+- Release mutex before going back to wait for PI mutexes (#552960).
 
 * Tue Sep 25 2012 Jeff Law <law@redhat.com> - 2.16.90-16
-  - Resync with upstream sources.
+- Resync with upstream sources.
 
 * Fri Sep 21 2012 Jeff Law <law@redhat.com> - 2.16.90-15
-  - Remove most of fedora-nscd patch as we no longer use the
-    old init files, but systemd instead.
-  - Remove path-to-vi patch.  With the usr-move changes that
-    patch is totally unnecessary.
-  - Remove i686-nopl patch.  Gas was changed back in 2011 to
-    avoid nopl.
-  - Move gai-rfc1918 patch to submitted upstream status
- 
+- Remove most of fedora-nscd patch as we no longer use the
+  old init files, but systemd instead.
+- Remove path-to-vi patch.  With the usr-move changes that
+  patch is totally unnecessary.
+- Remove i686-nopl patch.  Gas was changed back in 2011 to
+  avoid nopl.
+- Move gai-rfc1918 patch to submitted upstream status
+
 * Fri Sep 21 2012 Jeff Law <law@redhat.com> - 2.16.90-14
-  - Revert patch for 816647, it's blatently broken.
+- Revert patch for 816647, it's blatently broken.
 
 * Fri Sep 21 2012 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.16.90-13
-  - Bring back byteswap-16.h (#859268).
+- Bring back byteswap-16.h (#859268).
 
 * Thu Sep 20 2012 Jeff Law <law@redhat.com> - 2.16.90-12
-  - Revert recent upstream strstr changes (#858274)
-  - Demangle function pointers before testing them (#816647)
-  - Remove handling of /etc/localtime and /var/spool/postfix/etc/localtime
-    as systemd will be handling them from now on (#858735).
+- Revert recent upstream strstr changes (#858274)
+- Demangle function pointers before testing them (#816647)
+- Remove handling of /etc/localtime and /var/spool/postfix/etc/localtime
+  as systemd will be handling them from now on (#858735).
 
 * Fri Sep 14 2012 Jeff Law <law@redhat.com> - 2.16.90-11
-  - Resync with upstream sources (#857236).
+- Resync with upstream sources (#857236).
 
 * Sat Sep  8 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 2.16.90-10
 - Enable ports to fix FTBFS on ARM
 
 * Wed Sep 5 2012 Jeff Law <law@redhat.com> - 2.16.90-9
-  - Resync with upstream sources.
+- Resync with upstream sources.
 
 * Tue Sep 4 2012 Jeff Law <law@redhat.com> - 2.16.90-8
-  - Incorporate ppc64p7 arch changes (#854250)
+- Incorporate ppc64p7 arch changes (#854250)
 
 * Thu Aug 30 2012 Jeff Law <law@redhat.com> - 2.16.90-7
-  - Resync with upstream sources.
-  
+- Resync with upstream sources.
+
 * Wed Aug 22 2012 Jeff Law <law@redhat.com> - 2.16.90-6
-  - Resync with upstream sources.
+- Resync with upstream sources.
 
 * Tue Aug 21 2012 Jeff Law <law@redhat.com> - 2.16.90-5
-  - Replace manual systemd scriptlets with macroized scriptlets (#850129)
+- Replace manual systemd scriptlets with macroized scriptlets (#850129)
 
 * Mon Aug 20 2012 Jeff Law <law@redhat.com> - 2.16.90-4
-  - Move /etc/localtime into glibc-common package since glibc-common
+- Move /etc/localtime into glibc-common package since glibc-common
     owns the scriptlets which update it.
 
 * Mon Aug 20 2012 Jeff Law <law@redhat.com> - 2.16.90-3
-  - Remove obsolete patches from glibc-fedora.patch.  Explode
-    remaining patches into distinct patchfiles.  Thanks to
-    Dmitry V. Levin for identifying them!
-    Drop ia64 specific patches and specfile fragments
+- Remove obsolete patches from glibc-fedora.patch.  Explode
+  remaining patches into distinct patchfiles.  Thanks to
+  Dmitry V. Levin for identifying them!
+  Drop ia64 specific patches and specfile fragments
 
 * Wed Aug 15 2012 Jeff Law <law@redhat.com> - 2.16.90-2
-  - Fix integer overflow leading to buffer overflow in strto* (#847718)
+- Fix integer overflow leading to buffer overflow in strto* (#847718)
 
 * Mon Aug 13 2012 Jeff Law <law@redhat.com> - 2.16.90-1
-  - Resync with upstream sources, drop obsolete patches.
-  - Drop glibc-ports bits as they're part of the master
+- Resync with upstream sources, drop obsolete patches.
+- Drop glibc-ports bits as they're part of the master
     sources now.
 
 * Mon Aug 13 2012 Jeff Law <law@redhat.com> - 2.16-9
-  - Replace patch for 179072 with official version from upstream.
+- Replace patch for 179072 with official version from upstream.
 
 * Fri Aug 10 2012 Jeff Law <law@redhat.com> - 2.16-8
-  - Replace patch for 789238 with official version from upstream.
+- Replace patch for 789238 with official version from upstream.
 
 * Wed Jul 25 2012 Jeff Law <law@redhat.com> - 2.16-7
-  - Pack IPv4 servers at the start of nsaddr_list and
+- Pack IPv4 servers at the start of nsaddr_list and
     only track the number of IPV4 servers in EXT(statp->nscounti (#808147)
-  - Mark set*uid, set*gid as __wur (warn unused result) (#845960)
+- Mark set*uid, set*gid as __wur (warn unused result) (#845960)
 
 * Wed Jul 25 2012 Jeff Law <law@redhat.com> - 2.16-6
-  - Revert patch for BZ696143, it made it impossible to use IPV6
-    addresses explicitly in getaddrinfo, which in turn broke
-    ssh, apache and other code. (#808147)
-  - Avoid another unbound alloca in vfprintf (#841318)
-  - Remove /etc/localtime.tzupdate in lua scriptlets
-  - Revert back to using posix.symlink as posix.link with a 3rd
-    argument isn't supported in the lua version embedded in rpm.
-  - Revert recent changes to res_send (804630, 835090).
-  - Fix memcpy args in res_send (#841787).
+- Revert patch for BZ696143, it made it impossible to use IPV6
+  addresses explicitly in getaddrinfo, which in turn broke
+  ssh, apache and other code. (#808147)
+- Avoid another unbound alloca in vfprintf (#841318)
+- Remove /etc/localtime.tzupdate in lua scriptlets
+- Revert back to using posix.symlink as posix.link with a 3rd
+  argument isn't supported in the lua version embedded in rpm.
+- Revert recent changes to res_send (804630, 835090).
+- Fix memcpy args in res_send (#841787).
 
 * Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.16-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
 * Thu Jul 5 2012 Jeff Law <law@redhat.com> - 2.16-2
-  - Use posix.link rather than posix.symlink in scriptlet to
-    update /etc/localtime (#837344).
+- Use posix.link rather than posix.symlink in scriptlet to
+  update /etc/localtime (#837344).
 
 * Mon Jul 2 2012 Jeff Law <law@redhat.com> - 2.16-1
-  - Resync with upstream glibc-2.16 release.
+- Resync with upstream glibc-2.16 release.
 
 * Fri Jun 21 2012 Jeff Law <law@redhat.com> - 2.15.90-16
-  - Resync with upstream sources, drop obsolete patch.
+- Resync with upstream sources, drop obsolete patch.
 
 * Thu Jun 21 2012 Jeff Law <law@redhat.com> - 2.15.90-15
-  - Resync with upstream sources (#834447).
-  - Fix use-after-free in dcigettext.c (#816647).
+- Resync with upstream sources (#834447).
+- Fix use-after-free in dcigettext.c (#816647).
 
 * Fri Jun 15 2012 Jeff Law <law@redhat.com> - 2.15.90-14
-  - Resync with master.
+- Resync with master.
 
 * Thu Jun 14 2012 Jeff Law <law@redhat.com> - 2.15.90-13
-  - Delay setting DECIDED field in locale file structure until
-    we have read the file's data (#827510).
+- Delay setting DECIDED field in locale file structure until
+  we have read the file's data (#827510).
 
 * Mon Jun 11 2012 Dennis Gilmore <dennis@ausil.us> - 2.15.90-12
-  - actually apply the arm linker hack
+- Apply the arm linker hack.
 
 * Mon Jun 11 2012 Dennis Gilmore <dennis@ausil.us> - 2.15.90-11
-  - only deal with the arm linker compat hack on armhfp arches 
-  - armsfp arches do not have a linker change
-  - Backward compat hack for armhf binaries.
+- only deal with the arm linker compat hack on armhfp arches
+- armsfp arches do not have a linker change
+- Backward compat hack for armhf binaries.
 
 * Thu Jun  7 2012 Jeff Law <law@redhat.com> - 2.15.90-10
-  - Fix parsing of /etc/sysconfig/clock when ZONE has spaces. (#828291)
+- Fix parsing of /etc/sysconfig/clock when ZONE has spaces. (#828291)
 
 * Tue Jun  5 2012 Jeff Law <law@redhat.com> - 2.15.90-9
-  - Resync with upstream sources, drop unnecessary patches.
-  - Fix DoS in RPC implementation (#767693)
-  - Remove deprecated alpha support.
-  - Remove redundant hunk from patch. (#823905)
+- Resync with upstream sources, drop unnecessary patches.
+- Fix DoS in RPC implementation (#767693)
+- Remove deprecated alpha support.
+- Remove redundant hunk from patch. (#823905)
 
 * Fri Jun  1 2012 Patsy Franklin <patsy@redhat.com> - 2.15.90-8
-  - Fix iconv() segfault when the invalid multibyte character 0xffff is input
-    when converting from IBM930 (#823905)
+- Fix iconv() segfault when the invalid multibyte character 0xffff is input
+  when converting from IBM930 (#823905)
 
 * Fri Jun 1 2012 Jeff Law <law@redhat.com> - 2.15.90-7
-  - Resync with upstream sources.  (#827040)
+- Resync with upstream sources.  (#827040)
 
 * Thu May 31 2012 Patsy Franklin <patsy@redhat.com> - 2.15.90-6
-  - Fix fnmatch() when '*' wildcard is applied on a file name containing
+- Fix fnmatch() when '*' wildcard is applied on a file name containing
   multibyte chars. (#819430)
 
 * Wed May 30 2012  Jeff Law <law@redhat.com> - 2.15.90-5
-  - Resync with upstream sources, drop unnecessary patches.
+- Resync with upstream sources, drop unnecessary patches.
 
 * Tue May 29 2012  Jeff Law <law@redhat.com> - 2.15.90-4
-  - Build info files in the source dir, then move to objdir
-    to avoid multilib conflicts (#825061)
+- Build info files in the source dir, then move to objdir
+  to avoid multilib conflicts (#825061)
 
 * Fri May 25 2012  Jeff Law <law@redhat.com> - 2.15.90-3
-  - Work around RPM dropping the contents of /etc/localtime
-    when it turns into a symlink with %post common script (#825159).
+- Work around RPM dropping the contents of /etc/localtime
+  when it turns into a symlink with %post common script (#825159).
 
 * Wed May 23 2012  Jeff Law <law@redhat.com> - 2.15.90-2
-  - Fix option rotate when one IPV6 server is enabled (#804630)
-  - Reenable slow/uberslow path taps slowpow/slowexp.
+- Fix option rotate when one IPV6 server is enabled (#804630)
+- Reenable slow/uberslow path taps slowpow/slowexp.
 
 * Wed May 23 2012  Jeff Law <law@redhat.com> - 2.15.90-1
-  - Resync with upstream sources, drop unnecessary patches.
+- Resync with upstream sources, drop unnecessary patches.
 
 * Tue May 22 2012 Patsy Franklin <pfrankli@redhat.com> - 2.15-41
-  - Fix tzdata trigger (#822200)
-  - Make the symlink relative rather than linking into the buildroot (#822200).
-  - Changed /etc/localtime to a symlink. 8222000 (#822200)
+- Fix tzdata trigger (#822200)
+- Make the symlink relative rather than linking into the buildroot (#822200).
+- Changed /etc/localtime to a symlink. 8222000 (#822200)
 
 * Tue May 15 2012 Jeff Law <law@redhat.com> - 2.15-40
-  - Update to upstream patch for 806070 (#806070)
+- Update to upstream patch for 806070 (#806070)
 
 * Mon May 14 2012 Jeff Law <law@redhat.com> - 2.15-39
-  - Update upstream patch for AVX testing (#801650)
+- Update upstream patch for AVX testing (#801650)
 
 * Fri May 11 2012 Jeff Law <law@redhat.com> - 2.15-38
-  - Upstream patch to fix AVX testing (#801650)
+- Upstream patch to fix AVX testing (#801650)
 
 * Thu May 10 2012 Jeff Law <law@redhat.com> - 2.15-37
-  - Try again to fix AVX testing (#801650)
+- Try again to fix AVX testing (#801650)
 
 * Mon May 7 2012 Jeff Law <law@redhat.com> - 2.15-36
-  - Improve fortification disabled warning.
-  - Change location of dynamic linker for armhf.
+- Improve fortification disabled warning.
+- Change location of dynamic linker for armhf.
 
 * Mon Apr 30 2012 Jeff Law <law@redhat.com> - 2.15-35
-  - Implement context routines for ARM (#817276)
+- Implement context routines for ARM (#817276)
 
 * Fri Apr 13 2012 Jeff Law <law@redhat.com> - 2.15-34
-  - Issue a warning if FORTIFY_CHECKING is requested, but disabled.
+- Issue a warning if FORTIFY_CHECKING is requested, but disabled.
 
 * Thu Apr 12 2012 Jeff Law <law@redhat.com> - 2.15-33
-  - Fix another unbound alloca in nscd groups (#788989)
+- Fix another unbound alloca in nscd groups (#788989)
 
 * Tue Apr 3 2012 Jeff Law <law@redhat.com> - 2.15-32
-  - Fix first day of week for lv_LV (#682500)
+- Fix first day of week for lv_LV (#682500)
 
 * Mon Apr 2 2012 Jeff Law <law@redhat.com> - 2.15-31
-  - When retrying after main arena failure, always retry in a 
-    different arena. (#789238)
+- When retrying after main arena failure, always retry in a
+  different arena. (#789238)
 
 * Tue Mar 27 2012 Jeff Law <law@redhat.com> - 2.15-30
-  - Avoid unbound alloca usage in *-crypt routines (#804792)
-  - Fix data race in nscd (#806070)
+- Avoid unbound alloca usage in *-crypt routines (#804792)
+- Fix data race in nscd (#806070)
 
 * Fri Mar 23 2012 Jeff Law <law@redhat.com> - 2.15-29
-  - Fix typo in __nss_getent (#806403).
+- Fix typo in __nss_getent (#806403).
 
 * Wed Mar 13 2012 Jeff Law <law@redhat.com> - 2.15-28
-  - Add doi_IN, sat_IN and mni_IN to SUPPORTED locals (#803286)
-  - Add stap probes in slowpow and slowexp.
+- Add doi_IN, sat_IN and mni_IN to SUPPORTED locals (#803286)
+- Add stap probes in slowpow and slowexp.
 
 * Fri Mar 09 2012 Jeff Law <law@redhat.com> - 2.15-27
-  - Fix AVX checks (#801650)
+- Fix AVX checks (#801650)
 
 * Wed Feb 29 2012 Jeff Law <law@redhat.com> - 2.15-26
-  - Set errno properly in vfprintf (#794797)
-  - Don't kill application when LD_PROFILE is set. (#800224)
+- Set errno properly in vfprintf (#794797)
+- Don't kill application when LD_PROFILE is set. (#800224)
 
 * Wed Feb 29 2012 Jeff Law <law@redhat.com> - 2.15-25
-  - Fix out of bounds memory access in resolver (#798471)
-  - Always mark vDSO as used (#758888)
+- Fix out of bounds memory access in resolver (#798471)
+- Always mark vDSO as used (#758888)
 
 * Fri Feb 24 2012 Jeff Law <law@redhat.com> - 2.15-24
-  - Fix bogus underflow (#760935)
-  - Correctly handle dns request where large numbers of A and AAA records
-    are returned (#795498)
-  - Fix nscd crash when group has many members (#788989)
- 
+- Fix bogus underflow (#760935)
+- Correctly handle dns request where large numbers of A and AAA records
+  are returned (#795498)
+- Fix nscd crash when group has many members (#788989)
+
 * Mon Feb 20 2012 Jeff Law <law@redhat.com> - 2.15-23
-  - Avoid "nargs" integer overflow which could be used to bypass FORTIFY_SOURCE (#794797)
+- Avoid "nargs" integer overflow which could be used to bypass FORTIFY_SOURCE (#794797)
 
 * Mon Feb 20 2012 Jeff Law <law@redhat.com> - 2.15-22
-  - Fix main arena locking in malloc/calloc retry path (#789238)
+- Fix main arena locking in malloc/calloc retry path (#789238)
 
 * Fri Feb 17 2012 Jeff Law <law@redhat.com> - 2.15-21
-  - Correctly identify all 127.x.y.z addresses (#739743)
-  - Don't assign native result if result has no associated interface (#739743)
+- Correctly identify all 127.x.y.z addresses (#739743)
+- Don't assign native result if result has no associated interface (#739743)
 
 * Fri Feb 17 2012 Jeff Law <law@redhat.com> - 2.15-20
-  - Ignore link-local IPV6 addresses for AI_ADDRCONFIG (#697149)
+- Ignore link-local IPV6 addresses for AI_ADDRCONFIG (#697149)
 
 * Fri Feb 17 2012 Jeff Law <law@redhat.com> - 2.15-19
-  - Fix reply buffer mismanagement in resolver (#730856)
+- Fix reply buffer mismanagement in resolver (#730856)
 
 * Thu Feb 16 2012 Jeff Law <law@redhat.com> - 2.15-18
-  - Revert 552960/769421 changes again, still causing problems.
-  - Add doi_IN (#791161)
-  - Add sat_IN (#790292)
-  - Add mni_IN (#790298)
+- Revert 552960/769421 changes again, still causing problems.
+- Add doi_IN (#791161)
+- Add sat_IN (#790292)
+- Add mni_IN (#790298)
 
 * Fri Feb 8 2012 Jeff Law <law@redhat.com> - 2.15-17
-  - Fix lost wakeups in pthread_cond_*.  (#552960, #769421)
-  - Clarify info page for snprintf (#564528)
-  - Fix first_weekday and first_workday for ru_UA (#624296)
+- Fix lost wakeups in pthread_cond_*.  (#552960, #769421)
+- Clarify info page for snprintf (#564528)
+- Fix first_weekday and first_workday for ru_UA (#624296)
 
 * Tue Feb 7 2012 Jeff Law <law@redhat.com> - 2.15-16
-  - Fix currency_symbol for uk_UA (#789209)
-  - Fix weekday names in Kashmiri locale (#770439)
+- Fix currency_symbol for uk_UA (#789209)
+- Fix weekday names in Kashmiri locale (#770439)
 
 * Tue Feb 7 2012 Jeff Law <law@redhat.com> - 2.15-15
-  - Remove change for 787662, correct fix is in gcc.
+- Remove change for 787662, correct fix is in gcc.
 
 * Mon Feb 6 2012 Jeff Law <law@redhat.com> - 2.15-13
-  - More accurately detect if we're in a chroot (#688948)
+- More accurately detect if we're in a chroot (#688948)
 
 * Fri Feb 3 2012 Jeff Law <law@redhat.com> - 2.15-12
-  - Add fedfs to /etc/rpc (#691912)
-  - Run nscd in the foreground w/ syslogging, fix systemd config (#770869)
-  - Avoid mapping past end of shared object (#741105)
-  - Turn off -mno-minimal-toc on PPC (#787201)
-  - Remove hunk from glibc-rh657588.patch that didn't belong
+- Add fedfs to /etc/rpc (#691912)
+- Run nscd in the foreground w/ syslogging, fix systemd config (#770869)
+- Avoid mapping past end of shared object (#741105)
+- Turn off -mno-minimal-toc on PPC (#787201)
+- Remove hunk from glibc-rh657588.patch that didn't belong
 
 * Wed Feb 1 2012 Jeff Law <law@redhat.com> - 2.15-8
-  - Prevent erroneous inline optimization of initfini.s on PowerPC64 (#783979)
-  - Use upstream variant of fix for 740506.
-  - Fix month abbreviations for zh_CN (#657588)
+- Prevent erroneous inline optimization of initfini.s on PowerPC64 (#783979)
+- Use upstream variant of fix for 740506.
+- Fix month abbreviations for zh_CN (#657588)
 
 * Sun Jan 29 2012 Jeff Law <law@redhat.com> - 2.15-7
-  - Sort objects before relocations (sw#13618)
-  - Fix bogus sort code that was copied from dl-deps.c.
+- Sort objects before relocations (sw#13618)
+- Fix bogus sort code that was copied from dl-deps.c.
 
 * Thu Jan 26 2012 Jeff Law <law@redhat.com> - 2.15-6
-  - First argument to settimeofday can be null (#740682)
-  - Add aliases for ISO-10646-UCS-2 (#697421)
+- First argument to settimeofday can be null (#740682)
+- Add aliases for ISO-10646-UCS-2 (#697421)
 
 * Tue Jan 24 2012 Jeff Law <law@redhat.com> - 2.15-4
-  - Update ports from master.
-  - Fix first workday/weekday for it_IT (#622499)
-  - Fix type to uint16_t based on upstream comments (729661)
-  - Do not cache negative results in nscd if these are transient (#784402)
+- Update ports from master.
+- Fix first workday/weekday for it_IT (#622499)
+- Fix type to uint16_t based on upstream comments (729661)
+- Do not cache negative results in nscd if these are transient (#784402)
 
 * Mon Jan 23 2012 Jeff Law <law@redhat.com> - 2.15-3
-  - Fix cycle detection (#729661)
-  - Fix first workday/weekday for it_IT (#446078)
-  - Fix first workday/weekday for ca_ES (#454629)
+- Fix cycle detection (#729661)
+- Fix first workday/weekday for it_IT (#446078)
+- Fix first workday/weekday for ca_ES (#454629)
 
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.15-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Sun Jan 1 2012 Jeff Law <law@redhat.com> - 2.15-1.fc17
-  - Update from master (a316c1f)
+- Update from master (a316c1f)
 
 * Thu Dec 22 2011 Jeff Law <law@redhat.com> - 2.14.90-26.fc17
-  - Update from master (16c6f99)
-  - Fix typo in recent tzfile change (#769476)
-  - Make MALLOC_ARENA_MAX and MALLOC_ARENA_TEST match documentation (#740506)
-  - Revert "fix" to pthread_cond_wait (#769421)
-  - Extract patch for 730856 from fedora-patch into a distinct patchfile
+- Update from master (16c6f99)
+- Fix typo in recent tzfile change (#769476)
+- Make MALLOC_ARENA_MAX and MALLOC_ARENA_TEST match documentation (#740506)
+- Revert "fix" to pthread_cond_wait (#769421)
+- Extract patch for 730856 from fedora-patch into a distinct patchfile
 
 * Mon Dec 19 2011 Jeff Law <law@redhat.com> - 2.14.90-25.fc17
-  - Update from master (a4647e7).
+- Update from master (a4647e7).
 
 * Sun Dec 18 2011 Jeff Law <law@redhat.com> - 2.14.90-24.fc16.3
-  - Check values from TZ file header (#767696)
-  - Handle EAGAIN from FUTEX_WAIT_REQUEUE_PI (#552960)
-  - Add {dist}.#
-  - Correct return value from pthread_create when stack alloction fails.
-    (#767746)
+- Check values from TZ file header (#767696)
+- Handle EAGAIN from FUTEX_WAIT_REQUEUE_PI (#552960)
+- Add {dist}.#
+- Correct return value from pthread_create when stack alloction fails.
+  (#767746)
 
 * Wed Dec 7 2011 Jeff Law <law@redhat.com> - 2.14.90-23
-  - Fix a wrong constant in powerpc hypot implementation (#750811)
-    #13534 in python bug database
-    #13472 in glibc bug database
-  - Truncate time values in Linux futimes when falling back to utime
+- Fix a wrong constant in powerpc hypot implementation (#750811)
+  #13534 in python bug database
+  #13472 in glibc bug database
+- Truncate time values in Linux futimes when falling back to utime
 
 * Mon Dec 5 2011 Jeff Law <law@redhat.com> - 2.14.90-22
-  - Mark fortified __FD_ELT as extension (#761021)
-  - Fix typo in manual (#708455)
+- Mark fortified __FD_ELT as extension (#761021)
+- Fix typo in manual (#708455)
 
 * Wed Nov 30 2011 Jeff Law <law@redhat.com> - 2.14.90-21
-  - Don't fail in makedb if SELinux is disabled (#750858)
-  - Fix access after end of search string in regex matcher (#757887)
+- Don't fail in makedb if SELinux is disabled (#750858)
+- Fix access after end of search string in regex matcher (#757887)
 
 * Mon Nov 28 2011 Jeff Law <law@redhat.com> - 2.14.90-20
-  - Drop lock before calling malloc_printerr (#757881)
+- Drop lock before calling malloc_printerr (#757881)
 
 * Fri Nov 18 2011 Jeff Law <law@redhat.com> - 2.14.90-19
-  - Check malloc arena atomically  (BZ#13071)
-  - Don't call reused_arena when _int_new_arena failed (#753601)
-  
+- Check malloc arena atomically  (BZ#13071)
+- Don't call reused_arena when _int_new_arena failed (#753601)
+
 * Wed Nov 16 2011 Jeff Law <law@redhat.com> - 2.14.90-18
-  - Fix grouping and reuse other locales in various locales (BZ#13147)
-  
+- Fix grouping and reuse other locales in various locales (BZ#13147)
+
 * Tue Nov 15 2011 Jeff Law <law@redhat.com> - 2.14.90-17
-  Revert bogus commits/rebasing of Nov 14, Nov 11 and Nov 8.  Sources
+- Revert bogus commits/rebasing of Nov 14, Nov 11 and Nov 8.  Sources
   should be equivalent to Fedora 16's initial release.
 
 * Wed Oct 26 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.14.90-15
