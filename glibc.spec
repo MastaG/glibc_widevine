@@ -156,6 +156,9 @@ Patch2028: %{name}-rh905184.patch
 # Upstream BZ 14256
 Patch2039: glibc-rh966259.patch
 
+#Upstream BZ 14547
+Patch2040: %{name}-strcoll-cve.patch
+
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Obsoletes: nss_db
@@ -427,6 +430,7 @@ package or when debugging this package.
 %patch1006 -p1
 %patch1007 -p1
 %patch1008 -p1
+%patch2040 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1219,6 +1223,7 @@ rm -f *.filelist*
 %changelog
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-12
 - Disable pt_chown (#984829, CVE-2013-2207).
+- Fix strcoll flaws (#855399, CVE-2012-4412, CVE-2012-4424).
 
 * Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-11
   - Fix libm performance regression due to set/restore rounding mode (#977887).
