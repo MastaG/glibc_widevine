@@ -122,6 +122,7 @@ Patch1005: %{name}-rh977875.patch
 Patch1006: %{name}-rh977887.patch
 Patch1007: %{name}-rh977887-2.patch
 Patch1008: %{name}-rh984829.patch
+Patch1009: %{name}-rh995841.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -431,6 +432,7 @@ package or when debugging this package.
 %patch1007 -p1
 %patch1008 -p1
 %patch2040 -p1
+%patch1009 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1224,6 +1226,7 @@ rm -f *.filelist*
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-12
 - Disable pt_chown (#984829, CVE-2013-2207).
 - Fix strcoll flaws (#855399, CVE-2012-4412, CVE-2012-4424).
+- Fix buffer overflow in readdir_r (#995841, CVE-2013-4237).
 
 * Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-11
   - Fix libm performance regression due to set/restore rounding mode (#977887).
