@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -93,7 +93,6 @@ Patch0014: %{name}-fedora-nptl-linklibc.patch
 Patch0015: %{name}-fedora-localedef.patch
 Patch0016: %{name}-fedora-i386-tls-direct-seg-refs.patch
 Patch0017: %{name}-fedora-gai-canonical.patch
-Patch0018: %{name}-fedora-pt_chown.patch
 Patch0019: %{name}-fedora-nis-rh188246.patch
 Patch0020: %{name}-fedora-manual-dircategory.patch
 Patch0024: %{name}-fedora-locarchive.patch
@@ -122,6 +121,7 @@ Patch1004: %{name}-rh977874.patch
 Patch1005: %{name}-rh977875.patch
 Patch1006: %{name}-rh977887.patch
 Patch1007: %{name}-rh977887-2.patch
+Patch1008: %{name}-rh984829.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -396,7 +396,6 @@ package or when debugging this package.
 %patch0015 -p1
 %patch0016 -p1
 %patch0017 -p1
-%patch0018 -p1
 %patch0019 -p1
 %patch0020 -p1
 %patch2021 -p1
@@ -427,6 +426,7 @@ package or when debugging this package.
 %patch1005 -p1
 %patch1006 -p1
 %patch1007 -p1
+%patch1008 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -574,7 +574,6 @@ GCC=`cat Gcc`
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target} %{silentrules}
-chmod +x $RPM_BUILD_ROOT%{_prefix}/libexec/pt_chown
 %ifnarch %{auxarches}
 cd build-%{target} && \
   make %{?_smp_mflags} install_root=$RPM_BUILD_ROOT install-locales -C ../localedata objdir=`pwd` && \
@@ -821,7 +820,6 @@ grep '%{_prefix}/share' < rpm.filelist | \
 
 sed -i -e '\|%{_prefix}/bin|d' \
        -e '\|%{_prefix}/lib/locale|d' \
-       -e '\|%{_prefix}/libexec/pt_chown|d' \
        -e '\|%{_prefix}/sbin/[^gi]|d' \
        -e '\|%{_prefix}/share|d' rpm.filelist
 
@@ -960,9 +958,8 @@ eu-readelf -hS $RPM_BUILD_ROOT/usr/bin/getconf $RPM_BUILD_ROOT/usr/libexec/getco
 
 find_debuginfo_args='--strict-build-id -g'
 %ifarch %{debuginfocommonarches}
-echo %{_prefix}/libexec/pt_chown > workaround.filelist
 find_debuginfo_args="$find_debuginfo_args \
-  -l common.filelist -l utils.filelist -l nscd.filelist -l workaround.filelist \
+  -l common.filelist -l utils.filelist -l nscd.filelist \
   -p '.*/(sbin|libexec)/.*' \
   -o debuginfocommon.filelist \
   -l rpm.filelist -l nosegneg.filelist \
@@ -1023,7 +1020,6 @@ sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
     common.filelist devel.filelist static.filelist headers.filelist \
     utils.filelist nscd.filelist debuginfocommon.filelist |
 (cd $RPM_BUILD_ROOT; xargs --no-run-if-empty rm -f 2> /dev/null || :)
-rm -f $RPM_BUILD_ROOT%{_prefix}/libexec/pt_chown
 
 %else
 
@@ -1174,7 +1170,6 @@ rm -f *.filelist*
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
-%attr(755,root,root) %caps(cap_chown,cap_fowner=pe) %{_prefix}/libexec/pt_chown
 %doc documentation/*
 
 %files -f devel.filelist devel
@@ -1222,6 +1217,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-12
+- Disable pt_chown (#984829, CVE-2013-2207).
+
 * Tue Jun 25 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-11
   - Fix libm performance regression due to set/restore rounding mode (#977887).
 
