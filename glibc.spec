@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -123,6 +123,7 @@ Patch1006: %{name}-rh977887.patch
 Patch1007: %{name}-rh977887-2.patch
 Patch1008: %{name}-rh984829.patch
 Patch1009: %{name}-rh995841.patch
+Patch1010: %{name}-rh947892.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -433,6 +434,7 @@ package or when debugging this package.
 %patch1008 -p1
 %patch2040 -p1
 %patch1009 -p1
+%patch1010 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1223,6 +1225,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-13
+- Fix stack overflow in getaddrinfo with many results (#947892, CVE-2013-1914).
+
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-12
 - Disable pt_chown (#984829, CVE-2013-2207).
 - Fix strcoll flaws (#855399, CVE-2012-4412, CVE-2012-4424).
