@@ -110,6 +110,9 @@ Patch0036: %{name}-rh892777.patch
 Patch0037: %{name}-rh952799.patch
 Patch0038: %{name}-rh959034.patch
 
+# Remove non-ELF support in rtkaio
+Patch0040: %{name}-rh731833-rtkaio.patch
+
 #
 # Patches from upstream
 #
@@ -437,6 +440,7 @@ package or when debugging this package.
 %patch2040 -p1
 %patch1009 -p1
 %patch1010 -p1
+%patch0040 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1227,9 +1231,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Thu Aug 22 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-14
+* Mon Aug 26 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-14
 - Add systemd to BuildRequires (#999924).
 - Expand sizes of some types in strcoll (#855399, CVE-2012-4424).
+- Remove non-ELF support in rtkaio.
 
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-13
 - Fix stack overflow in getaddrinfo with many results (#947892, CVE-2013-1914).
