@@ -1229,6 +1229,7 @@ rm -f *.filelist*
 %changelog
 * Thu Aug 22 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-14
 - Add systemd to BuildRequires (#999924).
+- Expand sizes of some types in strcoll (#855399, CVE-2012-4424).
 
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-13
 - Fix stack overflow in getaddrinfo with many results (#947892, CVE-2013-1914).
