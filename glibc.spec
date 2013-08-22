@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -223,6 +223,8 @@ BuildRequires: elfutils >= 0.72
 BuildRequires: rpm >= 4.2-0.56
 %endif
 %global __filter_GLIBC_PRIVATE 1
+
+BuildRequires: systemd
 
 %description
 The glibc package contains standard libraries which are used by
@@ -692,8 +694,8 @@ install -p -m 644 nis/nss $RPM_BUILD_ROOT/etc/default/nss
 
 # This is for ncsd - in glibc 2.2
 install -m 644 nscd/nscd.conf $RPM_BUILD_ROOT/etc
-mkdir -p $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/
-install -m 644 releng/nscd.conf %{buildroot}/usr/lib/tmpfiles.d/
+mkdir -p $RPM_BUILD_ROOT%{_tmpfilesdir}
+install -m 644 releng/nscd.conf %{buildroot}%{_tmpfilesdir}
 mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
 install -m 644 releng/nscd.service releng/nscd.socket $RPM_BUILD_ROOT/lib/systemd/system
 %endif
@@ -1199,7 +1201,7 @@ rm -f *.filelist*
 %dir %attr(0755,root,root) /var/db/nscd
 /lib/systemd/system/nscd.service
 /lib/systemd/system/nscd.socket
-/usr/lib/tmpfiles.d/nscd.conf
+%{_tmpfilesdir}/nscd.conf
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/run/nscd/nscd.pid
 %attr(0666,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/run/nscd/socket
 %attr(0600,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/run/nscd/passwd
@@ -1225,6 +1227,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Aug 22 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-14
+- Add systemd to BuildRequires (#999924).
+
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-13
 - Fix stack overflow in getaddrinfo with many results (#947892, CVE-2013-1914).
 
