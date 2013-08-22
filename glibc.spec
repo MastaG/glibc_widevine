@@ -113,6 +113,7 @@ Patch0038: %{name}-rh959034.patch
 # Remove non-ELF support in rtkaio
 Patch0040: %{name}-rh731833-rtkaio.patch
 Patch0041: %{name}-rh731833-rtkaio-2.patch
+Patch0042: %{name}-rh970865.patch
 
 #
 # Patches from upstream
@@ -443,6 +444,7 @@ package or when debugging this package.
 %patch1010 -p1
 %patch0040 -p1
 %patch0041 -p1
+%patch0042 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1238,6 +1240,7 @@ rm -f *.filelist*
 - Expand sizes of some types in strcoll (#855399, CVE-2012-4424).
 - Remove non-ELF support in rtkaio.
 - Avoid inlining of cleanup function for kaio_suspend.
+- Fix tst-aiod2 and tst-aiod3 test failures (#970865).
 
 * Mon Aug 19 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-13
 - Fix stack overflow in getaddrinfo with many results (#947892, CVE-2013-1914).
