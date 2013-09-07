@@ -1502,7 +1502,7 @@ rm -f *.filelist*
 * Mon Jul 2 2012 Jeff Law <law@redhat.com> - 2.16-1
 - Resync with upstream glibc-2.16 release.
 
-* Fri Jun 21 2012 Jeff Law <law@redhat.com> - 2.15.90-16
+* Fri Jun 22 2012 Jeff Law <law@redhat.com> - 2.15.90-16
 - Resync with upstream sources, drop obsolete patch.
 
 * Thu Jun 21 2012 Jeff Law <law@redhat.com> - 2.15.90-15
@@ -1606,7 +1606,7 @@ rm -f *.filelist*
 * Fri Mar 23 2012 Jeff Law <law@redhat.com> - 2.15-29
 - Fix typo in __nss_getent (#806403).
 
-* Wed Mar 13 2012 Jeff Law <law@redhat.com> - 2.15-28
+* Wed Mar 14 2012 Jeff Law <law@redhat.com> - 2.15-28
 - Add doi_IN, sat_IN and mni_IN to SUPPORTED locals (#803286)
 - Add stap probes in slowpow and slowexp.
 
@@ -1649,7 +1649,7 @@ rm -f *.filelist*
 - Add sat_IN (#790292)
 - Add mni_IN (#790298)
 
-* Fri Feb 8 2012 Jeff Law <law@redhat.com> - 2.15-17
+* Thu Feb 9 2012 Jeff Law <law@redhat.com> - 2.15-17
 - Fix lost wakeups in pthread_cond_*.  (#552960, #769421)
 - Clarify info page for snprintf (#564528)
 - Fix first_weekday and first_workday for ru_UA (#624296)
@@ -1910,7 +1910,7 @@ rm -f *.filelist*
 - Fix more bugs in GB18030 charmap
 - Don't use gethostbyaddr to determine canonical name
 
-* Mon Jun 21 2011 Andreas Schwab <schwab@redhat.com> - 2.14-3
+* Tue Jun 21 2011 Andreas Schwab <schwab@redhat.com> - 2.14-3
 - Update from 2.14 branch
   - Fix typo in recent resolver change which causes segvs (#710279)
   - Fix memory leak in getaddrinfo (#712178)
@@ -2635,7 +2635,7 @@ rm -f *.filelist*
 * Thu Jul  2 2009 Andreas Schwab <aschwab@redhat.com> 2.10.90-2
 - Update from master.
 
-* Thu Jun 26 2009 Andreas Schwab <aschwab@redhat.com> 2.10.90-1
+* Fri Jun 26 2009 Andreas Schwab <aschwab@redhat.com> 2.10.90-1
 - Update from master.
 - Enable multi-arch support on x86/x86-64.
 - Add requires glibc-headers to glibc-devel (#476295).
@@ -3323,7 +3323,7 @@ rm -f *.filelist*
 - fix l{,l}rint{,f,l} around zero (BZ#2592)
 - avoid stack trampoline in s390{,x} makecontext
 
-* Tue Sep 15 2006 Jakub Jelinek <jakub@redhat.com> 2.4.90-33
+* Tue Sep 19 2006 Jakub Jelinek <jakub@redhat.com> 2.4.90-33
 - fix dlclose (#206639)
 - don't load platform optimized libraries if kernel doesn't set
   AT_PLATFORM
@@ -3426,7 +3426,7 @@ rm -f *.filelist*
 - disallow RTLD_GLOBAL flag for dlmopen in secondary namespaces (#197462)
 - PI mutex support
 
-* Tue Jul 10 2006 Jakub Jelinek <jakub@redhat.com> 2.4.90-13
+* Mon Jul 10 2006 Jakub Jelinek <jakub@redhat.com> 2.4.90-13
 - DT_GNU_HASH support
 
 * Fri Jun 30 2006 Jakub Jelinek <jakub@redhat.com> 2.4.90-12
@@ -3875,7 +3875,7 @@ rm -f *.filelist*
   - grok PT_NOTE in vDSO for kernel version and extra hwcap dirs,
     support "hwcap" keyword in ld.so.conf files
 
-* Tue Apr  4 2005 Jakub Jelinek <jakub@redhat.com> 2.3.4-21
+* Tue Apr  5 2005 Jakub Jelinek <jakub@redhat.com> 2.3.4-21
 - update from CVS
   - fix xdr_rmtcall_args on 64-bit arches (#151686)
 - fix <pthread.h> and <bits/libc-lock.h> with -std=c89 -fexceptions (#153774)
@@ -4379,7 +4379,7 @@ rm -f *.filelist*
 - use atomic instructions even in i386 nscd on i486+ CPUs
   (conditionally)
 
-* Sat Sep  3 2004 Jakub Jelinek <jakub@redhat.com> 2.3.3-49
+* Fri Sep  3 2004 Jakub Jelinek <jakub@redhat.com> 2.3.3-49
 - update from CVS
 - fix linuxthreads tst-cancel{[45],-static}
 
@@ -4584,7 +4584,7 @@ rm -f *.filelist*
   - fix pthread_getattr_np guardsize reporting in NPTL
 - report PLT relocations in ld.so and libc.so during the build
 
-* Fri Mar 25 2004 Jakub Jelinek <jakub@redhat.com> 2.3.3-20
+* Thu Mar 25 2004 Jakub Jelinek <jakub@redhat.com> 2.3.3-20
 - update from CVS
   - change NPTL PTHREAD_MUTEX_ADAPTIVE_NP mutexes to spin on SMP
   - strtol speed optimization
@@ -4867,7 +4867,7 @@ rm -f *.filelist*
   ld.so and NPTL (on IA-32 also FLOATING_STACKS linuxthreads) libraries
   and tests
 
-* Tue Aug 25 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-78
+* Mon Aug 25 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-78
 - include dl-osinfo.h only in glibc-debuginfo-2*.rpm, not
   in glibc-debuginfo-common*
 
@@ -5008,7 +5008,7 @@ rm -f *.filelist*
 - don't prelink -R libc.so on any architecture, it prohibits
   address randomization
 
-* Fri Jun  5 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-48
+* Thu Jun  5 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-48
 - update from CVS
   - fix IA-64 NPTL build
 
@@ -5022,10 +5022,10 @@ rm -f *.filelist*
 - enable NPTL on AMD64
 - avoid using trampolines in localedef
 
-* Fri May 29 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-45
+* Thu May 29 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-45
 - enable NPTL on IA-64
 
-* Fri May 29 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-44
+* Thu May 29 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-44
 - update from CVS
 - enable NPTL on s390 and s390x
 - make __init_array_start etc. symbols in elf-init.oS hidden undefined
@@ -5205,7 +5205,7 @@ rm -f *.filelist*
 - fix TLS IE/LE model handling in dlopened libraries
   on TCB_AT_TP arches
 
-* Thu Feb 25 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-5
+* Tue Feb 25 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-5
 - update from CVS
 
 * Tue Feb 25 2003 Jakub Jelinek <jakub@redhat.com> 2.3.2-4
@@ -5742,7 +5742,7 @@ rm -f *.filelist*
 - disable autoreq in glibc-debug
 - readd %%lang() to locale files
 
-* Fri Feb  7 2002 Jakub Jelinek <jakub@redhat.com> 2.2.90-4
+* Thu Feb  7 2002 Jakub Jelinek <jakub@redhat.com> 2.2.90-4
 - update to CVS
 - move glibc private symbols to GLIBC_PRIVATE symbol version
 
