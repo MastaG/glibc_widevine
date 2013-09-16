@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -129,6 +129,7 @@ Patch1007: %{name}-rh977887-2.patch
 Patch1008: %{name}-rh984829.patch
 Patch1009: %{name}-rh995841.patch
 Patch1010: %{name}-rh947892.patch
+Patch1011: %{name}-rh1008299.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -445,6 +446,7 @@ package or when debugging this package.
 %patch0040 -p1
 %patch0041 -p1
 %patch0042 -p1
+%patch1011 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1235,6 +1237,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Sep 16 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-15
+- Fix integer overflows in *valloc and memalign (CVE-2013-4332, #1008299).
+
 * Mon Aug 26 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-14
 - Add systemd to BuildRequires (#999924).
 - Expand sizes of some types in strcoll (#855399, CVE-2012-4424).
