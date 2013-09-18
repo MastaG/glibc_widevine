@@ -27,7 +27,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -210,8 +210,15 @@ Conflicts: kernel < %{enablekernel}
 BuildRequires: binutils >= 2.20.51.0.2
 Conflicts: binutils < 2.20.51.0.2
 %else
+%ifarch s390 s390x
+# Needed for STT_GNU_IFUNC support for s390/390x
+BuildRequires: binutils >= 2.23.52.0.1-8
+Conflicts: binutils < 2.23.52.0.1-8
+%else
+# Default to this version
 BuildRequires: binutils >= 2.19.51.0.10
 Conflicts: binutils < 2.19.51.0.10
+%endif
 %endif
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
@@ -1237,6 +1244,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Sep 18 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-16
+- Fix conditional requiring specific binutils for s390/s390x.
+
 * Mon Sep 16 2013 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.17-15
 - Fix integer overflows in *valloc and memalign (CVE-2013-4332, #1008299).
 
