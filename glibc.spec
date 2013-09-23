@@ -1,5 +1,6 @@
 %define glibcsrcdir glibc-2.17-c758a686
 %define glibcversion 2.17
+%define glibcrelease 17%{?dist}
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -27,7 +28,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 16%{?dist}
+Release: %{glibcrelease}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -130,6 +131,7 @@ Patch1008: %{name}-rh984829.patch
 Patch1009: %{name}-rh995841.patch
 Patch1010: %{name}-rh947892.patch
 Patch1011: %{name}-rh1008299.patch
+Patch1012: %{name}-rh985342.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -454,6 +456,7 @@ package or when debugging this package.
 %patch0041 -p1
 %patch0042 -p1
 %patch1011 -p1
+%patch1012 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1244,6 +1247,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Sep 22 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-17
+- Fix indirect function support to avoid calling optimized routines
+  for the wrong hardware (#985342).
+
 * Wed Sep 18 2013 Patsy Franklin <pfrankli@redhat.com> - 2.17-16
 - Fix conditional requiring specific binutils for s390/s390x.
 
