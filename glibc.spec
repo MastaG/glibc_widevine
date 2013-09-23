@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.17-c758a686
 %define glibcversion 2.17
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -132,6 +132,7 @@ Patch1009: %{name}-rh995841.patch
 Patch1010: %{name}-rh947892.patch
 Patch1011: %{name}-rh1008299.patch
 Patch1012: %{name}-rh985342.patch
+Patch1013: %{name}-rh985625-CVE-2013-4788.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -457,6 +458,7 @@ package or when debugging this package.
 %patch0042 -p1
 %patch1011 -p1
 %patch1012 -p1
+%patch1013 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1247,6 +1249,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Sep 22 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-18
+- Fix CVE-2013-4788: Static applications now support pointer mangling.
+  Existing static applications must be recompiled (#985625).
+
 * Sun Sep 22 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-17
 - Fix indirect function support to avoid calling optimized routines
   for the wrong hardware (#985342).
