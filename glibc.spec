@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.17-c758a686
 %define glibcversion 2.17
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -133,6 +133,8 @@ Patch1010: %{name}-rh947892.patch
 Patch1011: %{name}-rh1008299.patch
 Patch1012: %{name}-rh985342.patch
 Patch1013: %{name}-rh985625-CVE-2013-4788.patch
+# Add support for rtlddir distinct from slibdir.
+Patch1014: %{name}-rh950093.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -459,6 +461,7 @@ package or when debugging this package.
 %patch1011 -p1
 %patch1012 -p1
 %patch1013 -p1
+%patch1014 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1249,6 +1252,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Oct 28 2013 Carlos O'Donell <carlos@readhat.com> - 2.17-19
+- Add support for installing the dynmic loader in an alternate location.
+  This is required for correct AArch64 support (#950093).
+
 * Sun Sep 22 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-18
 - Fix CVE-2013-4788: Static applications now support pointer mangling.
   Existing static applications must be recompiled (#985625).
