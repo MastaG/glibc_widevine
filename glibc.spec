@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.17-c758a686
 %define glibcversion 2.17
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -337,9 +337,9 @@ Group: System Environment/Daemons
 Requires: %{name} = %{version}-%{release}
 Requires: libselinux >= 1.17.10-1, audit-libs >= 1.1.3
 Requires(pre): /usr/sbin/useradd, coreutils
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units, /usr/sbin/userdel
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd, /usr/sbin/userdel
 
 %description -n nscd
 Nscd caches name service lookups and can dramatically improve
@@ -1252,7 +1252,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Mon Oct 28 2013 Carlos O'Donell <carlos@readhat.com> - 2.17-19
+* Fri Nov  8 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-20
+- Depend on systemd instead of systemd-units (#1028430).
+
+* Mon Oct 28 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-19
 - Add support for installing the dynmic loader in an alternate location.
   This is required for correct AArch64 support (#950093).
 
