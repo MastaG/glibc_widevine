@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.19-776-gf4c4021
 %define glibcversion 2.19.90
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1591,7 +1591,8 @@ rm -f *.filelist*
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/ld.so.cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/gai.conf
 %doc README NEWS INSTALL BUGS PROJECTS CONFORMANCE elf/rtld-debugger-interface.txt
-%doc COPYING COPYING.LIB LICENSES
+%{!?_licensedir:%global license %%doc}
+%license COPYING COPYING.LIB LICENSES
 %doc hesiod/README.hesiod
 
 %if %{xenpackage}
@@ -1656,6 +1657,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Jul 12 2014 Tom Callaway <spot@fedoraproject.org> - 2.19.90-28
+- fix license handling
+
 * Mon Jul 07 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-27
 - Auto-sync with upstream master.
 
