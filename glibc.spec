@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.19-776-gf4c4021
+%define glibcsrcdir  glibc-2.19-836-gcc5fb30
 %define glibcversion 2.19.90
-%define glibcrelease 28%{?dist}
+%define glibcrelease 31%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1657,6 +1657,15 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jul 28 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-31
+- Auto-sync with upstream master.
+
+* Wed Jul 23 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-30
+- Undo last master sync to fix up rawhide.
+
+* Tue Jul 15 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-29
+- Auto-sync with upstream master.
+
 * Sat Jul 12 2014 Tom Callaway <spot@fedoraproject.org> - 2.19.90-28
 - fix license handling
 
