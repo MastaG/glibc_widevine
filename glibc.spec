@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.19-836-gcc5fb30
+%define glibcsrcdir  glibc-2.19-883-g7e54fd0
 %define glibcversion 2.19.90
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -221,6 +221,8 @@ Patch2031: %{name}-rh1070416.patch
 
 Patch2033: %{name}-aarch64-tls-fixes.patch
 Patch2034: %{name}-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch
+
+Patch2035: %{name}-extern-always-inline.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -552,6 +554,7 @@ package or when debugging this package.
 %patch0047 -p1
 %patch2033 -p1
 %patch2034 -p1
+%patch2035 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1657,6 +1660,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 13 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-32
+- Auto-sync with upstream master.
+- Revert to only defining __extern_always_inline for g++-4.3+.
+- Fix build failure in compat-gcc-32 (#186410).
+
 * Mon Jul 28 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-31
 - Auto-sync with upstream master.
 
