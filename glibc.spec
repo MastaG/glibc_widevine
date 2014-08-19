@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.19-883-g7e54fd0
 %define glibcversion 2.19.90
-%define glibcrelease 32%{?dist}
+%define glibcrelease 33%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1660,6 +1660,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Aug 19 2014 Dennis Gilmore <dennis@ausil.us> - 2.19.90-33
+- remove sss from default nsswitch.conf it causes issues with live image composing
+
 * Wed Aug 13 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-32
 - Auto-sync with upstream master.
 - Revert to only defining __extern_always_inline for g++-4.3+.
