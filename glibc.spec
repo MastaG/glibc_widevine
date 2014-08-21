@@ -79,7 +79,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}
+Release: %{glibcrelease}.1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1660,6 +1660,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 2.19.90-33.1
+- Rebuild for rpm bug 1131960
+
 * Tue Aug 19 2014 Dennis Gilmore <dennis@ausil.us> - 2.19.90-33
 - remove sss from default nsswitch.conf it causes issues with live image composing
 
