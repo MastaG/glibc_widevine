@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.19-883-g7e54fd0
 %define glibcversion 2.19.90
-%define glibcrelease 33%{?dist}
+%define glibcrelease 34%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -79,7 +79,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}.1
+Release: %{glibcrelease}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -1660,6 +1660,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Aug 22 2014 Dennis Gilmore <dennis@ausil.us> - 2.19.90-34
+- add back sss to nsswitch.conf we have added workarounds in the tools
+
 * Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 2.19.90-33.1
 - Rebuild for rpm bug 1131960
 
