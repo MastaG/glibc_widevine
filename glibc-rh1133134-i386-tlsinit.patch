@@ -1,0 +1,19 @@
+diff --git a/sysdeps/i386/nptl/tls.h b/sysdeps/i386/nptl/tls.h
+index ac9c9a2..052ea64 100644
+--- a/sysdeps/i386/nptl/tls.h
++++ b/sysdeps/i386/nptl/tls.h
+@@ -231,12 +231,8 @@ tls_fill_user_desc (union user_desc_init *desc,
+      tls_fill_user_desc (&_segdescr, -1, _thrdescr);			      \
+ 									      \
+      /* Install the TLS.  */						      \
+-     asm volatile (TLS_LOAD_EBX						      \
+-		   "int $0x80\n\t"					      \
+-		   TLS_LOAD_EBX						      \
+-		   : "=a" (_result), "=m" (_segdescr.desc.entry_number)	      \
+-		   : "0" (__NR_set_thread_area),			      \
+-		     TLS_EBX_ARG (&_segdescr.desc), "m" (_segdescr.desc));    \
++     INTERNAL_SYSCALL_DECL (err);					      \
++     _result = INTERNAL_SYSCALL (set_thread_area, err, 1, &_segdescr.desc);   \
+ 									      \
+      if (_result == 0)							      \
+        /* We know the index in the GDT, now load the segment register.	      \

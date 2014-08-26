@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.19-883-g7e54fd0
+%define glibcsrcdir  glibc-2.19-886-gdd763fd
 %define glibcversion 2.19.90
-%define glibcrelease 34%{?dist}
+%define glibcrelease 35%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -184,6 +184,10 @@ Patch0044: %{name}-rh1009145.patch
 Patch0046: %{name}-rh1013801.patch
 
 Patch0047: %{name}-nscd-sysconfig.patch
+
+Patch0048: %{name}-rh1133134-i386-tlsinit.patch
+
+Patch0049: %{name}-rh1119128.patch
 
 ##############################################################################
 #
@@ -555,6 +559,8 @@ package or when debugging this package.
 %patch2033 -p1
 %patch2034 -p1
 %patch2035 -p1
+%patch0048 -p1
+%patch0049 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1660,6 +1666,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Aug 26 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.19.90-35
+- Sync with upstream master.
+- Use INTERNAL_SYSCALL in TLS_INIT_TP (#1133134).
+- Remove gconv loadable module transliteration support (CVE-2014-5119, #1119128).
+
 * Fri Aug 22 2014 Dennis Gilmore <dennis@ausil.us> - 2.19.90-34
 - add back sss to nsswitch.conf we have added workarounds in the tools
 
