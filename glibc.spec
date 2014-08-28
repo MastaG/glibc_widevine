@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.17-c758a686
 %define glibcversion 2.17
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 ### glibc.spec.in follows:
 %define run_glibc_tests 1
 %define auxarches athlon alphaev6
@@ -135,6 +135,11 @@ Patch1012: %{name}-rh985342.patch
 Patch1013: %{name}-rh985625-CVE-2013-4788.patch
 # Add support for rtlddir distinct from slibdir.
 Patch1014: %{name}-rh950093.patch
+# CVE-2014-5119
+Patch1015: %{name}-rh1133812-1.patch
+# CVE-2014-0475
+Patch1016: %{name}-rh1133812-2.patch
+Patch1017: %{name}-rh1133812-3.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -462,6 +467,9 @@ package or when debugging this package.
 %patch1012 -p1
 %patch1013 -p1
 %patch1014 -p1
+%patch1015 -p1
+%patch1016 -p1
+%patch1017 -p1
 
 # On powerpc32, hp timing is only available in power4/power6
 # libs, not in base, so pre-power4 dynamic linker is incompatible
@@ -1252,6 +1260,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 27 2014 Carlos O'Donell <carlos@redhat.com> - 2.17-21
+- Remove gconv transliteration loadable modules support (CVE-2014-5119,
+  #1133812).
+- _nl_find_locale: Improve handling of crafted locale names (CVE-2014-0475,
+  #1133812).
+
 * Fri Nov  8 2013 Carlos O'Donell <carlos@redhat.com> - 2.17-20
 - Depend on systemd instead of systemd-units (#1028430).
 
