@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -194,6 +194,7 @@ Patch0050: %{name}-rh1124987.patch
 # Patches from upstream
 #
 ##############################################################################
+Patch1001: %{name}-rh1133508.patch
 
 ##############################################################################
 #
@@ -560,6 +561,7 @@ package or when debugging this package.
 %patch2034 -p1
 %patch2035 -p1
 %patch0050 -p1
+%patch1001 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1667,6 +1669,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Sep 16 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-2
+- Make __extern_always_inline usable on clang++ again (#1133508).
+
 * Mon Sep  8 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-1
 - Rebase to upstream release 2.20.
 
