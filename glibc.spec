@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1367,6 +1367,24 @@ mv debuginfocommon2.filelist debuginfocommon.filelist
 sort -u debuginfo.filelist > debuginfo2.filelist
 mv debuginfo2.filelist debuginfo.filelist
 
+# Remove some common directories from the common package debuginfo so that we
+# don't end up owning them.
+exclude_common_dirs()
+{
+	exclude_dirs="%{_prefix}/src/debug"
+	exclude_dirs="$exclude_dirs $(echo %{_prefix}/lib/debug{,/%{_lib},/bin,/sbin})"
+	exclude_dirs="$exclude_dirs $(echo %{_prefix}/lib/debug%{_prefix}{,/%{_lib},/libexec,/bin,/sbin})"
+
+	for d in $(echo $exclude_dirs | sed 's/ /\n/g'); do
+		sed -i "\|^%%dir $d/\?$|d" $1
+	done
+}
+
+%ifarch %{debuginfocommonarches}
+exclude_common_dirs debuginfocommon.filelist
+%endif
+exclude_common_dirs debuginfo.filelist
+
 %endif # 0%{?_enable_debug_packages}
 
 # Remove the `dir' info-heirarchy file which will be maintained
@@ -1669,6 +1687,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Sep 23 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-3
+- Don't own the common debuginfo directories (#1144853).
+
 * Tue Sep 16 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-2
 - Make __extern_always_inline usable on clang++ again (#1133508).
 
