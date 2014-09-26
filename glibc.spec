@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -691,6 +691,11 @@ build()
 	build_CFLAGS="$BuildFlags -g -O3 $*"
 	# Some configure checks can spuriously fail for some architectures if
 	# unwind info is present
+	#
+	# At the moment lock elision is temporarily disabled until we work
+	# out how to update the microcode in early boot to prevent the cpuid
+	# results from becoming stale. Once this is fixed add back:
+	#               --enable-lock-elision \
 	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$configure_CFLAGS" \
 		--prefix=%{_prefix} \
@@ -707,7 +712,6 @@ build()
 %ifarch ppc64p7
 		--with-cpu=power7 \
 %endif
-		--enable-lock-elision \
 		--disable-profile --enable-nss-crypt ||
 		{ cat config.log; false; }
 
@@ -1687,6 +1691,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Sep 26 2014 Carlos O'Donell <carlos@redhat.com> - 2.20-4
+- Disable lock elision support for Intel hardware until microcode
+  updates can be done in early bootup (#1146967).
+
 * Tue Sep 23 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-3
 - Don't own the common debuginfo directories (#1144853).
 
