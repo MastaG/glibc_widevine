@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -188,6 +188,9 @@ Patch0047: %{name}-nscd-sysconfig.patch
 # Allow up to 32 libraries to use static TLS. Should go upstream after
 # more testing.
 Patch0050: %{name}-rh1124987.patch
+
+# Disable rwlock elision if --enable-lock-elision is not used.
+Patch0051: %{name}-disable-rwlock-elision.patch
 
 ##############################################################################
 #
@@ -562,6 +565,7 @@ package or when debugging this package.
 %patch2035 -p1
 %patch0050 -p1
 %patch1001 -p1
+%patch0051 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1691,6 +1695,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Sep 27 2014 Carlos O'Donell <carlos@redhat.com> - 2.20-5
+- Disable more Intel TSX usage in rwlocks (#1146967).
+
 * Fri Sep 26 2014 Carlos O'Donell <carlos@redhat.com> - 2.20-4
 - Disable lock elision support for Intel hardware until microcode
   updates can be done in early bootup (#1146967).
