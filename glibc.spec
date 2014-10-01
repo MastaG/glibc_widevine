@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -20,6 +20,15 @@
 # you install the base arch, not both. You would do this in order
 # to provide a more optimized version of the package for your arch.
 %define auxarches athlon alphaev6
+##############################################################################
+# Enable lock elision support for these architectures
+#
+# At the moment lock elision is disabled on x86_64 until there's a CPU that
+# would actually benefit from enabling it.  Intel released a microcode update
+# to disable HLE and RTM at boot and the Fedora kernel now applies it early
+# enough that keeping lock elision enabled should be harmless, but we have
+# disabled it anyway as a conservative measure.
+%define lock_elision_arches s390 s390x
 ##############################################################################
 # We build a special package for Xen that includes TLS support with
 # no negative segment offsets for use with Xen guests. This is
@@ -695,11 +704,6 @@ build()
 	build_CFLAGS="$BuildFlags -g -O3 $*"
 	# Some configure checks can spuriously fail for some architectures if
 	# unwind info is present
-	#
-	# At the moment lock elision is temporarily disabled until we work
-	# out how to update the microcode in early boot to prevent the cpuid
-	# results from becoming stale. Once this is fixed add back:
-	#               --enable-lock-elision \
 	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$configure_CFLAGS" \
 		--prefix=%{_prefix} \
@@ -715,6 +719,9 @@ build()
 %endif
 %ifarch ppc64p7
 		--with-cpu=power7 \
+%endif
+%ifarch %{lock_elision_arches}
+		--enable-lock-elision \
 %endif
 		--disable-profile --enable-nss-crypt ||
 		{ cat config.log; false; }
@@ -1695,6 +1702,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Oct  1 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-6
+- Enable lock elision again on s390 and s390x.
+
 * Sat Sep 27 2014 Carlos O'Donell <carlos@redhat.com> - 2.20-5
 - Disable more Intel TSX usage in rwlocks (#1146967).
 
