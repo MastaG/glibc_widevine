@@ -1095,12 +1095,17 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 } | {
 
   # primary filelist
-  SHARE_LANG='s|.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo|%lang(\1) &|'
-  sed -e "$SHARE_LANG" \
+
+  # Remove the *.mo entries.  We will add that using %%find_lang
+  sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
       -e '\,/%{_lib}/lib\(pcprofile\|memusage\)\.so,d' \
       -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
 } | sort > rpm.filelist
+
+# Our *.mo files.  Put them in glibc-common.
+%find_lang libc
+mv libc.lang common.filelist
 
 mkdir -p $RPM_BUILD_ROOT%{_libdir}
 mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so $RPM_BUILD_ROOT%{_libdir}
@@ -1703,7 +1708,8 @@ rm -f *.filelist*
 %changelog
 * Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> -.2.20-7
 - Remove LIB_LANG since we don't install locales in /usr/lib/locale anymore.
-- Don't own any directories in /usr/share/locale.
+- Don't own any directories in /usr/share/locale (#1167445).
+- Use the %%find_lang macro to get the *.mo files (#1167445).
 
 * Wed Oct  1 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-6
 - Enable lock elision again on s390 and s390x.
