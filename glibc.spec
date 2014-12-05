@@ -1702,7 +1702,7 @@ rm -f *.filelist*
 
 %changelog
 * Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> -.2.20-7
-- Remove LIB_LANG since we don't install in /usr/lib/locale anymore.
+- Remove LIB_LANG since we don't install locales in /usr/lib/locale anymore.
 - Don't own any directories in /usr/share/locale.
 
 * Wed Oct  1 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-6
