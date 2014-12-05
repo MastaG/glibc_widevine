@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1093,11 +1093,7 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # primary filelist
   SHARE_LANG='s|.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo|%lang(\1) &|'
-  LIB_LANG='s|.*/lib/locale/\([^/_]\+\)|%lang(\1) &|'
-  # rpm does not handle %lang() tagged files hardlinked together accross
-  # languages very well, temporarily disable
-  LIB_LANG=''
-  sed -e "$LIB_LANG" -e "$SHARE_LANG" \
+  sed -e "$SHARE_LANG" \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
       -e '\,/%{_lib}/lib\(pcprofile\|memusage\)\.so,d' \
       -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
@@ -1702,6 +1698,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> -.2.20-7
+- Remove LIB_LANG since we don't install in /usr/lib/locale anymore.
+
 * Wed Oct  1 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-6
 - Enable lock elision again on s390 and s390x.
 
