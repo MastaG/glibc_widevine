@@ -1085,10 +1085,13 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 	 -printf "%%%%verify(not md5 size mtime) " \
 	 , \
 	 ! -path "*/lib/debug/*" -printf "/%%P\n" \)
+  # Print all directories with a %%dir prefix.  We omit the info directory and
+  # all directories in (and including) /usr/share/locale.
   find $RPM_BUILD_ROOT -type d \
+       \( -path '*%{_prefix}/share/locale' -prune -o \
        \( -path '*%{_prefix}/share/*' ! -path '*%{_infodir}' -o \
 	  -path "*%{_prefix}/include/*" \
-       \) -printf "%%%%dir /%%P\n"
+       \) -printf "%%%%dir /%%P\n" \)
 } | {
 
   # primary filelist
@@ -1700,6 +1703,7 @@ rm -f *.filelist*
 %changelog
 * Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> -.2.20-7
 - Remove LIB_LANG since we don't install in /usr/lib/locale anymore.
+- Don't own any directories in /usr/share/locale.
 
 * Wed Oct  1 2014 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-6
 - Enable lock elision again on s390 and s390x.
