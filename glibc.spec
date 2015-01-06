@@ -1710,7 +1710,7 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> -.2.20-7
+* Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-7
 - Remove LIB_LANG since we don't install locales in /usr/lib/locale anymore.
 - Don't own any directories in /usr/share/locale (#1167445).
 - Use the %%find_lang macro to get the *.mo files (#1167445).
