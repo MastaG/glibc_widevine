@@ -1,0 +1,39 @@
+BZ #17949.
+
+commit 132a1328eccd20621b77f7810eebbeec0a1af187
+Author: Evangelos Foutras <evangelos@foutrelis.com>
+Date:   Tue Feb 10 03:22:58 2015 +0000
+
+    Fix __memcpy_chk on non-SSE2 CPUs
+    
+    In commit 8b4416d, the 1: jump label in __mempcpy_chk was accidentally
+    moved.  This resulted in failures of mempcpy on CPU without SSE2.
+
+diff --git a/NEWS b/NEWS
+index 41bc551..d85e26f 100644
+--- a/NEWS
++++ b/NEWS
+@@ -9,7 +9,7 @@ Version 2.22
+ 
+ * The following bugs are resolved with this release:
+ 
+-  4719, 17912, 17932, 17944.
++  4719, 17912, 17932, 17944, 17949.
+ 
+ Version 2.21
+ 
+diff --git a/sysdeps/i386/i686/multiarch/mempcpy_chk.S b/sysdeps/i386/i686/multiarch/mempcpy_chk.S
+index 207b648..b6fa202 100644
+--- a/sysdeps/i386/i686/multiarch/mempcpy_chk.S
++++ b/sysdeps/i386/i686/multiarch/mempcpy_chk.S
+@@ -36,8 +36,8 @@ ENTRY(__mempcpy_chk)
+ 	cmpl	$0, KIND_OFFSET+__cpu_features@GOTOFF(%ebx)
+ 	jne	1f
+ 	call	__init_cpu_features
+-	leal	__mempcpy_chk_ia32@GOTOFF(%ebx), %eax
+-1:	testl	$bit_SSE2, CPUID_OFFSET+index_SSE2+__cpu_features@GOTOFF(%ebx)
++1:	leal	__mempcpy_chk_ia32@GOTOFF(%ebx), %eax
++	testl	$bit_SSE2, CPUID_OFFSET+index_SSE2+__cpu_features@GOTOFF(%ebx)
+ 	jz	2f
+ 	leal	__mempcpy_chk_sse2_unaligned@GOTOFF(%ebx), %eax
+ 	testl	$bit_Fast_Unaligned_Load, FEATURE_OFFSET+index_Fast_Unaligned_Load+__cpu_features@GOTOFF(%ebx)
