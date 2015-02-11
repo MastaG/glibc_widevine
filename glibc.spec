@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.20-549-g86bba16
-%define glibcversion 2.20.90
-%define glibcrelease 20%{?dist}
+%define glibcsrcdir  glibc-2.21
+%define glibcversion 2.21
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -214,6 +214,8 @@ Patch0054: %{name}-revert-x86-vdso.patch
 # Patches from upstream
 #
 ##############################################################################
+# BZ #17949 - Fix __memcpy_chk on non-SSE2 CPUs.
+Patch1000: glibc-swbz17949.patch
 
 ##############################################################################
 #
@@ -579,6 +581,7 @@ package or when debugging this package.
 %patch0052 -p1
 %patch0053 -p1
 %patch0054 -p1 -R
+%patch1000 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1751,6 +1754,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Feb 11 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-1
+- Fix __memcpy_chk on non-SSE2 CPUs (Upstream BZ #17949)
+- Rebase to upstream release 2.21 to provide ABI and API assurances.
+
 * Wed Jan 21 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20.90-20
 - Sync with upstream master.
 - Disable werror on s390x.
