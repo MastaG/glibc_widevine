@@ -1762,6 +1762,7 @@ rm -f *.filelist*
 - Unicode 7.0.0 update (#1191059).
 - Add back x86 vDSO support.
 - Fix rtkaio build to reference clock_* functions from libc.
+- Fix missing clock_* IFUNCs in librtkaio.
 
 * Tue Feb 17 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-3
 - Change patch file to avoid rpm bug 1193603 and rebuild with new NVR

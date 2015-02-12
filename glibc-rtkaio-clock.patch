@@ -10,10 +10,10 @@
 # We remove the clock* functions from librtkaio.so.1 and
 # use those provided in libc.so.6, matching librt.so.
 #
-diff -urN glibc-2.21-59-gd35273f.mod/rtkaio/clock-compat.c glibc-2.21-59-gd35273f/rtkaio/clock-compat.c
---- glibc-2.21-59-gd35273f.mod/rtkaio/clock-compat.c	1969-12-31 19:00:00.000000000 -0500
-+++ glibc-2.21-59-gd35273f/rtkaio/clock-compat.c	2015-02-11 22:52:29.912765683 -0500
-@@ -0,0 +1 @@
+--- glibc-2.21-63-gebf27d1.mod/rtkaio/clock-compat.c	1969-12-31 19:00:00.000000000 -0500
++++ glibc-2.21-63-gebf27d1/rtkaio/clock-compat.c	2015-02-12 01:28:59.615026597 -0500
+@@ -0,0 +1,2 @@
++#define librt librtkaio
 +#include <rt/clock-compat.c>
 diff -urN glibc-2.21-59-gd35273f.mod/rtkaio/kaio_clock_getcpuclockid.c glibc-2.21-59-gd35273f/rtkaio/kaio_clock_getcpuclockid.c
 --- glibc-2.21-59-gd35273f.mod/rtkaio/kaio_clock_getcpuclockid.c	2015-02-11 13:00:55.105400863 -0500
