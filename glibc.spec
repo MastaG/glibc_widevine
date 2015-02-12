@@ -206,8 +206,8 @@ Patch0052: %{name}-disable-rwlock-elision.patch
 # symlink to it.
 Patch0053: %{name}-cs-path.patch
 
-# Temporary revert till I fix rtkaio build on i686.
-Patch0054: %{name}-revert-x86-vdso.patch
+# Remove the clock_* functions and use the ones in libc like librt does.
+Patch0054: %{name}-rtkaio-clock.patch
 
 ##############################################################################
 #
@@ -583,7 +583,7 @@ package or when debugging this package.
 %patch0050 -p1
 %patch0052 -p1
 %patch0053 -p1
-%patch0054 -p1 -R
+%patch0054 -p1
 %patch1000 -p1
 %patch1001 -p1
 
@@ -1760,6 +1760,8 @@ rm -f *.filelist*
 %changelog
 * Mon Feb 23 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.21-4
 - Unicode 7.0.0 update (#1191059).
+- Add back x86 vDSO support.
+- Fix rtkaio build to reference clock_* functions from libc.
 
 * Tue Feb 17 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-3
 - Change patch file to avoid rpm bug 1193603 and rebuild with new NVR
