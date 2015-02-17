@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1754,6 +1754,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Feb 17 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-2
+- Rebuild with new NVR.
+
 * Wed Feb 11 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-1
 - Fix __memcpy_chk on non-SSE2 CPUs (Upstream BZ #17949)
 - Rebase to upstream release 2.21 to provide ABI and API assurances.
