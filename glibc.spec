@@ -9,7 +9,7 @@
 # gzip -9 $(git describe --match 'glibc-*').tar
 #
 # glibc_release_url is only defined when we have a release tarball.
-# % define glibc_release_url http://ftp.gnu.org/gnu/glibc/
+%define glibc_release_url http://ftp.gnu.org/gnu/glibc/
 ##############################################################################
 # If run_glibc_tests is zero then tests are not run for the build.
 # You must always set run_glibc_tests to one for production builds.
