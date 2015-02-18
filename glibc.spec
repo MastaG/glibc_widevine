@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1754,6 +1754,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Feb 17 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-3
+- Change patch file to avoid rpm bug 1193603 and rebuild with new NVR
+  (#1190454).
+
 * Tue Feb 17 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-2
 - Rebuild with new NVR.
 
