@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1693,7 +1693,7 @@ rm -f *.filelist*
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/gai.conf
 %doc README NEWS INSTALL BUGS PROJECTS CONFORMANCE elf/rtld-debugger-interface.txt
 %{!?_licensedir:%global license %%doc}
-%license COPYING COPYING.LIB LICENSES
+%license COPYING COPYING.LIB LICENSES localedata/unicode-gen/unicode-license.txt
 %doc hesiod/README.hesiod
 
 %if %{xenpackage}
@@ -1758,6 +1758,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Feb 23 2015 Alexandre Oliva <aoliva@redhat.com> - 2.21-5
+- Update __STDC_ISO_10646__ following Unicode 7.0.0 update.
+
 * Mon Feb 23 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.21-4
 - Unicode 7.0.0 update (#1191059).
 - Add back x86 vDSO support.

@@ -1,36 +1,83 @@
 commit 4a4839c94a4c93ffc0d5b95c69a08b02a57007f2
-Author: Alexandre Oliva <aoliva@redhat.com>
-Date:   Fri Feb 20 20:14:59 2015 -0200
-
-    Unicode 7.0.0 update; added generator scripts.
+Unicode 7.0.0 update
     
-    for  localedata/ChangeLog
-    
-    	[BZ #17588]
-    	[BZ #13064]
-    	[BZ #14094]
-    	[BZ #17998]
-    	* unicode-gen/Makefile: New.
-    	* unicode-gen/unicode-license.txt: New, from Unicode.
-    	* unicode-gen/UnicodeData.txt: New, from Unicode.
-    	* unicode-gen/DerivedCoreProperties.txt: New, from Unicode.
-    	* unicode-gen/EastAsianWidth.txt: New, from Unicode.
-    	* unicode-gen/gen_unicode_ctype.py: New generator, from Mike
-    	FABIAN <mfabian@redhat.com>.
-    	* unicode-gen/ctype_compatibility.py: New verifier, from
-    	Pravin Satpute <psatpute@redhat.com> and Mike FABIAN.
-    	* unicode-gen/ctype_compatibility_test_cases.py: New verifier
-    	module, from Mike FABIAN.
-    	* unicode-gen/utf8_gen.py: New generator, from Pravin Satpute
-    	and Mike FABIAN.
-    	* unicode-gen/utf8_compatibility.py: New verifier, from Pravin
-    	Satpute and Mike FABIAN.
-    	* charmaps/UTF-8: Update.
-    	* locales/i18n: Update.
-    	* gen-unicode-ctype.c: Remove.
-    	* tst-ctype-de_DE.ISO-8859-1.in: Adjust, islower now returns
-    	true for ordinal indicators.
+for  localedata/ChangeLog
+2014-02-20  Alexandre Oliva <aoliva@redhat.com>
 
+	[BZ #17588]
+	[BZ #13064]
+	[BZ #14094]
+	[BZ #17998]
+	* unicode-gen/Makefile: New.
+	* unicode-gen/unicode-license.txt: New, from Unicode.
+	* unicode-gen/UnicodeData.txt: New, from Unicode.
+	* unicode-gen/DerivedCoreProperties.txt: New, from Unicode.
+	* unicode-gen/EastAsianWidth.txt: New, from Unicode.
+	* unicode-gen/gen_unicode_ctype.py: New generator, from Mike
+	FABIAN <mfabian@redhat.com>.
+	* unicode-gen/ctype_compatibility.py: New verifier, from
+	Pravin Satpute <psatpute@redhat.com> and Mike FABIAN.
+	* unicode-gen/ctype_compatibility_test_cases.py: New verifier
+	module, from Mike FABIAN.
+	* unicode-gen/utf8_gen.py: New generator, from Pravin Satpute
+	and Mike FABIAN.
+	* unicode-gen/utf8_compatibility.py: New verifier, from Pravin
+	Satpute and Mike FABIAN.
+	* charmaps/UTF-8: Update.
+	* locales/i18n: Update.
+	* gen-unicode-ctype.c: Remove.
+	* tst-ctype-de_DE.ISO-8859-1.in: Adjust, islower now returns
+	true for ordinal indicators.
+
+commit 7b1ec6a05ceac76efca999ebab515afc4caaa5e9
+Amendments to Unicode 7 update.
+
+for  ChangeLog
+2015-02-23  Alexandre Oliva <aoliva@redhat.com>
+
+	* include/stdc-predef.h (__STDC_ISO_10646__): Update to
+	201304L, for Unicode 7.
+
+for  localedata/ChangeLog
+2015-02-23  Alexandre Oliva <aoliva@redhat.com>
+
+	* unicode-gen/ctype_compatibility.py: Use date ranges in
+	copyright notice.
+	* unicode-gen/ctype_compatibility_test_cases.py: Likewise.
+	* unicode-gen/gen_unicode_ctype.py: Likewise.
+	* unicode-gen/utf8_compatibility.py: Likewise.
+	* unicode-gen/utf8_gen.py: Likewise.  Use upper case for
+	global variables, use tuples for global constant arrays.  From
+	Mike FABIAN.  Suggested by Mike Frysinger <vapier@gentoo.org>.
+
+for NEWS
+* Character encoding and ctype tables were updated to Unicode 7.0.0, using
+  new generator scripts contributed by Pravin Satpute and Mike FABIAN (Red
+  Hat).  These updates cause user visible changes, such as the fix for bug
+  17998.
+
+diff --git a/include/stdc-predef.h b/include/stdc-predef.h
+index 1d6a4eb..e5f1139 100644
+--- a/include/stdc-predef.h
++++ b/include/stdc-predef.h
+@@ -49,9 +49,14 @@
+ # define __STDC_IEC_559_COMPLEX__	1
+ #endif
+ 
+-/* wchar_t uses ISO/IEC 10646 (2nd ed., published 2011-03-15) /
+-   Unicode 6.0.  */
+-#define __STDC_ISO_10646__		201103L
++/* wchar_t uses Unicode 7.0.0.  Version 7.0 of the Unicode Standard is
++   synchronized with ISO/IEC 10646:2012, plus Amendments 1 (published
++   on April, 2013) and 2 (not yet published as of February, 2015).
++   Additionally, it includes the accelerated publication of U+20BD
++   RUBLE SIGN.  Therefore Unicode 7.0.0 is between 10646:2012 and
++   10646:2014, and so we use the date ISO/IEC 10646:2012 Amd.1 was
++   published.  */
++#define __STDC_ISO_10646__		201304L
+ 
+ /* We do not support C11 <threads.h>.  */
+ #define __STDC_NO_THREADS__		1
 diff --git a/localedata/charmaps/UTF-8 b/localedata/charmaps/UTF-8
 index f9fad11..1f33c55 100644
 --- a/localedata/charmaps/UTF-8
@@ -56675,13 +56722,13 @@ index 0000000..31c8a7e
 +10FFFD;<Plane 16 Private Use, Last>;Co;0;L;;;;;N;;;;;
 diff --git a/localedata/unicode-gen/ctype_compatibility.py b/localedata/unicode-gen/ctype_compatibility.py
 new file mode 100755
-index 0000000..19e9ee5
+index 0000000..0d67f29
 --- /dev/null
 +++ b/localedata/unicode-gen/ctype_compatibility.py
 @@ -0,0 +1,546 @@
 +#!/usr/bin/python3
 +# -*- coding: utf-8 -*-
-+# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
++# Copyright (C) 2014-2015 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
 +#
 +# The GNU C Library is free software; you can redistribute it and/or
@@ -57227,12 +57274,12 @@ index 0000000..19e9ee5
 +        exit(0)
 diff --git a/localedata/unicode-gen/ctype_compatibility_test_cases.py b/localedata/unicode-gen/ctype_compatibility_test_cases.py
 new file mode 100644
-index 0000000..ab7f6dd
+index 0000000..34e6de4
 --- /dev/null
 +++ b/localedata/unicode-gen/ctype_compatibility_test_cases.py
 @@ -0,0 +1,951 @@
 +# -*- coding: utf-8 -*-
-+# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
++# Copyright (C) 2014-2015 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
 +#
 +# The GNU C Library is free software; you can redistribute it and/or
@@ -58184,14 +58231,14 @@ index 0000000..ab7f6dd
 +]
 diff --git a/localedata/unicode-gen/gen_unicode_ctype.py b/localedata/unicode-gen/gen_unicode_ctype.py
 new file mode 100755
-index 0000000..559af79
+index 0000000..0c74f2a
 --- /dev/null
 +++ b/localedata/unicode-gen/gen_unicode_ctype.py
 @@ -0,0 +1,751 @@
 +#!/usr/bin/python3
 +#
 +# Generate a Unicode conforming LC_CTYPE category from a UnicodeData file.
-+# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
++# Copyright (C) 2014-2015 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
 +# Based on gen-unicode-ctype.c by Bruno Haible <haible@clisp.cons.org>, 2000.
 +#
@@ -58997,13 +59044,13 @@ index 0000000..bdbb0a5
 +of the copyright holder.
 diff --git a/localedata/unicode-gen/utf8_compatibility.py b/localedata/unicode-gen/utf8_compatibility.py
 new file mode 100755
-index 0000000..e11327b
+index 0000000..b84a1eb
 --- /dev/null
 +++ b/localedata/unicode-gen/utf8_compatibility.py
 @@ -0,0 +1,399 @@
 +#!/usr/bin/python3
 +# -*- coding: utf-8 -*-
-+# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
++# Copyright (C) 2014-2015 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
 +#
 +# The GNU C Library is free software; you can redistribute it and/or
@@ -59402,13 +59449,13 @@ index 0000000..e11327b
 +    check_width(ARGS.old_utf8_file, ARGS.new_utf8_file)
 diff --git a/localedata/unicode-gen/utf8_gen.py b/localedata/unicode-gen/utf8_gen.py
 new file mode 100755
-index 0000000..670a628
+index 0000000..f1b88f5
 --- /dev/null
 +++ b/localedata/unicode-gen/utf8_gen.py
 @@ -0,0 +1,286 @@
 +#!/usr/bin/python3
 +# -*- coding: utf-8 -*-
-+# Copyright (C) 2014, 2015 Free Software Foundation, Inc.
++# Copyright (C) 2014-2015 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
 +#
 +# The GNU C Library is free software; you can redistribute it and/or
@@ -59441,21 +59488,21 @@ index 0000000..670a628
 +# Auxiliary tables for Hangul syllable names, see the Unicode 3.0 book,
 +# sections 3.11 and 4.4.
 +
-+jamo_initial_short_name = [
++JAMO_INITIAL_SHORT_NAME = (
 +    'G', 'GG', 'N', 'D', 'DD', 'R', 'M', 'B', 'BB', 'S', 'SS', '', 'J', 'JJ',
 +    'C', 'K', 'T', 'P', 'H'
-+]
++)
 +
-+jamo_medial_short_name = [
++JAMO_MEDIAL_SHORT_NAME = (
 +    'A', 'AE', 'YA', 'YAE', 'EO', 'E', 'YEO', 'YE', 'O', 'WA', 'WAE', 'OE',
 +    'YO', 'U', 'WEO', 'WE', 'WI', 'YU', 'EU', 'YI', 'I'
-+]
++)
 +
-+jamo_final_short_name = [
++JAMO_FINAL_SHORT_NAME = (
 +    '', 'G', 'GG', 'GS', 'N', 'NI', 'NH', 'D', 'L', 'LG', 'LM', 'LB', 'LS',
 +    'LT', 'LP', 'LH', 'M', 'B', 'BS', 'S', 'SS', 'NG', 'J', 'C', 'K', 'T',
 +    'P', 'H'
-+]
++)
 +
 +def ucs_symbol(code_point):
 +    '''Return the UCS symbol string for a Unicode character.'''
@@ -59482,9 +59529,9 @@ index 0000000..670a628
 +            index2, index3 = divmod(i - 0xaC00, 28)
 +            index1, index2 = divmod(index2, 21)
 +            hangul_syllable_name = 'HANGUL SYLLABLE ' \
-+                                   + jamo_initial_short_name[index1] \
-+                                   + jamo_medial_short_name[index2] \
-+                                   + jamo_final_short_name[index3]
++                                   + JAMO_INITIAL_SHORT_NAME[index1] \
++                                   + JAMO_MEDIAL_SHORT_NAME[index2] \
++                                   + JAMO_FINAL_SHORT_NAME[index3]
 +            outfile.write('{:<11s} {:<12s} {:s}\n'.format(
 +                ucs_symbol(i), convert_to_hex(i),
 +                hangul_syllable_name))
