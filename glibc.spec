@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.18
 %define glibcversion 2.18
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -199,6 +199,7 @@ Patch1006: %{name}-rh1118581.patch
 Patch1007: %{name}-rh1118581-2.patch
 Patch1008: %{name}-rh1104400.patch
 Patch1009: %{name}-rh1135842.patch
+Patch1010: %{name}-rh1167569.patch
 
 #
 # Patches submitted, but not yet approved upstream.
@@ -582,6 +583,7 @@ package or when debugging this package.
 %patch1007 -p1
 %patch1008 -p1
 %patch1009 -p1
+%patch1010 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1671,6 +1673,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Feb 27 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.18-19
+- wordexp fails to honour WRDE_NOCMD (CVE-2014-7817, #1167569).
+
 * Mon Feb 23 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.18-18
 - Crashes on invalid input in IBM gconv modules (CVE-2014-6040, #1135842).
 
