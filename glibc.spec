@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.20
 %define glibcversion 2.20
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -207,6 +207,7 @@ Patch0051: %{name}-disable-rwlock-elision.patch
 #
 ##############################################################################
 Patch1001: %{name}-rh1133508.patch
+Patch1002: %{name}-rh1167569.patch
 
 ##############################################################################
 #
@@ -575,6 +576,7 @@ package or when debugging this package.
 %patch0050 -p1
 %patch1001 -p1
 %patch0051 -p1
+%patch1002 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1710,6 +1712,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Feb 27 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-8
+- wordexp fails to honour WRDE_NOCMD (CVE-2014-7817, #1167569).
+
 * Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-7
 - Remove LIB_LANG since we don't install locales in /usr/lib/locale anymore.
 - Don't own any directories in /usr/share/locale (#1167445).
