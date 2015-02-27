@@ -208,6 +208,7 @@ Patch0051: %{name}-disable-rwlock-elision.patch
 ##############################################################################
 Patch1001: %{name}-rh1133508.patch
 Patch1002: %{name}-rh1167569.patch
+Patch1003: %{name}-rh1175370.patch
 
 ##############################################################################
 #
@@ -577,6 +578,7 @@ package or when debugging this package.
 %patch1001 -p1
 %patch0051 -p1
 %patch1002 -p1
+%patch1003 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1714,6 +1716,7 @@ rm -f *.filelist*
 %changelog
 * Fri Feb 27 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-8
 - wordexp fails to honour WRDE_NOCMD (CVE-2014-7817, #1167569).
+- Avoid infinite loop in nss_dns getnetbyname (CVE-2014-9402, #1175370).
 
 * Tue Jan 06 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.20-7
 - Remove LIB_LANG since we don't install locales in /usr/lib/locale anymore.
