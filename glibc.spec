@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1590,7 +1590,7 @@ end
 if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
   pid = posix.fork()
   if pid == 0 then
-    posix.exec("%{_prefix}/sbin/build-locale-archive")
+    posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
   elseif pid > 0 then
     posix.wait(pid)
   end
@@ -1601,7 +1601,7 @@ if posix.access("/etc/ld.so.cache") then
   if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
     pid = posix.fork()
     if pid == 0 then
-      posix.exec("%{_prefix}/sbin/build-locale-archive")
+      posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
     elseif pid > 0 then
       posix.wait(pid)
     end
@@ -1758,6 +1758,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Mar 24 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.21-6
+- Support installing only those locales specified by the RPM macro
+  %%_install_langs (#1204827).
+- Use rpm.expand in scripts to reduce set of required RPM features.
+
 * Mon Feb 23 2015 Alexandre Oliva <aoliva@redhat.com> - 2.21-5
 - Update __STDC_ISO_10646__ following Unicode 7.0.0 update.
 
