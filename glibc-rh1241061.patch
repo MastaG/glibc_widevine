@@ -1,0 +1,34 @@
+commit 1c1e3125206ef810dc7282023f6267a33b486233
+Author: Carlos O'Donell <carlos@systemhalted.org>
+Date:   Wed Jul 8 09:26:45 2015 -0400
+
+    Add missing Advanced API (RFC3542) (1) defines.
+    
+    Fixes bug 18643.
+    
+    Defines IPV6_RECVPATHMTU, IPV6_PATHMTU, and IPV6_DONTFRAG for Linux.
+
+diff --git a/sysdeps/unix/sysv/linux/bits/in.h b/sysdeps/unix/sysv/linux/bits/in.h
+index f684736..887719f 100644
+--- a/sysdeps/unix/sysv/linux/bits/in.h
++++ b/sysdeps/unix/sysv/linux/bits/in.h
+@@ -184,6 +184,7 @@ struct in_pktinfo
+ #define IPV6_IPSEC_POLICY	34
+ #define IPV6_XFRM_POLICY	35
+ 
++/* Advanced API (RFC3542) (1).  */
+ #define IPV6_RECVPKTINFO	49
+ #define IPV6_PKTINFO		50
+ #define IPV6_RECVHOPLIMIT	51
+@@ -195,7 +196,11 @@ struct in_pktinfo
+ #define IPV6_RTHDR		57
+ #define IPV6_RECVDSTOPTS	58
+ #define IPV6_DSTOPTS		59
++#define IPV6_RECVPATHMTU	60
++#define IPV6_PATHMTU		61
++#define IPV6_DONTFRAG		62
+ 
++/* Advanced API (RFC3542) (2).  */
+ #define IPV6_RECVTCLASS		66
+ #define IPV6_TCLASS		67
+ 

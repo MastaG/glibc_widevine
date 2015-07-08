@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -219,6 +219,9 @@ Patch1000: glibc-swbz17949.patch
 
 #Unicode 7.0.0 update.
 Patch1001: glibc-rh1191059.patch
+
+# BZ #18643 - Missing IPV6_* defines
+Patch1002: glibc-rh1241061.patch
 
 ##############################################################################
 #
@@ -586,6 +589,7 @@ package or when debugging this package.
 %patch0054 -p1
 %patch1000 -p1
 %patch1001 -p1
+%patch1002 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1758,6 +1762,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul  8 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-7
+- Add missing IPV6 defines for Advanced API (RFC3542) (1) (#1241061).
+
 * Tue Mar 24 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.21-6
 - Support installing only those locales specified by the RPM macro
   %%_install_langs (#1204827).
