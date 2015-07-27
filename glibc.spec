@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21-357-gb40a4e1
 %define glibcversion 2.21.90
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -247,7 +247,6 @@ Patch2031: glibc-rh1070416.patch
 
 Patch2033: glibc-aarch64-tls-fixes.patch
 Patch2034: glibc-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch
-Patch2035: glibc-new-condvar.patch
 
 # Upstream BZ 18568
 Patch2101: glibc-rh1238412-remove-duplicate-transliterations.patch
@@ -618,7 +617,6 @@ microbenchmark tests on the system.
 %patch0055 -p1 -R
 %patch3001 -p1
 %patch3002 -p1
-%patch2035 -p1
 
 %patch2101 -p1
 %patch2102 -p1
@@ -1840,6 +1838,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jul 27 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.12.90-20
+- Back out new condvar implementation.
+
 * Thu Jul 23 2015 Mike FABIAN <mfabian@redhat.com> - 2.21.90-19
 - some more additions to the translit_neutral file by Marko Myllynen
 
