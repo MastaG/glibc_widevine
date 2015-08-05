@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.21-649-gae5eae7
-%define glibcversion 2.21.90
-%define glibcrelease 21%{?dist}
+%define glibcsrcdir  glibc-2.22
+%define glibcversion 2.22
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -9,7 +9,7 @@
 # gzip -9 $(git describe --match 'glibc-*').tar
 #
 # glibc_release_url is only defined when we have a release tarball.
-# % define glibc_release_url http://ftp.gnu.org/gnu/glibc/
+%define glibc_release_url http://ftp.gnu.org/gnu/glibc/
 ##############################################################################
 # If run_glibc_tests is zero then tests are not run for the build.
 # You must always set run_glibc_tests to one for production builds.
