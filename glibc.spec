@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1762,6 +1762,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Sep 16 2015 Mike FABIAN <mfabian@redhat.com> - 2.22-8
+- build-locale-archive sometimes created empty archives (fixed by David Shea) (#1262040)
+
 * Wed Jul  8 2015 Carlos O'Donell <carlos@redhat.com> - 2.21-7
 - Add missing IPV6 defines for Advanced API (RFC3542) (1) (#1241061).
 
