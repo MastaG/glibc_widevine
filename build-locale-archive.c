@@ -313,8 +313,7 @@ fill_archive (struct locarhandle *tmpl_ah,
 		/* Add one for "_" and one for the null terminator.  */
 		size_t len = strlen (install_langs_list[i]) + 2;
 		char *install_lang = (char *)xmalloc (len);
-                strncpy (install_lang, install_langs_list[i], len - 2);
-		install_lang[len - 1] = '\0';
+                strcpy (install_lang, install_langs_list[i]);
                 if (strchr (install_lang, '_') == NULL)
                   strcat (install_lang, "_");
                 if (strncmp (name, install_lang, strlen (install_lang)) == 0)

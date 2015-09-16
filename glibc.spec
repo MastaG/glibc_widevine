@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1828,6 +1828,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Sep 16 2015 Mike FABIAN <mfabian@redhat.com> - 2.22-3
+- build-locale-archive sometimes created empty archives (fixed by David Shea) (#1262040)
+
 * Fri Aug 14 2015 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.22-2
 - Remove initgroups from default nsswitch.conf (#751450).
 
