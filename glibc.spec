@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-713-g5163b4b
 %define glibcversion 2.22.90
-%define glibcrelease 32%{?dist}
+%define glibcrelease 33%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -540,6 +540,241 @@ Group: System Environment/Base
 %description common
 The glibc-common package includes common binaries for the GNU libc
 libraries, as well as national language (locale) support.
+
+%package locale-source
+Summary: The sources for the locales
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+Group: System Environment/Base
+
+%description locale-source
+The sources for the locales
+
+%define lang_package()\
+%package langpack-%{1}\
+Summary: Locale data for %{1}\
+Requires: %{name} = %{version}-%{release}\
+Requires: %{name}-common = %{version}-%{release}\
+Requires: tzdata >= 2003a\
+%define supplements_list %(locale -a | grep ^%{1}_ | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
+Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
+Group: System Environment/Base\
+%description langpack-%{1}\
+The glibc-langpack-%{1} package includes the locale data for %{1}.\
+%ifnarch %{auxarches}\
+%files -f langpack-%{1}.filelist langpack-%{1}\
+%defattr(-,root,root)\
+%endif\
+%{nil}
+
+%define language_list \
+aa \
+af \
+ak \
+am \
+an \
+anp \
+ar \
+as \
+ast \
+ayc \
+az \
+be \
+bem \
+ber \
+bg \
+bhb \
+bho \
+bn \
+bo \
+br \
+brx \
+bs \
+byn \
+ca \
+ce \
+cmn \
+crh \
+cs \
+csb \
+cv \
+cy \
+da \
+de \
+doi \
+dv \
+dz \
+el \
+en \
+eo \
+es \
+et \
+eu \
+fa \
+ff \
+fi \
+fil \
+fo \
+fr \
+fur \
+fy \
+ga \
+gd \
+gez \
+gl \
+gu \
+gv \
+ha \
+hak \
+he \
+hi \
+hne \
+hr \
+hsb \
+ht \
+hu \
+hy \
+ia \
+id \
+ig \
+ik \
+is \
+it \
+iu \
+iw \
+ja \
+ka \
+kk \
+kl \
+km \
+kn \
+ko \
+kok \
+ks \
+ku \
+kw \
+ky \
+lb \
+lg \
+li \
+lij \
+lo \
+lt \
+lv \
+lzh \
+mag \
+mai \
+mg \
+mhr \
+mi \
+mk \
+ml \
+mn \
+mni \
+mr \
+ms \
+mt \
+my \
+nan \
+nb \
+nds \
+ne \
+nhn \
+niu \
+nl \
+nn \
+nr \
+nso \
+oc \
+om \
+or \
+os \
+pa \
+pap \
+pl \
+ps \
+pt \
+quz \
+raj \
+ro \
+ru \
+rw \
+sa \
+sat \
+sc \
+sd \
+se \
+shs \
+si \
+sid \
+sk \
+sl \
+so \
+sq \
+sr \
+ss \
+st \
+sv \
+sw \
+szl \
+ta \
+tcy \
+te \
+tg \
+th \
+the \
+ti \
+tig \
+tk \
+tl \
+tn \
+tr \
+ts \
+tt \
+ug \
+uk \
+unm \
+ur \
+uz \
+ve \
+vi \
+wa \
+wae \
+wal \
+wo \
+xh \
+yi \
+yo \
+yue \
+zh \
+zu \
+%{nil}
+
+%define create_lang_packages()\
+%{lua:\
+local languages = rpm.expand("%1")\
+string.gsub(languages, "(%a+)",\
+function(i) print(rpm.expand("%lang_package "..i.."")) end)}\
+%{nil}
+
+%create_lang_packages %language_list
+
+%define require_langpacks()\
+%{lua:\
+local languages = rpm.expand("%1")\
+string.gsub(languages, "(%a+)",\
+function(i) print(rpm.expand("Requires: %{name}-langpack-"..i.." = %{version}-%{release}\\n")) end)}\
+%{nil}
+
+%package all-langpacks
+Summary: Meta package to require all langpacks
+Group: System Environment/Base
+%require_langpacks %language_list
+%description all-langpacks
+Meta package to require all langpacks
+%ifnarch %{auxarches}
+%files all-langpacks
+%endif
 
 ##############################################################################
 # glibc "nscd" sub-package
@@ -1082,26 +1317,34 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/libc.info*
 %endif
 
 ##############################################################################
-# Install locale files
+# Create locale sub-package file lists
 ##############################################################################
 
-# Create archive of locale files
 %ifnarch %{auxarches}
 olddir=`pwd`
 pushd ${RPM_BUILD_ROOT}%{_prefix}/lib/locale
 rm -f locale-archive
-# Intentionally we do not pass --alias-file=, aliases will be added
-# by build-locale-archive.
-$olddir/build-%{target}/elf/ld.so \
-	--library-path $olddir/build-%{target}/ \
-	$olddir/build-%{target}/locale/localedef \
-	--prefix ${RPM_BUILD_ROOT} --add-to-archive \
-	C.utf8 *_*
-# Removes all locales except C.utf8 which remains as fallback in
-# the event the user cleans the locale-archive using localedef.
-rm -rf *_*
-mv locale-archive{,.tmpl}
+# Create the file lists for the language specific sub-packages:
+for i in *_*
+do
+    lang=${i%%_*}
+    if [ ! -e langpack-${lang}.filelist ]; then
+        echo "%dir %{_prefix}/lib/locale" >> langpack-${lang}.filelist
+    fi
+    echo "%dir  %{_prefix}/lib/locale/$i" >> langpack-${lang}.filelist
+    echo "%{_prefix}/lib/locale/$i/*" >> langpack-${lang}.filelist
+done
 popd
+pushd ${RPM_BUILD_ROOT}%{_prefix}/share/locale
+for i in */LC_MESSAGES/libc.mo
+do
+    locale=${i%%%%/*}
+    lang=${locale%%%%_*}
+    echo "%lang($lang) %{_prefix}/share/locale/${i}" \
+         >> ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/langpack-${lang}.filelist
+done
+popd
+mv  ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/*.filelist .
 %endif
 
 ##############################################################################
@@ -1178,7 +1421,8 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 ##############################################################################
 # Build the file lists used for describing the package and subpackages.
 ##############################################################################
-# There are 11 file lists:
+# There are 11 main file lists (and many more for
+# the langpack sub-packages (langpack-${lang}.filelist)):
 # * rpm.fileslist
 #	- Master file list. Eventually, after removing files from this list
 #	  we are left with the list of files for the glibc package.
@@ -1226,10 +1470,10 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # primary filelist
 
-  # Add %%lang entries for language-specific locale files.  This allows users
-  # to set %%_install_lang and not install the unnecessary locale files.
-  I18N_LANG='s|.*/share/i18n/locales/\([a-z]\{2\}[a-z]\?\)_[A-Z]\{2\}.*|%lang(\1) &|'
-  # Remove the *.mo entries.  We will add that using %%find_lang
+  # remove the locale sources, they go into the sub-package "locale-source":
+  I18N_LANG='\,.*/share/i18n/locales/.*,d'
+  # Also remove the *.mo entries.  We will add them to the
+  # language specific sub-packages.
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
       -e "$I18N_LANG" \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
@@ -1237,9 +1481,7 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
       -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
 } | sort > rpm.filelist
 
-# Our *.mo files.  Put them in glibc-common.
-%find_lang libc
-mv libc.lang common.filelist
+touch common.filelist
 
 mkdir -p $RPM_BUILD_ROOT%{_libdir}
 mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so $RPM_BUILD_ROOT%{_libdir}
@@ -1335,7 +1577,7 @@ sed -i -e '\|/%{_lib}/%{nosegneg_subdir}|d' rpm.filelist
 #	wish to clean that up at some point.
 %endif
 
-# Add the binary to build localse to the common subpackage.
+# Add the binary to build locales to the common subpackage.
 echo '%{_prefix}/sbin/build-locale-archive' >> common.filelist
 
 # The nscd binary must go into the nscd subpackage.
@@ -1606,10 +1848,6 @@ touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
 
 %endif # %{auxarches}
 
-%ifnarch %{auxarches}
-truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
-%endif
-
 mkdir -p $RPM_BUILD_ROOT/var/cache/ldconfig
 truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
 
@@ -1767,27 +2005,8 @@ end
 
 %postun -p /sbin/ldconfig
 
-%triggerin common -p <lua> -- glibc
-if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
-  pid = posix.fork()
-  if pid == 0 then
-    posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
-  elseif pid > 0 then
-    posix.wait(pid)
-  end
-end
-
 %post common -p <lua>
-if posix.access("/etc/ld.so.cache") then
-  if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
-    pid = posix.fork()
-    if pid == 0 then
-      posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
-    elseif pid > 0 then
-      posix.wait(pid)
-    end
-  end
-end
+os.remove("%{_prefix}/lib/locale/locale-archive")
 
 %if %{with docs}
 %post devel
@@ -1890,11 +2109,14 @@ rm -f *.filelist*
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
 %{_prefix}/lib/locale/C.utf8/*
-%attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
-%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %doc documentation/*
+
+%files locale-source
+%defattr(-,root,root)
+%dir %{_prefix}/share/i18n/locales
+%{_prefix}/share/i18n/locales/*
 
 %files -f devel.filelist devel
 %defattr(-,root,root)
@@ -1946,6 +2168,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Feb 09 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-33
+- Package the locales and the translations into sub-packages and add
+  a meta-package which requires all the locale and language
+  specific sub-packages
+
 * Tue Feb 02 2016 Florian Weimer <fweimer@redhat.com> - 2.22.90-32
 - Auto-sync with upstream master.
 - Add glibc-isinf-cxx11.patch to improve C++11 compatibility.
