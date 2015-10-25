@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-540-g31cf394
 %define glibcversion 2.22.90
-%define glibcrelease 21%{?dist}
+%define glibcrelease 43%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -508,6 +508,38 @@ Group: System Environment/Base
 %description common
 The glibc-common package includes common binaries for the GNU libc
 libraries, as well as national language (locale) support.
+
+%package locales-de
+Summary: Locale data for German
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+Requires: tzdata >= 2003a
+Group: System Environment/Base
+
+%description locales-de
+The glibc-locales-de package includes the locale data for
+German.
+
+%package locales-en
+Summary: Locale data for English
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+Requires: tzdata >= 2003a
+Group: System Environment/Base
+
+%description locales-en
+The glibc-locales-en package includes the locale data for
+English.
+
+%package locales-other
+Summary: Locale data for less common locales
+Requires: %{name} = %{version}-%{release}
+Requires: tzdata >= 2003a
+Group: System Environment/Base
+
+%description locales-other
+The glibc-locales-other package includes the locale data for
+less common locales.
 
 ##############################################################################
 # glibc "nscd" sub-package
@@ -1041,10 +1073,64 @@ $olddir/build-%{target}/elf/ld.so \
 	$olddir/build-%{target}/locale/localedef \
 	--prefix ${RPM_BUILD_ROOT} --add-to-archive \
 	C.utf8 *_*
-# Removes all locales except C.utf8 which remains as fallback in
-# the event the user cleans the locale-archive using localedef.
+$olddir/build-%{target}/elf/ld.so \
+	--library-path $olddir/build-%{target}/ \
+	$olddir/build-%{target}/locale/localedef \
+	--prefix ${RPM_BUILD_ROOT} --list-archive > complete-localeslist
+for i in $(cat complete-localeslist)
+do
+    case "$i" in
+        de_*)
+            echo "$i"  >> de.localeslist
+            ;;
+        en_*)
+            echo "$i"  >> en.localeslist
+            ;;
+        *_*)
+            echo "$i"  >> other.localeslist
+            ;;
+    esac
+done
+rm -f complete-localeslist
+rm -f locale-archive
+# Intentionally we do not pass --alias-file=, aliases will be added
+# by build-locale-archive.
+$olddir/build-%{target}/elf/ld.so \
+	--library-path $olddir/build-%{target}/ \
+	$olddir/build-%{target}/locale/localedef \
+	--prefix ${RPM_BUILD_ROOT} --add-to-archive \
+	C.utf8 # put only the C.utf8 locale into the initial locale-archive
+
+# Now put all English locales into locales-en.filelist and
+# all other locales into locales-other.filelist:
+for i in *_*
+do
+    case "$i" in
+        de_*)
+            tar --append -f de.tar $i
+            echo "$i" >> de.directorieslist
+            ;;
+        en_*)
+            tar --append -f en.tar $i
+            echo "$i" >> en.directorieslist
+            ;;
+        *_*)
+            tar --append -f other.tar $i
+            echo "$i" >> other.directorieslist
+            ;;
+    esac
+done
 rm -rf *_*
-mv locale-archive{,.tmpl}
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/locales/directories.d
+mkdir -p ${RPM_BUILD_ROOT}/var/lib/locales/locales.d
+for i in *.directorieslist
+do
+    mv ${i} ${RPM_BUILD_ROOT}/var/lib/locales/directories.d/${i%%.directorieslist}
+done
+for i in *.localeslist
+do
+    mv ${i} ${RPM_BUILD_ROOT}/var/lib/locales/locales.d/${i%%.localeslist}
+done
 popd
 %endif
 
@@ -1172,6 +1258,7 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # Add %%lang entries for language-specific locale files.  This allows users
   # to set %%_install_lang and not install the unnecessary locale files.
+  # (%%_install_lang does not work like this? Mike)
   I18N_LANG='s|.*/share/i18n/locales/\([a-z]\{2\}[a-z]\?\)_[A-Z]\{2\}.*|%lang(\1) &|'
   # Remove the *.mo entries.  We will add that using %%find_lang
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
@@ -1281,7 +1368,7 @@ sed -i -e '\|/%{_lib}/%{nosegneg_subdir}|d' rpm.filelist
 #	wish to clean that up at some point.
 %endif
 
-# Add the binary to build localse to the common subpackage.
+# Add the binary to build locales to the common subpackage.
 echo '%{_prefix}/sbin/build-locale-archive' >> common.filelist
 
 # The nscd binary must go into the nscd subpackage.
@@ -1552,10 +1639,6 @@ touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
 
 %endif # %{auxarches}
 
-%ifnarch %{auxarches}
-truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
-%endif
-
 mkdir -p $RPM_BUILD_ROOT/var/cache/ldconfig
 truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
 
@@ -1685,10 +1768,11 @@ end
 %postun -p /sbin/ldconfig
 
 %triggerin common -p <lua> -- glibc
+os.execute("cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl")
 if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
   pid = posix.fork()
   if pid == 0 then
-    posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
+    posix.exec("%{_prefix}/sbin/build-locale-archive")
   elseif pid > 0 then
     posix.wait(pid)
   end
@@ -1696,15 +1780,157 @@ end
 
 %post common -p <lua>
 if posix.access("/etc/ld.so.cache") then
+  os.execute("cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl")
   if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
     pid = posix.fork()
     if pid == 0 then
-      posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
+      posix.exec("%{_prefix}/sbin/build-locale-archive")
     elseif pid > 0 then
       posix.wait(pid)
     end
   end
 end
+
+%post locales-de
+if test -f /etc/ld.so.cache; then
+    # remove locales installed by this package from archive to
+    # enforce an update if they happen to exist already in the archive:
+    for i in $(cat /var/lib/locales/locales.d/de)
+    do
+        localedef --quiet --delete-from-archive $i
+    done
+    # delete aliases as well:
+    for i in $(grep '^[^#]' %{_prefix}/share/locale/locale.alias | grep de_ | cut -f 1 -d ' ' | cut -f 1)
+    do
+        localedef --quiet --delete-from-archive $i
+    done
+    tar -C %{_prefix}/lib/locale/ -x -f %{_prefix}/lib/locale/de.tar --warning=no-timestamp
+    cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl
+    if test -s %{_prefix}/lib/locale/locale-archive.tmpl; then
+        %{_prefix}/sbin/build-locale-archive
+        # Remove the directories which have been added into
+        # the archive to save disk space:
+        for i in $(cat /var/lib/locales/directories.d/de)
+        do
+            rm %{_prefix}/lib/locale/${i} -rf
+        done
+        # Truncate the tarball with the locales just
+        # added to the archive to save disk space:
+        truncate -s 0 %{_prefix}/lib/locale/de.tar
+    fi
+fi
+
+%preun locales-de
+if test $1 = 0; then
+    for i in $(cat /var/lib/locales/locales.d/de)
+    do
+        localedef --delete-from-archive $i
+    done
+    # delete aliases as well:
+    for i in $(grep '^[^#]' %{_prefix}/share/locale/locale.alias | grep de_ | cut -f 1 -d ' ' | cut -f 1)
+    do
+        localedef --delete-from-archive $i
+    done
+    # rebuild the archive to save disk space (remove the 'holes'):
+    cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl
+    if test -s %{_prefix}/lib/locale/locale-archive.tmpl; then
+        %{_prefix}/sbin/build-locale-archive
+    fi
+fi
+
+%post locales-en
+if test -f /etc/ld.so.cache; then
+    # remove locales installed by this package from archive to
+    # enforce an update if they happen to exist already in the archive:
+    for i in $(cat /var/lib/locales/locales.d/en)
+    do
+        localedef --quiet --delete-from-archive $i
+    done
+    # delete aliases as well:
+    for i in $(grep '^[^#]' %{_prefix}/share/locale/locale.alias | grep en_ | cut -f 1 -d ' ' | cut -f 1)
+    do
+        localedef --quiet --delete-from-archive $i
+    done
+    tar -C %{_prefix}/lib/locale/ -x -f %{_prefix}/lib/locale/en.tar --warning=no-timestamp
+    cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl
+    if test -s %{_prefix}/lib/locale/locale-archive.tmpl; then
+        %{_prefix}/sbin/build-locale-archive
+        # Remove the directories which have been added into
+        # the archive to save disk space:
+        for i in $(cat /var/lib/locales/directories.d/en)
+        do
+            rm %{_prefix}/lib/locale/${i} -rf
+        done
+        # Truncate the tarball with the locales just
+        # added to the archive to save disk space:
+        truncate -s 0 %{_prefix}/lib/locale/en.tar
+    fi
+fi
+
+%preun locales-en
+if test $1 = 0; then
+    for i in $(cat /var/lib/locales/locales.d/en)
+    do
+        localedef --delete-from-archive $i
+    done
+    # delete aliases as well:
+    for i in $(grep '^[^#]' %{_prefix}/share/locale/locale.alias | grep en_ | cut -f 1 -d ' ' | cut -f 1)
+    do
+        localedef --delete-from-archive $i
+    done
+    # rebuild the archive to save disk space (remove the 'holes'):
+    cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl
+    if test -s %{_prefix}/lib/locale/locale-archive.tmpl; then
+        %{_prefix}/sbin/build-locale-archive
+    fi
+fi
+
+%post locales-other
+if test -f /etc/ld.so.cache; then
+    # remove locales installed by this package from archive to
+    # enforce an update if they happen to exist already in the archive:
+    for i in $(cat /var/lib/locales/locales.d/other)
+    do
+        localedef --quiet --delete-from-archive $i
+    done
+    # delete aliases as well:
+    for i in bokmal catalan croatian czech danish dansk dutch eesti estonian finnish french galego galician greek hebrew hrvatski hungarian icelandic italian japanese japanese.euc ja_JP ja_JP.ujis korean korean.euc ko_KR lithuanian no_NO no_NO.ISO-8859-1 norwegian nynorsk polish portuguese romanian russian slovak slovene slovenian spanish swedish thai turkish
+    do
+        localedef --quiet --delete-from-archive $i
+    done
+    tar -C %{_prefix}/lib/locale/ -x -f %{_prefix}/lib/locale/other.tar --warning=no-timestamp
+    cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl
+    if test -s %{_prefix}/lib/locale/locale-archive.tmpl; then
+        %{_prefix}/sbin/build-locale-archive
+        # Remove the directories which have been added into
+        # the archive to save disk space:
+        for i in $(cat /var/lib/locales/directories.d/other)
+        do
+            rm %{_prefix}/lib/locale/${i} -rf
+        done
+        # Truncate the tarball with the locales just
+        # added to the archive to save disk space:
+        truncate -s 0 %{_prefix}/lib/locale/other.tar
+    fi
+fi
+
+%preun locales-other
+if test $1 = 0; then
+    for i in $(cat /var/lib/locales/locales.d/other)
+    do
+        localedef --delete-from-archive $i
+    done
+    # delete aliases as well:
+    for i in bokmal catalan croatian czech danish dansk dutch eesti estonian finnish french galego galician greek hebrew hrvatski hungarian icelandic italian japanese japanese.euc ja_JP ja_JP.ujis korean korean.euc ko_KR lithuanian no_NO no_NO.ISO-8859-1 norwegian nynorsk polish portuguese romanian russian slovak slovene slovenian spanish swedish thai turkish
+    do
+        localedef --delete-from-archive $i
+    done
+    # rebuild the archive to save disk space (remove the 'holes'):
+    cp %{_prefix}/lib/locale/locale-archive %{_prefix}/lib/locale/locale-archive.tmpl
+    if test -s %{_prefix}/lib/locale/locale-archive.tmpl; then
+        %{_prefix}/sbin/build-locale-archive
+    fi
+fi
 
 %if %{with docs}
 %post devel
@@ -1752,8 +1978,8 @@ fi
 %endif
 
 %clean
-rm -rf "$RPM_BUILD_ROOT"
-rm -f *.filelist*
+#rm -rf "$RPM_BUILD_ROOT"
+#rm -f *.filelist*
 
 %files -f rpm.filelist
 %defattr(-,root,root)
@@ -1801,11 +2027,38 @@ rm -f *.filelist*
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
 %{_prefix}/lib/locale/C.utf8/*
-%attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
-%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
+%attr(0644,root,root) %verify(not md5 size mtime) %ghost %{_prefix}/lib/locale/locale-archive.tmpl
+%attr(0644,root,root) %verify(not md5 size mtime mode) %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %doc documentation/*
+
+%files locales-de
+%defattr(-,root,root)
+%dir %{_prefix}/lib/locale
+%verify(not md5 size mtime) %{_prefix}/lib/locale/de.tar
+%dir /var/lib/locales/directories.d
+/var/lib/locales/directories.d/de
+%dir /var/lib/locales/locales.d
+/var/lib/locales/locales.d/de
+
+%files locales-en
+%defattr(-,root,root)
+%dir %{_prefix}/lib/locale
+%verify(not md5 size mtime) %{_prefix}/lib/locale/en.tar
+%dir /var/lib/locales/directories.d
+/var/lib/locales/directories.d/en
+%dir /var/lib/locales/locales.d
+/var/lib/locales/locales.d/en
+
+%files locales-other
+%defattr(-,root,root)
+%dir %{_prefix}/lib/locale
+%verify(not md5 size mtime) %{_prefix}/lib/locale/other.tar
+%dir /var/lib/locales/directories.d
+/var/lib/locales/directories.d/other
+%dir /var/lib/locales/locales.d
+/var/lib/locales/locales.d/other
 
 %files -f devel.filelist devel
 %defattr(-,root,root)
@@ -1857,6 +2110,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Dec 24 2015 Mike FABIAN <mfabian@redhat.com> - 2.22.90-43
+- Testing 43
+
 * Fri Nov 20 2015 Florian Weimer <fweimer@redhat.com> - 2.22.90-21
 - Auto-sync with upstream master.
 
