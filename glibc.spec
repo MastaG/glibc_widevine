@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-621-g90c400b
 %define glibcversion 2.22.90
-%define glibcrelease 29%{?dist}
+%define glibcrelease 47%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -540,6 +540,211 @@ Group: System Environment/Base
 %description common
 The glibc-common package includes common binaries for the GNU libc
 libraries, as well as national language (locale) support.
+
+%package locale-source
+Summary: The sources for the locales
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+Group: System Environment/Base
+
+%description locale-source
+The sources for the locales
+
+%define lang_package() \
+%package langpack-%{1}\
+Summary: Locale data for %{1}\
+Requires: %{name} = %{version}-%{release}\
+Requires: %{name}-common = %{version}-%{release}\
+Requires: tzdata >= 2003a\
+Supplements: (glibc = %{version}-%{release} and langpack-de)\
+Group: System Environment/Base\
+%description langpack-%{1}\
+The glibc-langpack-%1 package includes the locale data for %{1}.\
+%ifnarch %{auxarches}\
+%files -f langpack-%{1}.filelist langpack-%{1}\
+%defattr(-,root,root)\
+%endif\
+%{nil}
+
+%lang_package aa
+%lang_package af
+%lang_package ak
+%lang_package am
+%lang_package an
+%lang_package anp
+%lang_package ar
+%lang_package as
+%lang_package ast
+%lang_package ayc
+%lang_package az
+%lang_package be
+%lang_package bem
+%lang_package ber
+%lang_package bg
+%lang_package bhb
+%lang_package bho
+%lang_package bn
+%lang_package bo
+%lang_package br
+%lang_package brx
+%lang_package bs
+%lang_package byn
+%lang_package ca
+%lang_package ce
+%lang_package cmn
+%lang_package crh
+%lang_package cs
+%lang_package csb
+%lang_package cv
+%lang_package cy
+%lang_package da
+%lang_package de
+%lang_package doi
+%lang_package dv
+%lang_package dz
+%lang_package el
+%lang_package en
+%lang_package es
+%lang_package et
+%lang_package eu
+%lang_package fa
+%lang_package ff
+%lang_package fi
+%lang_package fil
+%lang_package fo
+%lang_package fr
+%lang_package fur
+%lang_package fy
+%lang_package ga
+%lang_package gd
+%lang_package gez
+%lang_package gl
+%lang_package gu
+%lang_package gv
+%lang_package ha
+%lang_package hak
+%lang_package he
+%lang_package hi
+%lang_package hne
+%lang_package hr
+%lang_package hsb
+%lang_package ht
+%lang_package hu
+%lang_package hy
+%lang_package ia
+%lang_package id
+%lang_package ig
+%lang_package ik
+%lang_package is
+%lang_package it
+%lang_package iu
+%lang_package iw
+%lang_package ja
+%lang_package ka
+%lang_package kk
+%lang_package kl
+%lang_package km
+%lang_package kn
+%lang_package ko
+%lang_package kok
+%lang_package ks
+%lang_package ku
+%lang_package kw
+%lang_package ky
+%lang_package lb
+%lang_package lg
+%lang_package li
+%lang_package lij
+%lang_package lo
+%lang_package lt
+%lang_package lv
+%lang_package lzh
+%lang_package mag
+%lang_package mai
+%lang_package mg
+%lang_package mhr
+%lang_package mi
+%lang_package mk
+%lang_package ml
+%lang_package mn
+%lang_package mni
+%lang_package mr
+%lang_package ms
+%lang_package mt
+%lang_package my
+%lang_package nan
+%lang_package nb
+%lang_package nds
+%lang_package ne
+%lang_package nhn
+%lang_package niu
+%lang_package nl
+%lang_package nn
+%lang_package nr
+%lang_package nso
+%lang_package oc
+%lang_package om
+%lang_package or
+%lang_package os
+%lang_package pa
+%lang_package pap
+%lang_package pl
+%lang_package ps
+%lang_package pt
+%lang_package quz
+%lang_package raj
+%lang_package ro
+%lang_package ru
+%lang_package rw
+%lang_package sa
+%lang_package sat
+%lang_package sc
+%lang_package sd
+%lang_package se
+%lang_package shs
+%lang_package si
+%lang_package sid
+%lang_package sk
+%lang_package sl
+%lang_package so
+%lang_package sq
+%lang_package sr
+%lang_package ss
+%lang_package st
+%lang_package sv
+%lang_package sw
+%lang_package szl
+%lang_package ta
+%lang_package tcy
+%lang_package te
+%lang_package tg
+%lang_package th
+%lang_package the
+%lang_package ti
+%lang_package tig
+%lang_package tk
+%lang_package tl
+%lang_package tn
+%lang_package tr
+%lang_package ts
+%lang_package tt
+%lang_package ug
+%lang_package uk
+%lang_package unm
+%lang_package ur
+%lang_package uz
+%lang_package ve
+%lang_package vi
+%lang_package wa
+%lang_package wae
+%lang_package wal
+%lang_package wo
+%lang_package xh
+%lang_package yi
+%lang_package yo
+%lang_package yue
+%lang_package zh
+%lang_package zu
 
 ##############################################################################
 # glibc "nscd" sub-package
@@ -1081,26 +1286,26 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/libc.info*
 %endif
 
 ##############################################################################
-# Install locale files
+# Create locale sub-package file lists
 ##############################################################################
 
-# Create archive of locale files
 %ifnarch %{auxarches}
 olddir=`pwd`
 pushd ${RPM_BUILD_ROOT}%{_prefix}/lib/locale
 rm -f locale-archive
-# Intentionally we do not pass --alias-file=, aliases will be added
-# by build-locale-archive.
-$olddir/build-%{target}/elf/ld.so \
-	--library-path $olddir/build-%{target}/ \
-	$olddir/build-%{target}/locale/localedef \
-	--prefix ${RPM_BUILD_ROOT} --add-to-archive \
-	C.utf8 *_*
-# Removes all locales except C.utf8 which remains as fallback in
-# the event the user cleans the locale-archive using localedef.
-rm -rf *_*
-mv locale-archive{,.tmpl}
+# Now put all English locales into langpack-en.filelist and
+# all other locales into langpack-other.filelist:
+for i in *_*
+do
+    lang=${i%%_*}
+    if [ ! -e langpack-${lang}.filelist ]; then
+        echo "%dir %{_prefix}/lib/locale" >> langpack-${lang}.filelist
+    fi
+    echo "%dir  %{_prefix}/lib/locale/$i" >> langpack-${lang}.filelist
+    echo "%{_prefix}/lib/locale/$i/*" >> langpack-${lang}.filelist
+done
 popd
+mv  ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/*.filelist .
 %endif
 
 ##############################################################################
@@ -1225,9 +1430,8 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # primary filelist
 
-  # Add %%lang entries for language-specific locale files.  This allows users
-  # to set %%_install_lang and not install the unnecessary locale files.
-  I18N_LANG='s|.*/share/i18n/locales/\([a-z]\{2\}[a-z]\?\)_[A-Z]\{2\}.*|%lang(\1) &|'
+  # remove the locale sources, they go into the sub-package "locale-source":
+  I18N_LANG='\,.*/share/i18n/locales/.*,d'
   # Remove the *.mo entries.  We will add that using %%find_lang
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
       -e "$I18N_LANG" \
@@ -1334,7 +1538,7 @@ sed -i -e '\|/%{_lib}/%{nosegneg_subdir}|d' rpm.filelist
 #	wish to clean that up at some point.
 %endif
 
-# Add the binary to build localse to the common subpackage.
+# Add the binary to build locales to the common subpackage.
 echo '%{_prefix}/sbin/build-locale-archive' >> common.filelist
 
 # The nscd binary must go into the nscd subpackage.
@@ -1605,10 +1809,6 @@ touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
 
 %endif # %{auxarches}
 
-%ifnarch %{auxarches}
-truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
-%endif
-
 mkdir -p $RPM_BUILD_ROOT/var/cache/ldconfig
 truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
 
@@ -1766,27 +1966,9 @@ end
 
 %postun -p /sbin/ldconfig
 
-%triggerin common -p <lua> -- glibc
-if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
-  pid = posix.fork()
-  if pid == 0 then
-    posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
-  elseif pid > 0 then
-    posix.wait(pid)
-  end
-end
-
-%post common -p <lua>
-if posix.access("/etc/ld.so.cache") then
-  if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
-    pid = posix.fork()
-    if pid == 0 then
-      posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", rpm.expand("%%{_install_langs}"))
-    elseif pid > 0 then
-      posix.wait(pid)
-    end
-  end
-end
+%post common
+# remove old archive file:
+rm -f %{_prefix}/lib/locale/locale-archive
 
 %if %{with docs}
 %post devel
@@ -1889,11 +2071,14 @@ rm -f *.filelist*
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
 %{_prefix}/lib/locale/C.utf8/*
-%attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
-%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %doc documentation/*
+
+%files locale-source
+%defattr(-,root,root)
+%dir %{_prefix}/share/i18n/locales
+%{_prefix}/share/i18n/locales/*
 
 %files -f devel.filelist devel
 %defattr(-,root,root)
@@ -1945,6 +2130,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-47
+- Testing 47
+
 * Wed Jan 13 2016 Carlos O'Donell <carlos@redhat.com> - 2.22.90-29
 - New pthread_barrier algorithm with improved standards compliance.
 
