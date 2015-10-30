@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -253,6 +253,9 @@ Patch2031: %{name}-rh1070416.patch
 
 Patch2033: %{name}-aarch64-tls-fixes.patch
 Patch2034: %{name}-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch
+
+# Upstream BZ 19048
+Patch2035: %{name}-rh1276112.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -583,6 +586,7 @@ package or when debugging this package.
 %patch0047 -p1
 %patch2033 -p1
 %patch2034 -p1
+%patch2035 -p1
 %patch0050 -p1
 %patch0052 -p1
 %patch0053 -p1
@@ -1762,6 +1766,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Oct 28 2015 Florian Weimer <fweimer@redhat.com> - 2.21-9
+- Prevent malloc arena free list from becoming cyclic.  (#1276112)
+
 * Wed Sep 16 2015 Mike FABIAN <mfabian@redhat.com> - 2.22-8
 - build-locale-archive sometimes created empty archives (fixed by David Shea) (#1262040)
 
