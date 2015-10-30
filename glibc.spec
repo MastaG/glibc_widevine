@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -255,6 +255,9 @@ Patch2105: glibc-rh1238412-unicode-8.0.0-update.patch
 #
 ##############################################################################
 Patch3002: glibc-bench-build.patch
+
+# Upstream BZ 19048
+Patch2035: %{name}-rh1276112.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -602,6 +605,7 @@ microbenchmark tests on the system.
 %patch0047 -p1
 %patch2033 -p1
 %patch2034 -p1
+%patch2035 -p1
 %patch0052 -p1
 %patch0053 -p1
 %patch0054 -p1
@@ -1828,6 +1832,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Oct 30 2015 Florian Weimer <fweimer@redhat.com> - 2.22-4
+- Prevent malloc arena free list from becoming cyclic.  (#1276112)
+
 * Wed Sep 16 2015 Mike FABIAN <mfabian@redhat.com> - 2.22-3
 - build-locale-archive sometimes created empty archives (fixed by David Shea) (#1262040)
 
