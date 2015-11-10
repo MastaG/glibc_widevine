@@ -1,44 +1,47 @@
-glibc-rtkaio.patch -p1
-glibc-c_stubs.patch -p1
-glibc-fedora-nscd.patch -p1
-glibc-fedora-ldd.patch -p1
-glibc-fedora-ppc-unwind.patch -p1
-glibc-rh825061.patch -p1
-glibc-arm-hardfloat-3.patch -p1
-glibc-rh697421.patch -p1
-glibc-fedora-include-bits-ldbl.patch -p1
-glibc-rh757881.patch -p1
-glibc-fedora-linux-tcsetattr.patch -p1
-glibc-rh741105.patch -p1
-glibc-fedora-nptl-linklibc.patch -p1
-glibc-fedora-localedef.patch -p1
-glibc-fedora-i386-tls-direct-seg-refs.patch -p1
-glibc-fedora-nis-rh188246.patch -p1
-glibc-fedora-manual-dircategory.patch -p1
-glibc-rh827510.patch -p1
-glibc-fedora-locarchive.patch -p1
-glibc-fedora-streams-rh436349.patch -p1
-glibc-rh841787.patch -p1
-glibc-rh819430.patch -p1
-glibc-fedora-localedata-rh61908.patch -p1
-glibc-fedora-uname-getrlimit.patch -p1
-glibc-fedora-__libc_multiple_libcs.patch -p1
-glibc-fedora-elf-ORIGIN.patch -p1
-glibc-fedora-elf-init-hidden_undef.patch -p1
-glibc-rh952799.patch -p1
-glibc-rh731833-rtkaio.patch -p1
-glibc-rh731833-rtkaio-2.patch -p1
-glibc-rh970865.patch -p1
-glibc-rh1009145.patch -p1
-glibc-rh1013801.patch -p1
-glibc-rh1070416.patch -p1
-glibc-nscd-sysconfig.patch -p1
-glibc-aarch64-tls-fixes.patch -p1
-glibc-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch -p1
-glibc-disable-rwlock-elision.patch -p1
-glibc-cs-path.patch -p1
-glibc-rtkaio-clock.patch -p1
-glibc-revert-arena-threshold-fix.patch -p1 -R
-glibc-bench-compare.patch -p1
-glibc-bench-build.patch -p1
-glibc-new-condvar.patch -p1
+glibc-rtkaio.patch -p1 --fuzz=0
+glibc-c_stubs.patch -p1 --fuzz=0
+glibc-fedora-nscd.patch -p1 --fuzz=0
+glibc-fedora-ldd.patch -p1 --fuzz=0
+glibc-fedora-ppc-unwind.patch -p1 --fuzz=0
+glibc-rh825061.patch -p1 --fuzz=0
+glibc-arm-hardfloat-3.patch -p1 --fuzz=0
+glibc-rh697421.patch -p1 --fuzz=0
+glibc-fedora-include-bits-ldbl.patch -p1 --fuzz=0
+glibc-fedora-linux-tcsetattr.patch -p1 --fuzz=0
+glibc-rh741105.patch -p1 --fuzz=0
+glibc-fedora-nptl-linklibc.patch -p1 --fuzz=0
+glibc-fedora-localedef.patch -p1 --fuzz=0
+glibc-fedora-i386-tls-direct-seg-refs.patch -p1 --fuzz=0
+glibc-fedora-nis-rh188246.patch -p1 --fuzz=0
+glibc-fedora-manual-dircategory.patch -p1 --fuzz=0
+glibc-rh827510.patch -p1 --fuzz=0
+glibc-fedora-locarchive.patch -p1 --fuzz=0
+glibc-fedora-streams-rh436349.patch -p1 --fuzz=0
+glibc-rh819430.patch -p1 --fuzz=0
+glibc-fedora-localedata-rh61908.patch -p1 --fuzz=0
+glibc-fedora-uname-getrlimit.patch -p1 --fuzz=0
+glibc-fedora-__libc_multiple_libcs.patch -p1 --fuzz=0
+glibc-fedora-elf-ORIGIN.patch -p1 --fuzz=0
+glibc-fedora-elf-init-hidden_undef.patch -p1 --fuzz=0
+glibc-rh952799.patch -p1 --fuzz=0
+glibc-rh731833-rtkaio.patch -p1 --fuzz=0
+glibc-rh731833-rtkaio-2.patch -p1 --fuzz=0
+glibc-rh970865.patch -p1 --fuzz=0
+glibc-rh1009145.patch -p1 --fuzz=0
+glibc-rh1013801.patch -p1 --fuzz=0
+glibc-rh1070416.patch -p1 --fuzz=0
+glibc-nscd-sysconfig.patch -p1 --fuzz=0
+glibc-aarch64-tls-fixes.patch -p1 --fuzz=0
+glibc-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch -p1 --fuzz=0
+glibc-rh1276112.patch -p1 --fuzz=0
+glibc-disable-rwlock-elision.patch -p1 --fuzz=0
+glibc-cs-path.patch -p1 --fuzz=0
+glibc-rtkaio-clock.patch -p1 --fuzz=0
+glibc-bench-build.patch -p1 --fuzz=0
+glibc-rh1238412-remove-duplicate-transliterations.patch -p1 --fuzz=0
+glibc-rh1238412-addition-and-fixes-for-translit_neutral.patch -p1 --fuzz=0
+glibc-rh1238412-update-the-translit-files-to-unicode-7.0.0.patch -p1 --fuzz=0
+glibc-rh1238412-add-translit-rules-for-da-nb-nn-sv-locales.patch -p1 --fuzz=0
+glibc-rh1238412-unicode-8.0.0-update.patch -p1 --fuzz=0
+glibc-rtkaio-libof.patch -p1 --fuzz=0
+glibc-rh1276711.patch -p1 --fuzz=0

@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -216,6 +216,8 @@ Patch0055: glibc-rtkaio-libof.patch
 #
 ##############################################################################
 
+Patch1000: glibc-rh1276711.patch
+
 ##############################################################################
 #
 # Patches submitted, but not yet approved upstream.
@@ -257,7 +259,7 @@ Patch2105: glibc-rh1238412-unicode-8.0.0-update.patch
 Patch3002: glibc-bench-build.patch
 
 # Upstream BZ 19048
-Patch2035: %{name}-rh1276112.patch
+Patch2035: glibc-rh1276112.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -617,6 +619,7 @@ microbenchmark tests on the system.
 %patch2104 -p1
 %patch2105 -p1
 %patch0055 -p1
+%patch1000 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1832,6 +1835,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Nov  9 2015 Carlos O'Donell <carlos@redhat.com> - 2.22-5
+- Remove invalid strcoll optimization (#1276711).
+
 * Fri Oct 30 2015 Florian Weimer <fweimer@redhat.com> - 2.22-4
 - Prevent malloc arena free list from becoming cyclic.  (#1276112)
 
