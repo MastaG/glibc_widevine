@@ -46,3 +46,6 @@ glibc-rh1238412-unicode-8.0.0-update.patch -p1 --fuzz=0
 glibc-rtkaio-libof.patch -p1 --fuzz=0
 glibc-rh1276711.patch -p1 --fuzz=0
 glibc-rh1288662.patch
+glibc-rh1276761-1.patch
+glibc-rh1276761-2.patch
+glibc-rh1276761-3.patch

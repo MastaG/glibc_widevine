@@ -218,6 +218,9 @@ Patch0055: glibc-rtkaio-libof.patch
 
 Patch1000: glibc-rh1276711.patch
 Patch1001: glibc-rh1288662.patch
+Patch1002: glibc-rh1276761-1.patch
+Patch1003: glibc-rh1276761-2.patch
+Patch1004: glibc-rh1276761-3.patch
 
 ##############################################################################
 #
@@ -622,6 +625,9 @@ microbenchmark tests on the system.
 %patch0055 -p1
 %patch1000 -p1
 %patch1001 -p1
+%patch1002 -p1
+%patch1003 -p1
+%patch1004 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1839,6 +1845,7 @@ rm -f *.filelist*
 %changelog
 * Sat Dec  5 2015 Florian Weimer <fweimer@redhat.com> - 2.22-6
 - Re-enable large file support in openat.  (#1288662)
+- Apply additional pointer guard hardening.  (#1276761)
 
 * Mon Nov  9 2015 Carlos O'Donell <carlos@redhat.com> - 2.22-5
 - Remove invalid strcoll optimization (#1276711).
