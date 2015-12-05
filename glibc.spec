@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -217,6 +217,7 @@ Patch0055: glibc-rtkaio-libof.patch
 ##############################################################################
 
 Patch1000: glibc-rh1276711.patch
+Patch1001: glibc-rh1288662.patch
 
 ##############################################################################
 #
@@ -620,6 +621,7 @@ microbenchmark tests on the system.
 %patch2105 -p1
 %patch0055 -p1
 %patch1000 -p1
+%patch1001 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1835,6 +1837,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Dec  5 2015 Florian Weimer <fweimer@redhat.com> - 2.22-6
+- Re-enable large file support in openat.  (#1288662)
+
 * Mon Nov  9 2015 Carlos O'Donell <carlos@redhat.com> - 2.22-5
 - Remove invalid strcoll optimization (#1276711).
 
