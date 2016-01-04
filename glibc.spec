@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1843,6 +1843,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jan  4 2016 Florian Weimer <fweimer@redhat.com> - 2.22-7
+- Update glibc-rh1276112.patch to include backports to fix
+  upstream bugs 19243 and 19182.  (#1295189)
+
 * Sat Dec  5 2015 Florian Weimer <fweimer@redhat.com> - 2.22-6
 - Re-enable large file support in openat.  (#1288662)
 - Apply additional pointer guard hardening.  (#1276761)
