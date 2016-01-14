@@ -37,4 +37,5 @@ glibc-dns-host-gcc5.patch -p1 --fuzz=0
 glibc-bug-regex-gcc5.patch -p1 --fuzz=0
 glibc-c-utf8-locale.patch -p1 --fuzz=0
 glibc-nsswitch-Add-group-merging-support.patch -p1 --fuzz=0
-glibc-pthread-barrier.patch --fuzz=0
+glibc-pthread-barrier.patch -p1 --fuzz=0
+mem-avx512-2016-v4.patch

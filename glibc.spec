@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-621-g90c400b
 %define glibcversion 2.22.90
-%define glibcrelease 29%{?dist}
+%define glibcrelease 29.avx512.1.%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -293,6 +293,9 @@ Patch2035: glibc-nsswitch-Add-group-merging-support.patch
 
 # New pthread_barrier algorithm:
 Patch2036: glibc-pthread-barrier.patch
+
+# Intel patch for AVX512 support.
+Patch3333: mem-avx512-2016-v4.patch
 
 ##############################################################################
 #
@@ -687,6 +690,7 @@ cat /proc/meminfo
 %patch0059 -p1
 %patch2035 -p1
 %patch2036 -p1
+%patch3333 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
