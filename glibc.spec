@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-540-g31cf394
 %define glibcversion 2.22.90
-%define glibcrelease 45%{?dist}
+%define glibcrelease 46%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -508,6 +508,15 @@ Group: System Environment/Base
 %description common
 The glibc-common package includes common binaries for the GNU libc
 libraries, as well as national language (locale) support.
+
+%package locale-source
+Summary: The sources for the locales
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+Group: System Environment/Base
+
+%description locale-source
+The sources for the locales
 
 %package langpack-de
 Summary: Locale data for German
@@ -1259,10 +1268,8 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # primary filelist
 
-  # Add %%lang entries for language-specific locale files.  This allows users
-  # to set %%_install_lang and not install the unnecessary locale files.
-  # (%%_install_lang does not work like this? Mike)
-  I18N_LANG='s|.*/share/i18n/locales/\([a-z]\{2\}[a-z]\?\)_[A-Z]\{2\}.*|%lang(\1) &|'
+  # remove the locale sources, they go into the sub-package "locale-source":
+  I18N_LANG='\,.*/share/i18n/locales/.*,d'
   # Remove the *.mo entries.  We will add that using %%find_lang
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
       -e "$I18N_LANG" \
@@ -2036,6 +2043,11 @@ fi
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %doc documentation/*
 
+%files locale-source
+%defattr(-,root,root)
+%dir %{_prefix}/share/i18n/locales
+%{_prefix}/share/i18n/locales/*
+
 %files langpack-de
 %defattr(-,root,root)
 %dir %{_prefix}/lib/locale
@@ -2113,8 +2125,8 @@ fi
 %endif
 
 %changelog
-* Thu Dec 24 2015 Mike FABIAN <mfabian@redhat.com> - 2.22.90-45
-- Testing 45
+* Thu Dec 24 2015 Mike FABIAN <mfabian@redhat.com> - 2.22.90-46
+- Testing 46
 
 * Fri Nov 20 2015 Florian Weimer <fweimer@redhat.com> - 2.22.90-21
 - Auto-sync with upstream master.
