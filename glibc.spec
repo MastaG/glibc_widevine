@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-540-g31cf394
 %define glibcversion 2.22.90
-%define glibcrelease 43%{?dist}
+%define glibcrelease 45%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -509,35 +509,38 @@ Group: System Environment/Base
 The glibc-common package includes common binaries for the GNU libc
 libraries, as well as national language (locale) support.
 
-%package locales-de
+%package langpack-de
 Summary: Locale data for German
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
 Requires: tzdata >= 2003a
+Supplements: (glibc = %{version}-%{release} and langpack-de)
 Group: System Environment/Base
 
-%description locales-de
+%description langpack-de
 The glibc-locales-de package includes the locale data for
 German.
 
-%package locales-en
+%package langpack-en
 Summary: Locale data for English
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
 Requires: tzdata >= 2003a
+Supplements: (glibc = %{version}-%{release} and langpack-en)
 Group: System Environment/Base
 
-%description locales-en
+%description langpack-en
 The glibc-locales-en package includes the locale data for
 English.
 
-%package locales-other
+%package langpack-other
 Summary: Locale data for less common locales
 Requires: %{name} = %{version}-%{release}
 Requires: tzdata >= 2003a
+Supplements: (glibc = %{version}-%{release} and langpack-other)
 Group: System Environment/Base
 
-%description locales-other
+%description langpack-other
 The glibc-locales-other package includes the locale data for
 less common locales.
 
@@ -1791,7 +1794,7 @@ if posix.access("/etc/ld.so.cache") then
   end
 end
 
-%post locales-de
+%post langpack-de
 if test -f /etc/ld.so.cache; then
     # remove locales installed by this package from archive to
     # enforce an update if they happen to exist already in the archive:
@@ -1820,7 +1823,7 @@ if test -f /etc/ld.so.cache; then
     fi
 fi
 
-%preun locales-de
+%preun langpack-de
 if test $1 = 0; then
     for i in $(cat /var/lib/locales/locales.d/de)
     do
@@ -1838,7 +1841,7 @@ if test $1 = 0; then
     fi
 fi
 
-%post locales-en
+%post langpack-en
 if test -f /etc/ld.so.cache; then
     # remove locales installed by this package from archive to
     # enforce an update if they happen to exist already in the archive:
@@ -1867,7 +1870,7 @@ if test -f /etc/ld.so.cache; then
     fi
 fi
 
-%preun locales-en
+%preun langpack-en
 if test $1 = 0; then
     for i in $(cat /var/lib/locales/locales.d/en)
     do
@@ -1885,7 +1888,7 @@ if test $1 = 0; then
     fi
 fi
 
-%post locales-other
+%post langpack-other
 if test -f /etc/ld.so.cache; then
     # remove locales installed by this package from archive to
     # enforce an update if they happen to exist already in the archive:
@@ -1914,7 +1917,7 @@ if test -f /etc/ld.so.cache; then
     fi
 fi
 
-%preun locales-other
+%preun langpack-other
 if test $1 = 0; then
     for i in $(cat /var/lib/locales/locales.d/other)
     do
@@ -2033,7 +2036,7 @@ fi
 %verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %doc documentation/*
 
-%files locales-de
+%files langpack-de
 %defattr(-,root,root)
 %dir %{_prefix}/lib/locale
 %verify(not md5 size mtime) %{_prefix}/lib/locale/de.tar
@@ -2042,7 +2045,7 @@ fi
 %dir /var/lib/locales/locales.d
 /var/lib/locales/locales.d/de
 
-%files locales-en
+%files langpack-en
 %defattr(-,root,root)
 %dir %{_prefix}/lib/locale
 %verify(not md5 size mtime) %{_prefix}/lib/locale/en.tar
@@ -2051,7 +2054,7 @@ fi
 %dir /var/lib/locales/locales.d
 /var/lib/locales/locales.d/en
 
-%files locales-other
+%files langpack-other
 %defattr(-,root,root)
 %dir %{_prefix}/lib/locale
 %verify(not md5 size mtime) %{_prefix}/lib/locale/other.tar
@@ -2110,8 +2113,8 @@ fi
 %endif
 
 %changelog
-* Thu Dec 24 2015 Mike FABIAN <mfabian@redhat.com> - 2.22.90-43
-- Testing 43
+* Thu Dec 24 2015 Mike FABIAN <mfabian@redhat.com> - 2.22.90-45
+- Testing 45
 
 * Fri Nov 20 2015 Florian Weimer <fweimer@redhat.com> - 2.22.90-21
 - Auto-sync with upstream master.
