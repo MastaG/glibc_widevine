@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-621-g90c400b
 %define glibcversion 2.22.90
-%define glibcrelease 47%{?dist}
+%define glibcrelease 48%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -604,6 +604,7 @@ The glibc-langpack-%1 package includes the locale data for %{1}.\
 %lang_package dz
 %lang_package el
 %lang_package en
+%lang_package eo
 %lang_package es
 %lang_package et
 %lang_package eu
@@ -1305,6 +1306,15 @@ do
     echo "%{_prefix}/lib/locale/$i/*" >> langpack-${lang}.filelist
 done
 popd
+pushd ${RPM_BUILD_ROOT}%{_prefix}/share/locale
+for i in */LC_MESSAGES/libc.mo
+do
+    locale=${i%%%%/*}
+    lang=${locale%%%%_*}
+    echo "%lang($lang) %{_prefix}/share/locale/${i}" \
+         >> ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/langpack-${lang}.filelist
+done
+popd
 mv  ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/*.filelist .
 %endif
 
@@ -1382,7 +1392,8 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 ##############################################################################
 # Build the file lists used for describing the package and subpackages.
 ##############################################################################
-# There are 11 file lists:
+# There are 11 main file lists (and many more for
+# the langpack sub-packages (langpack-${lang}.filelist)):
 # * rpm.fileslist
 #	- Master file list. Eventually, after removing files from this list
 #	  we are left with the list of files for the glibc package.
@@ -1432,7 +1443,8 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # remove the locale sources, they go into the sub-package "locale-source":
   I18N_LANG='\,.*/share/i18n/locales/.*,d'
-  # Remove the *.mo entries.  We will add that using %%find_lang
+  # Also remove the *.mo entries.  We will add them to the
+  # language specific sub-packages.
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
       -e "$I18N_LANG" \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
@@ -1440,9 +1452,7 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
       -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
 } | sort > rpm.filelist
 
-# Our *.mo files.  Put them in glibc-common.
-%find_lang libc
-mv libc.lang common.filelist
+touch common.filelist
 
 mkdir -p $RPM_BUILD_ROOT%{_libdir}
 mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so $RPM_BUILD_ROOT%{_libdir}
@@ -2130,8 +2140,8 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-47
-- Testing 47
+* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-48
+- Testing 48
 
 * Wed Jan 13 2016 Carlos O'Donell <carlos@redhat.com> - 2.22.90-29
 - New pthread_barrier algorithm with improved standards compliance.
