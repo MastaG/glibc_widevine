@@ -556,7 +556,7 @@ Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 Requires: tzdata >= 2003a\
-Supplements: (glibc = %{version}-%{release} and langpack-%{1})\
+Supplements: (glibc = %{version}-%{release} and langpacks-%{1})\
 Group: System Environment/Base\
 %description langpack-%{1}\
 The glibc-langpack-%1 package includes the locale data for %{1}.\
@@ -1294,8 +1294,7 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/libc.info*
 olddir=`pwd`
 pushd ${RPM_BUILD_ROOT}%{_prefix}/lib/locale
 rm -f locale-archive
-# Now put all English locales into langpack-en.filelist and
-# all other locales into langpack-other.filelist:
+# Create the file lists for the language specific sub-packages:
 for i in *_*
 do
     lang=${i%%_*}
