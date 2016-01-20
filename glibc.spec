@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-621-g90c400b
 %define glibcversion 2.22.90
-%define glibcrelease 48%{?dist}
+%define glibcrelease 49%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -556,7 +556,7 @@ Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 Requires: tzdata >= 2003a\
-Supplements: (glibc = %{version}-%{release} and langpack-de)\
+Supplements: (glibc = %{version}-%{release} and langpack-%{1})\
 Group: System Environment/Base\
 %description langpack-%{1}\
 The glibc-langpack-%1 package includes the locale data for %{1}.\
@@ -2140,8 +2140,8 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-48
-- Testing 48
+* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-49
+- Testing 49
 
 * Wed Jan 13 2016 Carlos O'Donell <carlos@redhat.com> - 2.22.90-29
 - New pthread_barrier algorithm with improved standards compliance.
