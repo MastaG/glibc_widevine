@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-621-g90c400b
 %define glibcversion 2.22.90
-%define glibcrelease 50%{?dist}
+%define glibcrelease 51%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -556,10 +556,11 @@ Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 Requires: tzdata >= 2003a\
-Supplements: (glibc = %{version}-%{release} and langpacks-%{1})\
+%define supplements_list %(locale -a | grep ^%{1}_ | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
+Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
 Group: System Environment/Base\
 %description langpack-%{1}\
-The glibc-langpack-%1 package includes the locale data for %{1}.\
+The glibc-langpack-%{1} package includes the locale data for %{1}.\
 %ifnarch %{auxarches}\
 %files -f langpack-%{1}.filelist langpack-%{1}\
 %defattr(-,root,root)\
@@ -2328,8 +2329,8 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-50
-- Testing 50
+* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-51
+- Testing 51
 
 * Wed Jan 13 2016 Carlos O'Donell <carlos@redhat.com> - 2.22.90-29
 - New pthread_barrier algorithm with improved standards compliance.
