@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-621-g90c400b
 %define glibcversion 2.22.90
-%define glibcrelease 51%{?dist}
+%define glibcrelease 52%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -550,7 +550,7 @@ Group: System Environment/Base
 %description locale-source
 The sources for the locales
 
-%define lang_package() \
+%define lang_package()\
 %package langpack-%{1}\
 Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
@@ -567,375 +567,219 @@ The glibc-langpack-%{1} package includes the locale data for %{1}.\
 %endif\
 %{nil}
 
-%lang_package aa
-%lang_package af
-%lang_package ak
-%lang_package am
-%lang_package an
-%lang_package anp
-%lang_package ar
-%lang_package as
-%lang_package ast
-%lang_package ayc
-%lang_package az
-%lang_package be
-%lang_package bem
-%lang_package ber
-%lang_package bg
-%lang_package bhb
-%lang_package bho
-%lang_package bn
-%lang_package bo
-%lang_package br
-%lang_package brx
-%lang_package bs
-%lang_package byn
-%lang_package ca
-%lang_package ce
-%lang_package cmn
-%lang_package crh
-%lang_package cs
-%lang_package csb
-%lang_package cv
-%lang_package cy
-%lang_package da
-%lang_package de
-%lang_package doi
-%lang_package dv
-%lang_package dz
-%lang_package el
-%lang_package en
-%lang_package eo
-%lang_package es
-%lang_package et
-%lang_package eu
-%lang_package fa
-%lang_package ff
-%lang_package fi
-%lang_package fil
-%lang_package fo
-%lang_package fr
-%lang_package fur
-%lang_package fy
-%lang_package ga
-%lang_package gd
-%lang_package gez
-%lang_package gl
-%lang_package gu
-%lang_package gv
-%lang_package ha
-%lang_package hak
-%lang_package he
-%lang_package hi
-%lang_package hne
-%lang_package hr
-%lang_package hsb
-%lang_package ht
-%lang_package hu
-%lang_package hy
-%lang_package ia
-%lang_package id
-%lang_package ig
-%lang_package ik
-%lang_package is
-%lang_package it
-%lang_package iu
-%lang_package iw
-%lang_package ja
-%lang_package ka
-%lang_package kk
-%lang_package kl
-%lang_package km
-%lang_package kn
-%lang_package ko
-%lang_package kok
-%lang_package ks
-%lang_package ku
-%lang_package kw
-%lang_package ky
-%lang_package lb
-%lang_package lg
-%lang_package li
-%lang_package lij
-%lang_package lo
-%lang_package lt
-%lang_package lv
-%lang_package lzh
-%lang_package mag
-%lang_package mai
-%lang_package mg
-%lang_package mhr
-%lang_package mi
-%lang_package mk
-%lang_package ml
-%lang_package mn
-%lang_package mni
-%lang_package mr
-%lang_package ms
-%lang_package mt
-%lang_package my
-%lang_package nan
-%lang_package nb
-%lang_package nds
-%lang_package ne
-%lang_package nhn
-%lang_package niu
-%lang_package nl
-%lang_package nn
-%lang_package nr
-%lang_package nso
-%lang_package oc
-%lang_package om
-%lang_package or
-%lang_package os
-%lang_package pa
-%lang_package pap
-%lang_package pl
-%lang_package ps
-%lang_package pt
-%lang_package quz
-%lang_package raj
-%lang_package ro
-%lang_package ru
-%lang_package rw
-%lang_package sa
-%lang_package sat
-%lang_package sc
-%lang_package sd
-%lang_package se
-%lang_package shs
-%lang_package si
-%lang_package sid
-%lang_package sk
-%lang_package sl
-%lang_package so
-%lang_package sq
-%lang_package sr
-%lang_package ss
-%lang_package st
-%lang_package sv
-%lang_package sw
-%lang_package szl
-%lang_package ta
-%lang_package tcy
-%lang_package te
-%lang_package tg
-%lang_package th
-%lang_package the
-%lang_package ti
-%lang_package tig
-%lang_package tk
-%lang_package tl
-%lang_package tn
-%lang_package tr
-%lang_package ts
-%lang_package tt
-%lang_package ug
-%lang_package uk
-%lang_package unm
-%lang_package ur
-%lang_package uz
-%lang_package ve
-%lang_package vi
-%lang_package wa
-%lang_package wae
-%lang_package wal
-%lang_package wo
-%lang_package xh
-%lang_package yi
-%lang_package yo
-%lang_package yue
-%lang_package zh
-%lang_package zu
+%define language_list \
+aa \
+af \
+ak \
+am \
+an \
+anp \
+ar \
+as \
+ast \
+ayc \
+az \
+be \
+bem \
+ber \
+bg \
+bhb \
+bho \
+bn \
+bo \
+br \
+brx \
+bs \
+byn \
+ca \
+ce \
+cmn \
+crh \
+cs \
+csb \
+cv \
+cy \
+da \
+de \
+doi \
+dv \
+dz \
+el \
+en \
+eo \
+es \
+et \
+eu \
+fa \
+ff \
+fi \
+fil \
+fo \
+fr \
+fur \
+fy \
+ga \
+gd \
+gez \
+gl \
+gu \
+gv \
+ha \
+hak \
+he \
+hi \
+hne \
+hr \
+hsb \
+ht \
+hu \
+hy \
+ia \
+id \
+ig \
+ik \
+is \
+it \
+iu \
+iw \
+ja \
+ka \
+kk \
+kl \
+km \
+kn \
+ko \
+kok \
+ks \
+ku \
+kw \
+ky \
+lb \
+lg \
+li \
+lij \
+lo \
+lt \
+lv \
+lzh \
+mag \
+mai \
+mg \
+mhr \
+mi \
+mk \
+ml \
+mn \
+mni \
+mr \
+ms \
+mt \
+my \
+nan \
+nb \
+nds \
+ne \
+nhn \
+niu \
+nl \
+nn \
+nr \
+nso \
+oc \
+om \
+or \
+os \
+pa \
+pap \
+pl \
+ps \
+pt \
+quz \
+raj \
+ro \
+ru \
+rw \
+sa \
+sat \
+sc \
+sd \
+se \
+shs \
+si \
+sid \
+sk \
+sl \
+so \
+sq \
+sr \
+ss \
+st \
+sv \
+sw \
+szl \
+ta \
+tcy \
+te \
+tg \
+th \
+the \
+ti \
+tig \
+tk \
+tl \
+tn \
+tr \
+ts \
+tt \
+ug \
+uk \
+unm \
+ur \
+uz \
+ve \
+vi \
+wa \
+wae \
+wal \
+wo \
+xh \
+yi \
+yo \
+yue \
+%{nil}
+
+%define language_list_second \
+zh \
+zu \
+%{nil}
+
+%define create_lang_packages()\
+%{lua:\
+local languages = rpm.expand("%1")\
+string.gsub(languages, "(%a+)",\
+function(i) print(rpm.expand("%lang_package "..i.."")) end)}\
+%{nil}
+
+%create_lang_packages %language_list
+%create_lang_packages %language_list_second
+
+%define require_langpacks()\
+%{lua:\
+local languages = rpm.expand("%1")\
+string.gsub(languages, "(%a+)",\
+function(i) print(rpm.expand("Requires: %{name}-langpack-"..i.." = %{version}-%{release}\\n")) end)}\
+%{nil}
 
 %package all-langpacks
 Summary: Meta package to require all langpacks
 Group: System Environment/Base
-Requires: %{name}-langpack-aa = %{version}-%{release}
-Requires: %{name}-langpack-af = %{version}-%{release}
-Requires: %{name}-langpack-ak = %{version}-%{release}
-Requires: %{name}-langpack-am = %{version}-%{release}
-Requires: %{name}-langpack-an = %{version}-%{release}
-Requires: %{name}-langpack-anp = %{version}-%{release}
-Requires: %{name}-langpack-ar = %{version}-%{release}
-Requires: %{name}-langpack-as = %{version}-%{release}
-Requires: %{name}-langpack-ast = %{version}-%{release}
-Requires: %{name}-langpack-ayc = %{version}-%{release}
-Requires: %{name}-langpack-az = %{version}-%{release}
-Requires: %{name}-langpack-be = %{version}-%{release}
-Requires: %{name}-langpack-bem = %{version}-%{release}
-Requires: %{name}-langpack-ber = %{version}-%{release}
-Requires: %{name}-langpack-bg = %{version}-%{release}
-Requires: %{name}-langpack-bhb = %{version}-%{release}
-Requires: %{name}-langpack-bho = %{version}-%{release}
-Requires: %{name}-langpack-bn = %{version}-%{release}
-Requires: %{name}-langpack-bo = %{version}-%{release}
-Requires: %{name}-langpack-br = %{version}-%{release}
-Requires: %{name}-langpack-brx = %{version}-%{release}
-Requires: %{name}-langpack-bs = %{version}-%{release}
-Requires: %{name}-langpack-byn = %{version}-%{release}
-Requires: %{name}-langpack-ca = %{version}-%{release}
-Requires: %{name}-langpack-ce = %{version}-%{release}
-Requires: %{name}-langpack-cmn = %{version}-%{release}
-Requires: %{name}-langpack-crh = %{version}-%{release}
-Requires: %{name}-langpack-cs = %{version}-%{release}
-Requires: %{name}-langpack-csb = %{version}-%{release}
-Requires: %{name}-langpack-cv = %{version}-%{release}
-Requires: %{name}-langpack-cy = %{version}-%{release}
-Requires: %{name}-langpack-da = %{version}-%{release}
-Requires: %{name}-langpack-de = %{version}-%{release}
-Requires: %{name}-langpack-doi = %{version}-%{release}
-Requires: %{name}-langpack-dv = %{version}-%{release}
-Requires: %{name}-langpack-dz = %{version}-%{release}
-Requires: %{name}-langpack-el = %{version}-%{release}
-Requires: %{name}-langpack-en = %{version}-%{release}
-Requires: %{name}-langpack-eo = %{version}-%{release}
-Requires: %{name}-langpack-es = %{version}-%{release}
-Requires: %{name}-langpack-et = %{version}-%{release}
-Requires: %{name}-langpack-eu = %{version}-%{release}
-Requires: %{name}-langpack-fa = %{version}-%{release}
-Requires: %{name}-langpack-ff = %{version}-%{release}
-Requires: %{name}-langpack-fi = %{version}-%{release}
-Requires: %{name}-langpack-fil = %{version}-%{release}
-Requires: %{name}-langpack-fo = %{version}-%{release}
-Requires: %{name}-langpack-fr = %{version}-%{release}
-Requires: %{name}-langpack-fur = %{version}-%{release}
-Requires: %{name}-langpack-fy = %{version}-%{release}
-Requires: %{name}-langpack-ga = %{version}-%{release}
-Requires: %{name}-langpack-gd = %{version}-%{release}
-Requires: %{name}-langpack-gez = %{version}-%{release}
-Requires: %{name}-langpack-gl = %{version}-%{release}
-Requires: %{name}-langpack-gu = %{version}-%{release}
-Requires: %{name}-langpack-gv = %{version}-%{release}
-Requires: %{name}-langpack-ha = %{version}-%{release}
-Requires: %{name}-langpack-hak = %{version}-%{release}
-Requires: %{name}-langpack-he = %{version}-%{release}
-Requires: %{name}-langpack-hi = %{version}-%{release}
-Requires: %{name}-langpack-hne = %{version}-%{release}
-Requires: %{name}-langpack-hr = %{version}-%{release}
-Requires: %{name}-langpack-hsb = %{version}-%{release}
-Requires: %{name}-langpack-ht = %{version}-%{release}
-Requires: %{name}-langpack-hu = %{version}-%{release}
-Requires: %{name}-langpack-hy = %{version}-%{release}
-Requires: %{name}-langpack-ia = %{version}-%{release}
-Requires: %{name}-langpack-id = %{version}-%{release}
-Requires: %{name}-langpack-ig = %{version}-%{release}
-Requires: %{name}-langpack-ik = %{version}-%{release}
-Requires: %{name}-langpack-is = %{version}-%{release}
-Requires: %{name}-langpack-it = %{version}-%{release}
-Requires: %{name}-langpack-iu = %{version}-%{release}
-Requires: %{name}-langpack-iw = %{version}-%{release}
-Requires: %{name}-langpack-ja = %{version}-%{release}
-Requires: %{name}-langpack-ka = %{version}-%{release}
-Requires: %{name}-langpack-kk = %{version}-%{release}
-Requires: %{name}-langpack-kl = %{version}-%{release}
-Requires: %{name}-langpack-km = %{version}-%{release}
-Requires: %{name}-langpack-kn = %{version}-%{release}
-Requires: %{name}-langpack-ko = %{version}-%{release}
-Requires: %{name}-langpack-kok = %{version}-%{release}
-Requires: %{name}-langpack-ks = %{version}-%{release}
-Requires: %{name}-langpack-ku = %{version}-%{release}
-Requires: %{name}-langpack-kw = %{version}-%{release}
-Requires: %{name}-langpack-ky = %{version}-%{release}
-Requires: %{name}-langpack-lb = %{version}-%{release}
-Requires: %{name}-langpack-lg = %{version}-%{release}
-Requires: %{name}-langpack-li = %{version}-%{release}
-Requires: %{name}-langpack-lij = %{version}-%{release}
-Requires: %{name}-langpack-lo = %{version}-%{release}
-Requires: %{name}-langpack-lt = %{version}-%{release}
-Requires: %{name}-langpack-lv = %{version}-%{release}
-Requires: %{name}-langpack-lzh = %{version}-%{release}
-Requires: %{name}-langpack-mag = %{version}-%{release}
-Requires: %{name}-langpack-mai = %{version}-%{release}
-Requires: %{name}-langpack-mg = %{version}-%{release}
-Requires: %{name}-langpack-mhr = %{version}-%{release}
-Requires: %{name}-langpack-mi = %{version}-%{release}
-Requires: %{name}-langpack-mk = %{version}-%{release}
-Requires: %{name}-langpack-ml = %{version}-%{release}
-Requires: %{name}-langpack-mn = %{version}-%{release}
-Requires: %{name}-langpack-mni = %{version}-%{release}
-Requires: %{name}-langpack-mr = %{version}-%{release}
-Requires: %{name}-langpack-ms = %{version}-%{release}
-Requires: %{name}-langpack-mt = %{version}-%{release}
-Requires: %{name}-langpack-my = %{version}-%{release}
-Requires: %{name}-langpack-nan = %{version}-%{release}
-Requires: %{name}-langpack-nb = %{version}-%{release}
-Requires: %{name}-langpack-nds = %{version}-%{release}
-Requires: %{name}-langpack-ne = %{version}-%{release}
-Requires: %{name}-langpack-nhn = %{version}-%{release}
-Requires: %{name}-langpack-niu = %{version}-%{release}
-Requires: %{name}-langpack-nl = %{version}-%{release}
-Requires: %{name}-langpack-nn = %{version}-%{release}
-Requires: %{name}-langpack-nr = %{version}-%{release}
-Requires: %{name}-langpack-nso = %{version}-%{release}
-Requires: %{name}-langpack-oc = %{version}-%{release}
-Requires: %{name}-langpack-om = %{version}-%{release}
-Requires: %{name}-langpack-or = %{version}-%{release}
-Requires: %{name}-langpack-os = %{version}-%{release}
-Requires: %{name}-langpack-pa = %{version}-%{release}
-Requires: %{name}-langpack-pap = %{version}-%{release}
-Requires: %{name}-langpack-pl = %{version}-%{release}
-Requires: %{name}-langpack-ps = %{version}-%{release}
-Requires: %{name}-langpack-pt = %{version}-%{release}
-Requires: %{name}-langpack-quz = %{version}-%{release}
-Requires: %{name}-langpack-raj = %{version}-%{release}
-Requires: %{name}-langpack-ro = %{version}-%{release}
-Requires: %{name}-langpack-ru = %{version}-%{release}
-Requires: %{name}-langpack-rw = %{version}-%{release}
-Requires: %{name}-langpack-sa = %{version}-%{release}
-Requires: %{name}-langpack-sat = %{version}-%{release}
-Requires: %{name}-langpack-sc = %{version}-%{release}
-Requires: %{name}-langpack-sd = %{version}-%{release}
-Requires: %{name}-langpack-se = %{version}-%{release}
-Requires: %{name}-langpack-shs = %{version}-%{release}
-Requires: %{name}-langpack-si = %{version}-%{release}
-Requires: %{name}-langpack-sid = %{version}-%{release}
-Requires: %{name}-langpack-sk = %{version}-%{release}
-Requires: %{name}-langpack-sl = %{version}-%{release}
-Requires: %{name}-langpack-so = %{version}-%{release}
-Requires: %{name}-langpack-sq = %{version}-%{release}
-Requires: %{name}-langpack-sr = %{version}-%{release}
-Requires: %{name}-langpack-ss = %{version}-%{release}
-Requires: %{name}-langpack-st = %{version}-%{release}
-Requires: %{name}-langpack-sv = %{version}-%{release}
-Requires: %{name}-langpack-sw = %{version}-%{release}
-Requires: %{name}-langpack-szl = %{version}-%{release}
-Requires: %{name}-langpack-ta = %{version}-%{release}
-Requires: %{name}-langpack-tcy = %{version}-%{release}
-Requires: %{name}-langpack-te = %{version}-%{release}
-Requires: %{name}-langpack-tg = %{version}-%{release}
-Requires: %{name}-langpack-th = %{version}-%{release}
-Requires: %{name}-langpack-the = %{version}-%{release}
-Requires: %{name}-langpack-ti = %{version}-%{release}
-Requires: %{name}-langpack-tig = %{version}-%{release}
-Requires: %{name}-langpack-tk = %{version}-%{release}
-Requires: %{name}-langpack-tl = %{version}-%{release}
-Requires: %{name}-langpack-tn = %{version}-%{release}
-Requires: %{name}-langpack-tr = %{version}-%{release}
-Requires: %{name}-langpack-ts = %{version}-%{release}
-Requires: %{name}-langpack-tt = %{version}-%{release}
-Requires: %{name}-langpack-ug = %{version}-%{release}
-Requires: %{name}-langpack-uk = %{version}-%{release}
-Requires: %{name}-langpack-unm = %{version}-%{release}
-Requires: %{name}-langpack-ur = %{version}-%{release}
-Requires: %{name}-langpack-uz = %{version}-%{release}
-Requires: %{name}-langpack-ve = %{version}-%{release}
-Requires: %{name}-langpack-vi = %{version}-%{release}
-Requires: %{name}-langpack-wa = %{version}-%{release}
-Requires: %{name}-langpack-wae = %{version}-%{release}
-Requires: %{name}-langpack-wal = %{version}-%{release}
-Requires: %{name}-langpack-wo = %{version}-%{release}
-Requires: %{name}-langpack-xh = %{version}-%{release}
-Requires: %{name}-langpack-yi = %{version}-%{release}
-Requires: %{name}-langpack-yo = %{version}-%{release}
-Requires: %{name}-langpack-yue = %{version}-%{release}
-Requires: %{name}-langpack-zh = %{version}-%{release}
-Requires: %{name}-langpack-zu = %{version}-%{release}
-
+%require_langpacks %language_list
+%require_langpacks %language_list_second
 %description all-langpacks
 Meta package to require all langpacks
-
+%ifnarch %{auxarches}
 %files all-langpacks
+%endif
 
 ##############################################################################
 # glibc "nscd" sub-package
@@ -2329,8 +2173,8 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-51
-- Testing 51
+* Sun Jan 17 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-52
+- Testing 55
 
 * Wed Jan 13 2016 Carlos O'Donell <carlos@redhat.com> - 2.22.90-29
 - New pthread_barrier algorithm with improved standards compliance.
