@@ -746,9 +746,6 @@ xh \
 yi \
 yo \
 yue \
-%{nil}
-
-%define language_list_second \
 zh \
 zu \
 %{nil}
@@ -761,7 +758,6 @@ function(i) print(rpm.expand("%lang_package "..i.."")) end)}\
 %{nil}
 
 %create_lang_packages %language_list
-%create_lang_packages %language_list_second
 
 %define require_langpacks()\
 %{lua:\
@@ -774,7 +770,6 @@ function(i) print(rpm.expand("Requires: %{name}-langpack-"..i.." = %{version}-%{
 Summary: Meta package to require all langpacks
 Group: System Environment/Base
 %require_langpacks %language_list
-%require_langpacks %language_list_second
 %description all-langpacks
 Meta package to require all langpacks
 %ifnarch %{auxarches}
