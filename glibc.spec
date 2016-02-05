@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 9%{?dist}
+%define glibcrelease 10%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -222,6 +222,8 @@ Patch1001: glibc-rh1191059.patch
 
 # BZ #18643 - Missing IPV6_* defines
 Patch1002: glibc-rh1241061.patch
+
+Patch1003: glibc-rh1184168.patch
 
 ##############################################################################
 #
@@ -594,6 +596,7 @@ package or when debugging this package.
 %patch1000 -p1
 %patch1001 -p1
 %patch1002 -p1
+%patch1003 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1766,6 +1769,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Feb  5 2016 Florian Weimer <fweimer@redhat.com> - 2.21-10
+- Make locale -a output ASCII-only (#1184168).
+
 * Wed Oct 28 2015 Florian Weimer <fweimer@redhat.com> - 2.21-9
 - Prevent malloc arena free list from becoming cyclic.  (#1276112)
 
