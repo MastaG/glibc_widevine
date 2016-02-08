@@ -229,6 +229,8 @@ Patch1004: glibc-rh1276761-1.patch
 Patch1005: glibc-rh1276761-2.patch
 Patch1006: glibc-rh1276761-3.patch
 
+Patch1007: glibc-rh1214152.patch
+
 ##############################################################################
 #
 # Patches submitted, but not yet approved upstream.
@@ -604,6 +606,7 @@ package or when debugging this package.
 %patch1004 -p1
 %patch1005 -p1
 %patch1006 -p1
+%patch1007 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1779,6 +1782,8 @@ rm -f *.filelist*
 * Fri Feb  5 2016 Florian Weimer <fweimer@redhat.com> - 2.21-10
 - Make locale -a output ASCII-only (#1184168).
 - CVE-2015-8777: Apply additional pointer guard hardening.  (#1276761)
+- CVE-2015-1781: glibc: buffer overflow in gethostbyname_r and
+  related functions with misaligned buffer.  (#1214152)
 
 * Wed Oct 28 2015 Florian Weimer <fweimer@redhat.com> - 2.21-9
 - Prevent malloc arena free list from becoming cyclic.  (#1276112)
