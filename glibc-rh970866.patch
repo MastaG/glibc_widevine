@@ -1,0 +1,19 @@
+commit 51225803259c69a792a272d067443f3fbc9b79d7
+Author: Andreas Schwab <schwab@suse.de>
+Date:   Thu Jan 22 17:54:21 2015 +0100
+
+    Fix failure of elf/tst-audit2 when compiled with GCC-5
+
+Index: b/elf/Makefile
+===================================================================
+--- a/elf/Makefile
++++ b/elf/Makefile
+@@ -1016,6 +1016,8 @@ $(objpfx)tst-audit1.out: $(objpfx)tst-au
+ tst-audit1-ENV = LD_AUDIT=$(objpfx)tst-auditmod1.so
+ 
+ $(objpfx)tst-audit2.out: $(objpfx)tst-auditmod1.so
++# Prevent GCC-5 from translating a malloc/memset pair into calloc
++CFLAGS-tst-audit2.c += -fno-builtin
+ tst-audit2-ENV = LD_AUDIT=$(objpfx)tst-auditmod1.so
+ 
+ $(objpfx)tst-audit9: $(libdl)
