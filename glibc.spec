@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -254,6 +254,9 @@ Patch2102: glibc-rh1238412-addition-and-fixes-for-translit_neutral.patch
 Patch2103: glibc-rh1238412-update-the-translit-files-to-unicode-7.0.0.patch
 Patch2104: glibc-rh1238412-add-translit-rules-for-da-nb-nn-sv-locales.patch
 Patch2105: glibc-rh1238412-unicode-8.0.0-update.patch
+
+# Upstream BZ 19573, patch reverts problematic commit
+Patch2106: glibc-rh1252570.patch
 
 ##############################################################################
 #
@@ -622,6 +625,7 @@ microbenchmark tests on the system.
 %patch2103 -p1
 %patch2104 -p1
 %patch2105 -p1
+%patch2106 -p1
 %patch0055 -p1
 %patch1000 -p1
 %patch1001 -p1
@@ -1843,6 +1847,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Feb 15 2016 Florian Weimer <fweimer@redhat.com> - 2.22-8
+- Revert upstream commit 2212c1420c92a33b0e0bd9a34938c9814a56c0f7 (#1252570).
+
 * Mon Jan  4 2016 Florian Weimer <fweimer@redhat.com> - 2.22-7
 - Update glibc-rh1276112.patch to include backports to fix
   upstream bugs 19243 and 19182.  (#1295189)
