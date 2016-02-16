@@ -1786,7 +1786,7 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Tue Feb 16 2016 Florian Weimer <fweimer@redhat.com> - 2.22-11
+* Tue Feb 16 2016 Florian Weimer <fweimer@redhat.com> - 2.21-11
 - CVE-2015-7547: Stack-based buffer overflow in getaddrinfo (#1308943).
 
 * Mon Feb  8 2016 Florian Weimer <fweimer@redhat.com> - 2.21-10
