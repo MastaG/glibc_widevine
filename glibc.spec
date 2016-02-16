@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -266,6 +266,9 @@ Patch2034: %{name}-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch
 
 # Upstream BZ 19048
 Patch2035: %{name}-rh1276112.patch
+
+# Upsteam BZ 18665
+Patch2107: glibc-CVE-2015-7547.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -597,6 +600,7 @@ package or when debugging this package.
 %patch2033 -p1
 %patch2034 -p1
 %patch2035 -p1
+%patch2107 -p1
 %patch0050 -p1
 %patch0052 -p1
 %patch0053 -p1
@@ -1782,6 +1786,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Feb 16 2016 Florian Weimer <fweimer@redhat.com> - 2.22-11
+- CVE-2015-7547: Stack-based buffer overflow in getaddrinfo (#1308943).
+
 * Mon Feb  8 2016 Florian Weimer <fweimer@redhat.com> - 2.21-10
 - Make locale -a output ASCII-only (#1184168).
 - CVE-2015-8777: Apply additional pointer guard hardening.  (#1276761)
