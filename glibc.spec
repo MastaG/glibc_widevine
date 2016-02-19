@@ -258,7 +258,7 @@ Patch2105: glibc-rh1238412-unicode-8.0.0-update.patch
 # Upstream BZ 19573, patch reverts problematic commit
 Patch2106: glibc-rh1252570.patch
 
-# Upsteam BZ 18665
+# Upstream BZ 18665
 Patch2107: glibc-CVE-2015-7547.patch
 
 # Upstream BZ 19682
