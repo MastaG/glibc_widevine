@@ -1,0 +1,46 @@
+Backport part of this upstream commit:
+
+commit 016495b818cb61df7d0d10e6db54074271b3e3a5
+Author: Stefan Liebler <stli@linux.vnet.ibm.com>
+Date:   Mon Nov 9 16:14:49 2015 +0100
+
+    S390: Call direct system calls for socket operations.
+    
+    this patch calls direct system calls for socket operations in the same way as power does. The system calls were introduced in kernel commit https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=977108f89c989b1eeb5c8d938e1e71913391eb5f.
+    There are no direct recv, send, accept syscalls available on s390. Thus
+    recvfrom, sendto, accept4 are called instead of the socketcall by defining __ASSUME_*_FOR_*_SYSCALL macros. See recv.c, send.c, accept.c in sysdeps/unix/sysv/linux/ folder.
+    
+    The socketcalls in syscalls.list for s390-64 are removed. They were never used on s390x.
+
+
+The removal is required due to the kernel change because otherwise,
+these system calls will be used unconditionally with new kernel
+headers.
+    
+diff --git a/sysdeps/unix/sysv/linux/s390/s390-64/syscalls.list b/sysdeps/unix/sysv/linux/s390/s390-64/syscalls.list
+index 5b8c102..9f03d26 100644
+--- a/sysdeps/unix/sysv/linux/s390/s390-64/syscalls.list
++++ b/sysdeps/unix/sysv/linux/s390/s390-64/syscalls.list
+@@ -12,22 +12,3 @@ shmget		-	shmget		i:iii	__shmget	shmget
+ semop		-	semop		i:ipi	__semop		semop
+ semget		-	semget		i:iii	__semget	semget
+ semctl		-	semctl		i:iiii	__semctl	semctl
+-
+-# proper socket implementations:
+-accept		-	accept		Ci:iBN	__libc_accept	__accept accept
+-bind		-	bind		i:ipi	__bind		bind
+-connect		-	connect		Ci:ipi	__libc_connect	__connect connect
+-getpeername	-	getpeername	i:ipp	__getpeername	getpeername
+-getsockname	-	getsockname	i:ipp	__getsockname	getsockname
+-getsockopt	-	getsockopt	i:iiiBN	__getsockopt	getsockopt
+-listen		-	listen		i:ii	__listen	listen
+-recv		-	recv		Ci:ibni	__libc_recv	__recv recv
+-recvfrom	-	recvfrom	Ci:ibniBN	__libc_recvfrom	__recvfrom recvfrom
+-recvmsg		-	recvmsg		Ci:ipi	__libc_recvmsg	__recvmsg recvmsg
+-send		-	send		Ci:ibni	__libc_send	__send send
+-sendmsg		-	sendmsg		Ci:ipi	__libc_sendmsg	__sendmsg sendmsg
+-sendto		-	sendto		Ci:ibnibn	__libc_sendto	__sendto sendto
+-setsockopt	-	setsockopt	i:iiibn	__setsockopt	setsockopt
+-shutdown	-	shutdown	i:ii	__shutdown	shutdown
+-socket		-	socket		i:iii	__socket	socket
+-socketpair	-	socketpair	i:iiif	__socketpair	socketpair

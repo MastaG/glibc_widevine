@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.21
 %define glibcversion 2.21
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -269,6 +269,9 @@ Patch2035: %{name}-rh1276112.patch
 
 # Upsteam BZ 18665
 Patch2107: glibc-CVE-2015-7547.patch
+
+# Upstream BZ 19682
+Patch2108: glibc-rh1310168.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -601,6 +604,7 @@ package or when debugging this package.
 %patch2034 -p1
 %patch2035 -p1
 %patch2107 -p1
+%patch2108 -p1
 %patch0050 -p1
 %patch0052 -p1
 %patch0053 -p1
@@ -1786,6 +1790,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Feb 19 2016 Florian Weimer <fweimer@redhat.com> - 2.21-12
+- Fix socket system call selection on s390x (#1310168).
+
 * Tue Feb 16 2016 Florian Weimer <fweimer@redhat.com> - 2.21-11
 - CVE-2015-7547: Stack-based buffer overflow in getaddrinfo (#1308943).
 
