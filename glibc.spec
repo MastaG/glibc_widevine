@@ -264,6 +264,9 @@ Patch2107: glibc-CVE-2015-7547.patch
 # Upstream BZ 19682
 Patch2108: glibc-rh1310168.patch
 
+# Upstream BZ 19581
+Patch2109: glibc-rh1114591.patch
+
 ##############################################################################
 #
 # Benchmark comparison patches.
@@ -634,6 +637,7 @@ microbenchmark tests on the system.
 %patch2106 -p1
 %patch2107 -p1
 %patch2108 -p1
+%patch2109 -p1
 %patch0055 -p1
 %patch1000 -p1
 %patch1001 -p1
@@ -1857,6 +1861,7 @@ rm -f *.filelist*
 %changelog
 * Fri Feb 19 2016 Florian Weimer <fweimer@redhat.com> - 2.22-10
 - Fix socket system call selection on s390x (#1310168).
+- Remove stray newline from Serbian locales (#1114591).
 
 * Tue Feb 16 2016 Florian Weimer <fweimer@redhat.com> - 2.22-9
 - CVE-2015-7547: Stack-based buffer overflow in getaddrinfo (#1308943).
