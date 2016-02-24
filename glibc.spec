@@ -558,7 +558,9 @@ Requires: %{name}-common = %{version}-%{release}
 Group: System Environment/Base
 
 %description locale-source
-The sources for the locales
+The sources for all locales provided in the language packs.
+If you are building custom locales you will most likely use
+these sources as the basis for your new locale.
 
 %define lang_package()\
 %package langpack-%{1}\
@@ -570,7 +572,8 @@ Requires: tzdata >= 2003a\
 Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
 Group: System Environment/Base\
 %description langpack-%{1}\
-The glibc-langpack-%{1} package includes the locale data for %{1}.\
+The glibc-langpack-%{1} package includes the basic information required\
+to support the %{1} language in your applications.\
 %ifnarch %{auxarches}\
 %files -f langpack-%{1}.filelist langpack-%{1}\
 %defattr(-,root,root)\
@@ -781,7 +784,7 @@ Summary: Meta package to require all langpacks
 Group: System Environment/Base
 %require_langpacks %language_list
 %description all-langpacks
-Meta package to require all langpacks
+Meta package that requires all language packs.
 %ifnarch %{auxarches}
 %files all-langpacks
 %endif
