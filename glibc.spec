@@ -1494,12 +1494,14 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 
   # primary filelist
 
-  # remove the locale sources, they go into the sub-package "locale-source":
-  I18N_LANG='\,.*/share/i18n/locales/.*,d'
   # Also remove the *.mo entries.  We will add them to the
   # language specific sub-packages.
+  # Also remove the locale sources (.*/share/i18n/locales/.*
+  # and .*/share/i18n/charmaps/.*), they go into the sub-package
+  #"locale-source":
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
-      -e "$I18N_LANG" \
+      -e '\,.*/share/i18n/locales/.*,d' \
+      -e '\,.*/share/i18n/charmaps/.*,d' \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
       -e '\,/%{_lib}/lib\(pcprofile\|memusage\)\.so,d' \
       -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
@@ -2141,6 +2143,8 @@ rm -f *.filelist*
 %defattr(-,root,root)
 %dir %{_prefix}/share/i18n/locales
 %{_prefix}/share/i18n/locales/*
+%dir %{_prefix}/share/i18n/charmaps
+%{_prefix}/share/i18n/charmaps/*
 
 %files -f devel.filelist devel
 %defattr(-,root,root)
