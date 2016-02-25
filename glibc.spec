@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-719-g1233be7
 %define glibcversion 2.22.90
-%define glibcrelease 38%{?dist}
+%define glibcrelease 40%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -568,7 +568,7 @@ Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 Requires: tzdata >= 2003a\
-%define supplements_list %(locale -a | grep ^%{1}_ | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
+%define supplements_list %(tar -O -x -f %{SOURCE0} '*localedata/SUPPORTED' | grep ^%{1}_ | cut -d / -f 1 | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
 Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
 Group: System Environment/Base\
 %description langpack-%{1}\
@@ -580,188 +580,13 @@ to support the %{1} language in your applications.\
 %endif\
 %{nil}
 
-%define language_list \
-aa \
-af \
-ak \
-am \
-an \
-anp \
-ar \
-as \
-ast \
-ayc \
-az \
-be \
-bem \
-ber \
-bg \
-bhb \
-bho \
-bn \
-bo \
-br \
-brx \
-bs \
-byn \
-ca \
-ce \
-cmn \
-crh \
-cs \
-csb \
-cv \
-cy \
-da \
-de \
-doi \
-dv \
-dz \
-el \
-en \
-eo \
-es \
-et \
-eu \
-fa \
-ff \
-fi \
-fil \
-fo \
-fr \
-fur \
-fy \
-ga \
-gd \
-gez \
-gl \
-gu \
-gv \
-ha \
-hak \
-he \
-hi \
-hne \
-hr \
-hsb \
-ht \
-hu \
-hy \
-ia \
-id \
-ig \
-ik \
-is \
-it \
-iu \
-iw \
-ja \
-ka \
-kk \
-kl \
-km \
-kn \
-ko \
-kok \
-ks \
-ku \
-kw \
-ky \
-lb \
-lg \
-li \
-lij \
-lo \
-lt \
-lv \
-lzh \
-mag \
-mai \
-mg \
-mhr \
-mi \
-mk \
-ml \
-mn \
-mni \
-mr \
-ms \
-mt \
-my \
-nan \
-nb \
-nds \
-ne \
-nhn \
-niu \
-nl \
-nn \
-nr \
-nso \
-oc \
-om \
-or \
-os \
-pa \
-pap \
-pl \
-ps \
-pt \
-quz \
-raj \
-ro \
-ru \
-rw \
-sa \
-sat \
-sc \
-sd \
-se \
-shs \
-si \
-sid \
-sk \
-sl \
-so \
-sq \
-sr \
-ss \
-st \
-sv \
-sw \
-szl \
-ta \
-tcy \
-te \
-tg \
-th \
-the \
-ti \
-tig \
-tk \
-tl \
-tn \
-tr \
-ts \
-tt \
-ug \
-uk \
-unm \
-ur \
-uz \
-ve \
-vi \
-wa \
-wae \
-wal \
-wo \
-xh \
-yi \
-yo \
-yue \
-zh \
-zu \
-%{nil}
+# language_list will contain a list of all supported language
+# names in iso-639 format, i.e. something like "aa af ... yue zh zu"
+# We add "eo" (Esperanto) manually because currently glibc has no
+# Esperanto locale in SUPPORTED but translations for Esperanto exist.
+# Therefore, we want a glibc-langpack-eo sub-package containing these
+# translations.
+%define language_list eo %(tar -O -x -f %{SOURCE0} '*localedata/SUPPORTED' | grep -E  '^[a-z]+_' | cut -d _ -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//')
 
 %define create_lang_packages()\
 %{lua:\
@@ -2196,7 +2021,7 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Thu Feb 24 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-38
+* Thu Feb 25 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-40
 - Package the locales and the translations into sub-packages and add
   a meta-package which requires all the locale and language
   specific sub-packages
