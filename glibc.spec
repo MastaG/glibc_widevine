@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22-719-g1233be7
 %define glibcversion 2.22.90
-%define glibcrelease 38%{?dist}
+%define glibcrelease 39%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -568,7 +568,7 @@ Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 Requires: tzdata >= 2003a\
-%define supplements_list %(locale -a | grep ^%{1}_ | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
+%define supplements_list %(tar -O -x -f %{SOURCE0} '*localedata/SUPPORTED' | grep ^%{1}_ | cut -d / -f 1 | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
 Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
 Group: System Environment/Base\
 %description langpack-%{1}\
@@ -2196,7 +2196,7 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Thu Feb 24 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-38
+* Thu Feb 25 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-39
 - Package the locales and the translations into sub-packages and add
   a meta-package which requires all the locale and language
   specific sub-packages
