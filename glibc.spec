@@ -165,6 +165,7 @@ Source7: nsswitch.conf
 Source8: power6emul.c
 Source9: bench.mk
 Source10: glibc-bench-compare
+Source11: SUPPORTED
 
 ##############################################################################
 # Start of glibc patches
@@ -561,7 +562,7 @@ Summary: Locale data for %{1}\
 Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 Requires: tzdata >= 2003a\
-%define supplements_list %(tar -O -x -f %{SOURCE0} '*localedata/SUPPORTED' | grep ^%{1}_ | cut -d / -f 1 | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
+%define supplements_list %(cat %{SOURCE11} | grep ^%{1}_ | cut -d / -f 1 | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
 Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
 Group: System Environment/Base\
 %description langpack-%{1}\
@@ -579,7 +580,7 @@ to support the %{1} language in your applications.\
 # Esperanto locale in SUPPORTED but translations for Esperanto exist.
 # Therefore, we want a glibc-langpack-eo sub-package containing these
 # translations.
-%define language_list eo %(tar -O -x -f %{SOURCE0} '*localedata/SUPPORTED' | grep -E  '^[a-z]+_' | cut -d _ -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//')
+%define language_list eo %(cat %{SOURCE11} | grep -E  '^[a-z]+_' | cut -d _ -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//')
 
 %define create_lang_packages()\
 %{lua:\
@@ -770,6 +771,13 @@ touch `find . -name configure`
 
 # Ensure *-kw.h files are current to prevent regenerating them.
 touch locale/programs/*-kw.h
+
+# Verify that the supported set of locales matches the lang packs.
+# Generally you'll be updating the source tarball which will bring
+# in new langpacks we might have to build. Verify the differences
+# then update the copy of SUPPORTED. We do it this way to avoid
+# accidentally creating new langpacks.
+cmp %{SOURCE11} localedata/SUPPORTED
 
 ##############################################################################
 # Build glibc...
