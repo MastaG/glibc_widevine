@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.22-719-g1233be7
-%define glibcversion 2.22.90
-%define glibcrelease 40%{?dist}
+%define glibcsrcdir  glibc-2.23-40-gde51ff8
+%define glibcversion 2.23.90
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -293,16 +293,9 @@ Patch2034: glibc-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch
 Patch2035: glibc-nsswitch-Add-group-merging-support.patch
 
 Patch2036: glibc-gcc-PR69537.patch
-Patch2037: glibc-isinf-cxx11.patch
 
 # Upstream BZ 19573, patch reverts problematic commit
 Patch2099: glibc-rh1252570.patch
-
-# CVE-2015-7547
-Patch2100: glibc-CVE-2015-7547.patch
-
-# Upstream BZ 19581
-Patch2101: glibc-rh1114591.patch
 
 ##############################################################################
 #
@@ -760,10 +753,7 @@ cat /proc/meminfo
 %patch0059 -p1
 %patch2035 -p1
 %patch2036 -p1
-%patch2037 -p1
 %patch2099 -p1
-%patch2100 -p1
-%patch2101 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2021,10 +2011,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
-* Thu Feb 25 2016 Mike FABIAN <mfabian@redhat.com> - 2.22.90-40
+* Fri Feb 26 2016 Mike FABIAN <mfabian@redhat.com> - 2.23.90-2
 - Package the locales and the translations into sub-packages and add
   a meta-package which requires all the locale and language
   specific sub-packages
+
+* Fri Feb 26 2016 Carlos O'Donell <carlos@systemhalted.org> - 2.23.90-1
+- Upstream development version is now 2.23.90.
+
+* Thu Feb 25 2016 Carlos O'Donell <carlos@systemhalted.org> - 2.22.90-38
+- Auto-sync with upstream master.
 
 * Fri Feb 19 2016 Florian Weimer <fweimer@redhat.com> - 2.22.90-37
 - Remove stray newline from Serbian locales (#1114591).

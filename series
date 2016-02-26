@@ -38,6 +38,4 @@ glibc-bug-regex-gcc5.patch -p1 --fuzz=0
 glibc-c-utf8-locale.patch -p1 --fuzz=0
 glibc-nsswitch-Add-group-merging-support.patch -p1 --fuzz=0
 glibc-gcc-PR69537.patch -p1 --fuzz=0
-glibc-isinf-cxx11.patch -p1 --fuzz=0
 glibc-rh1252570.patch -p1 --fuzz=0
-glibc-CVE-2015-7547.patch -p1 --fuzz=0
