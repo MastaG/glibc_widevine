@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -209,6 +209,9 @@ Patch0053: glibc-cs-path.patch
 Patch0054: glibc-rtkaio-clock.patch
 
 Patch0055: glibc-rtkaio-libof.patch
+
+# Add C.UTF-8 locale into /usr/lib/locale/
+Patch0059: glibc-c-utf8-locale.patch
 
 ##############################################################################
 #
@@ -644,6 +647,7 @@ microbenchmark tests on the system.
 %patch1002 -p1
 %patch1003 -p1
 %patch1004 -p1
+%patch0059 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1054,7 +1058,9 @@ $olddir/build-%{target}/elf/ld.so \
 	--library-path $olddir/build-%{target}/ \
 	$olddir/build-%{target}/locale/localedef \
 	--prefix ${RPM_BUILD_ROOT} --add-to-archive \
-	*_*
+	C.utf8 *_*
+# Removes all locales except C.utf8 which remains as fallback in
+# the event the user cleans the locale-archive using localedef.
 rm -rf *_*
 mv locale-archive{,.tmpl}
 popd
@@ -1803,6 +1809,8 @@ rm -f *.filelist*
 %files -f common.filelist common
 %defattr(-,root,root)
 %dir %{_prefix}/lib/locale
+%dir %{_prefix}/lib/locale/C.utf8
+%{_prefix}/lib/locale/C.utf8/*
 %attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 %dir %attr(755,root,root) /etc/default
@@ -1859,6 +1867,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Mar 02 2016 Mike FABIAN <mfabian@redhat.com> - 2.22-11
+- Add the C.UTF-8 locale
+
 * Fri Feb 19 2016 Florian Weimer <fweimer@redhat.com> - 2.22-10
 - Fix socket system call selection on s390x (#1310168).
 - Remove stray newline from Serbian locales (#1114591).

@@ -49,3 +49,4 @@ glibc-rh1288662.patch
 glibc-rh1276761-1.patch
 glibc-rh1276761-2.patch
 glibc-rh1276761-3.patch
+glibc-c-utf8-locale.patch -p1
