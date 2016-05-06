@@ -1,0 +1,39 @@
+commit 3bd80c0de2f8e7ca8020d37739339636d169957e
+Author: Roland McGrath <roland@hack.frob.com>
+Date:   Tue Mar 8 12:31:13 2016 -0800
+
+    Fix tst-audit10 build when -mavx512f is not supported.
+
+Index: b/sysdeps/x86_64/tst-audit10-aux.c
+===================================================================
+--- a/sysdeps/x86_64/tst-audit10-aux.c
++++ b/sysdeps/x86_64/tst-audit10-aux.c
+@@ -20,13 +20,13 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-extern __m512i audit_test (__m512i, __m512i, __m512i, __m512i,
+-			   __m512i, __m512i, __m512i, __m512i);
+-
+ int
+ tst_audit10_aux (void)
+ {
+ #ifdef __AVX512F__
++  extern __m512i audit_test (__m512i, __m512i, __m512i, __m512i,
++                             __m512i, __m512i, __m512i, __m512i);
++
+   __m512i zmm = _mm512_setzero_si512 ();
+   __m512i ret = audit_test (zmm, zmm, zmm, zmm, zmm, zmm, zmm, zmm);
+ 
+Index: b/sysdeps/x86_64/tst-audit10.c
+===================================================================
+--- a/sysdeps/x86_64/tst-audit10.c
++++ b/sysdeps/x86_64/tst-audit10.c
+@@ -16,6 +16,7 @@
+    <http://www.gnu.org/licenses/>.  */
+ 
+ #include <cpuid.h>
++#include <cpu-features.h>
+ 
+ int tst_audit10_aux (void);
+ 
