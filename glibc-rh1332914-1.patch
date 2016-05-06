@@ -1,0 +1,24 @@
+commit d29fb41f4431ca35ea360498ef9d37558ce90d76
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Apr 11 10:55:43 2016 +0200
+
+    nss_dns: Fix assertion failure in _nss_dns_getcanonname_r [BZ #19865]
+
+diff --git a/resolv/nss_dns/dns-canon.c b/resolv/nss_dns/dns-canon.c
+index 27255fd..fd73f19 100644
+--- a/resolv/nss_dns/dns-canon.c
++++ b/resolv/nss_dns/dns-canon.c
+@@ -144,6 +144,13 @@ _nss_dns_getcanonname_r (const char *name, char *buffer, size_t buflen,
+ 	      ptr += sizeof (uint16_t) + __ns_get16 (ptr);
+ 	    }
+ 	}
++
++      /* Restore original buffer before retry.  */
++      if (ansp.ptr != buf)
++	{
++	  free (ansp.ptr);
++	  ansp.ptr = buf;
++	}
+     }
+ 
+  out:

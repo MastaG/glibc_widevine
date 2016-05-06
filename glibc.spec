@@ -226,6 +226,11 @@ Patch1003: glibc-rh1276761-2.patch
 Patch1004: glibc-rh1276761-3.patch
 Patch1005: glibc-rh1332912.patch
 Patch1006: glibc-rh1321954.patch
+Patch1007: glibc-rh1332914-1.patch
+Patch1008: glibc-rh1332914-2.patch
+Patch1009: glibc-rh1332914-3.patch
+Patch1010: glibc-rh1332914-4.patch
+Patch1011: glibc-rh1332914-5.patch
 
 ##############################################################################
 #
@@ -651,6 +656,11 @@ microbenchmark tests on the system.
 %patch1004 -p1
 %patch1005 -p1
 %patch1006 -p1
+%patch1007 -p1
+%patch1008 -p1
+%patch1009 -p1
+%patch1010 -p1
+%patch1011 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1874,6 +1884,7 @@ rm -f *.filelist*
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-12
 - Fix heap-based buffer overflow in get_txt_records (#1332912)
 - CVE-2016-3075: Stack overflow in _nss_dns_getnetbyname_r (#1321954)
+- April 2016 nss_dns hardening (#1332914)
 
 * Wed Mar 02 2016 Mike FABIAN <mfabian@redhat.com> - 2.22-11
 - Add the C.UTF-8 locale
