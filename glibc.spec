@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -224,6 +224,7 @@ Patch1001: glibc-rh1288662.patch
 Patch1002: glibc-rh1276761-1.patch
 Patch1003: glibc-rh1276761-2.patch
 Patch1004: glibc-rh1276761-3.patch
+Patch1005: glibc-rh1332912.patch
 
 ##############################################################################
 #
@@ -647,6 +648,7 @@ microbenchmark tests on the system.
 %patch1002 -p1
 %patch1003 -p1
 %patch1004 -p1
+%patch1005 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1867,6 +1869,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-12
+- Fix heap-based buffer overflow in get_txt_records (#1332912)
+
 * Wed Mar 02 2016 Mike FABIAN <mfabian@redhat.com> - 2.22-11
 - Add the C.UTF-8 locale
 

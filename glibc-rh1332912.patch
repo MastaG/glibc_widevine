@@ -1,0 +1,19 @@
+commit 8a03ccbb77f52ec4b55062eeedddb8daec1a33e4
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon May 2 16:04:32 2016 +0200
+
+    hesiod: Avoid heap overflow in get_txt_records [BZ #20031]
+
+Index: b/hesiod/hesiod.c
+===================================================================
+--- a/hesiod/hesiod.c
++++ b/hesiod/hesiod.c
+@@ -421,7 +421,7 @@ get_txt_records(struct hesiod_p *ctx, in
+ 		cp += INT16SZ + INT32SZ;	/* skip the ttl, too */
+ 		rr.dlen = ns_get16(cp);
+ 		cp += INT16SZ;
+-		if (cp + rr.dlen > eom) {
++		if (rr.dlen == 0 || cp + rr.dlen > eom) {
+ 			__set_errno(EMSGSIZE);
+ 			goto cleanup;
+ 		}
