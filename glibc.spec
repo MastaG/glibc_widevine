@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -237,6 +237,7 @@ Patch1014: glibc-rh1313404-3.patch
 Patch1015: glibc-rh1321861.patch
 Patch1016: glibc-rh1316972.patch
 Patch1017: glibc-rh1316972-2.patch
+Patch1018: glibc-rh1333940.patch
 
 ##############################################################################
 #
@@ -673,6 +674,7 @@ microbenchmark tests on the system.
 %patch1015 -p1
 %patch1016 -p1
 %patch1017 -p1
+%patch1018 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1893,6 +1895,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-13
+- Avoid build failure in TZ tests (#1333940)
+
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-12
 - Fix heap-based buffer overflow in get_txt_records (#1332912)
 - CVE-2016-3075: Stack overflow in _nss_dns_getnetbyname_r (#1321954)

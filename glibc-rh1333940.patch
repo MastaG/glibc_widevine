@@ -1,0 +1,33 @@
+commit 3cc652e951c71785032019fec82e3b8543d85305
+Author: Mike Frysinger <vapier@gentoo.org>
+Date:   Fri Sep 18 13:49:08 2015 -0400
+
+    timezone: fix parallel check failures
+    
+    The XT testdata install rules expect the testdata dir to already exist in
+    the build tree, but it doesn't actually create it.  Instead, it relies on
+    the build-testdata define happening to be executed before it (which runs
+    zic which creates the dir).  When we run in parallel though, it's easy to
+    hit a failure:
+    $ cd timezone
+    $ rm -rf $objdir/timezone/testdata
+    $ make check -j
+    ...
+    cp testdata/XT1 .../timezone/testdata/XT1
+    cp: cannot create regular file '.../timezone/testdata/XT1': No such file or directory
+    Makefile:116: recipe for target '.../timezone/testdata/XT1' failed
+    make: *** [.../timezone/testdata/XT1] Error 1
+    make: *** Waiting for unfinished jobs....
+
+Index: b/timezone/Makefile
+===================================================================
+--- a/timezone/Makefile
++++ b/timezone/Makefile
+@@ -123,6 +123,7 @@ $(testdata)/Asia/Tokyo: asia $(zic-deps)
+ 	$(build-testdata)
+ 
+ $(testdata)/XT%: testdata/XT%
++	$(make-target-directory)
+ 	cp $< $@
+ 
+ $(objpfx)tzselect: tzselect.ksh $(common-objpfx)config.make
