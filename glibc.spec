@@ -235,6 +235,8 @@ Patch1012: glibc-rh1313404-1.patch
 Patch1013: glibc-rh1313404-2.patch
 Patch1014: glibc-rh1313404-3.patch
 Patch1015: glibc-rh1321861.patch
+Patch1016: glibc-rh1316972.patch
+Patch1017: glibc-rh1316972-2.patch
 
 ##############################################################################
 #
@@ -669,6 +671,8 @@ microbenchmark tests on the system.
 %patch1013 -p1
 %patch1014 -p1
 %patch1015 -p1
+%patch1016 -p1
+%patch1017 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1895,6 +1899,7 @@ rm -f *.filelist*
 - April 2016 nss_dns hardening (#1332914)
 - Fix elf/tst-audit10 and elf/tst-audit4 failures (#1313404)
 - nss_db: Fix handling of long entries (#1321861)
+- resolv: Fix NULL pointer dereference with unconnectable address (#1316972)
 
 * Wed Mar 02 2016 Mike FABIAN <mfabian@redhat.com> - 2.22-11
 - Add the C.UTF-8 locale

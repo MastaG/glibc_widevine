@@ -1,0 +1,117 @@
+commit b9bdfa7c8fa22c944bb5f21a673dfd1f91b71c56
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Apr 27 14:26:47 2016 +0200
+
+    resolv: Always set *resplen2 out parameter in send_vc [BZ #19825]
+    
+    In various error scenarios (for example, if the server closes the
+    TCP connection before sending the full response), send_vc can return
+    without resetting the *resplen2 value.  This can pass uninitialized
+    or unexpected data to the caller.
+
+Index: b/resolv/res_send.c
+===================================================================
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -796,8 +796,6 @@ send_vc(res_state statp,
+ 	u_short len2;
+ 	u_char *cp;
+ 
+-	if (resplen2 != NULL)
+-	  *resplen2 = 0;
+ 	connreset = 0;
+  same_ns:
+ 	truncating = 0;
+@@ -823,6 +821,8 @@ send_vc(res_state statp,
+ 		if (statp->_vcsock < 0) {
+ 			*terrno = errno;
+ 			Perror(statp, stderr, "socket(vc)", errno);
++			if (resplen2 != NULL)
++			  *resplen2 = 0;
+ 			return (-1);
+ 		}
+ 		__set_errno (0);
+@@ -833,8 +833,7 @@ send_vc(res_state statp,
+ 			*terrno = errno;
+ 			Aerror(statp, stderr, "connect/vc", errno,
+ 			       (struct sockaddr *) nsap);
+-			__res_iclose(statp, false);
+-			return (0);
++			return close_and_return_error (statp, resplen2);
+ 		}
+ 		statp->_flags |= RES_F_VC;
+ 	}
+@@ -857,8 +856,7 @@ send_vc(res_state statp,
+ 	if (TEMP_FAILURE_RETRY (writev(statp->_vcsock, iov, niov)) != explen) {
+ 		*terrno = errno;
+ 		Perror(statp, stderr, "write failed", errno);
+-		__res_iclose(statp, false);
+-		return (0);
++		return close_and_return_error (statp, resplen2);
+ 	}
+ 	/*
+ 	 * Receive length & response
+@@ -880,7 +878,6 @@ send_vc(res_state statp,
+ 	if (n <= 0) {
+ 		*terrno = errno;
+ 		Perror(statp, stderr, "read failed", errno);
+-		__res_iclose(statp, false);
+ 		/*
+ 		 * A long running process might get its TCP
+ 		 * connection reset if the remote server was
+@@ -890,11 +887,13 @@ send_vc(res_state statp,
+ 		 * instead of failing.  We only allow one reset
+ 		 * per query to prevent looping.
+ 		 */
+-		if (*terrno == ECONNRESET && !connreset) {
+-			connreset = 1;
+-			goto same_ns;
+-		}
+-		return (0);
++		if (*terrno == ECONNRESET && !connreset)
++		  {
++		    __res_iclose (statp, false);
++		    connreset = 1;
++		    goto same_ns;
++		  }
++		return close_and_return_error (statp, resplen2);
+ 	}
+ 	int rlen = ntohs (rlen16);
+ 
+@@ -926,11 +925,11 @@ send_vc(res_state statp,
+ 			/* Always allocate MAXPACKET, callers expect
+ 			   this specific size.  */
+ 			u_char *newp = malloc (MAXPACKET);
+-			if (newp == NULL) {
+-				*terrno = ENOMEM;
+-				__res_iclose(statp, false);
+-				return (0);
+-			}
++			if (newp == NULL)
++			  {
++			    *terrno = ENOMEM;
++			    return close_and_return_error (statp, resplen2);
++			  }
+ 			*thisanssizp = MAXPACKET;
+ 			*thisansp = newp;
+ 			if (thisansp == ansp2)
+@@ -957,8 +956,7 @@ send_vc(res_state statp,
+ 		Dprint(statp->options & RES_DEBUG,
+ 		       (stdout, ";; undersized: %d\n", len));
+ 		*terrno = EMSGSIZE;
+-		__res_iclose(statp, false);
+-		return (0);
++		return close_and_return_error (statp, resplen2);
+ 	}
+ 
+ 	cp = *thisansp;
+@@ -969,8 +967,7 @@ send_vc(res_state statp,
+ 	if (__glibc_unlikely (n <= 0))       {
+ 		*terrno = errno;
+ 		Perror(statp, stderr, "read(vc)", errno);
+-		__res_iclose(statp, false);
+-		return (0);
++		return close_and_return_error (statp, resplen2);
+ 	}
+ 	if (__glibc_unlikely (truncating))       {
+ 		/*
