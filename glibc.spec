@@ -234,6 +234,7 @@ Patch1011: glibc-rh1332914-5.patch
 Patch1012: glibc-rh1313404-1.patch
 Patch1013: glibc-rh1313404-2.patch
 Patch1014: glibc-rh1313404-3.patch
+Patch1015: glibc-rh1321861.patch
 
 ##############################################################################
 #
@@ -667,6 +668,7 @@ microbenchmark tests on the system.
 %patch1012 -p1
 %patch1013 -p1
 %patch1014 -p1
+%patch1015 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1892,6 +1894,7 @@ rm -f *.filelist*
 - CVE-2016-3075: Stack overflow in _nss_dns_getnetbyname_r (#1321954)
 - April 2016 nss_dns hardening (#1332914)
 - Fix elf/tst-audit10 and elf/tst-audit4 failures (#1313404)
+- nss_db: Fix handling of long entries (#1321861)
 
 * Wed Mar 02 2016 Mike FABIAN <mfabian@redhat.com> - 2.22-11
 - Add the C.UTF-8 locale
