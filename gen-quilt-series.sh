@@ -30,5 +30,4 @@ if [ $fcount -ne $count ]; then
 fi
 echo "Processed $count patches."
 mv series.new series
-echo "Generated quilt ./series file, please commit."
 exit 0
