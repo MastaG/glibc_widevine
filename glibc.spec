@@ -243,6 +243,8 @@ Patch1020: glibc-rh1333901-2.patch
 Patch1021: glibc-rh1333901-3.patch
 Patch1022: glibc-rh1333901-4.patch
 Patch1023: glibc-rh1333901-5.patch
+Patch1024: glibc-rh1315648-1.patch
+Patch1025: glibc-rh1315648-2.patch
 
 ##############################################################################
 #
@@ -685,6 +687,8 @@ microbenchmark tests on the system.
 %patch1021 -p1
 %patch1022 -p1
 %patch1023 -p1
+%patch1024 -p1
+%patch1025 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1907,6 +1911,7 @@ rm -f *.filelist*
 %changelog
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
+- CVE-2016-1234: buffer overflow in glob with GLOB_ALTDIRFUNC (#1315648)
 
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-13
 - Avoid build failure in TZ tests (#1333940)
