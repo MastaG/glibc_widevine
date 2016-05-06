@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 13%{?dist}
+%define glibcrelease 14%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -238,6 +238,11 @@ Patch1015: glibc-rh1321861.patch
 Patch1016: glibc-rh1316972.patch
 Patch1017: glibc-rh1316972-2.patch
 Patch1018: glibc-rh1333940.patch
+Patch1019: glibc-rh1333901-1.patch
+Patch1020: glibc-rh1333901-2.patch
+Patch1021: glibc-rh1333901-3.patch
+Patch1022: glibc-rh1333901-4.patch
+Patch1023: glibc-rh1333901-5.patch
 
 ##############################################################################
 #
@@ -675,6 +680,11 @@ microbenchmark tests on the system.
 %patch1016 -p1
 %patch1017 -p1
 %patch1018 -p1
+%patch1019 -p1
+%patch1020 -p1
+%patch1021 -p1
+%patch1022 -p1
+%patch1023 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1895,6 +1905,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
+- Fix getnameinfo memory leak and incorrect truncation (#1333901)
+
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-13
 - Avoid build failure in TZ tests (#1333940)
 
