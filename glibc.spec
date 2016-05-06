@@ -247,6 +247,11 @@ Patch1024: glibc-rh1315648-1.patch
 Patch1025: glibc-rh1315648-2.patch
 Patch1026: glibc-rh1333945.patch
 Patch1027: glibc-rh1333945-2.patch
+Patch1028: glibc-rh1332917-1.patch
+Patch1029: glibc-rh1332917-2.patch
+Patch1030: glibc-rh1332917-3.patch
+Patch1031: glibc-rh1332917-4.patch
+Patch1032: glibc-rh1332917-5.patch
 
 ##############################################################################
 #
@@ -693,6 +698,11 @@ microbenchmark tests on the system.
 %patch1025 -p1
 %patch1026 -p1
 %patch1027 -p1
+%patch1028 -p1
+%patch1029 -p1
+%patch1030 -p1
+%patch1031 -p1
+%patch1032 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1917,6 +1927,7 @@ rm -f *.filelist*
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
 - CVE-2016-1234: buffer overflow in glob with GLOB_ALTDIRFUNC (#1315648)
 - Set dlerror after dlsym (RTLD_NEXT) failure (#1333945)
+- Fix deadlock between between fflush, getdelim, and fork (#1332917)
 
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-13
 - Avoid build failure in TZ tests (#1333940)

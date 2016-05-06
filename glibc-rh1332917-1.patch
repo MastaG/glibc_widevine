@@ -1,0 +1,82 @@
+commit 59eda029a8a35e5f4e5cd7be0f84c6629e48ec6e
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Feb 19 17:07:45 2016 +0100
+
+    malloc: Remove NO_THREADS
+    
+    No functional change.  It was not possible to build without
+    threading support before.
+
+Index: b/malloc/arena.c
+===================================================================
+--- a/malloc/arena.c
++++ b/malloc/arena.c
+@@ -135,8 +135,6 @@ int __malloc_initialized = -1;
+ 
+ /**************************************************************************/
+ 
+-#ifndef NO_THREADS
+-
+ /* atfork support.  */
+ 
+ static void *(*save_malloc_hook)(size_t __size, const void *);
+@@ -341,7 +339,6 @@ ptmalloc_unlock_all2 (void)
+ 
+ #  define ptmalloc_unlock_all2 ptmalloc_unlock_all
+ # endif
+-#endif  /* !NO_THREADS */
+ 
+ /* Initialization routine. */
+ #include <string.h>
+Index: b/malloc/malloc.c
+===================================================================
+--- a/malloc/malloc.c
++++ b/malloc/malloc.c
+@@ -1074,10 +1074,8 @@ static void*   realloc_check(void* oldme
+ 			       const void *caller);
+ static void*   memalign_check(size_t alignment, size_t bytes,
+ 				const void *caller);
+-#ifndef NO_THREADS
+ static void*   malloc_atfork(size_t sz, const void *caller);
+ static void      free_atfork(void* mem, const void *caller);
+-#endif
+ 
+ /* ------------------ MMAP support ------------------  */
+ 
+Index: b/sysdeps/generic/malloc-machine.h
+===================================================================
+--- a/sysdeps/generic/malloc-machine.h
++++ b/sysdeps/generic/malloc-machine.h
+@@ -22,30 +22,9 @@
+ 
+ #include <atomic.h>
+ 
+-#ifndef mutex_init /* No threads, provide dummy macros */
++#ifndef mutex_init
+ 
+-# define NO_THREADS
+-
+-/* The mutex functions used to do absolutely nothing, i.e. lock,
+-   trylock and unlock would always just return 0.  However, even
+-   without any concurrently active threads, a mutex can be used
+-   legitimately as an `in use' flag.  To make the code that is
+-   protected by a mutex async-signal safe, these macros would have to
+-   be based on atomic test-and-set operations, for example. */
+-typedef int mutex_t;
+-
+-# define mutex_init(m)          (*(m) = 0)
+-# define mutex_lock(m)          ({ *(m) = 1; 0; })
+-# define mutex_trylock(m)       (*(m) ? 1 : ((*(m) = 1), 0))
+-# define mutex_unlock(m)        (*(m) = 0)
+-# define MUTEX_INITIALIZER      (0)
+-
+-typedef void *tsd_key_t;
+-# define tsd_key_create(key, destr) do {} while(0)
+-# define tsd_setspecific(key, data) ((key) = (data))
+-# define tsd_getspecific(key, vptr) (vptr = (key))
+-
+-# define thread_atfork(prepare, parent, child) do {} while(0)
++#error NO_THREADS no longer supported
+ 
+ #endif /* !defined mutex_init */
+ 
