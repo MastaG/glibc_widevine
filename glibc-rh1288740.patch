@@ -1,0 +1,21 @@
+commit e535ce250143b9c1600b306911710c0de73e2a5e
+Author: Szabolcs Nagy <szabolcs.nagy@arm.com>
+Date:   Thu Feb 11 17:17:38 2016 +0000
+
+    [ARM] add missing -funwind-tables to test case (bug 19529)
+    
+    stdlib/tst-makecontext test failed on arm because it used backtrace
+    without -funwind-tables.
+
+diff --git a/stdlib/Makefile b/stdlib/Makefile
+index e406856..26fe67a 100644
+--- a/stdlib/Makefile
++++ b/stdlib/Makefile
+@@ -112,6 +112,7 @@ CFLAGS-strfmon_l.c = $(libio-mtsafe)
+ 
+ CFLAGS-tst-bsearch.c = $(stack-align-test-flags)
+ CFLAGS-tst-qsort.c = $(stack-align-test-flags)
++CFLAGS-tst-makecontext.c += -funwind-tables
+ CFLAGS-tst-makecontext2.c = $(stack-align-test-flags)
+ 
+ # Run a test on the header files we use.
