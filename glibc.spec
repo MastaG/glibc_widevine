@@ -258,6 +258,7 @@ Patch1035: glibc-rh1300311-1.patch
 Patch1036: glibc-rh1300311-2.patch
 Patch1037: glibc-rh1300311-3.patch
 Patch1038: glibc-rh1300311-4.patch
+Patch1039: glibc-rh1293139.patch
 
 ##############################################################################
 #
@@ -715,6 +716,7 @@ microbenchmark tests on the system.
 %patch1036 -p1
 %patch1037 -p1
 %patch1038 -p1
+%patch1039 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1939,6 +1941,7 @@ rm -f *.filelist*
 - Change first day of the week for es_CL to Monday (#1321372)
 - CVE-2015-8779: unbounded stack allocation in catopen (#1300314)
 - CVE-2014-9761: unbounded stack allocation in nan* functions (#1300311)
+- Fix invalid memory access in getmntent_r (#1293139)
 
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
