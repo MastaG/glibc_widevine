@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -252,6 +252,7 @@ Patch1029: glibc-rh1332917-2.patch
 Patch1030: glibc-rh1332917-3.patch
 Patch1031: glibc-rh1332917-4.patch
 Patch1032: glibc-rh1332917-5.patch
+Patch1033: glibc-rh1321372.patch
 
 ##############################################################################
 #
@@ -703,6 +704,7 @@ microbenchmark tests on the system.
 %patch1030 -p1
 %patch1031 -p1
 %patch1032 -p1
+%patch1033 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1923,6 +1925,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat May  7 2016 Florian Weimer <fweimer@redhat.com> - 2.22-15
+- Change first day of the week for es_CL to Monday (#1321372)
+
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
 - CVE-2016-1234: buffer overflow in glob with GLOB_ALTDIRFUNC (#1315648)
