@@ -1,0 +1,46 @@
+commit f34f146e682d8d529dcf64b3c2781bf3f2f05f6c
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Feb 12 12:57:40 2016 +0100
+
+    hsearch_r: Apply VM size limit in test case
+
+diff --git a/misc/bug18240.c b/misc/bug18240.c
+index 4b26865..773586e 100644
+--- a/misc/bug18240.c
++++ b/misc/bug18240.c
+@@ -22,6 +22,7 @@
+ #include <stdbool.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <sys/resource.h>
+ 
+ static void
+ test_size (size_t size)
+@@ -58,6 +59,27 @@ test_size (size_t size)
+ static int
+ do_test (void)
+ {
++  /* Limit the size of the process, so that memory allocation will
++     fail without impacting the entire system.  */
++  {
++    struct rlimit limit;
++    if (getrlimit (RLIMIT_AS, &limit) != 0)
++      {
++        printf ("getrlimit (RLIMIT_AS) failed: %m\n");
++        return 1;
++      }
++    long target = 100 * 1024 * 1024;
++    if (limit.rlim_cur == RLIM_INFINITY || limit.rlim_cur > target)
++      {
++        limit.rlim_cur = target;
++        if (setrlimit (RLIMIT_AS, &limit) != 0)
++          {
++            printf ("setrlimit (RLIMIT_AS) failed: %m\n");
++            return 1;
++          }
++      }
++  }
++
+   test_size (500);
+   test_size (-1);
+   test_size (-3);
