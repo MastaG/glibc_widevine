@@ -259,6 +259,7 @@ Patch1036: glibc-rh1300311-2.patch
 Patch1037: glibc-rh1300311-3.patch
 Patch1038: glibc-rh1300311-4.patch
 Patch1039: glibc-rh1293139.patch
+Patch1040: glibc-rh1300300.patch
 
 ##############################################################################
 #
@@ -717,6 +718,7 @@ microbenchmark tests on the system.
 %patch1037 -p1
 %patch1038 -p1
 %patch1039 -p1
+%patch1040 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1942,6 +1944,7 @@ rm -f *.filelist*
 - CVE-2015-8779: unbounded stack allocation in catopen (#1300314)
 - CVE-2014-9761: unbounded stack allocation in nan* functions (#1300311)
 - Fix invalid memory access in getmntent_r (#1293139)
+- CVE-2015-8776: crash with invalid data in strftime (#1300300)
 
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
