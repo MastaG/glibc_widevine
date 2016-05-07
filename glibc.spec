@@ -253,6 +253,7 @@ Patch1030: glibc-rh1332917-3.patch
 Patch1031: glibc-rh1332917-4.patch
 Patch1032: glibc-rh1332917-5.patch
 Patch1033: glibc-rh1321372.patch
+Patch1034: glibc-rh1300314.patch
 
 ##############################################################################
 #
@@ -705,6 +706,7 @@ microbenchmark tests on the system.
 %patch1031 -p1
 %patch1032 -p1
 %patch1033 -p1
+%patch1034 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1927,6 +1929,7 @@ rm -f *.filelist*
 %changelog
 * Sat May  7 2016 Florian Weimer <fweimer@redhat.com> - 2.22-15
 - Change first day of the week for es_CL to Monday (#1321372)
+- CVE-2015-8779: unbounded stack allocation in catopen (#1300314)
 
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
