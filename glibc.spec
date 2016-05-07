@@ -263,6 +263,8 @@ Patch1040: glibc-rh1300300.patch
 Patch1041: glibc-rh1300304-1.patch
 Patch1042: glibc-rh1300304-2.patch
 Patch1043: glibc-rh1300304-3.patch
+Patch1044: glibc-rh1307234-1.patch
+Patch1045: glibc-rh1307234-2.patch
 
 ##############################################################################
 #
@@ -725,6 +727,8 @@ microbenchmark tests on the system.
 %patch1041 -p1
 %patch1042 -p1
 %patch1043 -p1
+%patch1044 -p1
+%patch1045 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1952,6 +1956,7 @@ rm -f *.filelist*
 - Fix invalid memory access in getmntent_r (#1293139)
 - CVE-2015-8776: crash with invalid data in strftime (#1300300)
 - CVE-2015-8778: integer overflow in hcreate and hcreate_r (#1300304)
+- Fix strfmon_l to use the locale object for grouping (#1307234)
 
 * Fri May  6 2016 Florian Weimer <fweimer@redhat.com> - 2.22-14
 - Fix getnameinfo memory leak and incorrect truncation (#1333901)
