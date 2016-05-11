@@ -1,3 +1,6 @@
+Partial backport of upstream commit 0a410e76f551c6e6cf6d128f618208049d6a952c
+(localedata: CLDRv29: update LC_TIME week/first_week,workday fields).
+
 Index: b/localedata/locales/hr_HR
 ===================================================================
 --- a/localedata/locales/hr_HR
