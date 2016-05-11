@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -245,8 +245,6 @@ Patch1022: glibc-rh1333901-4.patch
 Patch1023: glibc-rh1333901-5.patch
 Patch1024: glibc-rh1315648-1.patch
 Patch1025: glibc-rh1315648-2.patch
-Patch1026: glibc-rh1333945.patch
-Patch1027: glibc-rh1333945-2.patch
 Patch1028: glibc-rh1332917-1.patch
 Patch1029: glibc-rh1332917-2.patch
 Patch1030: glibc-rh1332917-3.patch
@@ -710,8 +708,6 @@ microbenchmark tests on the system.
 %patch1023 -p1
 %patch1024 -p1
 %patch1025 -p1
-%patch1026 -p1
-%patch1027 -p1
 %patch1028 -p1
 %patch1029 -p1
 %patch1030 -p1
@@ -1951,6 +1947,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed May 11 2016 Florian Weimer <fweimer@redhat.com> - 2.22-16
+- Back out dlsym (RTLD_NEXT)/dlerror change (#1333945)
+  because it reveals an ASAN bug (#1335011)
+
 * Sat May  7 2016 Florian Weimer <fweimer@redhat.com> - 2.22-15
 - Change first day of the week for es_CL to Monday (#1321372)
 - CVE-2015-8779: unbounded stack allocation in catopen (#1300314)
