@@ -264,6 +264,7 @@ Patch1043: glibc-rh1300304-3.patch
 Patch1044: glibc-rh1307234-1.patch
 Patch1045: glibc-rh1307234-2.patch
 Patch1046: glibc-rh1288740.patch
+Patch1047: glibc-rh1330888.patch
 
 ##############################################################################
 #
@@ -727,6 +728,7 @@ microbenchmark tests on the system.
 %patch1044 -p1
 %patch1045 -p1
 %patch1046 -p1
+%patch1047 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1950,6 +1952,7 @@ rm -f *.filelist*
 * Wed May 11 2016 Florian Weimer <fweimer@redhat.com> - 2.22-16
 - Back out dlsym (RTLD_NEXT)/dlerror change (#1333945)
   because it reveals an ASAN bug (#1335011)
+- CVE-2016-3706: stack overflow in getaddrinfo hostent conversion (#1330888)
 
 * Sat May  7 2016 Florian Weimer <fweimer@redhat.com> - 2.22-15
 - Change first day of the week for es_CL to Monday (#1321372)
