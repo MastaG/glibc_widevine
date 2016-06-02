@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -267,6 +267,7 @@ Patch1046: glibc-rh1288740.patch
 Patch1047: glibc-rh1330888.patch
 Patch1048: glibc-rh1204521.patch
 Patch1049: glibc-rh1282011.patch
+Patch1050: glibc-rh1337140.patch
 
 ##############################################################################
 #
@@ -733,6 +734,7 @@ microbenchmark tests on the system.
 %patch1047 -p1
 %patch1048 -p1
 %patch1049 -p1
+%patch1050 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1953,6 +1955,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
+- CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
+
 * Wed May 11 2016 Florian Weimer <fweimer@redhat.com> - 2.22-16
 - Back out dlsym (RTLD_NEXT)/dlerror change (#1333945)
   because it reveals an ASAN bug (#1335011)
