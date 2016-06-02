@@ -269,6 +269,7 @@ Patch1048: glibc-rh1204521.patch
 Patch1049: glibc-rh1282011.patch
 Patch1050: glibc-rh1337140.patch
 Patch1051: glibc-rh1326903.patch
+Patch1052: glibc-rh1337291.patch
 
 ##############################################################################
 #
@@ -737,6 +738,7 @@ microbenchmark tests on the system.
 %patch1049 -p1
 %patch1050 -p1
 %patch1051 -p1
+%patch1052 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1960,6 +1962,7 @@ rm -f *.filelist*
 * Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
 - CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
 - Fix fork redirection in libpthread (#1326903)
+- struct sockaddr_storage GCC 6 enablement (#1337291)
 
 * Wed May 11 2016 Florian Weimer <fweimer@redhat.com> - 2.22-16
 - Back out dlsym (RTLD_NEXT)/dlerror change (#1333945)
