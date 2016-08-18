@@ -273,6 +273,7 @@ Patch1052: glibc-rh1337291.patch
 Patch1053: glibc-build-time.patch
 Patch1054: glibc-rh1352625.patch
 Patch1055: glibc-rh1348620.patch
+Patch1056: glibc-swbz20435.patch
 
 ##############################################################################
 #
@@ -745,6 +746,7 @@ microbenchmark tests on the system.
 %patch1053 -p1
 %patch1054 -p1
 %patch1055 -p1
+%patch1056 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1969,6 +1971,7 @@ rm -f *.filelist*
 - Build time improvements
 - Avoid duplicating object files already in libc.a (#1352625)
 - malloc: Avoid premature fallback to mmap (#1348620)
+- CVE-2016-6323: Backtraces can hang on ARM EABI (32-bit) (swbz#20435)
 
 * Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
 - CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
