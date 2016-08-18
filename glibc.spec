@@ -277,6 +277,7 @@ Patch1056: glibc-swbz20435.patch
 Patch1057: glibc-rh1294574.patch
 Patch1058: glibc-rh1344480.patch
 Patch1059: glibc-swbz20222.patch
+Patch1060: glibc-rh1366830.patch
 
 ##############################################################################
 #
@@ -753,6 +754,7 @@ microbenchmark tests on the system.
 %patch1057 -p1
 %patch1058 -p1
 %patch1059 -p1
+%patch1060 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1981,6 +1983,7 @@ rm -f *.filelist*
 - Return proper status from _nss_nis_initgroups_dyn (#1294574)
 - nss_db: Fix initialization of iteration position (#1344480)
 - fopencookie: Mangle function pointers stored on the heap (swbz#20222)
+- argp: Do not override GCC keywords with macros (#1366830)
 
 * Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
 - CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
