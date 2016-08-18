@@ -275,6 +275,7 @@ Patch1054: glibc-rh1352625.patch
 Patch1055: glibc-rh1348620.patch
 Patch1056: glibc-swbz20435.patch
 Patch1057: glibc-rh1294574.patch
+Patch1058: glibc-rh1344480.patch
 
 ##############################################################################
 #
@@ -749,6 +750,7 @@ microbenchmark tests on the system.
 %patch1055 -p1
 %patch1056 -p1
 %patch1057 -p1
+%patch1058 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1975,6 +1977,7 @@ rm -f *.filelist*
 - malloc: Avoid premature fallback to mmap (#1348620)
 - CVE-2016-6323: Backtraces can hang on ARM EABI (32-bit) (swbz#20435)
 - Return proper status from _nss_nis_initgroups_dyn (#1294574)
+- nss_db: Fix initialization of iteration position (#1344480)
 
 * Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
 - CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
