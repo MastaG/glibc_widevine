@@ -272,6 +272,7 @@ Patch1051: glibc-rh1326903.patch
 Patch1052: glibc-rh1337291.patch
 Patch1053: glibc-build-time.patch
 Patch1054: glibc-rh1352625.patch
+Patch1055: glibc-rh1348620.patch
 
 ##############################################################################
 #
@@ -743,6 +744,7 @@ microbenchmark tests on the system.
 %patch1052 -p1
 %patch1053 -p1
 %patch1054 -p1
+%patch1055 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1966,6 +1968,7 @@ rm -f *.filelist*
 * Thu Aug 18 2016 Florian Weimer <fweimer@redhat.com> - 2.22-18
 - Build time improvements
 - Avoid duplicating object files already in libc.a (#1352625)
+- malloc: Avoid premature fallback to mmap (#1348620)
 
 * Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
 - CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
