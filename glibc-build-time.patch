@@ -1,0 +1,22 @@
+Various patches to improve build time.
+
+commit e07eca6a72d21a5a37ba33df7b126609db048c41
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Aug 17 16:14:02 2016 +0200
+
+    nptl/tst-once5: Reduce time to expected failure
+    
+    (cherry picked from commit 1f645571d2db9008b3cd3d5acb9ff93357864283)
+
+diff --git a/nptl/tst-once5.cc b/nptl/tst-once5.cc
+index 60bc78a..a6985b0 100644
+--- a/nptl/tst-once5.cc
++++ b/nptl/tst-once5.cc
+@@ -76,5 +76,7 @@ do_test (void)
+   return result;
+ }
+ 
++// The test currently hangs and is XFAILed.  Reduce the timeout.
++#define TIMEOUT 1
+ #define TEST_FUNCTION do_test ()
+ #include "../test-skeleton.c"

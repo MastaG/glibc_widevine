@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.22
 %define glibcversion 2.22
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -270,6 +270,7 @@ Patch1049: glibc-rh1282011.patch
 Patch1050: glibc-rh1337140.patch
 Patch1051: glibc-rh1326903.patch
 Patch1052: glibc-rh1337291.patch
+Patch1053: glibc-build-time.patch
 
 ##############################################################################
 #
@@ -739,6 +740,7 @@ microbenchmark tests on the system.
 %patch1050 -p1
 %patch1051 -p1
 %patch1052 -p1
+%patch1053 -p1
 %patch0059 -p1
 
 ##############################################################################
@@ -1959,6 +1961,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Aug 18 2016 Florian Weimer <fweimer@redhat.com> - 2.22-18
+- Build time improvements
+
 * Thu Jun  2 2016 Florian Weimer <fweimer@redhat.com> - 2.22-17
 - CVE-2016-4429: stack overflow in Sun RPC clntudp_call (#1337140)
 - Fix fork redirection in libpthread (#1326903)
