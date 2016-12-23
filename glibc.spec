@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.24-11-g8c716c2
+%define glibcsrcdir  glibc-2.24-33-ge9e69e4
 %define glibcversion 2.24
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2266,6 +2266,19 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Dec 23 2016 Carlos O'Donell <carlos@systemhalted.org> - 2.24-4
+- Auto-sync with upstream release/2.24/master,
+  commit e9e69e468039fcd57276f783a16aa771a8e4214e, fixing:
+- Shared object unload assert when calling dlclose (#1398370, swbz#11941)
+- Fix runtime resolver routines in the presence of AVX512 (swbz#20508)
+- Fix writes past the allocated array bounds in execvpe (swbz#20847)
+- Fix building with GCC 6.2 on i686 with stack protector.
+- Fix building with GCC 7.
+- Fix POWER6 memset with recent binutils.
+- Fix POWER math test expected failures.
+- Fix cancellation in posix_spawn.
+- Fix multiarch builds for POWER9.
+
 * Thu Aug 18 2016 Florian Weimer <fweimer@redhat.com> - 2.24-3
 - Auto-sync with upstream release/2.24/master,
   commit 8c716c2e2f916bc18a3857129c181b96990a87d6, fixing:

@@ -1,9 +1,10 @@
 #!/bin/bash
+set -e
 # Patches are in the current directory.
 export QUILT_PATCHES=$PWD
 # Extract source file name from sources file,
 # and assume it's the same name as the directory.
-source=`cat sources | sed -e 's,^.*  ,,g'`
+source=`cat sources | sed -e 's,^.*(\(.*\)).*,\1,g'`
 srcdir=${source%.tar.gz}
 if [ "$1" == "-f" ] && [ -d "$srcdir" ]; then
     echo Cleaning up $srcdir
