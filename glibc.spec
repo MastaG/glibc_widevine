@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.24-33-ge9e69e4
 %define glibcversion 2.24
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2266,6 +2266,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jan 27 2017 Florian Weimer <fweimer@redhat.com> - 2.24-5
+- Use vpath in crypt-glibc/Makefile to obtain the test input file.
+
 * Fri Dec 23 2016 Carlos O'Donell <carlos@systemhalted.org> - 2.24-4
 - Auto-sync with upstream release/2.24/master,
   commit e9e69e468039fcd57276f783a16aa771a8e4214e, fixing:

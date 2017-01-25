@@ -10,7 +10,7 @@ Index: b/crypt-glibc/Makefile
 ===================================================================
 --- /dev/null
 +++ b/crypt-glibc/Makefile
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,61 @@
 +# Build libcrypt against internal cryptographic algorithms.
 +# Copyright (C) 1996-2016 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
@@ -41,6 +41,7 @@ Index: b/crypt-glibc/Makefile
 +
 +# Use the sources in the crypt subdirectory.
 +vpath %.c ../crypt
++vpath %.input ../crypt
 +
 +libcrypt-routines := \
 +  crypt-entry md5-crypt sha256-crypt sha512-crypt crypt crypt_util
@@ -85,7 +86,7 @@ Index: b/crypt/sha256.c
 ===================================================================
 --- a/crypt/sha256.c
 +++ b/crypt/sha256.c
-@@ -212,4 +212,4 @@ __sha256_process_bytes (const void *buff
+@@ -211,4 +211,4 @@ __sha256_process_bytes (const void *buff
      }
  }
  
