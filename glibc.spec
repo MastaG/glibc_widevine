@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-3-g93cf93e
-%define glibcversion 2.25
-%define glibcrelease 3%{?dist}
+%define glibcsrcdir  glibc-2.25-80-ga10e9c4
+%define glibcversion 2.25.90
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -290,9 +290,6 @@ Patch2036: glibc-gcc-PR69537.patch
 
 # extend_alloca removal, BZ 18023
 Patch2037: glibc-rh1315108.patch
-
-# Upstream BZ 20313
-Patch2110: glibc-rh1351108-update-to-unicode-9.0.0.patch
 
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
@@ -863,7 +860,6 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2036 -p1
 %patch2037 -p1
-%patch2110 -p1
 %patch2112 -p1
 %patch0061 -p1
 
@@ -2270,6 +2266,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Mar 02 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-1
+- Switch back to upstream master branch.
+- Drop Unicode 9 patch, merged upstream.
+- Auto-sync with upstream master,
+  commit a10e9c4e53fc652b79abf838f7f837589d2c84db, fixing:
+- Build all DSOs with BIND_NOW (#1406731)
+
 * Wed Mar  1 2017 Jakub Hrozek <jhrozek@redhat.com> - 2.25-3
 - NSS: Prefer sss service for passwd, group databases (#1427646)
 
