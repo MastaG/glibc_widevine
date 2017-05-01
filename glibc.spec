@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-80-ga10e9c4
+%define glibcsrcdir  glibc-2.25-258-g25e39b4
 %define glibcversion 2.25.90
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2267,6 +2267,22 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon May 01 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.25.90-2
+- Auto-sync with upstream master,
+  commit 25e39b4229fb365a605dc4c8f5d6426a77bc08a6.
+- logbl for POWER7 return incorrect results (swbz#21280)
+- sys/socket.h uio.h namespace (swbz#21426)
+- Support POSIX_SPAWN_SETSID (swbz#21340)
+- Document how to provide a malloc replacement (swbz#20424)
+- Verify that all internal sockets opened with SOCK_CLOEXEC (swbz#15722)
+- Use AVX2 memcpy/memset on Skylake server (swbz#21396)
+- unwind-dw2-fde deadlock when using AddressSanitizer (swbz#21357)
+- resolv: Reduce advertised EDNS0 buffer size to guard against
+  fragmentation attacks (swbz#21361)
+- mmap64 silently truncates large offset values (swbz#21270)
+- _dl_map_segments does not test for __mprotect failures consistently
+  (swbz#20831)
+
 * Thu Mar 02 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-1
 - Switch back to upstream master branch.
 - Drop Unicode 9 patch, merged upstream.
