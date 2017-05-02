@@ -1033,6 +1033,7 @@ build()
 		--enable-stack-protector=strong \
 		--enable-tunables \
 		--enable-obsolete-rpc \
+		--enable-obsolete-nsl \
 		--enable-systemtap \
 		${core_with_options} \
 %ifarch %{lock_elision_arches}
