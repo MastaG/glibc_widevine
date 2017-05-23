@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-258-g25e39b4
+%define glibcsrcdir  glibc-2.25-362-g231a59c
 %define glibcversion 2.25.90
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2268,6 +2268,21 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue May 23 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-3
+- Auto-sync with upstream master,
+  commit 231a59ce2c5719d2d77752c21092960e28837b4a.
+- Add el_GR@euro support (swbz#20686)
+- Set dl_platform and dl_hwcap from CPU features (swbz#21391)
+- Use __glibc_reserved convention in mcontext, sigcontext (swbz#21457)
+- Fix signal.h bsd_signal namespace (swbz#21445)
+- Fix network headers stdint.h namespace (swbz#21455)
+- resolv: Use RES_DFLRETRY consistently (swbz#21474)
+- Condition some sys/ucontext.h contents on __USE_MISC (swbz#21457)
+- Consolidate Linux read syscall (swbz#21428)
+- fork: Remove bogus parent PID assertions (swbz#21386)
+- Reduce value of LD_HWCAP_MASK for tst-env-setuid test case (swbz#21502)
+- libio: Avoid dup already opened file descriptor (swbz#21393)
+
 * Mon May 01 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.25.90-2
 - Auto-sync with upstream master,
   commit 25e39b4229fb365a605dc4c8f5d6426a77bc08a6.
