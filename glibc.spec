@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-362-g231a59c
 %define glibcversion 2.25.90
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -294,6 +294,12 @@ Patch2037: glibc-rh1315108.patch
 
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
+
+# Disable the NULL buffer test in login/tst-ptsname.c. It leads to a build
+# failure during 'make check'. A solution is being discussed at:
+# * [v1] https://sourceware.org/ml/libc-alpha/2017-05/msg00726.html
+# * [v2] https://sourceware.org/ml/libc-alpha/2017-05/msg00835.html
+Patch2200: glibc-Disable-buf-NULL-in-login-tst-ptsname.c
 
 ##############################################################################
 # End of glibc patches.
@@ -863,6 +869,7 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2112 -p1
 %patch0061 -p1
+%patch2200 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2268,6 +2275,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed May 31 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-4
+- Disable the NULL buffer test in login/tst-ptsname.c. It leads to a build
+  failure during 'make check'. A permanent solution is being discussed
+  upstream.
 * Tue May 23 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-3
 - Auto-sync with upstream master,
   commit 231a59ce2c5719d2d77752c21092960e28837b4a.
