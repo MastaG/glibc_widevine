@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-362-g231a59c
+%define glibcsrcdir  glibc-2.25-378-gcfa9bb6
 %define glibcversion 2.25.90
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2275,10 +2275,17 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed May 31 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-5
+- Auto-sync with upstream master,
+  commit cfa9bb61cd09c40def96f042a3123ec0093c4ad0.
+- Fix sys/ucontext.h namespace from signal.h etc. inclusion (swbz#21457)
+- Fix sigstack namespace (swbz#21511)
+
 * Wed May 31 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-4
 - Disable the NULL buffer test in login/tst-ptsname.c. It leads to a build
   failure during 'make check'. A permanent solution is being discussed
   upstream.
+
 * Tue May 23 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-3
 - Auto-sync with upstream master,
   commit 231a59ce2c5719d2d77752c21092960e28837b4a.
