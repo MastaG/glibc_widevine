@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-4-g69e0a87
+%define glibcsrcdir  glibc-2.25-16-g34b6f41
 %define glibcversion 2.25
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2270,6 +2270,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jun 05 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25-5
+- Auto-sync with upstream release/2.25/master,
+  commit 34b6f41c14d09fe627c6a6224880d76d0959079e, fixing:
+- Fix test-math-vector-sincos.h aliasing (ffe308e)
+
 * Thu Mar 02 2017 Florian Weimer <fweimer@redhat.com> - 2.25-4
 - Auto-sync with upstream release/2.25/master,
   commit 69e0a87cc4c570e3b7218392fc3e743b5bddcce2, fixing:
