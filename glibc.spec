@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-378-gcfa9bb6
 %define glibcversion 2.25.90
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -326,7 +326,7 @@ Requires: glibc-common = %{version}-%{release}
 
 %if %{without bootstrap}
 # Use the NSS-based cryptographic libraries by default.
-Recommends: libcrypt-nss%{_isa}
+Suggests: libcrypt-nss%{_isa}
 %endif
 
 Requires(pre): basesystem
@@ -2275,6 +2275,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun 06 2017 Stephen Gallagher <sgallagh@redhat.com> - 2.25.90-6
+- Reduce libcrypt-nss dependency to 'Suggests:'
+
 * Wed May 31 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-5
 - Auto-sync with upstream master,
   commit cfa9bb61cd09c40def96f042a3123ec0093c4ad0.
