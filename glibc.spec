@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.24-33-ge9e69e4
+%define glibcsrcdir  glibc-2.24-51-g7b60553
 %define glibcversion 2.24
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2266,6 +2266,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jun 07 2017 Arjun Shankar <arjun.is@lostca.se> - 2.24-6
+- Auto-sync with upstream release/2.24/master,
+  commit 7b60553e360731338631ccdda71590ac5deca137, fixing:
+- Remove the PID cache  (#1443976)
+
 * Fri Jan 27 2017 Florian Weimer <fweimer@redhat.com> - 2.24-5
 - Use vpath in crypt-glibc/Makefile to obtain the test input file.
 
