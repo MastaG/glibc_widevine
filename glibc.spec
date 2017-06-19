@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-378-gcfa9bb6
+%define glibcsrcdir  glibc-2.25-518-g37e9dc8
 %define glibcversion 2.25.90
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -294,12 +294,6 @@ Patch2037: glibc-rh1315108.patch
 
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
-
-# Disable the NULL buffer test in login/tst-ptsname.c. It leads to a build
-# failure during 'make check'. A solution is being discussed at:
-# * [v1] https://sourceware.org/ml/libc-alpha/2017-05/msg00726.html
-# * [v2] https://sourceware.org/ml/libc-alpha/2017-05/msg00835.html
-Patch2200: glibc-Disable-buf-NULL-in-login-tst-ptsname.c
 
 ##############################################################################
 # End of glibc patches.
@@ -869,7 +863,6 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2112 -p1
 %patch0061 -p1
-%patch2200 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2275,6 +2268,38 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jun 19 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-7
+- Drop glibc-Disable-buf-NULL-in-login-tst-ptsname.c, applied upstream.
+- Auto-sync with upstream master,
+  commit 37e9dc814636915afb88d0779e5e897e90e7b8c0, fixing:
+- CVE-2017-1000366: Avoid large allocas in the dynamic linker (#1462820)
+- wait3 namespace (swbz#21625)
+- S390: Sync ptrace.h with kernel (swbz#21539)
+- Another x86 sys/ucontext.h namespace issue (swbz#21457)
+- siginterrupt namespace (swbz#21597)
+- Signal stack namespace (swbz#21584)
+- Define struct rusage in sys/wait.h when required (swbz#21575)
+- S390: Fix build with gcc configured with --enable-default-pie (swbz#21537)
+- Update timezone code from tzcode 2017b
+- nptl: Invert the mmap/mprotect logic on allocated stacks (swbz#18988)
+- PowerPC64 ELFv2 PPC64_OPT_LOCALENTRY
+- Make copy of <bits/std_abs.h> from GCC (swbz#21573)
+- localedata: ce_RU: update weekdays from CLDR (swbz#21207)
+- localedata: Remove trailing spaces (swbz#20275)
+- XPG4 bsd_signal namespace (swbz#21552)
+- Correct collation rules for Malayalam (swbz#19922, swbz#19919)
+- waitid namespace (swbz#21561)
+- Condition signal.h inclusion in sys/wait.h (swbz#21560)
+- ld.so: Consolidate 2 strtouls into _dl_strtoul (swbz#21528)
+- tst-timezone race (swbz#14096)
+- Define SIG_HOLD for XPG4 (swbz#21538)
+- struct sigaltstack namespace (swbz#21517)
+- sigevent namespace (swbz#21543)
+- Add shim header for bits/syscall.h (swbz#21514)
+- namespace issues in sys/ucontext.h (swbz#21457)
+- posix: Implement preadv2 and pwritev2
+- Various float128 and tunables improvements
+
 * Tue Jun 06 2017 Stephen Gallagher <sgallagh@redhat.com> - 2.25.90-6
 - Reduce libcrypt-nss dependency to 'Suggests:'
 
