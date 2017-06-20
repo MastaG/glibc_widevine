@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.23-85-g422facf
+%define glibcsrcdir  glibc-2.23-101-gd990d79
 %define glibcversion 2.23.1
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2120,6 +2120,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun 20 2017 Florian Weimer <fweimer@redhat.com> - 2.23.1-12
+- Auto-sync with upstream release/2.23/master,
+  commit d990d79610362f823292f9d869b84b4ec4491159, fixing:
+- CVE-2017-1000366: Avoid large allocas in the dynamic linker (#1462820)
+- Ignore and remove LD_HWCAP_MASK for AT_SECURE programs (swbz#21209)
+- Correct collation rules for Malayalam (swbz#19922, swbz#19919)
+- fts: Fix symbol redirect for fts_set (swbz#21289)
+- powerpc: Fix write-after-destroy in lock elision (swbz#20822)
+- localedata: bs_BA: fix yesexpr/noexpr (swbz#20974)
+
 * Wed Nov 02 2016 Florian Weimer <fweimer@redhat.com> - 2.23.1-11
 - Auto-sync with upstream release/2.23/master,
   commit 422facff9f2c4972e2dc46090a704d11b840b0c0, fixing:
