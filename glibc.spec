@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-16-g34b6f41
+%define glibcsrcdir  glibc-2.25-23-gadc7e06
 %define glibcversion 2.25
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2270,6 +2270,14 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jun 20 2017 Florian Weimer <fweimer@redhat.com> - 2.25-6
+- Auto-sync with upstream release/2.25/master,
+  commit adc7e06fb412a2a1ee52f8cb788caf436335b9f3, fixing:
+- CVE-2017-1000366: Avoid large allocas in the dynamic linker (#1462820)
+- Ignore and remove LD_HWCAP_MASK for AT_SECURE programs (swbz#21209)
+- Correct collation rules for Malayalam (swbz#19922, swbz#19919)
+- fork: Remove bogus parent PID assertions (swbz#21386)
+
 * Mon Jun 05 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25-5
 - Auto-sync with upstream release/2.25/master,
   commit 34b6f41c14d09fe627c6a6224880d76d0959079e, fixing:

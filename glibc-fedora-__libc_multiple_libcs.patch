@@ -21,10 +21,11 @@
 #  elf/rtld.c       |    4 ----
 #  4 files changed, 7 insertions(+), 10 deletions(-)
 # 
-diff -urN glibc-2.20-205-ga39208b/elf/dl-init.c glibc-2.20-205-ga39208b.mod/elf/dl-init.c
---- glibc-2.20-205-ga39208b/elf/dl-init.c	2014-11-21 16:08:32.744913590 -0500
-+++ glibc-2.20-205-ga39208b.mod/elf/dl-init.c	2014-11-21 16:09:42.485708197 -0500
-@@ -119,8 +119,6 @@
+Index: b/elf/dl-init.c
+===================================================================
+--- a/elf/dl-init.c
++++ b/elf/dl-init.c
+@@ -119,8 +119,6 @@ _dl_init (struct link_map *main_map, int
    while (i-- > 0)
      call_init (main_map->l_initfini[i], argc, argv, env);
  
@@ -33,10 +34,11 @@ diff -urN glibc-2.20-205-ga39208b/elf/dl-init.c glibc-2.20-205-ga39208b.mod/elf/
    _dl_starting_up = 0;
 -#endif
  }
-diff -urN glibc-2.20-205-ga39208b/elf/dl-support.c glibc-2.20-205-ga39208b.mod/elf/dl-support.c
---- glibc-2.20-205-ga39208b/elf/dl-support.c	2014-11-19 14:35:03.000000000 -0500
-+++ glibc-2.20-205-ga39208b.mod/elf/dl-support.c	2014-11-21 16:09:54.829671843 -0500
-@@ -118,10 +118,8 @@
+Index: b/elf/dl-support.c
+===================================================================
+--- a/elf/dl-support.c
++++ b/elf/dl-support.c
+@@ -117,10 +117,8 @@ struct r_scope_elem _dl_initial_searchli
      .r_nlist = 1,
    };
  
@@ -47,18 +49,19 @@ diff -urN glibc-2.20-205-ga39208b/elf/dl-support.c glibc-2.20-205-ga39208b.mod/e
  
  /* Random data provided by the kernel.  */
  void *_dl_random;
-diff -urN glibc-2.20-205-ga39208b/elf/rtld.c glibc-2.20-205-ga39208b.mod/elf/rtld.c
---- glibc-2.20-205-ga39208b/elf/rtld.c	2014-11-21 16:08:32.745913587 -0500
-+++ glibc-2.20-205-ga39208b.mod/elf/rtld.c	2014-11-21 16:09:05.614816785 -0500
-@@ -107,7 +107,6 @@
-   struct audit_list *next;
- } *audit_list;
+Index: b/elf/rtld.c
+===================================================================
+--- a/elf/rtld.c
++++ b/elf/rtld.c
+@@ -214,7 +214,6 @@ audit_list_iter_next (struct audit_list_
+   return iter->previous->name;
+ }
  
 -#ifndef HAVE_INLINED_SYSCALLS
  /* Set nonzero during loading and initialization of executable and
     libraries, cleared before the executable's entry point runs.  This
     must not be initialized to nonzero, because the unused dynamic
-@@ -117,7 +116,6 @@
+@@ -224,7 +223,6 @@ audit_list_iter_next (struct audit_list_
     never be called.  */
  int _dl_starting_up = 0;
  rtld_hidden_def (_dl_starting_up)
@@ -66,7 +69,7 @@ diff -urN glibc-2.20-205-ga39208b/elf/rtld.c glibc-2.20-205-ga39208b.mod/elf/rtl
  
  /* This is the structure which defines all variables global to ld.so
     (except those which cannot be added for some reason).  */
-@@ -776,10 +774,8 @@
+@@ -898,10 +896,8 @@ dl_main (const ElfW(Phdr) *phdr,
    /* Process the environment variable which control the behaviour.  */
    process_envvars (&mode);
  
