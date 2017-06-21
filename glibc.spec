@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-518-g37e9dc8
+%define glibcsrcdir  glibc-2.25-536-g43e0ac2
 %define glibcversion 2.25.90
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -363,8 +363,8 @@ BuildRequires: python
 
 # This is to ensure that __frame_state_for is exported by glibc
 # will be compatible with egcs 1.x.y
-BuildRequires: gcc >= 3.2
-%define enablekernel 2.6.32
+BuildRequires: gcc >= 4.9
+%define enablekernel 3.2
 Conflicts: kernel < %{enablekernel}
 %define target %{_target_cpu}-redhat-linux
 %ifarch %{arm}
@@ -381,16 +381,15 @@ Conflicts: kernel < %{enablekernel}
 %ifarch %{multiarcharches}
 # Need STT_IFUNC support
 %ifarch %{power64}
-BuildRequires: binutils >= 2.20.51.0.2
+BuildRequires: binutils >= 2.25
 Conflicts: binutils < 2.20.51.0.2
 %else
 %ifarch s390 s390x
-# Needed for STT_GNU_IFUNC support for s390/390x
-BuildRequires: binutils >= 2.23.52.0.1-8
+BuildRequires: binutils >= 2.25
 Conflicts: binutils < 2.23.52.0.1-8
 %else
 # Default to this version
-BuildRequires: binutils >= 2.19.51.0.10
+BuildRequires: binutils >= 2.25
 Conflicts: binutils < 2.19.51.0.10
 %endif
 %endif
@@ -399,13 +398,9 @@ Conflicts: prelink < 0.4.2
 %else
 # Need AS_NEEDED directive
 # Need --hash-style=* support
-BuildRequires: binutils >= 2.17.50.0.2-5
+BuildRequires: binutils >= 2.25
 %endif
 
-BuildRequires: gcc >= 3.2.1-5
-%ifarch s390 s390x
-BuildRequires: gcc >= 4.1.0-0.17
-%endif
 %if 0%{?_enable_debug_packages}
 BuildRequires: elfutils >= 0.72
 BuildRequires: rpm >= 4.2-0.56
@@ -568,7 +563,7 @@ Obsoletes: %{name}-headers(i686)
 %endif
 Requires(pre): kernel-headers
 Requires: kernel-headers >= 2.2.1, %{name} = %{version}-%{release}
-BuildRequires: kernel-headers >= 2.6.22
+BuildRequires: kernel-headers >= 3.2
 
 %description headers
 The glibc-headers package contains the header files necessary
@@ -2268,6 +2263,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-8
+- Adjust build requirements for gcc, binutils, kernel-headers.
+- Auto-sync with upstream master,
+  commit 43e0ac24c836eed627a75ca932eb7e64698407c6, changing:
+- Remove <xlocale.h>
+
 * Mon Jun 19 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-7
 - Drop glibc-Disable-buf-NULL-in-login-tst-ptsname.c, applied upstream.
 - Auto-sync with upstream master,
