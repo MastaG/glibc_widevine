@@ -284,9 +284,6 @@ Patch2027: glibc-rh819430.patch
 
 Patch2031: glibc-rh1070416.patch
 
-Patch2033: glibc-aarch64-tls-fixes.patch
-Patch2034: glibc-aarch64-workaround-nzcv-clobber-in-tlsdesc.patch
-
 Patch2036: glibc-gcc-PR69537.patch
 
 # extend_alloca removal, BZ 18023
@@ -849,8 +846,6 @@ microbenchmark tests on the system.
 %patch0046 -p1
 %patch2031 -p1
 %patch0047 -p1
-%patch2033 -p1
-%patch2034 -p1
 %patch0053 -p1
 %patch0059 -p1
 %patch0060 -p1
