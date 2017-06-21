@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-536-g43e0ac2
+%define glibcsrcdir  glibc-2.25-545-g9649350
 %define glibcversion 2.25.90
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2258,6 +2258,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-9
+- Drop historic aarch64 TLS patches
+- Auto-sync with upstream master,
+  commit 9649350d2ee47fae00794d57e2526aa5d67d900e.
+
 * Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-8
 - Adjust build requirements for gcc, binutils, kernel-headers.
 - Auto-sync with upstream master,
