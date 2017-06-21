@@ -284,8 +284,6 @@ Patch2027: glibc-rh819430.patch
 
 Patch2031: glibc-rh1070416.patch
 
-Patch2036: glibc-gcc-PR69537.patch
-
 # extend_alloca removal, BZ 18023
 Patch2037: glibc-rh1315108.patch
 
@@ -849,7 +847,6 @@ microbenchmark tests on the system.
 %patch0053 -p1
 %patch0059 -p1
 %patch0060 -p1
-%patch2036 -p1
 %patch2037 -p1
 %patch2112 -p1
 %patch0061 -p1
@@ -2260,6 +2257,7 @@ rm -f *.filelist*
 %changelog
 * Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-9
 - Drop historic aarch64 TLS patches
+- Drop workaround for GCC PR69537
 - Auto-sync with upstream master,
   commit 9649350d2ee47fae00794d57e2526aa5d67d900e.
 
