@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-545-g9649350
 %define glibcversion 2.25.90
-%define glibcrelease 9%{?dist}
+%define glibcrelease 10%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -38,7 +38,7 @@
 # Run a valgrind smoke test to ensure that the release is compatible and
 # doesn't any new feature that might cause valgrind to abort.
 %if %{with valgrind}
-%ifarch s390 ppc64 ppc64p7 %{mips}
+%ifarch s390 ppc64 ppc64p7 aarch64 %{mips}
 # There is no valgrind support for 31-bit s390, nor for MIPS.
 # The valgrind test does not work on ppc64, ppc64p7 (bug 1273103).
 %undefine with_valgrind
@@ -2255,6 +2255,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-10
+- Disable valgrind on aarch64
+
 * Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-9
 - Drop historic aarch64 TLS patches
 - Drop workaround for GCC PR69537
