@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-548-g0a47d03
 %define glibcversion 2.25.90
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -885,6 +885,7 @@ diff -u %{SOURCE11} localedata/SUPPORTED
 %build
 # Log system information
 uname -a
+LD_SHOW_AUXV=1 /bin/true
 cat /proc/cpuinfo
 cat /proc/meminfo
 df
@@ -2027,16 +2028,21 @@ echo ====================PLT RELOCS LIBC.SO==============
 readelf -Wr $RPM_BUILD_ROOT/%{_lib}/libc-*.so | sed -n -e "$PLTCMD"
 echo ====================PLT RELOCS END==================
 
-%if %{with valgrind}
 # Finally, check if valgrind runs with the new glibc.
 # We want to fail building if valgrind is not able to run with this glibc so
 # that we can then coordinate with valgrind to get it fixed before we update
 # glibc.
 pushd build-%{target}
+
+# Show the auxiliary vector as seen by the new library
+# (even if we do not perform the valgrind test).
+LD_SHOW_AUXV=1 elf/ld.so --library-path .:elf:nptl:dlfcn /bin/true
+
+%if %{with valgrind}
 elf/ld.so --library-path .:elf:nptl:dlfcn /usr/bin/valgrind \
 	elf/ld.so --library-path .:elf:nptl:dlfcn /usr/bin/true
-popd
 %endif
+popd
 
 %endif # %{run_glibc_tests}
 
@@ -2255,6 +2261,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-12
+- Log auxiliary vector during build
+
 * Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-11
 - Auto-sync with upstream master,
   commit 0a47d031e44f15236bcef8aeba80e737bd013c6f.
