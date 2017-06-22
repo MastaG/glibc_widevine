@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-545-g9649350
+%define glibcsrcdir  glibc-2.25-548-g0a47d03
 %define glibcversion 2.25.90
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2255,6 +2255,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-11
+- Auto-sync with upstream master,
+  commit 0a47d031e44f15236bcef8aeba80e737bd013c6f.
+
 * Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-10
 - Disable valgrind on aarch64
 
