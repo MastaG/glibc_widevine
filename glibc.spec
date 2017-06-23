@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-566-g12f5033
+%define glibcsrcdir  glibc-2.25-574-g3ec7c02
 %define glibcversion 2.25.90
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2261,6 +2261,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-15
+- Auto-sync with upstream master,
+  commit 3ec7c02cc3e922b9364dc8cfd1d4546671b91003, fixing:
+- memcmp-avx2-movbe.S incorrect results for lengths 2/3 (#1464403)
+
 * Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-14
 - Auto-sync with upstream master,
   commit 12f50337ae80672c393c2317d471d097ad92c492, changing:
