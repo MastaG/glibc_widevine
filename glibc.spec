@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-548-g0a47d03
+%define glibcsrcdir  glibc-2.25-566-g12f5033
 %define glibcversion 2.25.90
-%define glibcrelease 13%{?dist}
+%define glibcrelease 14%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2261,6 +2261,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-14
+- Auto-sync with upstream master,
+  commit 12f50337ae80672c393c2317d471d097ad92c492, changing:
+- localedata: fur_IT: Fix spelling of Wednesday (Miercus)
+- Update to Unicode 10.0.0
+- inet: __inet6_scopeid_pton should accept node-local addresses (swbz#21657)
+
 * Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-13
 - Reenable valgrind on aarch64
 
