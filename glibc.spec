@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-574-g3ec7c02
+%define glibcsrcdir  glibc-2.25-668-ge237357
 %define glibcversion 2.25.90
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2261,6 +2261,22 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jul 03 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-16
+- Auto-sync with upstream master,
+  commit e237357a5a0559dee92261f1914d1fa2cd43a1a8:
+- Support an arbitrary number of search domains in the stub resolver (#168253)
+- Detect and apply /etc/resolv.conf changes in libresolv (#1374239)
+- Increase malloc alignment on i386 to 16 (swbz#21120)
+- Make RES_ROTATE start with a random name server (swbz#19570)
+- Fix tgmath.h totalorder, totalordermag return type (swbz#21687)
+- Miscellaneous sys/ucontext.h namespace fixes (swbz#21457)
+- Rename struct ucontext tag (swbz#21457)
+- Call exit system call directly in clone (swbz#21512)
+- powerpc64le: Enable float128
+- getaddrinfo: Merge IPv6 addresses and IPv4 addresses (swbz#21295)
+- Avoid .symver on common symbols (swbz#21666)
+- inet_pton: Reject IPv6 addresses with many leading zeros (swbz#16637)
+
 * Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-15
 - Auto-sync with upstream master,
   commit 3ec7c02cc3e922b9364dc8cfd1d4546671b91003, fixing:

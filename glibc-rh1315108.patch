@@ -382,7 +382,7 @@ Index: b/nis/nss_compat/compat-initgroups.c
 ===================================================================
 --- a/nis/nss_compat/compat-initgroups.c
 +++ b/nis/nss_compat/compat-initgroups.c
-@@ -310,7 +310,6 @@ getgrent_next_nss (ent_t *ent, char *buf
+@@ -262,7 +262,6 @@ getgrent_next_nss (ent_t *ent, char *buf
  		 overwrite the pointer with one to a bigger buffer.  */
  	      char *tmpbuf = buffer;
  	      size_t tmplen = buflen;
@@ -390,7 +390,7 @@ Index: b/nis/nss_compat/compat-initgroups.c
  
  	      for (int i = 0; i < mystart; i++)
  		{
-@@ -319,29 +318,26 @@ getgrent_next_nss (ent_t *ent, char *buf
+@@ -271,29 +270,26 @@ getgrent_next_nss (ent_t *ent, char *buf
  			 == NSS_STATUS_TRYAGAIN
  			 && *errnop == ERANGE)
                      {
@@ -440,7 +440,7 @@ Index: b/nis/nss_compat/compat-initgroups.c
                      }
  
  		  if (__builtin_expect  (status != NSS_STATUS_NOTFOUND, 1))
-@@ -369,7 +365,7 @@ getgrent_next_nss (ent_t *ent, char *buf
+@@ -321,7 +317,7 @@ getgrent_next_nss (ent_t *ent, char *buf
  	      status = NSS_STATUS_NOTFOUND;
  
   done:
@@ -550,17 +550,17 @@ Index: b/nscd/aicache.c
 ===================================================================
 --- a/nscd/aicache.c
 +++ b/nscd/aicache.c
-@@ -27,6 +27,7 @@
- #include <sys/mman.h>
+@@ -28,6 +28,7 @@
  #include <resolv/resolv-internal.h>
- #include <resolv/res_hconf.h>
+ #include <resolv/resolv_context.h>
+ #include <resolv/res_use_inet6.h>
 +#include <scratch_buffer.h>
  
  #include "dbg_log.h"
  #include "nscd.h"
-@@ -113,10 +114,13 @@ addhstaiX (struct database_dyn *db, int
-   int old_res_options = _res.options;
-   _res.options &= ~DEPRECATED_RES_USE_INET6;
+@@ -111,10 +112,13 @@ addhstaiX (struct database_dyn *db, int
+   if (ctx == NULL)
+     no_more = 1;
  
 -  size_t tmpbuf6len = 1024;
 -  char *tmpbuf6 = alloca (tmpbuf6len);
@@ -576,7 +576,7 @@ Index: b/nscd/aicache.c
    int32_t ttl = INT32_MAX;
    ssize_t total = 0;
    char *key_copy = NULL;
-@@ -129,6 +133,7 @@ addhstaiX (struct database_dyn *db, int
+@@ -127,6 +131,7 @@ addhstaiX (struct database_dyn *db, int
        int status[2] = { NSS_STATUS_UNAVAIL, NSS_STATUS_UNAVAIL };
        int naddrs = 0;
        size_t addrslen = 0;
@@ -584,7 +584,7 @@ Index: b/nscd/aicache.c
        char *canon = NULL;
        size_t canonlen;
  
-@@ -143,12 +148,17 @@ addhstaiX (struct database_dyn *db, int
+@@ -141,12 +146,17 @@ addhstaiX (struct database_dyn *db, int
  	      at = &atmem;
  	      rc6 = 0;
  	      herrno = 0;
@@ -604,7 +604,7 @@ Index: b/nscd/aicache.c
  	    }
  
  	  if (rc6 != 0 && herrno == NETDB_INTERNAL)
-@@ -226,41 +236,38 @@ addhstaiX (struct database_dyn *db, int
+@@ -224,41 +234,38 @@ addhstaiX (struct database_dyn *db, int
  	  while (1)
  	    {
  	      rc6 = 0;
@@ -662,7 +662,7 @@ Index: b/nscd/aicache.c
  	    }
  
  	  if (rc4 != 0 && herrno == NETDB_INTERNAL)
-@@ -286,13 +293,11 @@ addhstaiX (struct database_dyn *db, int
+@@ -284,13 +291,11 @@ addhstaiX (struct database_dyn *db, int
  	      cfct = __nss_lookup_function (nip, "getcanonname_r");
  	      if (cfct != NULL)
  		{
@@ -678,7 +678,7 @@ Index: b/nscd/aicache.c
  		      == NSS_STATUS_SUCCESS)
  		    canon = s;
  		  else
-@@ -321,18 +326,20 @@ addhstaiX (struct database_dyn *db, int
+@@ -319,18 +324,20 @@ addhstaiX (struct database_dyn *db, int
  		      addrfamily = AF_INET6;
  		    }
  
@@ -704,7 +704,7 @@ Index: b/nscd/aicache.c
  		    }
  
  		  if (rc == 0)
-@@ -560,6 +567,10 @@ next_nip:
+@@ -559,6 +566,10 @@ next_nip:
  	dh->usable = false;
      }
  
@@ -719,7 +719,7 @@ Index: b/nscd/connections.c
 ===================================================================
 --- a/nscd/connections.c
 +++ b/nscd/connections.c
-@@ -1353,64 +1353,83 @@ request from '%s' [%ld] not handled due
+@@ -1324,64 +1324,83 @@ request from '%s' [%ld] not handled due
      }
  }
  
@@ -842,7 +842,7 @@ Index: b/nscd/connections.c
      {
        argv[argc++] = cp;
        cp = (char *) rawmemchr (cp, '\0') + 1;
-@@ -1427,6 +1446,7 @@ cannot change to old UID: %s; disabling
+@@ -1398,6 +1417,7 @@ cannot change to old UID: %s; disabling
  		   strerror (errno));
  
  	  paranoia = 0;
@@ -850,7 +850,7 @@ Index: b/nscd/connections.c
  	  return;
  	}
  
-@@ -1438,6 +1458,7 @@ cannot change to old GID: %s; disabling
+@@ -1409,6 +1429,7 @@ cannot change to old GID: %s; disabling
  
  	  ignore_value (setuid (server_uid));
  	  paranoia = 0;
@@ -858,7 +858,7 @@ Index: b/nscd/connections.c
  	  return;
  	}
      }
-@@ -1455,6 +1476,7 @@ cannot change to old working directory:
+@@ -1426,6 +1447,7 @@ cannot change to old working directory:
  	  ignore_value (setgid (server_gid));
  	}
        paranoia = 0;
@@ -866,7 +866,7 @@ Index: b/nscd/connections.c
        return;
      }
  
-@@ -1503,6 +1525,7 @@ cannot change to old working directory:
+@@ -1474,6 +1496,7 @@ cannot change to old working directory:
      dbg_log (_("cannot change current working directory to \"/\": %s"),
  	     strerror (errno));
    paranoia = 0;
