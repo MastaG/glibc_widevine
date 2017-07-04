@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-668-ge237357
 %define glibcversion 2.25.90
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1013,7 +1013,10 @@ build()
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$configure_CFLAGS" \
 		--prefix=%{_prefix} \
 		--enable-add-ons=$AddOns \
-		--with-headers=%{_prefix}/include $EnableKernel --enable-bind-now \
+		--with-headers=%{_prefix}/include $EnableKernel \
+%ifnarch ppc64le
+		--enable-bind-now \
+%endif
 		--build=%{target} \
 %ifarch %{multiarcharches}
 		--enable-multi-arch \
@@ -2261,6 +2264,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jul  4 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-17
+- Disable building with BIND_NOW on ppc64le (#1467518)
+
 * Mon Jul 03 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-16
 - Auto-sync with upstream master,
   commit e237357a5a0559dee92261f1914d1fa2cd43a1a8:
