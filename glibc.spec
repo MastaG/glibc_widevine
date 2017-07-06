@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-671-g4446a88
+%define glibcsrcdir  glibc-2.25-685-g031e519
 %define glibcversion 2.25.90
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2264,6 +2264,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jul 06 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-20
+- Auto-sync with upstream master,
+  commit 031e519c95c069abe4e4c7c59e2b4b67efccdee5:
+- x86-64: Align the stack in __tls_get_addr (#1440287)
+- Add Tok-Pisin (tpi_PG) locale.
+- Add missing yesstr/nostr for Pashto locale (swbz#21711)
+- Add missing yesstr/nostr for Breton locale (swbz#21706)
+- Single threaded stdio optimization
+- sysconf: Use conservative default for _SC_NPROCESSORS_ONLN (swbz#21542)
+
 * Tue Jul 04 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-19
 - Auto-sync with upstream master,
   commit 4446a885f3aeb3a33b95c72bae1f115bed77f0cb.
