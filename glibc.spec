@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.24-59-g86ac4a7
+%define glibcsrcdir  glibc-2.24-61-g605e6f9
 %define glibcversion 2.24
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2266,6 +2266,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jul 06 2017 Florian Weimer <fweimer@redhat.com> - 2.24-9
+- Auto-sync with upstream release/2.24/master,
+  commit 605e6f9f4a4bf39416ac16fad1f41b5a93a0774d:
+- x86-64: Align the stack in __tls_get_addr (#1440287)
+
 * Tue Jun 20 2017 Florian Weimer <fweimer@redhat.com> - 2.24-8
 - Auto-sync with upstream release/2.24/master,
   commit 86ac4a78a9218d1e1dcfbacc6f7d09957c1fe3a4.
