@@ -1,0 +1,256 @@
+commit 240a02bd2bb367d18a4c1672adda5f8c847a9a4d
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Sun Jul 9 12:25:35 2017 +0200
+
+    Revert "Fix struct sigaltstack namespace (bug 21517)."
+    
+    This reverts commit 7553131847151d04d58a02300673f13d73861cbb.
+
+diff --git a/bits/types/stack_t.h b/bits/types/stack_t.h
+index 47149fc..3cf0a40 100644
+--- a/bits/types/stack_t.h
++++ b/bits/types/stack_t.h
+@@ -23,7 +23,7 @@
+ #include <stddef.h>
+ 
+ /* Structure describing a signal stack.  */
+-typedef struct
++typedef struct sigaltstack
+   {
+     void *ss_sp;
+     size_t ss_size;
+diff --git a/debug/segfault.c b/debug/segfault.c
+index 78c1cf5..dac9efb 100644
+--- a/debug/segfault.c
++++ b/debug/segfault.c
+@@ -156,7 +156,7 @@ install_handler (void)
+   if (getenv ("SEGFAULT_USE_ALTSTACK") != 0)
+     {
+       void *stack_mem = malloc (2 * SIGSTKSZ);
+-      stack_t ss;
++      struct sigaltstack ss;
+ 
+       if (stack_mem != NULL)
+ 	{
+diff --git a/hurd/hurd/signal.h b/hurd/hurd/signal.h
+index e03d53e..f899e81 100644
+--- a/hurd/hurd/signal.h
++++ b/hurd/hurd/signal.h
+@@ -70,7 +70,7 @@ struct hurd_sigstate
+     sigset_t blocked;		/* What signals are blocked.  */
+     sigset_t pending;		/* Pending signals, possibly blocked.  */
+     struct sigaction actions[NSIG];
+-    stack_t sigaltstack;
++    struct sigaltstack sigaltstack;
+ 
+     /* Chain of thread-local signal preemptors; see <hurd/sigpreempt.h>.
+        Each element of this chain is in local stack storage, and the chain
+diff --git a/hurd/trampoline.c b/hurd/trampoline.c
+index e506fd8..8216e22 100644
+--- a/hurd/trampoline.c
++++ b/hurd/trampoline.c
+@@ -28,7 +28,7 @@
+ struct sigcontext *
+ _hurd_setup_sighandler (int flags,
+ 			__sighandler_t handler,
+-			stack_t *sigaltstack,
++			struct sigaltstack *sigaltstack,
+ 			int signo, int sigcode,
+ 			void *state)
+ {
+diff --git a/include/signal.h b/include/signal.h
+index bcf1455..e39ddc6 100644
+--- a/include/signal.h
++++ b/include/signal.h
+@@ -41,8 +41,8 @@ extern int __sigqueue (__pid_t __pid, int __sig,
+ #ifdef __USE_MISC
+ extern int __sigreturn (struct sigcontext *__scp);
+ #endif
+-extern int __sigaltstack (const stack_t *__ss,
+-			  stack_t *__oss);
++extern int __sigaltstack (const struct sigaltstack *__ss,
++			  struct sigaltstack *__oss);
+ extern int __libc_sigaction (int sig, const struct sigaction *act,
+ 			     struct sigaction *oact);
+ libc_hidden_proto (__libc_sigaction)
+diff --git a/signal/sigaltstack.c b/signal/sigaltstack.c
+index b70afa7..e4d2319 100644
+--- a/signal/sigaltstack.c
++++ b/signal/sigaltstack.c
+@@ -21,7 +21,7 @@
+ /* Run signals handlers on the stack specified by SS (if not NULL).
+    If OSS is not NULL, it is filled in with the old signal stack status.  */
+ int
+-sigaltstack (const stack_t *ss, stack_t *oss)
++sigaltstack (const struct sigaltstack *ss, struct sigaltstack *oss)
+ {
+   __set_errno (ENOSYS);
+   return -1;
+diff --git a/sysdeps/mach/hurd/i386/signal-defines.sym b/sysdeps/mach/hurd/i386/signal-defines.sym
+index e42bbbe..9521bd7 100644
+--- a/sysdeps/mach/hurd/i386/signal-defines.sym
++++ b/sysdeps/mach/hurd/i386/signal-defines.sym
+@@ -5,6 +5,6 @@
+ 
+ HURD_SIGSTATE__SIGALTSTACK__OFFSET	offsetof(struct hurd_sigstate, sigaltstack)
+ 
+-SIGALTSTACK__SS_SP__OFFSET		offsetof(stack_t, ss_sp)
+-SIGALTSTACK__SS_SIZE__OFFSET		offsetof(stack_t, ss_size)
+-SIGALTSTACK__SS_FLAGS__OFFSET		offsetof(stack_t, ss_flags)
++SIGALTSTACK__SS_SP__OFFSET		offsetof(struct sigaltstack, ss_sp)
++SIGALTSTACK__SS_SIZE__OFFSET		offsetof(struct sigaltstack, ss_size)
++SIGALTSTACK__SS_FLAGS__OFFSET		offsetof(struct sigaltstack, ss_flags)
+diff --git a/sysdeps/mach/hurd/sigaltstack.c b/sysdeps/mach/hurd/sigaltstack.c
+index 4fba69e..06a6a5c 100644
+--- a/sysdeps/mach/hurd/sigaltstack.c
++++ b/sysdeps/mach/hurd/sigaltstack.c
+@@ -22,16 +22,16 @@
+ /* Run signals handlers on the stack specified by SS (if not NULL).
+    If OSS is not NULL, it is filled in with the old signal stack status.  */
+ int
+-__sigaltstack (const stack_t *argss, stack_t *oss)
++__sigaltstack (const struct sigaltstack *argss, struct sigaltstack *oss)
+ {
+   struct hurd_sigstate *s;
+-  stack_t ss, old;
++  struct sigaltstack ss, old;
+ 
+   /* Fault before taking any locks.  */
+   if (argss != NULL)
+     ss = *argss;
+   if (oss != NULL)
+-    *(volatile stack_t *) oss = *oss;
++    *(volatile struct sigaltstack *) oss = *oss;
+ 
+   s = _hurd_self_sigstate ();
+   __spin_lock (&s->lock);
+diff --git a/sysdeps/mach/hurd/sigstack.c b/sysdeps/mach/hurd/sigstack.c
+index 484efb6..a3a11f9 100644
+--- a/sysdeps/mach/hurd/sigstack.c
++++ b/sysdeps/mach/hurd/sigstack.c
+@@ -24,7 +24,7 @@
+ int
+ sigstack (struct sigstack *ss, struct sigstack *oss)
+ {
+-  stack_t as, oas;
++  struct sigaltstack as, oas;
+ 
+   as.ss_sp = ss->ss_sp;
+   as.ss_size = 0;
+diff --git a/sysdeps/unix/sysv/linux/alpha/sys/procfs.h b/sysdeps/unix/sysv/linux/alpha/sys/procfs.h
+index abc9fd8..2cd69d4 100644
+--- a/sysdeps/unix/sysv/linux/alpha/sys/procfs.h
++++ b/sysdeps/unix/sysv/linux/alpha/sys/procfs.h
+@@ -71,7 +71,7 @@ struct elf_prstatus
+     unsigned long int pr_sigpend;	/* Set of pending signals.  */
+     unsigned long int pr_sighold;	/* Set of held signals.  */
+ #if 0
+-    stack_t pr_altstack;		/* Alternate stack info.  */
++    struct sigaltstack pr_altstack;	/* Alternate stack info.  */
+     struct sigaction pr_action;		/* Signal action for current sig.  */
+ #endif
+     __pid_t pr_pid;
+diff --git a/sysdeps/unix/sysv/linux/bits/types/stack_t.h b/sysdeps/unix/sysv/linux/bits/types/stack_t.h
+index 373c227..497e42b 100644
+--- a/sysdeps/unix/sysv/linux/bits/types/stack_t.h
++++ b/sysdeps/unix/sysv/linux/bits/types/stack_t.h
+@@ -23,7 +23,7 @@
+ #include <stddef.h>
+ 
+ /* Structure describing a signal stack.  */
+-typedef struct
++typedef struct sigaltstack
+   {
+     void *ss_sp;
+     int ss_flags;
+diff --git a/sysdeps/unix/sysv/linux/hppa/____longjmp_chk.c b/sysdeps/unix/sysv/linux/hppa/____longjmp_chk.c
+index 48aaeb3..3a04250 100644
+--- a/sysdeps/unix/sysv/linux/hppa/____longjmp_chk.c
++++ b/sysdeps/unix/sysv/linux/hppa/____longjmp_chk.c
+@@ -27,7 +27,7 @@
+        destroyed must all have stack values higher than ours.  */	\
+     if ((unsigned long) (sp) > this_sp)					\
+       {									\
+-        stack_t oss;							\
++        struct sigaltstack oss;						\
+         INTERNAL_SYSCALL_DECL (err);					\
+         int result = INTERNAL_SYSCALL (sigaltstack, err, 2, NULL, &oss);\
+ 	/* If we aren't using an alternate stack then we have already	\
+diff --git a/sysdeps/unix/sysv/linux/ia64/sys/procfs.h b/sysdeps/unix/sysv/linux/ia64/sys/procfs.h
+index afe54fb..93e569b 100644
+--- a/sysdeps/unix/sysv/linux/ia64/sys/procfs.h
++++ b/sysdeps/unix/sysv/linux/ia64/sys/procfs.h
+@@ -73,7 +73,7 @@ struct elf_prstatus
+     unsigned long int pr_sigpend;	/* Set of pending signals.  */
+     unsigned long int pr_sighold;	/* Set of held signals.  */
+ #if 0
+-    stack_t pr_altstack;		/* Alternate stack info.  */
++    struct sigaltstack pr_altstack;	/* Alternate stack info.  */
+     struct sigaction pr_action;		/* Signal action for current sig.  */
+ #endif
+     __pid_t pr_pid;
+diff --git a/sysdeps/unix/sysv/linux/m68k/____longjmp_chk.c b/sysdeps/unix/sysv/linux/m68k/____longjmp_chk.c
+index 030e463..3539b54 100644
+--- a/sysdeps/unix/sysv/linux/m68k/____longjmp_chk.c
++++ b/sysdeps/unix/sysv/linux/m68k/____longjmp_chk.c
+@@ -24,7 +24,7 @@
+     register unsigned long this_sp asm ("sp");				      \
+     if ((unsigned long) (sp) < this_sp)					      \
+       {									      \
+-	stack_t oss;							      \
++	struct sigaltstack oss;						      \
+ 	INTERNAL_SYSCALL_DECL (err);					      \
+ 	int result = INTERNAL_SYSCALL (sigaltstack, err, 2, NULL, &oss);      \
+ 	if (!INTERNAL_SYSCALL_ERROR_P (result, err)			      \
+diff --git a/sysdeps/unix/sysv/linux/mips/bits/types/stack_t.h b/sysdeps/unix/sysv/linux/mips/bits/types/stack_t.h
+index b9635ad..ef06072 100644
+--- a/sysdeps/unix/sysv/linux/mips/bits/types/stack_t.h
++++ b/sysdeps/unix/sysv/linux/mips/bits/types/stack_t.h
+@@ -23,7 +23,7 @@
+ #include <stddef.h>
+ 
+ /* Structure describing a signal stack.  */
+-typedef struct
++typedef struct sigaltstack
+   {
+     void *ss_sp;
+     size_t ss_size;
+diff --git a/sysdeps/unix/sysv/linux/powerpc/sys/procfs.h b/sysdeps/unix/sysv/linux/powerpc/sys/procfs.h
+index 61ded22..b7b7b0b 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/sys/procfs.h
++++ b/sysdeps/unix/sysv/linux/powerpc/sys/procfs.h
+@@ -83,7 +83,7 @@ struct elf_prstatus
+     unsigned long int pr_sigpend;	/* Set of pending signals.  */
+     unsigned long int pr_sighold;	/* Set of held signals.  */
+ #if 0
+-    stack_t pr_altstack;		/* Alternate stack info.  */
++    struct sigaltstack pr_altstack;	/* Alternate stack info.  */
+     struct sigaction pr_action;		/* Signal action for current sig.  */
+ #endif
+     __pid_t pr_pid;
+diff --git a/sysdeps/unix/sysv/linux/sh/sys/procfs.h b/sysdeps/unix/sysv/linux/sh/sys/procfs.h
+index 414911a..c41c877 100644
+--- a/sysdeps/unix/sysv/linux/sh/sys/procfs.h
++++ b/sysdeps/unix/sysv/linux/sh/sys/procfs.h
+@@ -55,7 +55,7 @@ struct elf_prstatus
+     unsigned long int pr_sigpend;	/* Set of pending signals.  */
+     unsigned long int pr_sighold;	/* Set of held signals.  */
+ #if 0
+-    stack_t pr_altstack;		/* Alternate stack info.  */
++    struct sigaltstack pr_altstack;	/* Alternate stack info.  */
+     struct sigaction pr_action;		/* Signal action for current sig.  */
+ #endif
+     __pid_t pr_pid;
+diff --git a/sysdeps/unix/sysv/linux/sys/procfs.h b/sysdeps/unix/sysv/linux/sys/procfs.h
+index b3b2cf3..8dfa0c0 100644
+--- a/sysdeps/unix/sysv/linux/sys/procfs.h
++++ b/sysdeps/unix/sysv/linux/sys/procfs.h
+@@ -58,7 +58,7 @@ struct elf_prstatus
+     unsigned long int pr_sigpend;	/* Set of pending signals.  */
+     unsigned long int pr_sighold;	/* Set of held signals.  */
+ #if 0
+-    stack_t pr_altstack;		/* Alternate stack info.  */
++    struct sigaltstack pr_altstack;	/* Alternate stack info.  */
+     struct sigaction pr_action;		/* Signal action for current sig.  */
+ #endif
+     __pid_t pr_pid;

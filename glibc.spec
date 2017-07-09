@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-685-g031e519
 %define glibcversion 2.25.90
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -289,6 +289,8 @@ Patch2037: glibc-rh1315108.patch
 
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
+
+Patch2113: glibc-rh1468904.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -849,6 +851,7 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2037 -p1
 %patch2112 -p1
+%patch2113 -p1
 %patch0061 -p1
 
 ##############################################################################
@@ -2264,6 +2267,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Jul  9 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-21
+- Back out stack_t cleanup (#1468904)
+
 * Thu Jul 06 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-20
 - Auto-sync with upstream master,
   commit 031e519c95c069abe4e4c7c59e2b4b67efccdee5:
