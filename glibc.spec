@@ -290,6 +290,8 @@ Patch2037: glibc-rh1315108.patch
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
 
+Patch2113: glibc-rh1469536.patch
+
 ##############################################################################
 # End of glibc patches.
 ##############################################################################
@@ -849,6 +851,7 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2037 -p1
 %patch2112 -p1
+%patch2113 -p1
 %patch0061 -p1
 
 ##############################################################################
@@ -2266,6 +2269,7 @@ rm -f *.filelist*
 %changelog
 * Tue Jul 11 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-22
 - Reinstantiate stack_t cleanup (#1468904)
+- s390x: Restore PTRACE_GETREGS etc. to get GCC to build (#1469536)
 
 * Sun Jul  9 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-21
 - Back out stack_t cleanup (#1468904)
