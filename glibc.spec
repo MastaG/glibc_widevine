@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-717-g3020042
 %define glibcversion 2.25.90
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -255,6 +255,11 @@ Patch0060: glibc-rh1324623.patch
 # Fix -Wstrict-overflow issues with gcc 7.0.
 Patch0061: glibc-gcc-strict-overflow.patch
 
+# TODO: This must be removed before F27 release and is a workaround for the
+#       upstream issue which will be fixed for glibc 2.26.
+# Bug 1467518 - glibc: Invalid IFUNC resolver from libgcc calls getauxval...
+Patch0062: glibc-rh1467518.patch
+
 ##############################################################################
 #
 # Patches from upstream
@@ -292,6 +297,9 @@ Patch2112: glibc-rh1315476-2.patch
 
 Patch2113: glibc-rh1469536.patch
 Patch2114: glibc-rh1470060.patch
+
+# upstream arm7hl fix for the dynamic linker not yet committed.
+Patch2115: glibc-fix-arm32.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -855,6 +863,14 @@ microbenchmark tests on the system.
 %patch2113 -p1
 %patch2114 -p1
 %patch0061 -p1
+# TODO: Remove before F27 release.
+# We *never* want per-arch conditional patches, but in this case
+# we are working around a ppc64le issue and apply it only there
+# because the complete solution is not upstream yet.
+%ifarch ppc64le
+%patch0062 -p1
+%endif
+%patch2115 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1019,9 +1035,7 @@ build()
 		--prefix=%{_prefix} \
 		--enable-add-ons=$AddOns \
 		--with-headers=%{_prefix}/include $EnableKernel \
-%ifnarch ppc64le
 		--enable-bind-now \
-%endif
 		--build=%{target} \
 %ifarch %{multiarcharches}
 		--enable-multi-arch \
@@ -2269,6 +2283,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul 12 2017 Carlos O'Donell <carlos@redhat.com> - 2.25.90-24
+- Fix IFUNC crash in early startup for ppc64le static binaries (#1467518).
+- Enable building with BIND_NOW on ppc64le (#1467518).
+
 * Wed Jul 12 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-23
 - malloc: Tell GCC optimizers about MAX_FAST_SIZE in _int_malloc (#1470060)
 - Auto-sync with upstream master,
