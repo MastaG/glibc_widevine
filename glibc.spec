@@ -291,6 +291,7 @@ Patch2037: glibc-rh1315108.patch
 Patch2112: glibc-rh1315476-2.patch
 
 Patch2113: glibc-rh1469536.patch
+Patch2114: glibc-rh1470060.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -852,6 +853,7 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2112 -p1
 %patch2113 -p1
+%patch2114 -p1
 %patch0061 -p1
 
 ##############################################################################
@@ -2268,6 +2270,7 @@ rm -f *.filelist*
 
 %changelog
 * Wed Jul 12 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-23
+- malloc: Tell GCC optimizers about MAX_FAST_SIZE in _int_malloc (#1470060)
 - Auto-sync with upstream master,
   commit 30200427a99e5ddac9bad08599418d44d54aa9aa:
 - Add per-thread cache to malloc

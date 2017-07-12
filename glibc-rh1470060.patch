@@ -1,0 +1,48 @@
+Upstream thread:
+
+https://sourceware.org/ml/libc-alpha/2017-07/msg00487.html
+
+Relevant analysis:
+
+_int_malloc is inlined into tcache_init, and the allocation size is
+constant-propagated into it.  GCC does not realize that global_max_fast
+is limited MAX_FAST_SIZE, so it compiles the true branch of the if
+statement:
+
+  if ((unsigned long) (nb) <= (unsigned long) (get_max_fast ()))
+    {
+      idx = fastbin_index (nb);
+      mfastbinptr *fb = &fastbin (av, idx);
+      mchunkptr pp = *fb;
+      REMOVE_FB (fb, victim, pp);
+      if (victim != 0)
+
+under the assumption that nb == sizeof (tcache_perthread_struct) == 576,
+which is larger than MAX_FAST_SIZE, so the fastbin access is compiled
+into an OOB array subscript.  GCC does not proceed to eliminate this
+code, even though it has undefined behavior and will never execute in
+practice.
+
+This is neither a glibc bug nor a GCC bug.  It merely reflects the
+difficulty of producing good warnings from optimizers.  But it does
+break the build in rawhide due to -Werror.
+
+Index: b/malloc/malloc.c
+===================================================================
+--- a/malloc/malloc.c
++++ b/malloc/malloc.c
+@@ -3566,6 +3566,14 @@ _int_malloc (mstate av, size_t bytes)
+   while ((pp = catomic_compare_and_exchange_val_acq (fb, victim->fd, victim)) \
+ 	 != victim);					\
+ 
++  /* _int_malloc can be inlined to a caller with a constant size
++     argument.  In this case, the compiler will see an out-of-bounds
++     array access in the true branch of the if statement below if it
++     cannot show that global_max_fast cannot be larger than
++     MAX_FAST_SIZE.  The assert shows the compiler that this cannot
++     happen.  */
++  assert (!__builtin_constant_p (nb) || global_max_fast <= MAX_FAST_SIZE);
++
+   if ((unsigned long) (nb) <= (unsigned long) (get_max_fast ()))
+     {
+       idx = fastbin_index (nb);
