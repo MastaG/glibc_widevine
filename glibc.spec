@@ -2286,6 +2286,7 @@ rm -f *.filelist*
 * Wed Jul 12 2017 Carlos O'Donell <carlos@redhat.com> - 2.25.90-24
 - Fix IFUNC crash in early startup for ppc64le static binaries (#1467518).
 - Enable building with BIND_NOW on ppc64le (#1467518).
+- Fix 32-bit ARM builds in presence of new binutils.
 
 * Wed Jul 12 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-23
 - malloc: Tell GCC optimizers about MAX_FAST_SIZE in _int_malloc (#1470060)
