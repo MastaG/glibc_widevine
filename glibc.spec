@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-685-g031e519
+%define glibcsrcdir  glibc-2.25-717-g3020042
 %define glibcversion 2.25.90
-%define glibcrelease 22%{?dist}
+%define glibcrelease 23%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2267,6 +2267,30 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul 12 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-23
+- Auto-sync with upstream master,
+  commit 30200427a99e5ddac9bad08599418d44d54aa9aa:
+- Add per-thread cache to malloc
+- Add Samoan language locale for Samoa
+- Add Awajún / Aguaruna locale for Peru
+- CVE-2010-3192: Avoid backtrace from __stack_chk_fail (swbz#12189)
+- Add preadv2, writev2 RWF_NOWAIT flag (swbz#21738)
+- Fix abday strings for ar_JO/ar_LB/ar_SY locales (swbz#21749)
+- Fix abday strings for ar_SA locale (swbz#21748, swbz#19066)
+- Set data_fmt for da_DK locale (swbz#17297)
+- Add yesstr and nostr for the zh_HK locale (swbz#21733)
+- Fix abday strings for the ksIN@devanagari locale (swbz#21743)
+- Do not include _dl_resolv_conflicts in libc.a (swbz#21742)
+- Test __memmove_chk, __memset_chk only in libc.so (swbz#21741)
+- Add iI and eE to  yesexpr and noexpr respectively for ts_ZA locale
+- Add yesstr/nostr for kw_GB locale (swbz#21734)
+- Add yesstr and nostr for the ts_ZA locale (swbz#21727)
+- Fix LC_NAME for hi_IN locale (swbz#21729)
+- Add yesstr and nostr for the xh_ZA locale (swbz#21724)
+- Add yesstr and nostr for the zh_CN locale (swbz#21723)
+- Fix full weekday names for the ks_IN@devanagari locale (swbz#21721)
+- Various fixes to Arabic locales after CLDR import 
+
 * Tue Jul 11 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-22
 - Reinstantiate stack_t cleanup (#1468904)
 - s390x: Restore PTRACE_GETREGS etc. to get GCC to build (#1469536)
