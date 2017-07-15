@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-717-g3020042
+%define glibcsrcdir  glibc-2.25-732-gde895dd
 %define glibcversion 2.25.90
-%define glibcrelease 24%{?dist}
+%define glibcrelease 25%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -295,11 +295,7 @@ Patch2037: glibc-rh1315108.patch
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
 
-Patch2113: glibc-rh1469536.patch
 Patch2114: glibc-rh1470060.patch
-
-# upstream arm7hl fix for the dynamic linker not yet committed.
-Patch2115: glibc-fix-arm32.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -860,7 +856,6 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2037 -p1
 %patch2112 -p1
-%patch2113 -p1
 %patch2114 -p1
 %patch0061 -p1
 # TODO: Remove before F27 release.
@@ -870,7 +865,6 @@ microbenchmark tests on the system.
 %ifarch ppc64le
 %patch0062 -p1
 %endif
-%patch2115 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2283,6 +2277,22 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jul 14 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.25.90-25
+- armv7hl: Drop 32-bit ARM build fix, already in upstream master.
+- s390x: Apply glibc fix again, removing PTRACE_GETREGS etc. (#1469536).
+- Auto-sync with upstream master,
+  commit de895ddcd7fc45caeeeb0ae312311b8bd31d82c5:
+- Added Fiji Hindi language locale for Fiji (swbz#21694).
+- Added yesstr/nostr for nds_DE and nds_NL (swbz#21756).
+- Added yesstr and nostr for Tigrinya (swbz#21759).
+- Fix LC_MESSAGES and LC_ADDRESS for anp_IN (swbz#21760).
+- Added yesstr/nostr and fix yesexpr for pap_AW and pap_CW (swbz#21757).
+- Added Tongan language locale for Tonga (swbz#21728).
+- [ARM] Fix ld.so crash when built using Binutils 2.29.
+- Added yesstr and nostr for aa_ET (swbz#21768).
+- New locale for bi_VU (swbz#21767).
+- Disable single thread optimization for open_memstream
+
 * Wed Jul 12 2017 Carlos O'Donell <carlos@redhat.com> - 2.25.90-24
 - Fix IFUNC crash in early startup for ppc64le static binaries (#1467518).
 - Enable building with BIND_NOW on ppc64le (#1467518).
