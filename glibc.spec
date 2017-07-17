@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-732-gde895dd
+%define glibcsrcdir  glibc-2.25-753-g91ac3a7
 %define glibcversion 2.25.90
-%define glibcrelease 25%{?dist}
+%define glibcrelease 26%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -254,11 +254,6 @@ Patch0060: glibc-rh1324623.patch
 
 # Fix -Wstrict-overflow issues with gcc 7.0.
 Patch0061: glibc-gcc-strict-overflow.patch
-
-# TODO: This must be removed before F27 release and is a workaround for the
-#       upstream issue which will be fixed for glibc 2.26.
-# Bug 1467518 - glibc: Invalid IFUNC resolver from libgcc calls getauxval...
-Patch0062: glibc-rh1467518.patch
 
 ##############################################################################
 #
@@ -858,13 +853,6 @@ microbenchmark tests on the system.
 %patch2112 -p1
 %patch2114 -p1
 %patch0061 -p1
-# TODO: Remove before F27 release.
-# We *never* want per-arch conditional patches, but in this case
-# we are working around a ppc64le issue and apply it only there
-# because the complete solution is not upstream yet.
-%ifarch ppc64le
-%patch0062 -p1
-%endif
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2277,6 +2265,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jul 17 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-26
+- Drop glibc-rh1467518.patch in favor of upstream patch (#1467518)
+- Auto-sync with upstream master,
+  commit 91ac3a7d8474480685632cd25f844d3154c69fdf:
+- Fix pointer alignment in NSS group merge result construction (#1471985)
+- Various locale fixes
+
 * Fri Jul 14 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.25.90-25
 - armv7hl: Drop 32-bit ARM build fix, already in upstream master.
 - s390x: Apply glibc fix again, removing PTRACE_GETREGS etc. (#1469536).
