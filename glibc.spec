@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-753-g91ac3a7
 %define glibcversion 2.25.90
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2265,6 +2265,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Jul 18 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-27
+- Rebuild with new NVR
+
 * Mon Jul 17 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-26
 - Drop glibc-rh1467518.patch in favor of upstream patch (#1467518)
 - Auto-sync with upstream master,
