@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-753-g91ac3a7
+%define glibcsrcdir  glibc-2.25-754-g00d7a37
 %define glibcversion 2.25.90
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2265,6 +2265,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jul 19 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-27
+- Auto-sync with upstream master,
+  commit 00d7a3777369bac3d8d44152dde2bb7381984ef6:
+- aarch64: Fix out of bound array access in _dl_hwcap_string
+
 * Mon Jul 17 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-26
 - Drop glibc-rh1467518.patch in favor of upstream patch (#1467518)
 - Auto-sync with upstream master,
