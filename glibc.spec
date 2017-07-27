@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.25-754-g00d7a37
 %define glibcversion 2.25.90
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -761,6 +761,11 @@ If unsure if you need this, don't install this package.
 %define debug_package %{nil}
 %define __debug_install_post %{nil}
 %global __debug_package 1
+# Disable thew new features that glibc packages don't use.
+%undefine _debugsource_packages
+%undefine _debuginfo_subpackages
+%undefine _unique_debug_names
+%undefine _unique_debug_srcs
 
 %package debuginfo
 Summary: Debug information for package %{name}
@@ -2265,6 +2270,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Jul 27 2017 Carlos O'Donell <codonell@redhat.com> - 2.25.90-28
+- Adjust to new rpm debuginfo generation (#1475009).
+
 * Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.25.90-27.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
