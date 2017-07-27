@@ -315,7 +315,7 @@ BuildRequires: systemtap-sdt-devel
 %if %{with valgrind}
 # Require valgrind for smoke testing the dynamic loader to make sure we
 # have not broken valgrind.
-BuildRequires: /usr/bin/valgrind
+BuildRequires: valgrind
 %endif
 
 # We use systemd rpm macros for nscd
@@ -1970,7 +1970,8 @@ pushd build-%{target}
 LD_SHOW_AUXV=1 elf/ld.so --library-path .:elf:nptl:dlfcn /bin/true
 
 %if %{with valgrind}
-elf/ld.so --library-path .:elf:nptl:dlfcn /usr/bin/valgrind \
+elf/ld.so --library-path .:elf:nptl:dlfcn \
+	/usr/bin/valgrind --error-exitcode=1 \
 	elf/ld.so --library-path .:elf:nptl:dlfcn /usr/bin/true
 %endif
 popd
