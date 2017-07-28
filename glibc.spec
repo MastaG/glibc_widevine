@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-754-g00d7a37
+%define glibcsrcdir  glibc-2.25-818-gd95fcb2
 %define glibcversion 2.25.90
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2270,6 +2270,20 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Jul 28 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-29
+- Auto-sync with upstream master,
+  commit d95fcb2df478efbf4f8537ba898374043ac4561f:
+- rwlock: Fix explicit hand-over (swbz#21298)
+- tunables: Use direct syscall for access (swbz#21744)
+- Avoid accessing corrupted stack from __stack_chk_fail (swbz#21752)
+- Remove extra semicolons in struct pthread_mutex (swbz#21804)
+- grp: Fix cast-after-dereference (another big-endian group merge issue)
+- S390: fix sys/ptrace.h to make it includible again after asm/ptrace.h
+- Don't add stack_chk_fail_local.o to libc.a (swbz#21740)
+- i386: Test memmove_chk and memset_chk only in libc.so (swbz#21741)
+- Add new locales az_IR, mai_NP (swbz#14172)
+- Various locale improvements
+
 * Thu Jul 27 2017 Carlos O'Donell <codonell@redhat.com> - 2.25.90-28
 - Adjust to new rpm debuginfo generation (#1475009).
 

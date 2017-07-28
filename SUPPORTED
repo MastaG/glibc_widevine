@@ -53,6 +53,7 @@ ar_YE.UTF-8/UTF-8 \
 ar_YE/ISO-8859-6 \
 ayc_PE/UTF-8 \
 az_AZ/UTF-8 \
+az_IR/UTF-8 \
 as_IN/UTF-8 \
 ast_ES.UTF-8/UTF-8 \
 ast_ES/ISO-8859-15 \
@@ -311,6 +312,7 @@ lv_LV/ISO-8859-13 \
 lzh_TW/UTF-8 \
 mag_IN/UTF-8 \
 mai_IN/UTF-8 \
+mai_NP/UTF-8 \
 mg_MG.UTF-8/UTF-8 \
 mg_MG/ISO-8859-15 \
 mhr_RU/UTF-8 \
