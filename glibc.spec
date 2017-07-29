@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-818-gd95fcb2
+%define glibcsrcdir  glibc-2.25-819-g5920a4a
 %define glibcversion 2.25.90
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2270,6 +2270,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Jul 29 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-30
+- Auto-sync with upstream master,
+  commit 5920a4a624b1f4db310d1c44997b640e2a4653e5:
+- mutex: Fix robust mutex lock acquire (swbz#21778)
+
 * Fri Jul 28 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-29
 - Auto-sync with upstream master,
   commit d95fcb2df478efbf4f8537ba898374043ac4561f:
