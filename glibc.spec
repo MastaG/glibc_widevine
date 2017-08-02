@@ -148,7 +148,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}
+Release: %{glibcrelease}.1
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -2270,6 +2270,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.25.90-30.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
+
 * Sat Jul 29 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-30
 - Auto-sync with upstream master,
   commit 5920a4a624b1f4db310d1c44997b640e2a4653e5:
