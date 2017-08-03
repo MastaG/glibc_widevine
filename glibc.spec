@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-819-g5920a4a
-%define glibcversion 2.25.90
-%define glibcrelease 30%{?dist}
+%define glibcsrcdir  glibc-2.26-19-g2aad4b0
+%define glibcversion 2.26
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2270,6 +2270,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Aug 03 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26-1
+- Update to released glibc 2.26.
+- Auto-sync with upstream master,
+  commit 2aad4b04ad7b17a2e6b0e66d2cb4bc559376617b.
+- getaddrinfo: Release resolver context on error in gethosts (swbz#21885)
+
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.25.90-30.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
