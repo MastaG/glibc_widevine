@@ -605,14 +605,11 @@ to support the %{1} language in your applications.\
 # translations.
 %define language_list eo %(cat %{SOURCE11} | grep -E  '^[a-z]+_' | cut -d _ -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//')
 
-%define create_lang_packages()\
-%{lua:\
-local languages = rpm.expand("%1")\
-string.gsub(languages, "(%a+)",\
-function(i) print(rpm.expand("%lang_package "..i.."")) end)}\
-%{nil}
-
-%create_lang_packages %language_list
+%{lua:
+local languages = rpm.expand("%language_list")
+string.gsub(languages, "(%a+)",
+            function(i) print(rpm.expand("%lang_package "..i.."")) end)
+}
 
 # The glibc-all-langpacks provides the virtual glibc-langpack,
 # and thus satisfies glibc's requirement for installed locales.
