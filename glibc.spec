@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-19-g2aad4b0
+%define glibcsrcdir  glibc-2.26-8-g2aa1a7a8f8
 %define glibcversion 2.26
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -140,7 +140,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}.1
+Release: %{glibcrelease}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -281,8 +281,6 @@ Patch2037: glibc-rh1315108.patch
 
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
-
-Patch2114: glibc-rh1470060.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -829,7 +827,6 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2037 -p1
 %patch2112 -p1
-%patch2114 -p1
 %patch0061 -p1
 
 ##############################################################################
@@ -2243,6 +2240,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26-2
+- Disable SSE2 usage on i686 (#1471427)
+- Auto-sync with upstream release/2.26/master,
+  commit 2aa1a7a8f8b9b7879bc6eb1c34d1580f992c406d:
+- assert: Suppress pedantic warning caused by statement expression (swbz#21242)
+- malloc: Avoid optimizer warning with GCC 7 and -O3 (#1470060)
+- nss: Call __resolv_context_put before early return in get*_r (swbz#21932)
+- x86-64: Use _dl_runtime_resolve_opt only with AVX512F (swbz#21871)
+- getaddrinfo: Release resolver context on error in gethosts (swbz#21885)
+
 * Thu Aug 03 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26-1
 - Update to released glibc 2.26.
 - Auto-sync with upstream master,
