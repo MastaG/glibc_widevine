@@ -132,14 +132,6 @@
 # will be created for the architecture.
 %define debuginfocommonarches %{biarcharches} alpha alphaev6
 ##############################################################################
-# If the architecture has multiarch support in glibc then it should be listed
-# here to enable support in the build. Multiarch support is a single library
-# with implementations of certain functions for multiple architectures. The
-# most optimal function is selected at runtime based on the hardware that is
-# detected by glibc. The underlying support for function selection and
-# execution is provided by STT_GNU_IFUNC.
-%define multiarcharches %{power64} %{ix86} x86_64 %{sparc}
-##############################################################################
 # Add -s for a less verbose build output.
 %define silentrules PARALLELMFLAGS=
 ##############################################################################
@@ -375,28 +367,9 @@ Conflicts: kernel < %{enablekernel}
 %endif
 %endif
 
-%ifarch %{multiarcharches}
-# Need STT_IFUNC support
-%ifarch %{power64}
 BuildRequires: binutils >= 2.25
-Conflicts: binutils < 2.20.51.0.2
-%else
-%ifarch s390 s390x
-BuildRequires: binutils >= 2.25
-Conflicts: binutils < 2.23.52.0.1-8
-%else
-# Default to this version
-BuildRequires: binutils >= 2.25
-Conflicts: binutils < 2.19.51.0.10
-%endif
-%endif
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
-%else
-# Need AS_NEEDED directive
-# Need --hash-style=* support
-BuildRequires: binutils >= 2.25
-%endif
 
 %if 0%{?_enable_debug_packages}
 BuildRequires: elfutils >= 0.72
@@ -1005,7 +978,7 @@ AddOns=`echo */configure | sed -e 's!/configure!!g;s!\(nptl\|powerpc-cpu\)\( \|$
 #	Build glibc in `build-%{target}$1', passing the rest of the arguments
 #	as CFLAGS to the build (not the same as configure CFLAGS). Several
 #	global values are used to determine build flags, add-ons, kernel
-#	version, multiarch support, system tap support, etc.
+#	version, system tap support, etc.
 ##############################################################################
 build()
 {
@@ -1024,9 +997,6 @@ build()
 		--with-headers=%{_prefix}/include $EnableKernel \
 		--enable-bind-now \
 		--build=%{target} \
-%ifarch %{multiarcharches}
-		--enable-multi-arch \
-%endif
 		--enable-stack-protector=strong \
 		--enable-tunables \
 		--enable-obsolete-rpc \
