@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-19-g2aad4b0
-%define glibcversion 2.26
-%define glibcrelease 2%{?dist}
+%define glibcsrcdir  glibc-2.26-108-g403143e1df
+%define glibcversion 2.26.90
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2108,6 +2108,34 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-3
+- Auto-sync with upstream master,
+  commit 403143e1df85dadd374f304bd891be0cd7573e3b:
+- x86-64: Align L(SP_RANGE)/L(SP_INF_0) to 8 bytes (swbz#21955)
+- powerpc: Add values from Linux 4.8 to <elf.h>
+- S390: Add new s390 platform z14.
+- Various locale fixes (swbz#14925, swbz#20008, swbz#20482, swbz#12349
+  swbz#19982, swbz#20756, swbz#20756, swbz#21836, swbz#17563, swbz#16905,
+  swbz#21920, swbz#21854)
+- NSS: Replace exported NSS lookup functions with stubs (swbz#21962)
+- i386: Do not set internal_function
+- assert: Suppress pedantic warning caused by statement expression (swbz#21242)
+- powerpc: Restrict xssqrtqp operands to Vector Registers (swbz#21941)
+- sys/ptrace.h: remove obsolete PTRACE_SEIZE_DEVEL constant (swbz#21928)
+- Remove __qaddr_t, __long_double_t
+- Fix uc_* namespace (swbz#21457)
+- nss: Call __resolv_context_put before early return in get*_r (swbz#21932)
+- aarch64: Optimized memcpy for Qualcomm Falkor processor
+- manual: Document getcontext uc_stack value on Linux (swbz#759)
+- i386: Add <startup.h> (swbz#21913)
+- Don't use IFUNC resolver for longjmp or system in libpthread (swbz#21041)
+- Fix XPG4.2 bits/sigaction.h namespace (swbz#21899)
+- x86-64: Add FMA multiarch functions to libm
+- i386: Support static PIE in start.S
+- Compile tst-prelink.c without PIE (swbz#21815)
+- x86-64: Use _dl_runtime_resolve_opt only with AVX512F (swbz#21871)
+- x86: Remove __memset_zero_constant_len_parameter (swbz#21790)
+
 * Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26-2
 - Disable multi-arch (IFUNC string functions) on i686 (#1471427)
 - Remove nosegneg 32-bit Xen PV support libraries (#1482027)
