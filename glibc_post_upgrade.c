@@ -74,7 +74,15 @@ main (void)
   off_t base;
   ssize_t ret;
 #ifdef __i386__
-  const char *remove_dirs[] = { "/lib/tls", "/lib/i686", "/lib/tls/i486", "/lib/tls/i586", "/lib/tls/i686" };
+  const char *remove_dirs[] =
+    {
+      "/lib/tls",
+      "/lib/i686",
+      "/lib/tls/i486",
+      "/lib/tls/i586",
+      "/lib/tls/i686",
+      "/lib/i686/nosegneg",
+    };
 #else
 #ifndef LIBTLS
 #define LIBTLS "/lib/tls"
