@@ -1003,6 +1003,9 @@ build()
 		--enable-obsolete-nsl \
 		--enable-systemtap \
 		${core_with_options} \
+%ifarch %{ix86}
+		--disable-multi-arch \
+%endif
 %ifarch %{lock_elision_arches}
 		--enable-lock-elision \
 %endif
