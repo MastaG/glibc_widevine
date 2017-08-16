@@ -179,8 +179,6 @@ Source11: SUPPORTED
 # change this.
 Patch0001: glibc-fedora-nscd.patch
 
-Patch0003: glibc-fedora-ldd.patch
-
 Patch0004: glibc-fedora-ppc-unwind.patch
 
 # Build info files in the source tree, then move to the build
@@ -759,7 +757,6 @@ microbenchmark tests on the system.
 
 # Patch order matters.
 %patch0001 -p1
-%patch0003 -p1
 %patch0004 -p1
 %patch0005 -p1
 %patch0006 -p1
