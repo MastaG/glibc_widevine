@@ -1772,9 +1772,7 @@ find_debuginfo_args="$find_debuginfo_args \
 	-l nosegneg.filelist"
 %endif
 %endif
-eval /usr/lib/rpm/find-debuginfo.sh \
-	"$find_debuginfo_args" \
-	-o debuginfo.filelist
+/usr/lib/rpm/find-debuginfo.sh $find_debuginfo_args -o debuginfo.filelist
 
 # List all of the *.a archives in the debug directory.
 list_debug_archives()
