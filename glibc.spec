@@ -603,13 +603,6 @@ function(i) print(rpm.expand("%lang_package "..i.."")) end)}\
 
 %create_lang_packages %language_list
 
-%define require_langpacks()\
-%{lua:\
-local languages = rpm.expand("%1")\
-string.gsub(languages, "(%a+)",\
-function(i) print(rpm.expand("Requires: %{name}-langpack-"..i.." = %{version}-%{release}\\n")) end)}\
-%{nil}
-
 # The glibc-all-langpacks provides the virtual glibc-langpack,
 # and thus satisfies glibc's requirement for installed locales.
 # Users can add one more other langauge packs and then eventually
