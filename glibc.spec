@@ -200,7 +200,6 @@ Patch0009: glibc-fedora-include-bits-ldbl.patch
 Patch0012: glibc-fedora-linux-tcsetattr.patch
 Patch0014: glibc-fedora-nptl-linklibc.patch
 Patch0015: glibc-fedora-localedef.patch
-Patch0016: glibc-fedora-i386-tls-direct-seg-refs.patch
 Patch0019: glibc-fedora-nis-rh188246.patch
 Patch0020: glibc-fedora-manual-dircategory.patch
 Patch0024: glibc-fedora-locarchive.patch
@@ -770,7 +769,6 @@ microbenchmark tests on the system.
 %patch2013 -p1
 %patch0014 -p1
 %patch0015 -p1
-%patch0016 -p1
 %patch0019 -p1
 %patch0020 -p1
 %patch2023 -p1
