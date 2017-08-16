@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-24-g49f97e6
+%define glibcsrcdir  glibc-2.25-45-g47db584c74
 %define glibcversion 2.25
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2242,6 +2242,18 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.25-8
+- Disable SSE2 usage on i686 (#1471427)
+- Auto-sync with upstream release/2.25/master,
+  commit 47db584c74e2bbcf1ba55e62d949c1a738da5e0a:
+- CVE-2017-12132: Reduce EDNS payload size to 1200 bytes (#1477530)
+- Call exit directly in clone (swbz#21512)
+- assert: Suppress pedantic warning caused by statement expression (swbz#21242)
+- x86-64: Use _dl_runtime_resolve_opt only with AVX512F (swbz#21871)
+- powerpc: Fix logbl on power7 (swbz#21280)
+- Avoid .symver on common symbols (swbz#21666)
+- aarch64: Use hidden __GI__dl_argv in rtld startup code
+
 * Thu Jul 06 2017 Florian Weimer <fweimer@redhat.com> - 2.25-7
 - Auto-sync with upstream release/2.25/master,
   commit 49f97e641e4e84a42246655d30adbc4756e67114:
