@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-19-g2aad4b0
 %define glibcversion 2.26
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -128,7 +128,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}.1
+Release: %{glibcrelease}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -2140,6 +2140,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26-2
+- Disable multi-arch (IFUNC string functions) on i686 (#1471427)
+- Remove nosegneg 32-bit Xen PV support libraries (#1482027)
+- Adjust spec file to RPM changes
+
 * Thu Aug 03 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26-1
 - Update to released glibc 2.26.
 - Auto-sync with upstream master,
