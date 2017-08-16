@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.24-61-g605e6f9
+%define glibcsrcdir  glibc-2.24-66-gd5a4092c36
 %define glibcversion 2.24
-%define glibcrelease 9%{?dist}
+%define glibcrelease 10%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2254,6 +2254,14 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.24-10
+- Auto-sync with upstream release/2.24/master,
+  commit d5a4092c367955ac0203ee603fdec625f6c924f9:
+- CVE-2017-12133: Avoid use-after-free read access in clntudp_call (#1478289)
+- x86-64: Use _dl_runtime_resolve_opt only with AVX512F (swbz#21871)
+- Avoid .symver on common symbols (swbz#21666)
+- aarch64: Use hidden __GI__dl_argv in rtld startup code
+
 * Thu Jul 06 2017 Florian Weimer <fweimer@redhat.com> - 2.24-9
 - Auto-sync with upstream release/2.24/master,
   commit 605e6f9f4a4bf39416ac16fad1f41b5a93a0774d:
