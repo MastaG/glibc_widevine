@@ -199,10 +199,6 @@ Patch0004: glibc-fedora-ppc-unwind.patch
 # tree so that they're identical for multilib builds
 Patch0005: glibc-rh825061.patch
 
-# Horrible hack, never to be upstreamed.  Can go away once the world
-# has been rebuilt to use the new ld.so path.
-Patch0006: glibc-arm-hardfloat-3.patch
-
 # Needs to be sent upstream
 Patch0009: glibc-fedora-include-bits-ldbl.patch
 
@@ -298,14 +294,6 @@ Provides: ldconfig
 
 # The dynamic linker supports DT_GNU_HASH
 Provides: rtld(GNU_HASH)
-
-# This is a short term need until everything is rebuilt in the ARM world
-# to use the new dynamic linker path
-%ifarch armv7hl armv7hnl
-Provides: ld-linux.so.3
-Provides: ld-linux.so.3(GLIBC_2.4)
-%endif
-
 Requires: glibc-common = %{version}-%{release}
 
 %if %{without bootstrap}
@@ -793,7 +781,6 @@ microbenchmark tests on the system.
 %patch0003 -p1
 %patch0004 -p1
 %patch0005 -p1
-%patch0006 -p1
 %patch2007 -p1
 %patch0009 -p1
 %patch0012 -p1
@@ -1624,17 +1611,12 @@ rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
 touch -r %{SOURCE2} $RPM_BUILD_ROOT/etc/ld.so.conf
 touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
 
-# We allow undefined symbols in shared libraries because the libraries
-# referenced at link time here, particularly ld.so, may be different than
-# the one used at runtime.  This is really only needed during the ARM
-# transition from ld-linux.so.3 to ld-linux-armhf.so.3.
 pushd build-%{target}
 $GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
 	../build-%{target}/locale/locarchive.o \
 	../build-%{target}/locale/md5.o \
 	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
 	-L../build-%{target} \
-	-Wl,--allow-shlib-undefined \
 	-B../build-%{target}/csu/ -lc -lc_nonshared
 install -m 700 build-locale-archive $RPM_BUILD_ROOT%{_prefix}/sbin/build-locale-archive
 popd
@@ -1648,14 +1630,8 @@ cp posix/gai.conf documentation/
 
 %ifarch s390x
 # Compatibility symlink
-mkdir -p $RPM_BUILD_ROOT/lib
+mkdir -p $RPM_BUILD_ROOT/libb
 ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
-%endif
-
-# Leave a compatibility symlink for the dynamic loader on armhfp targets,
-# at least until the world gets rebuilt
-%ifarch armv7hl armv7hnl
-ln -sf /lib/ld-linux-armhf.so.3 $RPM_BUILD_ROOT/lib/ld-linux.so.3
 %endif
 
 %if %{with benchtests}
@@ -2120,9 +2096,6 @@ rm -f *.filelist*
 %endif
 %ifarch s390x
 /lib/ld64.so.1
-%endif
-%ifarch armv7hl armv7hnl
-/lib/ld-linux.so.3
 %endif
 %verify(not md5 size mtime) %config(noreplace) /etc/nsswitch.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/ld.so.conf
