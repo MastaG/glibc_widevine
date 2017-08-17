@@ -2086,8 +2086,8 @@ fi
 
 %changelog
 * Wed Aug 16 2017 Tomasz Kłoczko <kloczek@fedoraproject.org> - 2.26-4
-- Remove 'Buildroot' tag, 'Group' tag, and '%clean' section, and don't
-  remove the buildroot in %install, all per Fedora Packaging Guidelines
+- Remove 'Buildroot' tag, 'Group' tag, and '%%clean' section, and don't
+  remove the buildroot in '%%install', all per Fedora Packaging Guidelines
   (#1476839)
 
 * Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-3
