@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-108-g403143e1df
 %define glibcversion 2.26.90
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -135,7 +135,6 @@ Release: %{glibcrelease}
 # exception which allows linking it into any kind of programs or shared
 # libraries without restrictions.
 License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+
-Group: System Environment/Libraries
 URL: http://www.gnu.org/software/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.gz
 Source1: build-locale-archive.c
@@ -272,7 +271,6 @@ Patch2114: glibc-rh1470060.patch
 ##############################################################################
 # Continued list of core "glibc" package information:
 ##############################################################################
-Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes: glibc-profile < 2.4
 Provides: ldconfig
 
@@ -394,7 +392,6 @@ Linux system will not function.
 
 %package -n libcrypt
 Summary: Password hashing library (non-NSS version)
-Group: System Environment/Libraries
 Requires: %{name}%{_isa} = %{version}-%{release}
 Provides: libcrypt%{_isa}
 Conflicts: libcrypt-nss
@@ -413,7 +410,6 @@ used by this package.
 %if %{without bootstrap}
 %package -n libcrypt-nss
 Summary: Password hashing library (NSS version)
-Group: System Environment/Libraries
 Requires: %{name}%{_isa} = %{version}-%{release}
 Provides: libcrypt%{_isa}
 Conflicts: libcrypt
@@ -435,7 +431,6 @@ the low-level NSS libraries.
 ##############################################################################
 %package devel
 Summary: Object files for development using standard C libraries.
-Group: Development/Libraries
 Requires(pre): /sbin/install-info
 Requires(pre): %{name}-headers
 Requires: %{name}-headers = %{version}-%{release}
@@ -459,7 +454,6 @@ use the standard C libraries.
 ##############################################################################
 %package static
 Summary: C library static libraries for -static linking.
-Group: Development/Libraries
 Requires: %{name}-devel = %{version}-%{release}
 
 %description static
@@ -479,7 +473,6 @@ which is highly discouraged.
 ##############################################################################
 %package headers
 Summary: Header files for development using standard C libraries.
-Group: Development/Libraries
 Provides: %{name}-headers(%{_target_cpu})
 %ifarch x86_64
 # If both -m32 and -m64 is to be supported on AMD64, x86_64 glibc-headers
@@ -509,7 +502,6 @@ use the standard C libraries.
 Summary: Common binaries and locale data for glibc
 Requires: %{name} = %{version}-%{release}
 Requires: tzdata >= 2003a
-Group: System Environment/Base
 
 %description common
 The glibc-common package includes common binaries for the GNU libc
@@ -519,7 +511,6 @@ libraries, as well as national language (locale) support.
 Summary: The sources for the locales
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
-Group: System Environment/Base
 
 %description locale-source
 The sources for all locales provided in the language packs.
@@ -534,7 +525,6 @@ Requires: %{name} = %{version}-%{release}\
 Requires: %{name}-common = %{version}-%{release}\
 %define supplements_list %(cat %{SOURCE11} | grep ^%{1}_ | cut -d / -f 1 | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
 Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
-Group: System Environment/Base\
 %description langpack-%{1}\
 The glibc-langpack-%{1} package includes the basic information required\
 to support the %{1} language in your applications.\
@@ -564,7 +554,6 @@ string.gsub(languages, "(%a+)",
 # uninstall all-langpacks to save space.
 %package all-langpacks
 Summary: All language packs for %{name}.
-Group: System Environment/Base
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
 Provides: %{name}-langpack = %{version}-%{release}
@@ -578,7 +567,6 @@ Provides: %{name}-langpack = %{version}-%{release}
 # use case we support it here with this package.
 %package minimal-langpack
 Summary: Minimal language packs for %{name}.
-Group: System Environment/Base
 Provides: glibc-langpack = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
@@ -595,7 +583,6 @@ nothing else. It is designed for assembling a minimal system.
 ##############################################################################
 %package -n nscd
 Summary: A Name Service Caching Daemon (nscd).
-Group: System Environment/Daemons
 Requires: %{name} = %{version}-%{release}
 %if %{without bootstrap}
 Requires: libselinux >= 1.17.10-1
@@ -616,7 +603,6 @@ performance with NIS+, and may help with DNS as well.
 
 %package -n nss_db
 Summary: Name Service Switch (NSS) module using hash-indexed files
-Group: System Environment/Base
 Requires: %{name}%{_isa} = %{version}-%{release}
 
 %description -n nss_db
@@ -625,7 +611,6 @@ to speed up user, group, service, host name, and other NSS-based lookups.
 
 %package -n nss_nis
 Summary: Name Service Switch (NSS) module using NIS
-Group: System Environment/Base
 Requires: %{name}%{_isa} = %{version}-%{release}
 
 %description -n nss_nis
@@ -635,7 +620,6 @@ name, and other data.
 
 %package -n nss_hesiod
 Summary: Name Service Switch (NSS) module using Hesiod
-Group: System Environment/Base
 Requires: %{name}%{_isa} = %{version}-%{release}
 
 %description -n nss_hesiod
@@ -645,7 +629,6 @@ the Hesiod convention of Project Athena.
 
 %package nss-devel
 Summary: Development files for directly linking NSS service modules
-Group: Development/Libraries
 Requires: nss_db%{_isa} = %{version}-%{release}
 Requires: nss_nis%{_isa} = %{version}-%{release}
 Requires: nss_hesiod%{_isa} = %{version}-%{release}
@@ -663,7 +646,6 @@ the glibc-devel package instead.
 ##############################################################################
 %package utils
 Summary: Development utilities from GNU C library
-Group: Development/Tools
 Requires: %{name} = %{version}-%{release}
 
 %description utils
@@ -688,7 +670,6 @@ If unsure if you need this, don't install this package.
 
 %package debuginfo
 Summary: Debug information for package %{name}
-Group: Development/Debug
 AutoReqProv: no
 %ifarch %{debuginfocommonarches}
 Requires: glibc-debuginfo-common = %{version}-%{release}
@@ -717,7 +698,6 @@ with -static -L%{_prefix}/lib/debug%{_libdir} compiler options.
 
 %package debuginfo-common
 Summary: Debug information for package %{name}
-Group: Development/Debug
 AutoReqProv: no
 
 %description debuginfo-common
@@ -731,7 +711,6 @@ package or when debugging this package.
 %if %{with benchtests}
 %package benchtests
 Summary: Benchmarking binaries and scripts for %{name}
-Group: Development/Debug
 %description benchtests
 This package provides built benchmark binaries and scripts to run
 microbenchmark tests on the system.
@@ -1041,6 +1020,9 @@ popd
 ##############################################################################
 %install
 
+# Remove existing file lists.
+find . -type f -name '*.filelist' -exec rm -rf {} \;
+
 # Ensure the permissions of errlist.c do not change.  When the file is
 # regenerated the Makefile sets the permissions to 444. We set it to 644
 # to match what comes out of git. The tarball of the git archive won't have
@@ -1053,11 +1035,10 @@ chmod 644 sysdeps/gnu/errlist.c
 # Reload compiler and build options that were used during %%build.
 GCC=`cat Gcc`
 
-# Cleanup any previous installs...
-rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT
+# Build and install.
 make -j1 install_root=$RPM_BUILD_ROOT \
 	install -C build-%{target} %{silentrules}
+
 # If we are not building an auxiliary arch then install all of the supported
 # locales.
 %ifnarch %{auxarches}
@@ -1986,10 +1967,6 @@ if test $1 = 0; then
 fi
 %systemd_postun_with_restart nscd.service
 
-%clean
-rm -rf "$RPM_BUILD_ROOT"
-rm -f *.filelist*
-
 %files -f rpm.filelist
 %defattr(-,root,root)
 %dir %{_prefix}/%{_lib}/audit
@@ -2108,6 +2085,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 16 2017 Tomasz Kłoczko <kloczek@fedoraproject.org> - 2.26-4
+- Remove 'Buildroot' tag, 'Group' tag, and '%clean' section, and don't
+  remove the buildroot in %install, all per Fedora Packaging Guidelines
+  (#1476839)
+
 * Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-3
 - Auto-sync with upstream master,
   commit 403143e1df85dadd374f304bd891be0cd7573e3b:
