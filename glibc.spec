@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-108-g403143e1df
+%define glibcsrcdir  glibc-2.26-141-g2585d7b839
 %define glibcversion 2.26.90
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2085,6 +2085,17 @@ fi
 %endif
 
 %changelog
+* Mon Aug 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-5
+- Auto-sync with upstream master,
+  commit 2585d7b839559e665d5723734862fbe62264b25d:
+- Do not use generic selection in C++ mode
+- Do not use __builtin_types_compatible_p in C++ mode (#1481205)
+- x86-64: Check FMA_Usable in ifunc-mathvec-avx2.h (swbz#21966)
+- Various locale fixes (swbz#21750, swbz#21960, swbz#21959, swbz#19852)
+- Fix sigval namespace (swbz#21944)
+- x86-64: Optimize e_expf with FMA (swbz#21912)
+- Adjust glibc-rh827510.patch.
+
 * Wed Aug 16 2017 Tomasz Kłoczko <kloczek@fedoraproject.org> - 2.26-4
 - Remove 'Buildroot' tag, 'Group' tag, and '%%clean' section, and don't
   remove the buildroot in '%%install', all per Fedora Packaging Guidelines
