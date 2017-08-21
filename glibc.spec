@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-11-g5e989c3693
+%define glibcsrcdir  glibc-2.26-12-gfb9a781e9d
 %define glibcversion 2.26
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2228,6 +2228,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26-4
+- Auto-sync with upstream release/2.26/master,
+  commit fb9a781e9d62c5d7a1f4196915cdfb7c6db59a0c:
+- assert: Support types without operator== (int) (#1483005)
+
 * Mon Aug 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26-3
 - Auto-sync with upstream release/2.26/master,
   commit 5e989c36934d0f0cf13b7a53ef2fa440bce39210:
