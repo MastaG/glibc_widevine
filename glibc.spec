@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-8-g2aa1a7a8f8
+%define glibcsrcdir  glibc-2.26-11-g5e989c3693
 %define glibcversion 2.26
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2228,6 +2228,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26-3
+- Auto-sync with upstream release/2.26/master,
+  commit 5e989c36934d0f0cf13b7a53ef2fa440bce39210:
+- Do not use generic selection in C++ mode
+- Do not use __builtin_types_compatible_p in C++ mode (#1481205)
+- powerpc: Restrict xssqrtqp operands to Vector Registers (swbz#21941)
+
 * Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26-2
 - Disable SSE2 usage on i686 (#1471427)
 - Auto-sync with upstream release/2.26/master,
