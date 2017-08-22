@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-45-g47db584c74
+%define glibcsrcdir  glibc-2.25-46-g02aaa3c749
 %define glibcversion 2.25
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2230,6 +2230,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Tue Aug 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25-9
+- Auto-sync with upstream release/2.25/master,
+  commit 02aaa3c749bf18a3dbafff4c1f0180f135cad7ed:
+- assert: Support types without operator== (int) (#1483005)
+
 * Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.25-8
 - Disable SSE2 usage on i686 (#1471427)
 - Auto-sync with upstream release/2.25/master,
