@@ -178,8 +178,6 @@ Source11: SUPPORTED
 # change this.
 Patch0001: glibc-fedora-nscd.patch
 
-Patch0004: glibc-fedora-ppc-unwind.patch
-
 # Build info files in the source tree, then move to the build
 # tree so that they're identical for multilib builds
 Patch0005: glibc-rh825061.patch
@@ -724,7 +722,6 @@ microbenchmark tests on the system.
 
 # Patch order matters.
 %patch0001 -p1
-%patch0004 -p1
 %patch0005 -p1
 %patch2007 -p1
 %patch0009 -p1
@@ -888,7 +885,6 @@ BuildFlags="-march=mips64r2 -mabi=64 -mrelax-pic-calls"
 ##############################################################################
 # %%build - Generic options.
 ##############################################################################
-BuildFlags="$BuildFlags -fasynchronous-unwind-tables"
 EnableKernel="--enable-kernel=%{enablekernel}"
 # Save the used compiler and options into the file "Gcc" for use later
 # by %%install.
