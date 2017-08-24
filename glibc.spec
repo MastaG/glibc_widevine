@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-12-gfb9a781e9d
 %define glibcversion 2.26
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -281,6 +281,9 @@ Patch2037: glibc-rh1315108.patch
 
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
+
+Patch2115: glibc-rh1484729.patch
+Patch2116: glibc-rh1484729-syscall-names.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -817,6 +820,8 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2037 -p1
 %patch2112 -p1
+%patch2115 -p1
+%patch2116 -p1
 %patch0061 -p1
 
 ##############################################################################
@@ -2228,6 +2233,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Aug 24 2017 Florian Weimer <fweimer@redhat.com> - 2.26-5
+- Use an architecture-independent system call list (#1484729)
+
 * Mon Aug 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26-4
 - Auto-sync with upstream release/2.26/master,
   commit fb9a781e9d62c5d7a1f4196915cdfb7c6db59a0c:
