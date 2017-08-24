@@ -182,9 +182,6 @@ Patch0001: glibc-fedora-nscd.patch
 # tree so that they're identical for multilib builds
 Patch0005: glibc-rh825061.patch
 
-# Needs to be sent upstream
-Patch0009: glibc-fedora-include-bits-ldbl.patch
-
 # All these were from the glibc-fedora.patch mega-patch and need another
 # round of reviewing.  Ideally they'll either be submitted upstream or
 # dropped.
@@ -726,7 +723,6 @@ microbenchmark tests on the system.
 %patch0001 -p1
 %patch0005 -p1
 %patch2007 -p1
-%patch0009 -p1
 %patch0012 -p1
 %patch2013 -p1
 %patch0014 -p1
@@ -2087,6 +2083,7 @@ fi
 %changelog
 * Thu Aug 24 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-10
 - Use an architecture-independent system call list (#1484729)
+- Drop glibc-fedora-include-bits-ldbl.patch (#1482105)
 
 * Tue Aug 22 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-9
 - Auto-sync with upstream master,
