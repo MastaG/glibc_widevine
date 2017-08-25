@@ -26,7 +26,7 @@ Author: Florian Weimer <fweimer@redhat.com>
 The explicit system call list for system call management was not
 accepted upstream.
 diff --git a/sysdeps/unix/sysv/linux/Makefile b/sysdeps/unix/sysv/linux/Makefile
-index 9d6a2de8..bb7a3c78 100644
+index 9d6a2de8..4e4a22b5 100644
 --- a/sysdeps/unix/sysv/linux/Makefile
 +++ b/sysdeps/unix/sysv/linux/Makefile
 @@ -52,75 +52,46 @@ sysdep_headers += sys/mount.h sys/acct.h sys/sysctl.h \
@@ -134,11 +134,11 @@ index 9d6a2de8..bb7a3c78 100644
 +	$(AWK) '/^#define SYS_/ { print substr($$2, 5) }' $< > $@-tmp
 +	$(move-if-change) $@-tmp $@
 +
-+tests: $(objpfx)tst-syscall-list.out
++tests-special += $(objpfx)tst-syscall-list.out
 +$(objpfx)tst-syscall-list.out: \
 +  ../sysdeps/unix/sysv/linux/tst-syscall-list.sh \
 +  $(objpfx)tst-syscall-list-nr.list $(objpfx)tst-syscall-list-sys.list
-+	$(BASH) $^ > $@
++	$(BASH) $^ > $@; $(evaluate-test)
 +
 +endif # $(subdir) == misc
  

@@ -2,10 +2,10 @@ The explicit system call list for system call management was not
 accepted upstream.
 diff --git a/sysdeps/unix/sysv/linux/syscall-names.list b/sysdeps/unix/sysv/linux/syscall-names.list
 new file mode 100644
-index 00000000..459b2226
+index 00000000..80c4f101
 --- /dev/null
 +++ b/sysdeps/unix/sysv/linux/syscall-names.list
-@@ -0,0 +1,595 @@
+@@ -0,0 +1,596 @@
 +# List of all known Linux system calls.
 +# Copyright (C) 2017 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
@@ -30,8 +30,8 @@ index 00000000..459b2226
 +# names are only used if the installed kernel headers also provide
 +# them.
 +
-+# The list of system calls is current as of Linux 4.11.
-+kernel 4.11
++# The list of system calls is current as of Linux 4.12.
++kernel 4.12
 +
 +FAST_atomic_update
 +FAST_cmpxchg
@@ -443,6 +443,7 @@ index 00000000..459b2226
 +rt_sigtimedwait
 +rt_tgsigqueueinfo
 +rtas
++s390_guarded_storage
 +s390_pci_mmio_read
 +s390_pci_mmio_write
 +s390_runtime_instr
