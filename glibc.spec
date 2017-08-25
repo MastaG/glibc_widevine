@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-159-g80f91666fe
+%define glibcsrcdir  glibc-2.26-181-g3d7b66f66c
 %define glibcversion 2.26.90
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2077,6 +2077,12 @@ fi
 %endif
 
 %changelog
+* Fri Aug 25 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-11
+- Auto-sync with upstream master,
+  commit 3d7b66f66cb223e899a7ebc0f4c20f13e711c9e0:
+- string/stratcliff.c: Replace int with size_t (swbz#21982)
+- Fix tgmath.h handling of complex integers (swbz#21684)
+
 * Thu Aug 24 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-10
 - Use an architecture-independent system call list (#1484729)
 - Drop glibc-fedora-include-bits-ldbl.patch (#1482105)
