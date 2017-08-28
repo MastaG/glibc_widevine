@@ -250,8 +250,6 @@ Patch2037: glibc-rh1315108.patch
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
 
-Patch2114: glibc-rh1470060.patch
-
 ##############################################################################
 # End of glibc patches.
 ##############################################################################
@@ -736,7 +734,6 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2037 -p1
 %patch2112 -p1
-%patch2114 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
