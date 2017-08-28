@@ -178,10 +178,6 @@ Source11: SUPPORTED
 # change this.
 Patch0001: glibc-fedora-nscd.patch
 
-# Build info files in the source tree, then move to the build
-# tree so that they're identical for multilib builds
-Patch0005: glibc-rh825061.patch
-
 # All these were from the glibc-fedora.patch mega-patch and need another
 # round of reviewing.  Ideally they'll either be submitted upstream or
 # dropped.
@@ -287,7 +283,7 @@ BuildRequires: gd-devel libpng-devel zlib-devel
 # trigger documentation generation based on dependencies.  We need to fix this
 # upstream in some way that doesn't depend on generating docs to validate the
 # texinfo.  I expect it's simply the wrong dependency for that target.
-BuildRequires: texinfo
+BuildRequires: texinfo >= 5.0
 %endif
 %if %{without bootstrap}
 BuildRequires: libselinux-devel >= 1.33.4-3
@@ -718,7 +714,6 @@ microbenchmark tests on the system.
 
 # Patch order matters.
 %patch0001 -p1
-%patch0005 -p1
 %patch2007 -p1
 %patch0012 -p1
 %patch2013 -p1
