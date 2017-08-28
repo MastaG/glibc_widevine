@@ -251,8 +251,6 @@ Patch2037: glibc-rh1315108.patch
 Patch2112: glibc-rh1315476-2.patch
 
 Patch2114: glibc-rh1470060.patch
-Patch2115: glibc-rh1484729.patch
-Patch2116: glibc-rh1484729-syscall-names.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -739,8 +737,6 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2112 -p1
 %patch2114 -p1
-%patch2115 -p1
-%patch2116 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
