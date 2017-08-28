@@ -1787,6 +1787,10 @@ run_tests () {
 	# If the crypt-glibc test suite fails, something is completely
 	# broken, so fail the build in this case.
 	make %{?_smp_mflags} subdirs=crypt-glibc check %{silentrules}
+
+	# Unconditonally dump differences in the system call list.
+	echo "* System call consistency checks:"
+	cat misc/tst-syscall-list.out
 }
 
 # Increase timeouts
