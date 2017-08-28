@@ -1,35 +1,27 @@
-Posted upstream at:
+See glibc-rh1484729-syscall-names.patch for the actual system call list.
 
-  https://sourceware.org/ml/libc-alpha/2017-04/msg00082.html
-
-sysdeps/unix/sysv/linux/syscall-names.list is stored as a separate patch
-(glibc-rh1439165-syscall-names.patch) in the source RPM for easier
-updates.
-
+commit 2dba5ce7b8115d6a2789bf279892263621088e74
 Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Aug 28 11:31:23 2017 +0200
 
     <bits/syscall.h>: Use an arch-independent system call list on Linux
+    
+    This commit changes the way the list of SYS_* system call macros is
+    created on Linux.  glibc now contains a list of all known system
+    calls, and the generated <bits/syscall.h> file defines the SYS_ macro
+    only if the correspnding __NR_ macro is defined by the kernel headers.
+    
+    As a result, glibc does not have to be rebuilt to pick up system calls
+    if the glibc sources already know about them.  This means that glibc
+    can be built with older kernel headers, and if the installed kernel
+    headers are upgraded afterwards, additional SYS_ macros become
+    available as long as glibc has a record for those system calls.
 
-    This commit changes the way the list of SYS_* system call macros
-    is created on Linux.  glibc now contains a list of all known system
-    calls, and the generated <bits/syscall.h> file defines the SYS_
-    macro only if the correspnding __NR_ macro is defined by the kernel
-    headers.
-
-    As a result, there glibc does not have to be rebuilt to pick up
-    system calls if the glibc sources already know about them.  This
-    means that glibc can be built with older kernel headers, and if
-    the installed kernel headers are upgraded afterwards, additional
-    SYS_ macros become available as long as glibc has a record for
-    those system calls.
-
-The explicit system call list for system call management was not
-accepted upstream.
 diff --git a/sysdeps/unix/sysv/linux/Makefile b/sysdeps/unix/sysv/linux/Makefile
-index 9d6a2de8..4e4a22b5 100644
+index 9d6a2de870..e571fe2efe 100644
 --- a/sysdeps/unix/sysv/linux/Makefile
 +++ b/sysdeps/unix/sysv/linux/Makefile
-@@ -52,75 +52,46 @@ sysdep_headers += sys/mount.h sys/acct.h sys/sysctl.h \
+@@ -52,75 +52,50 @@ sysdep_headers += sys/mount.h sys/acct.h sys/sysctl.h \
  tests += tst-clone tst-clone2 tst-clone3 tst-fanotify tst-personality \
  	 tst-quota tst-sync_file_range test-errno-linux
  
@@ -111,14 +103,16 @@ index 9d6a2de8..4e4a22b5 100644
 -endif
 -generated += bits/syscall.h bits/syscall.d
 -endif
-+	$(AWK) -f $^ > $@-tmp
++	LC_ALL=C $(AWK) -f $^ > $@-tmp
 +	$(move-if-change) $@-tmp $@
++before-compile += $(objpfx)bits/syscall.h
 +
 +# All macros defined by <sys/syscall.h>.  Include <bits/syscall.h>
 +# explicitly because <sys/sycall.h> skips it if _LIBC is defined.
 +$(objpfx)tst-syscall-list-macros.list: \
 +  $(objpfx)bits/syscall.h ../sysdeps/unix/sysv/linux/sys/syscall.h
-+	printf '#include <sys/syscall.h>\n#include <bits/syscall.h>\n' | \
++	printf '#include <linux/version.h>\n\
++#include <sys/syscall.h>\n#include <bits/syscall.h>\n' | \
 +	  $(CC) -E -o $@-tmp $(CFLAGS) $(CPPFLAGS) -x c - -dM
 +	$(move-if-change) $@-tmp $@
 +
@@ -126,19 +120,21 @@ index 9d6a2de8..4e4a22b5 100644
 +$(objpfx)tst-syscall-list-nr.list: \
 +  ../sysdeps/unix/sysv/linux/filter-nr-syscalls.awk \
 +  $(objpfx)tst-syscall-list-macros.list
-+	$(AWK) -f $^ > $@-tmp
++	LC_ALL=C $(AWK) -f $^ > $@-tmp
 +	$(move-if-change) $@-tmp $@
 +
 +# SYS_* system call names.  Used by the test below.
 +$(objpfx)tst-syscall-list-sys.list: $(objpfx)tst-syscall-list-macros.list
-+	$(AWK) '/^#define SYS_/ { print substr($$2, 5) }' $< > $@-tmp
++	LC_ALL=C $(AWK) '/^#define SYS_/ { print substr($$2, 5) }' $< > $@-tmp
 +	$(move-if-change) $@-tmp $@
 +
 +tests-special += $(objpfx)tst-syscall-list.out
 +$(objpfx)tst-syscall-list.out: \
 +  ../sysdeps/unix/sysv/linux/tst-syscall-list.sh \
-+  $(objpfx)tst-syscall-list-nr.list $(objpfx)tst-syscall-list-sys.list
-+	$(BASH) $^ > $@; $(evaluate-test)
++  $(objpfx)tst-syscall-list-macros.list \
++  $(objpfx)tst-syscall-list-nr.list \
++  $(objpfx)tst-syscall-list-sys.list
++	$(BASH) $^ $(AWK) > $@; $(evaluate-test)
 +
 +endif # $(subdir) == misc
  
@@ -146,7 +142,7 @@ index 9d6a2de8..4e4a22b5 100644
  sysdep_headers += sys/timex.h bits/timex.h
 diff --git a/sysdeps/unix/sysv/linux/filter-nr-syscalls.awk b/sysdeps/unix/sysv/linux/filter-nr-syscalls.awk
 new file mode 100644
-index 00000000..15b052a9
+index 0000000000..15b052a9c9
 --- /dev/null
 +++ b/sysdeps/unix/sysv/linux/filter-nr-syscalls.awk
 @@ -0,0 +1,35 @@
@@ -187,10 +183,10 @@ index 00000000..15b052a9
 +}
 diff --git a/sysdeps/unix/sysv/linux/gen-syscall-h.awk b/sysdeps/unix/sysv/linux/gen-syscall-h.awk
 new file mode 100644
-index 00000000..0a27b3cc
+index 0000000000..ef8eb6be52
 --- /dev/null
 +++ b/sysdeps/unix/sysv/linux/gen-syscall-h.awk
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,81 @@
 +# Generate SYS_* macros from a list in a text file.
 +# Copyright (C) 2017 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
@@ -246,6 +242,12 @@ index 00000000..0a27b3cc
 +    print "# error \"Never use <bits/syscall.h> directly; include <sys/syscall.h> instead.\"";
 +    print "#endif";
 +    print "";
++    split($2, kernel_version, ".");
++    kernel_major = kernel_version[1];
++    kernel_minor = kernel_version[2];
++    kernel_version_code = kernel_major * 65536 + kernel_minor * 256;
++    print "#define __GLIBC_LINUX_VERSION_CODE " kernel_version_code;
++    print "";
 +    next;
 +}
 +
@@ -268,10 +270,10 @@ index 00000000..0a27b3cc
 +}
 diff --git a/sysdeps/unix/sysv/linux/tst-syscall-list.sh b/sysdeps/unix/sysv/linux/tst-syscall-list.sh
 new file mode 100644
-index 00000000..f48b7cd6
+index 0000000000..8474cf888f
 --- /dev/null
 +++ b/sysdeps/unix/sysv/linux/tst-syscall-list.sh
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,99 @@
 +#!/bin/bash
 +# Consistency checks for the system call list
 +# Copyright (C) 2017 Free Software Foundation, Inc.
@@ -295,23 +297,42 @@ index 00000000..f48b7cd6
 +set -e
 +set -o pipefail
 +
-+if test $# != 2 ; then
++if test $# != 4; then
 +    echo "error: wrong number of arguments: $#"
 +    exit 1
 +fi
 +
-+list_nr="$1"
-+list_sys="$2"
++macros="$1"
++list_nr="$2"
++list_sys="$3"
++GAWK="$4"
++
++linux_version="$("$GAWK" \
++  '/#define LINUX_VERSION_CODE / {print $3}' < "$macros")"
++glibc_linux_version="$("$GAWK" \
++  '/#define __GLIBC_LINUX_VERSION_CODE / {print $3}' < "$macros")"
++
++echo "info: LINUX_VERSION_CODE: $linux_version"
++echo "info: __GLIBC_LINUX_VERSION_CODE: $glibc_linux_version"
++# Ignore the subrelease in the comparison.
++if test $(expr "$glibc_linux_version" / 256) \
++        -lt $(expr "$linux_version" / 256); then
++    echo "info: The kernel major/minor version is newer than the glibc version"
++    kernel_newer=true
++else
++    kernel_newer=false
++fi
++echo
 +
 +errors=0
 +
 +# Use getpid as a system call which is expected to be always defined.
 +# alpha uses getxpid instead, so it is permitted as an alternative.
-+if ! grep -E -q '^getx?pid$' -- "$list_nr" ; then
++if ! grep -E -q '^getx?pid$' -- "$list_nr"; then
 +    echo "error: __NR_getpid not defined"
 +    errors=1
 +fi
-+if ! grep -E -q '^getx?pid$' -- "$list_sys" ; then
++if ! grep -E -q '^getx?pid$' -- "$list_sys"; then
 +    echo "error: SYS_getpid not defined"
 +    errors=1
 +fi
@@ -332,7 +353,15 @@ index 00000000..f48b7cd6
 +if test -s "$comm_result"; then
 +    echo "error: These system calls need to be added to syscall-names.list:"
 +    cat -- "$comm_result"
-+    errors=1
++    # This is only an error if our version is older than the kernel
++    # version because we cannot predict future kernel development.
++    if $kernel_newer; then
++        echo
++        echo "warning: This error has been ignored because the glibc"
++        echo "warning: system call list is older than the kernel version."
++    else
++        errors=1
++    fi
 +fi
 +
 +# Check for additional SYS_* macros.

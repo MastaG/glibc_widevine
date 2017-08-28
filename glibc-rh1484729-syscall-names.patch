@@ -1,11 +1,11 @@
-The explicit system call list for system call management was not
-accepted upstream.
+The system call list is in a separate file for easier updating.
+
 diff --git a/sysdeps/unix/sysv/linux/syscall-names.list b/sysdeps/unix/sysv/linux/syscall-names.list
 new file mode 100644
-index 00000000..80c4f101
+index 0000000000..2e5cc77fe0
 --- /dev/null
 +++ b/sysdeps/unix/sysv/linux/syscall-names.list
-@@ -0,0 +1,596 @@
+@@ -0,0 +1,601 @@
 +# List of all known Linux system calls.
 +# Copyright (C) 2017 Free Software Foundation, Inc.
 +# This file is part of the GNU C Library.
@@ -43,15 +43,19 @@ index 00000000..80c4f101
 +accept4
 +access
 +acct
++acl_get
++acl_set
 +add_key
 +adjtimex
 +afs_syscall
 +alarm
++alloc_hugepages
 +arch_prctl
 +arm_fadvise64_64
 +arm_sync_file_range
 +atomic_barrier
 +atomic_cmpxchg_32
++attrctl
 +bdflush
 +bind
 +bpf
@@ -119,6 +123,7 @@ index 00000000..80c4f101
 +flistxattr
 +flock
 +fork
++free_hugepages
 +fremovexattr
 +fsetxattr
 +fstat
