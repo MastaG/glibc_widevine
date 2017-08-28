@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-12-gfb9a781e9d
+%define glibcsrcdir  glibc-2.26-15-g6043d77a47
 %define glibcversion 2.26
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2194,6 +2194,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 28 2017 Florian Weimer <fweimer@redhat.com> - 2.26-6
+- Backport upstream patch for the built-in system call list (#1484729)
+- Auto-sync with upstream release/2.26/master,
+  commit 6043d77a47de297b62084c1c261cdada082bf09c.
+
 * Thu Aug 24 2017 Florian Weimer <fweimer@redhat.com> - 2.26-5
 - Use an architecture-independent system call list (#1484729)
 - Drop glibc-fedora-include-bits-ldbl.patch (#1482105)
