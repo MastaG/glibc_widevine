@@ -210,10 +210,6 @@ Patch0033: glibc-fedora-elf-ORIGIN.patch
 # Support mangling and demangling null pointers.
 Patch0037: glibc-rh952799.patch
 
-# ARM: Accept that some objects marked hard ABI are now not because of a
-#      binutils bug.
-Patch0044: glibc-rh1009145.patch
-
 # Allow applications to call pthread_atfork without libpthread.so.
 Patch0046: glibc-rh1013801.patch
 
@@ -783,7 +779,6 @@ microbenchmark tests on the system.
 %patch0031 -p1
 %patch0033 -p1
 %patch0037 -p1
-%patch0044 -p1
 %patch0046 -p1
 %patch2031 -p1
 %patch0047 -p1
