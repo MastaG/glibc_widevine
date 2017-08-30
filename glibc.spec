@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-191-g2dba5ce7b8
+%define glibcsrcdir  glibc-2.26-213-g5f9409b787
 %define glibcversion 2.26.90
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -191,10 +191,6 @@ Patch0025: glibc-fedora-streams-rh436349.patch
 Patch0028: glibc-fedora-localedata-rh61908.patch
 Patch0031: glibc-fedora-__libc_multiple_libcs.patch
 Patch0033: glibc-fedora-elf-ORIGIN.patch
-
-# Needs to be sent upstream.
-# Support mangling and demangling null pointers.
-Patch0037: glibc-rh952799.patch
 
 # Allow applications to call pthread_atfork without libpthread.so.
 Patch0046: glibc-rh1013801.patch
@@ -720,7 +716,6 @@ microbenchmark tests on the system.
 %patch0028 -p1
 %patch0031 -p1
 %patch0033 -p1
-%patch0037 -p1
 %patch0046 -p1
 %patch2031 -p1
 %patch0047 -p1
@@ -2065,6 +2060,19 @@ fi
 %endif
 
 %changelog
+* Wed Aug 30 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-13
+- Drop glibc-rh952799.patch, applied upstream (#952799, swbz#22025)
+- Auto-sync with upstream master,
+  commit 5f9409b787c5758fc277f8d1baf7478b752b775d:
+- Various locale fixes (swbz#22022, swbz#22038, swbz#21951, swbz#13805,
+  swbz#21971, swbz#21959)
+- MIPS/o32: Fix internal_syscall5/6/7 (swbz#21956)
+- AArch64: Fix procfs.h not to expose stdint.h types
+- iconv_open: Fix heap corruption on gconv_init failure (swbz#22026)
+- iconv: Mangle __btowc_fct even without __init_fct (swbz#22025)
+- Fix bits/math-finite.h _MSUF_ expansion namespace (swbz#22028)
+- Provide a C++ version of iszero that does not use __MATH_TG (swbz#21930)
+
 * Mon Aug 28 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-12
 - Auto-sync with upstream master,
   commit 2dba5ce7b8115d6a2789bf279892263621088e74.
