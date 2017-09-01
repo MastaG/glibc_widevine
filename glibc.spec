@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-213-g5f9409b787
+%define glibcsrcdir  glibc-2.26-260-gf4a6be2582
 %define glibcversion 2.26.90
-%define glibcrelease 13%{?dist}
+%define glibcrelease 14%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2060,6 +2060,15 @@ fi
 %endif
 
 %changelog
+* Fri Sep 01 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-14
+- Auto-sync with upstream master,
+  commit f4a6be2582b8dfe8adfa68da3dd8decf566b3983:
+- malloc: Abort on heap corruption, without a backtrace (swbz#21754)
+- getaddrinfo: Return EAI_NODATA for gethostbyname2_r with NO_DATA (swbz#21922)
+- getaddrinfo: Fix error handling in gethosts (swbz#21915) (swbz#21922)
+- Place $(elf-objpfx)sofini.os last (swbz#22051)
+- Various locale fixes (swbz#15332, swbz#22044)
+
 * Wed Aug 30 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-13
 - Drop glibc-rh952799.patch, applied upstream (#952799, swbz#22025)
 - Auto-sync with upstream master,
