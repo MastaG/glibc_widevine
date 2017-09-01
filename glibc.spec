@@ -879,7 +879,7 @@ build()
 	rm -rf $builddir
 	mkdir $builddir
 	pushd $builddir
-	build_CFLAGS="$BuildFlags -g -O3 $*"
+	build_CFLAGS="$BuildFlags -g -O2 $*"
 	# Some configure checks can spuriously fail for some architectures if
 	# unwind info is present
 	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
@@ -2061,6 +2061,7 @@ fi
 
 %changelog
 * Fri Sep 01 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-14
+- Build glibc with -O2 (following the upstream default).
 - Auto-sync with upstream master,
   commit f4a6be2582b8dfe8adfa68da3dd8decf566b3983:
 - malloc: Abort on heap corruption, without a backtrace (swbz#21754)
