@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-260-gf4a6be2582
+%define glibcsrcdir  glibc-2.26-290-gb38042f514
 %define glibcversion 2.26.90
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2060,6 +2060,13 @@ fi
 %endif
 
 %changelog
+* Mon Sep 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-15
+- Auto-sync with upstream master,
+  commit b38042f51430974642616a60afbbf96fd0b98659:
+- Implement tmpfile with O_TMPFILE (swbz#21530)
+- Obsolete pow10 functions
+- math.h: Warn about an already-defined log macro
+
 * Fri Sep 01 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-14
 - Build glibc with -O2 (following the upstream default).
 - Auto-sync with upstream master,
