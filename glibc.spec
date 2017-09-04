@@ -1968,7 +1968,7 @@ fi
 %attr(0600,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/cache/ldconfig/aux-cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/ld.so.cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/gai.conf
-%doc README NEWS INSTALL BUGS CONFORMANCE elf/rtld-debugger-interface.txt
+%doc README NEWS INSTALL elf/rtld-debugger-interface.txt
 # If rpm doesn't support %license, then use %doc instead.
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING.LIB LICENSES
