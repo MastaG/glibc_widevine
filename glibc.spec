@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-15-g6043d77a47
+%define glibcsrcdir  glibc-2.26-27-ga71a3374cd
 %define glibcversion 2.26
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2190,6 +2190,14 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Sep 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26-7
+- Auto-sync with upstream release/2.26/master,
+  commit a71a3374cd8cf53776c33994f69ec184c26f2129:
+- Provide a C++ version of issignaling that does not use __MATH_TG
+- Provide a C++ version of iszero that does not use __MATH_TG (swbz#21930)
+- getaddrinfo: Return EAI_NODATA if gethostbyname2_r with NO_DATA (swzbz#21922)
+- getaddrinfo: Fix error handling in gethosts (swbz#21915)
+
 * Mon Aug 28 2017 Florian Weimer <fweimer@redhat.com> - 2.26-6
 - Backport upstream patch for the built-in system call list (#1484729)
 - Auto-sync with upstream release/2.26/master,
