@@ -1609,7 +1609,7 @@ cp posix/gai.conf documentation/
 
 %ifarch s390x
 # Compatibility symlink
-mkdir -p $RPM_BUILD_ROOT/libb
+mkdir -p $RPM_BUILD_ROOT/lib
 ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
 %endif
 
