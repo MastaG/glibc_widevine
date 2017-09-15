@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-27-ga71a3374cd
 %define glibcversion 2.26
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -191,6 +191,10 @@ Source11: SUPPORTED
 # change this.
 Patch0001: glibc-fedora-nscd.patch
 
+# Horrible hack, never to be upstreamed.  Can go away once the world
+# has been rebuilt to use the new ld.so path.
+Patch0006: glibc-arm-hardfloat-3.patch
+
 # All these were from the glibc-fedora.patch mega-patch and need another
 # round of reviewing.  Ideally they'll either be submitted upstream or
 # dropped.
@@ -279,6 +283,14 @@ Provides: ldconfig
 
 # The dynamic linker supports DT_GNU_HASH
 Provides: rtld(GNU_HASH)
+
+# This is a short term need until everything is rebuilt in the ARM world
+# to use the new dynamic linker path
+%ifarch armv7hl armv7hnl
+Provides: ld-linux.so.3
+Provides: ld-linux.so.3(GLIBC_2.4)
+%endif
+
 Requires: glibc-common = %{version}-%{release}
 
 %if %{without bootstrap}
@@ -763,6 +775,7 @@ microbenchmark tests on the system.
 
 # Patch order matters.
 %patch0001 -p1
+%patch0006 -p1
 %patch2007 -p1
 %patch0012 -p1
 %patch2013 -p1
@@ -1590,12 +1603,17 @@ rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
 touch -r %{SOURCE2} $RPM_BUILD_ROOT/etc/ld.so.conf
 touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
 
+# We allow undefined symbols in shared libraries because the libraries
+# referenced at link time here, particularly ld.so, may be different than
+# the one used at runtime.  This is really only needed during the ARM
+# transition from ld-linux.so.3 to ld-linux-armhf.so.3.
 pushd build-%{target}
 $GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
 	../build-%{target}/locale/locarchive.o \
 	../build-%{target}/locale/md5.o \
 	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
 	-L../build-%{target} \
+	-Wl,--allow-shlib-undefined \
 	-B../build-%{target}/csu/ -lc -lc_nonshared
 install -m 700 build-locale-archive $RPM_BUILD_ROOT%{_prefix}/sbin/build-locale-archive
 popd
@@ -1611,6 +1629,12 @@ cp posix/gai.conf documentation/
 # Compatibility symlink
 mkdir -p $RPM_BUILD_ROOT/lib
 ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
+%endif
+
+# Leave a compatibility symlink for the dynamic loader on armhfp targets,
+# at least until the world gets rebuilt
+%ifarch armv7hl armv7hnl
+ln -sf /lib/ld-linux-armhf.so.3 $RPM_BUILD_ROOT/lib/ld-linux.so.3
 %endif
 
 %if %{with benchtests}
@@ -2081,6 +2105,9 @@ rm -f *.filelist*
 %ifarch s390x
 /lib/ld64.so.1
 %endif
+%ifarch armv7hl armv7hnl
+/lib/ld-linux.so.3
+%endif
 %verify(not md5 size mtime) %config(noreplace) /etc/nsswitch.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/ld.so.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/rpc
@@ -2190,6 +2217,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Sep 15 2017 Florian Weimer <fweimer@redhat.com> - 2.26-8
+- Restore ARM EABI dynamic loader support (#1491974)
+
 * Mon Sep 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26-7
 - Auto-sync with upstream release/2.26/master,
   commit a71a3374cd8cf53776c33994f69ec184c26f2129:
