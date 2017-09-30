@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-290-gb38042f514
+%define glibcsrcdir  glibc-2.26-427-g1e2bffd05c
 %define glibcversion 2.26.90
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2060,6 +2060,41 @@ fi
 %endif
 
 %changelog
+* Sat Sep 30 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-16
+- Auto-sync with upstream master,
+  commit 1e2bffd05c36a9be30d7092d6593a9e9aa009ada:
+- Add IBM858 charset (#1416405)
+- Update kernel version in syscall-names.list to 4.13
+- Add Linux 4.13 constants to bits/fcntl-linux.h
+- Add fcntl sealing interfaces from Linux 3.17 to bits/fcntl-linux.h
+- math: New generic powf, log2f, logf
+- Fix nearbyint arithmetic moved before feholdexcept (swbz#22225)
+- Mark __dso_handle as hidden (swbz#18822)
+- Skip PT_DYNAMIC segment with p_filesz == 0 (swbz#22101)
+- glob now matches dangling symbolic links (swbz#866, swbz#22183)
+- nscd: Release read lock after resetting timeout (swbz#22161)
+- Avoid __MATH_TG in C++ mode with -Os for pfcl (swbz#22146)
+- Fix dlclose/exit race (swbz#22180)
+- x86: Add SSE4.1 trunc, truncf (swbz#20142)
+- Fix atexit/exit race (swbz#14333)
+- Use execveat syscall in fexecve (swbz#22134)
+- Enable unwind info in libc-start.c and backtrace.c
+- powerpc: Avoid misaligned stores in memset
+- powerpc: build some IFUNC math functions for libc and libm (swbz#21745)
+- Removed redundant data (LC_TIME and LC_MESSAGES) for niu_NZ (swbz#22023)
+- Fix LC_TELEPHONE for az_AZ (swbz#22112)
+- x86: Add MathVec_Prefer_No_AVX512 to cpu-features (swbz#21967)
+- x86: Add x86_64 to x86-64 HWCAP (swbz#22093)
+- Finish change from “Bengali” to “Bangla” (swbz#14925)
+- posix: fix glob bugs with long login names (swbz#1062)
+- posix: Fix getpwnam_r usage (swbz#1062)
+- posix: accept inode 0 is a valid inode number (swbz#19971)
+- Remove redundant LC_TIME data in om_KE (swbz#22100)
+- Remove remaining _HAVE_STRING_ARCH_* definitions (swbz#18858)
+- resolv: Fix memory leak with OOM during resolv.conf parsing (swbz#22095)
+- Add miq_NI locale for Miskito (swbz#20498)
+- Fix bits/math-finite.h exp10 condition (swbz#22082)
+
 * Mon Sep 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-15
 - Auto-sync with upstream master,
   commit b38042f51430974642616a60afbbf96fd0b98659:
