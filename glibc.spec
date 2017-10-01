@@ -2073,7 +2073,7 @@ fi
 - Skip PT_DYNAMIC segment with p_filesz == 0 (swbz#22101)
 - glob now matches dangling symbolic links (swbz#866, swbz#22183)
 - nscd: Release read lock after resetting timeout (swbz#22161)
-- Avoid __MATH_TG in C++ mode with -Os for pfcl (swbz#22146)
+- Avoid __MATH_TG in C++ mode with -Os for fpclassify (swbz#22146)
 - Fix dlclose/exit race (swbz#22180)
 - x86: Add SSE4.1 trunc, truncf (swbz#20142)
 - Fix atexit/exit race (swbz#14333)
