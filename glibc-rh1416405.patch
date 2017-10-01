@@ -34,24 +34,6 @@ Date:   Thu Sep 7 15:28:28 2017 +0200
             * iconvdata/tst-tables.sh: Add IBM858
             * localedata/charmaps/IBM858: New file.
 
-diff --git a/ChangeLog b/ChangeLog
-index 3e32d14dbf302da2..7ff11c3a65ed9aa5 100644
---- a/ChangeLog
-+++ b/ChangeLog
-@@ -1,3 +1,13 @@
-+2017-09-14  Mike FABIAN  <mfabian@redhat.com>
-+
-+	[BZ #21084]
-+	* benchtests/strcoll-inputs/filelist#en_US.UTF-8: Add IBM858 and ibm858.c.
-+	* iconvdata/Makefile: Add IBM858.
-+	* iconvdata/gconv-modules: Likewise.
-+	* iconvdata/tst-tables.sh: Likewise.
-+	* iconvdata/ibm858.c: New file.
-+	* localedata/charmaps/IBM858: Likewise.
-+
- 2017-09-01  Florian Weimer  <fweimer@redhat.com>
- 
- 	[BZ #21915]
 diff --git a/benchtests/strcoll-inputs/filelist#en_US.UTF-8 b/benchtests/strcoll-inputs/filelist#en_US.UTF-8
 index 6cee2374f42b6bbe..aa44107ad6a3663f 100644
 --- a/benchtests/strcoll-inputs/filelist#en_US.UTF-8

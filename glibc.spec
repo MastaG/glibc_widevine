@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-27-ga71a3374cd
+%define glibcsrcdir  glibc-2.26-43-gfdf58ebc60
 %define glibcversion 2.26
-%define glibcrelease 9%{?dist}
+%define glibcrelease 10%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -230,7 +230,6 @@ Patch0059: glibc-c-utf8-locale.patch
 Patch0060: glibc-rh1324623.patch
 
 # Fix -Wstrict-overflow issues with gcc 7.0.
-Patch0061: glibc-gcc-strict-overflow.patch
 Patch62: glibc-rh1416405.patch
 
 ##############################################################################
@@ -803,7 +802,6 @@ microbenchmark tests on the system.
 %patch2112 -p1
 %patch2115 -p1
 %patch2116 -p1
-%patch0061 -p1
 %patch62 -p1
 
 ##############################################################################
@@ -2219,6 +2217,19 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sun Oct 01 2017 Florian Weimer <fweimer@redhat.com> - 2.26-10
+- Drop glibc-gcc-strict-overflow.patch, different workaround applied upstream.
+- Auto-sync with upstream release/2.26/master,
+  commit fdf58ebc60ce0eb459fd616241b52872b3571ac1:
+- Fix nearbyint arithmetic moved before feholdexcept (swbz#22225)
+- Avoid __MATH_TG in C++ mode with -Os for fpclassify (swbz#22146)
+- Place $(elf-objpfx)sofini.os last (swbz#22051)
+- __libc_dynarray_emplace_enlarge: Add missing else
+- dynarray: Set errno on overflow-induced allocation failure
+- resolv: __resolv_conf_attach must not free passed conf object (swbz#22096)
+- resolv: Fix memory leak with OOM during resolv.conf parsing (swbz#22095)
+- nss_dns: Remove dead PTR IPv4-to-IPv6 mapping code
+
 * Sat Sep 30 2017 Florian Weimer <fweimer@redhat.com> - 2.26-9
 - Add IBM858 charset (#1416405)
 
