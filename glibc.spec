@@ -592,9 +592,9 @@ Summary: Name Service Switch (NSS) module using NIS
 Requires: %{name}%{_isa} = %{version}-%{release}
 
 %description -n nss_nis
-The nss_nis, nss_nisplus, and nss_compat Name Service Switch modules
-uses the Network Information System (NIS) to obtain user, group, host
-name, and other data.
+The nss_nis and nss_nisplus Name Service Switch modules uses the
+Network Information System (NIS) to obtain user, group, host name, and
+other data.
 
 %package -n nss_hesiod
 Summary: Name Service Switch (NSS) module using Hesiod
@@ -1456,8 +1456,8 @@ for module in db nis nisplus compat hesiod files dns; do
   grep -E "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
     rpm.filelist > nss_$module.filelist
 done
-# nis includes nisplus and compat
-cat nss_nisplus.filelist nss_compat.filelist >> nss_nis.filelist
+# nis includes nisplus
+cat nss_nisplus.filelist >> nss_nis.filelist
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
 grep '/libnss_[a-z]*\.so$' devel.filelist > nss-devel.filelist
@@ -1467,7 +1467,7 @@ sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
     -e '\,/var/db/Makefile,d' \
     rpm.filelist devel.filelist
 # Restore the built-in NSS modules.
-cat nss_files.filelist nss_dns.filelist >> rpm.filelist
+cat nss_files.filelist nss_dns.filelist nss_compat.filelist >> rpm.filelist
 
 # Prepare the libcrypt-related file lists.
 grep '/libcrypt-[0-9.]*.so$' rpm.filelist > libcrypt.filelist
@@ -2061,6 +2061,7 @@ fi
 
 %changelog
 * Wed Oct 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-17
+- Move nss_compat to the main glibc package (#1400538)
 - Auto-sync with upstream master,
   commit 11c4f5010c58029e73e656d5df4f8f42c9b8e877:
 - crypt: Use NSPR header files in addition to NSS header files (#1489339)
