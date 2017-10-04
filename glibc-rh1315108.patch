@@ -368,10 +368,10 @@ Index: b/include/alloca.h
  #endif
  
  # endif /* !_ISOMAC */
-Index: b/nis/nss_compat/compat-initgroups.c
+Index: b/nss/nss_compat/compat-initgroups.c
 ===================================================================
---- a/nis/nss_compat/compat-initgroups.c
-+++ b/nis/nss_compat/compat-initgroups.c
+--- a/nss/nss_compat/compat-initgroups.c
++++ b/nss/nss_compat/compat-initgroups.c
 @@ -262,7 +262,6 @@ getgrent_next_nss (ent_t *ent, char *buf
  		 overwrite the pointer with one to a bigger buffer.  */
  	      char *tmpbuf = buffer;

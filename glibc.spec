@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-427-g1e2bffd05c
+%define glibcsrcdir  glibc-2.26-513-g11c4f5010c
 %define glibcversion 2.26.90
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2060,6 +2060,16 @@ fi
 %endif
 
 %changelog
+* Wed Oct 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-17
+- Auto-sync with upstream master,
+  commit 11c4f5010c58029e73e656d5df4f8f42c9b8e877:
+- crypt: Use NSPR header files in addition to NSS header files (#1489339)
+- math: Fix yn(n,0) without SVID wrapper (swbz#22244)
+- math: Fix log2(0) and log(10) in downward rounding (swbz#22243)
+- math: Add C++ versions of iscanonical for ldbl-96, ldbl-128ibm (swbz#22235)
+- powerpc: Optimize memrchr for power8
+- Hide various internal functions (swbz#18822)
+
 * Sat Sep 30 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-16
 - Auto-sync with upstream master,
   commit 1e2bffd05c36a9be30d7092d6593a9e9aa009ada:
