@@ -495,35 +495,91 @@ The sources for all locales provided in the language packs.
 If you are building custom locales you will most likely use
 these sources as the basis for your new locale.
 
-%define lang_package()\
-%package langpack-%{1}\
-Summary: Locale data for %{1}\
-Provides: glibc-langpack = %{version}-%{release}\
-Requires: %{name} = %{version}-%{release}\
-Requires: %{name}-common = %{version}-%{release}\
-%define supplements_list %(cat %{SOURCE11} | grep ^%{1}_ | cut -d / -f 1 | cut -d @ -f 1 | cut -d . -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//' | sed 's/ / or langpacks-/g' | sed 's/^/ or langpacks-/')\
-Supplements: (glibc = %{version}-%{release} and (langpacks-%{1}%{supplements_list}))\
-%description langpack-%{1}\
-The glibc-langpack-%{1} package includes the basic information required\
-to support the %{1} language in your applications.\
-%ifnarch %{auxarches}\
-%files -f langpack-%{1}.filelist langpack-%{1}\
-%defattr(-,root,root)\
-%endif\
-%{nil}
-
-# language_list will contain a list of all supported language
-# names in iso-639 format, i.e. something like "aa af ... yue zh zu"
-# We add "eo" (Esperanto) manually because currently glibc has no
-# Esperanto locale in SUPPORTED but translations for Esperanto exist.
-# Therefore, we want a glibc-langpack-eo sub-package containing these
-# translations.
-%define language_list eo %(cat %{SOURCE11} | grep -E  '^[a-z]+_' | cut -d _ -f 1 | sort -u | tr "\\\\n" " " | sed 's/ $//')
-
 %{lua:
-local languages = rpm.expand("%language_list")
-string.gsub(languages, "(%a+)",
-            function(i) print(rpm.expand("%lang_package "..i.."")) end)
+-- Array of languages (ISO-639 codes).
+local languages = {}
+-- Dictionary from language codes (as in the languages array) to arrays
+-- of regions.
+local supplements = {}
+do
+   -- Parse the SUPPORTED file.  Eliminate duplicates.
+   local lang_region_seen = {}
+   for line in io.lines(rpm.expand("%{SOURCE11}")) do
+      -- Match lines which contain a language (eo) or language/region
+      -- (en_US) strings.
+      local lang_region = string.match(line, "^([a-z][^/@.]+)")
+      if lang_region ~= nil then
+	 if lang_region_seen[lang_region] == nil then
+	    lang_region_seen[lang_region] = true
+
+	    -- Split language/region pair.
+	    local lang, region = string.match(lang_region, "^(.+)_(.+)")
+	    if lang == nil then
+	       -- Region is missing, use only the language.
+	       lang = lang_region
+	    end
+	    local suppl = supplements[lang]
+	    if suppl == nil then
+	       suppl = {}
+	       supplements[lang] = suppl
+	       -- New language not seen before.
+	       languages[#languages + 1] = lang
+	    end
+	    if region ~= nil then
+	       -- New region because of the check against
+	       -- lang_region_seen above.
+	       suppl[#suppl + 1] = region
+	    end
+	 end
+      end
+   end
+   -- Sort for determinism.
+   table.sort(languages)
+   for _, supples in pairs(supplements) do
+      table.sort(supplements)
+   end
+end
+
+-- Compute the Supplements: list for a language, based on the regions.
+local function compute_supplements(lang)
+   result = "langpacks-" .. lang
+   regions = supplements[lang]
+   if regions ~= nil then
+      for i = 1, #regions do
+	 result = result .. " or langpacks-" .. lang .. "_" .. regions[i]
+      end
+   end
+   return result
+end
+
+-- Emit the definition of a language pack package.
+local function lang_package(lang)
+   local suppl = compute_supplements(lang)
+   print(rpm.expand([[
+
+%package langpack-]]..lang..[[
+
+Summary: Locale data for ]]..lang..[[
+
+Provides: glibc-langpack = %{version}-%{release}
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+Supplements: (glibc = %{version}-%{release} and (]]..suppl..[[))
+%description langpack-]]..lang..[[
+
+The glibc-langpack-]]..lang..[[ package includes the basic information required
+to support the ]]..lang..[[ language in your applications.
+%ifnarch %{auxarches}
+%files -f langpack-]]..lang..[[.filelist langpack-]]..lang..[[
+
+%defattr(-,root,root)
+%endif
+]]))
+end
+
+for i = 1, #languages do
+   lang_package(languages[i])
+end
 }
 
 # The glibc-all-langpacks provides the virtual glibc-langpack,
