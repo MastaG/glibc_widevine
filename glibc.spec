@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-513-g11c4f5010c
+%define glibcsrcdir  glibc-2.26-538-g1e26d35
 %define glibcversion 2.26.90
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2060,6 +2060,15 @@ fi
 %endif
 
 %changelog
+* Fri Oct 06 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26.90-18
+- Auto-sync with upstream master,
+  commit 1e26d35193efbb29239c710a4c46a64708643320.
+- malloc: Fix tcache leak after thread destruction (swbz#22111)
+- powerpc:  Fix IFUNC for memrchr.
+- aarch64: Optimized implementation of memmove for Qualcomm Falkor
+- Always do locking when iterating over list of streams (swbz#15142)
+- abort: Do not flush stdio streams (swbz#15436)
+
 * Wed Oct 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-17
 - Move nss_compat to the main glibc package (#1400538)
 - Auto-sync with upstream master,
