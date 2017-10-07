@@ -229,7 +229,6 @@ Patch0059: glibc-c-utf8-locale.patch
 # Build libcrypt twice, with and without NSS.
 Patch0060: glibc-rh1324623.patch
 
-# Fix -Wstrict-overflow issues with gcc 7.0.
 Patch62: glibc-rh1416405.patch
 Patch63: glibc-rh1498880-1.patch
 Patch64: glibc-rh1498880-2.patch
