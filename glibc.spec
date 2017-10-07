@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-43-gfdf58ebc60
 %define glibcversion 2.26
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -231,6 +231,8 @@ Patch0060: glibc-rh1324623.patch
 
 # Fix -Wstrict-overflow issues with gcc 7.0.
 Patch62: glibc-rh1416405.patch
+Patch63: glibc-rh1498880-1.patch
+Patch64: glibc-rh1498880-2.patch
 
 ##############################################################################
 #
@@ -803,6 +805,8 @@ microbenchmark tests on the system.
 %patch2115 -p1
 %patch2116 -p1
 %patch62 -p1
+%patch63 -p1
+%patch64 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2217,6 +2221,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Oct  7 2017 Florian Weimer <fweimer@redhat.com> - 2.26-11
+- Do not flush stdio streams on abort, assertion failure (#1498880)
+
 * Sun Oct 01 2017 Florian Weimer <fweimer@redhat.com> - 2.26-10
 - Drop glibc-gcc-strict-overflow.patch, different workaround applied upstream.
 - Auto-sync with upstream release/2.26/master,
