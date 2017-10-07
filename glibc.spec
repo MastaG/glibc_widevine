@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-43-gfdf58ebc60
+%define glibcsrcdir  glibc-2.26-48-gd5c6dea
 %define glibcversion 2.26
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2279,6 +2279,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Oct  7 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26-12
+- Auto-sync with upstream release/2.26/master,
+  commit d5c6dea2d5b4b5c64625c5386f6baec7bf2d89b3.
+- malloc: Fix tcache leak after thread destruction (swbz#22111)
+- Add C++ versions of iscanonical (swbz#22235)
+
 * Sat Oct  7 2017 Florian Weimer <fweimer@redhat.com> - 2.26-11
 - Do not flush stdio streams on abort, assertion failure (#1498880)
 - Move nss_compat to the main glibc package (#1400538)
