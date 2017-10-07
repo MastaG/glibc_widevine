@@ -232,6 +232,7 @@ Patch0060: glibc-rh1324623.patch
 Patch62: glibc-rh1416405.patch
 Patch63: glibc-rh1498880-1.patch
 Patch64: glibc-rh1498880-2.patch
+Patch65: glibc-nscd-reproducible.patch
 
 ##############################################################################
 #
@@ -806,6 +807,7 @@ microbenchmark tests on the system.
 %patch62 -p1
 %patch63 -p1
 %patch64 -p1
+%patch65 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
