@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-48-gd5c6dea
 %define glibcversion 2.26
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1635,7 +1635,7 @@ cat nss_nisplus.filelist >> nss_nis.filelist
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
 grep '/libnss_[a-z]*\.so$' devel.filelist > nss-devel.filelist
-# /var/db/Makefile goes into nss_hesiod, remove the other files from
+# /var/db/Makefile goes into nss_db, remove the other files from
 # the main and devel file list.
 sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
     -e '\,/var/db/Makefile,d' \
@@ -2248,9 +2248,9 @@ rm -f *.filelist*
 %endif
 
 %files -f nss_db.filelist -n nss_db
+/var/db/Makefile
 %files -f nss_nis.filelist -n nss_nis
 %files -f nss_hesiod.filelist -n nss_hesiod
-/var/db/Makefile
 %doc hesiod/README.hesiod
 %files -f nss-devel.filelist nss-devel
 
@@ -2279,6 +2279,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Oct  9 2017 Florian Weimer <fweimer@redhat.com> - 2.26-13
+- Move /var/db/Makefile to nss_db (#1498900)
+
 * Sat Oct  7 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26-12
 - Auto-sync with upstream release/2.26/master,
   commit d5c6dea2d5b4b5c64625c5386f6baec7bf2d89b3.
