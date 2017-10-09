@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-538-g1e26d35
+%define glibcsrcdir glibc-2.26-543-g645ac9aaf8
 %define glibcversion 2.26.90
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2116,6 +2116,11 @@ fi
 %endif
 
 %changelog
+* Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-19
+- Auto-sync with upstream branch master,
+  commit 645ac9aaf89e3311949828546df6334322f48933:
+- openpty: use TIOCGPTPEER to open slave side fd
+
 * Fri Oct 06 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.26.90-18
 - Auto-sync with upstream master,
   commit 1e26d35193efbb29239c710a4c46a64708643320.
