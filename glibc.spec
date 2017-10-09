@@ -1651,7 +1651,7 @@ cat nss_nisplus.filelist nss_compat.filelist >> nss_nis.filelist
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
 grep '/libnss_[a-z]*\.so$' devel.filelist > nss-devel.filelist
-# /var/db/Makefile goes into nss_hesiod, remove the other files from
+# /var/db/Makefile goes into nss_db, remove the other files from
 # the main and devel file list.
 sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
     -e '\,/var/db/Makefile,d' \
@@ -2254,9 +2254,9 @@ rm -f *.filelist*
 %endif
 
 %files -f nss_db.filelist -n nss_db
+/var/db/Makefile
 %files -f nss_nis.filelist -n nss_nis
 %files -f nss_hesiod.filelist -n nss_hesiod
-/var/db/Makefile
 %doc hesiod/README.hesiod
 %files -f nss-devel.filelist nss-devel
 
@@ -2286,6 +2286,7 @@ rm -f *.filelist*
 
 %changelog
 * Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.25-11
+- Move /var/db/Makefile to nss_db (#1498900)
 - Auto-sync with upstream branch release/2.25/master,
   commit 864ea5f6579edfee41f7d4a778807045b5aff66b:
 - nss: Fix pointer alignment/endianness issue in group merging (#1471985)
