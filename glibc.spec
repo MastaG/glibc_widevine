@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.25-49-gbc5ace67fe
+%define glibcsrcdir glibc-2.25-56-g864ea5f657
 %define glibcversion 2.25
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2285,6 +2285,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.25-11
+- Auto-sync with upstream branch release/2.25/master,
+  commit 864ea5f6579edfee41f7d4a778807045b5aff66b:
+- nss: Fix pointer alignment/endianness issue in group merging (#1471985)
+- elf: Place $(elf-objpfx)sofini.os last (swbz#22051)
+
 * Mon Aug 28 2017 Florian Weimer <fweimer@redhat.com> - 2.25-10
 - Auto-sync with upstream release/2.25/master,
   commit bc5ace67fe9823757532e0273f6c1cdfda065433:
