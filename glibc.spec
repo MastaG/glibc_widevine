@@ -1517,7 +1517,7 @@ cat nss_nisplus.filelist >> nss_nis.filelist
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
 grep '/libnss_[a-z]*\.so$' devel.filelist > nss-devel.filelist
-# /var/db/Makefile goes into nss_hesiod, remove the other files from
+# /var/db/Makefile goes into nss_db, remove the other files from
 # the main and devel file list.
 sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
     -e '\,/var/db/Makefile,d' \
@@ -2085,9 +2085,9 @@ fi
 %endif
 
 %files -f nss_db.filelist -n nss_db
+/var/db/Makefile
 %files -f nss_nis.filelist -n nss_nis
 %files -f nss_hesiod.filelist -n nss_hesiod
-/var/db/Makefile
 %doc hesiod/README.hesiod
 %files -f nss-devel.filelist nss-devel
 
@@ -2117,6 +2117,7 @@ fi
 
 %changelog
 * Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-19
+- Move /var/db/Makefile to nss_db (#1498900)
 - Auto-sync with upstream branch master,
   commit 645ac9aaf89e3311949828546df6334322f48933:
 - openpty: use TIOCGPTPEER to open slave side fd
