@@ -288,6 +288,7 @@ Patch2112: glibc-rh1315476-2.patch
 
 Patch61: glibc-nscd-reproducible.patch
 Patch62: glibc-nss_compat.patch
+Patch63: glibc-rh1416405.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -884,6 +885,7 @@ microbenchmark tests on the system.
 %patch2112 -p1
 %patch61 -p1
 %patch62 -p1
+%patch63 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2289,6 +2291,7 @@ rm -f *.filelist*
 * Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.25-11
 - Move /var/db/Makefile to nss_db (#1498900)
 - Move nss_compat to the main glibc package (#1400538)
+- iconv: Support the IBM858 character set (#1416405)
 - Auto-sync with upstream branch release/2.25/master,
   commit 864ea5f6579edfee41f7d4a778807045b5aff66b:
 - nss: Fix pointer alignment/endianness issue in group merging (#1471985)
