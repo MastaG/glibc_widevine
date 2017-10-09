@@ -286,6 +286,8 @@ Patch2110: glibc-rh1351108-update-to-unicode-9.0.0.patch
 # sln implemented by ldconfig, to conserve disk space.
 Patch2112: glibc-rh1315476-2.patch
 
+Patch61: glibc-nscd-reproducible.patch
+
 ##############################################################################
 # End of glibc patches.
 ##############################################################################
@@ -879,6 +881,7 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2110 -p1
 %patch2112 -p1
+%patch61 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
