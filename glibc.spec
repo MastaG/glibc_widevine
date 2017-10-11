@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.25-56-g864ea5f657
+%define glibcsrcdir glibc-2.25-57-g595f287ae0
 %define glibcversion 2.25
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2288,6 +2288,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Oct 11 2017 Florian Weimer <fweimer@redhat.com> - 2.25-12
+- Auto-sync with upstream branch release/2.25/master,
+  commit 595f287ae092dd973f6d5fb748cbe31ef7d82b2d.
+
 * Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.25-11
 - Move /var/db/Makefile to nss_db (#1498900)
 - Move nss_compat to the main glibc package (#1400538)
