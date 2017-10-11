@@ -1,0 +1,72 @@
+commit 44f28da7cab271b659551c4fe1a7d2e420803576
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Apr 4 14:36:02 2017 +0200
+
+    nss_dns: Replace local declarations with declarations from a header file
+
+diff --git a/include/arpa/nameser.h b/include/arpa/nameser.h
+index cd7ab6e925b25687..7a8290e1f26070e0 100644
+--- a/include/arpa/nameser.h
++++ b/include/arpa/nameser.h
+@@ -51,6 +51,9 @@ extern const struct _ns_flagdata _ns_flagdata[] attribute_hidden;
+ 
+ extern unsigned int	__ns_get16 (const unsigned char *) __THROW;
+ extern unsigned long	__ns_get32 (const unsigned char *) __THROW;
++int __ns_name_ntop (const unsigned char *, char *, size_t) __THROW;
++int __ns_name_unpack (const unsigned char *, const unsigned char *,
++		      const unsigned char *, unsigned char *, size_t) __THROW;
+ 
+ #define ns_msg_getflag(handle, flag) \
+   (((handle)._flags & _ns_flagdata[flag].mask) >> _ns_flagdata[flag].shift)
+diff --git a/resolv/nss_dns/dns-host.c b/resolv/nss_dns/dns-host.c
+index 01864dc96e639873..705b3c9c078c41bf 100644
+--- a/resolv/nss_dns/dns-host.c
++++ b/resolv/nss_dns/dns-host.c
+@@ -80,6 +80,7 @@
+ #include <string.h>
+ 
+ #include "nsswitch.h"
++#include <arpa/nameser.h>
+ 
+ /* Get implementeation for some internal functions.  */
+ #include <resolv/resolv-internal.h>
+@@ -106,13 +107,6 @@ typedef union querybuf
+   u_char buf[MAXPACKET];
+ } querybuf;
+ 
+-/* These functions are defined in res_comp.c.  */
+-#define NS_MAXCDNAME	255	/* maximum compressed domain name */
+-extern int __ns_name_ntop (const u_char *, char *, size_t);
+-extern int __ns_name_unpack (const u_char *, const u_char *,
+-			     const u_char *, u_char *, size_t);
+-
+-
+ static enum nss_status getanswer_r (const querybuf *answer, int anslen,
+ 				    const char *qname, int qtype,
+ 				    struct hostent *result, char *buffer,
+diff --git a/resolv/nss_dns/dns-network.c b/resolv/nss_dns/dns-network.c
+index fd8c5656c0cedd27..2be72d33a30f917e 100644
+--- a/resolv/nss_dns/dns-network.c
++++ b/resolv/nss_dns/dns-network.c
+@@ -66,6 +66,7 @@
+ 
+ #include "nsswitch.h"
+ #include <arpa/inet.h>
++#include <arpa/nameser.h>
+ 
+ /* Maximum number of aliases we allow.  */
+ #define MAX_NR_ALIASES	48
+@@ -92,13 +93,6 @@ typedef union querybuf
+   u_char buf[MAXPACKET];
+ } querybuf;
+ 
+-/* These functions are defined in res_comp.c.  */
+-#define NS_MAXCDNAME	255	/* maximum compressed domain name */
+-extern int __ns_name_ntop (const u_char *, char *, size_t) __THROW;
+-extern int __ns_name_unpack (const u_char *, const u_char *,
+-			     const u_char *, u_char *, size_t) __THROW;
+-
+-
+ /* Prototypes for local functions.  */
+ static enum nss_status getanswer_r (const querybuf *answer, int anslen,
+ 				    struct netent *result, char *buffer,

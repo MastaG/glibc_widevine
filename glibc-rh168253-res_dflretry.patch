@@ -1,0 +1,28 @@
+commit 0ad970bb13920b6471ccc4503cf1f0d8b2352f05
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue May 9 12:28:01 2017 +0200
+
+    resolv: Use RES_DFLRETRY consistently [BZ #21474]
+
+diff --git a/resolv/res_libc.c b/resolv/res_libc.c
+index a4b376f15b0b0e98..c52574f895d4f19d 100644
+--- a/resolv/res_libc.c
++++ b/resolv/res_libc.c
+@@ -65,7 +65,7 @@ res_init(void) {
+ 	if (!_res.retrans)
+ 		_res.retrans = RES_TIMEOUT;
+ 	if (!_res.retry)
+-		_res.retry = 4;
++		_res.retry = RES_DFLRETRY;
+ 	if (!(_res.options & RES_INIT))
+ 		_res.options = RES_DEFAULT;
+ 	else if (_res.nscount > 0)
+@@ -103,7 +103,7 @@ __res_maybe_init (res_state resp, int preinit)
+ 		if (!resp->retrans)
+ 			resp->retrans = RES_TIMEOUT;
+ 		if (!resp->retry)
+-			resp->retry = 4;
++			resp->retry = RES_DFLRETRY;
+ 		resp->options = RES_DEFAULT;
+ 		if (!resp->id)
+ 			resp->id = res_randomid ();

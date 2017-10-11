@@ -1,0 +1,47 @@
+commit ca3d65ff69d5187cb4d6b7f81d414427c7007e22
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jun 19 13:15:11 2017 +0200
+
+    resolv: Make __res_vinit hidden
+    
+    And remove unnecessary separate declarations.
+
+diff --git a/include/resolv.h b/include/resolv.h
+index e8f477cd86b7be11..37e4047ac40c6ae1 100644
+--- a/include/resolv.h
++++ b/include/resolv.h
+@@ -23,7 +23,7 @@ extern __thread struct __res_state *__resp attribute_tls_model_ie;
+ # define _res (*__resp)
+ 
+ /* Now define the internal interfaces.  */
+-extern int __res_vinit (res_state, int);
++extern int __res_vinit (res_state, int) attribute_hidden;
+ extern int __res_maybe_init (res_state, int);
+ extern void _sethtent (int);
+ extern struct hostent *_gethtent (void);
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index 23676e994dd58be7..57223b470af9ba4d 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -110,8 +110,6 @@ unsigned long long int __res_initstamp attribute_hidden;
+  */
+ int
+ res_ninit(res_state statp) {
+-	extern int __res_vinit(res_state, int);
+-
+ 	return (__res_vinit(statp, 0));
+ }
+ libc_hidden_def (__res_ninit)
+diff --git a/resolv/res_libc.c b/resolv/res_libc.c
+index c52574f895d4f19d..3ef885762e890a40 100644
+--- a/resolv/res_libc.c
++++ b/resolv/res_libc.c
+@@ -41,8 +41,6 @@ __libc_lock_define_initialized (static, lock);
+ 
+ int
+ res_init(void) {
+-	extern int __res_vinit(res_state, int);
+-
+ 	/*
+ 	 * These three fields used to be statically initialized.  This made
+ 	 * it hard to use this code in a shared library.  It is necessary,

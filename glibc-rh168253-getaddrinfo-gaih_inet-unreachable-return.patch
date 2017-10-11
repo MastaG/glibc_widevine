@@ -1,0 +1,29 @@
+commit 4fdd75e4463801b9d8f329769df1a26145560656
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Aug 8 18:48:05 2017 +0200
+
+    getaddrinfo: Remove unreachable return statement from gaih_inet
+    
+    (cherry picked from commit 0df595b23a829c9169ec418a19eef9006b4ae801)
+
+diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
+index 699411cc92fc210c..09f85fc472f9e177 100644
+--- a/sysdeps/posix/getaddrinfo.c
++++ b/sysdeps/posix/getaddrinfo.c
+@@ -420,13 +420,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 		    alloca_account (sizeof (struct gaih_servtuple),
+ 				    alloca_used);
+ 
+-		  if ((rc = gaih_inet_serv (service->name,
+-					    tp, req, newp, tmpbuf)))
+-		    {
+-		      if (rc)
+-			continue;
+-		      return rc;
+-		    }
++		  if (gaih_inet_serv (service->name,
++				      tp, req, newp, tmpbuf) != 0)
++		    continue;
+ 
+ 		  *pst = newp;
+ 		  pst = &(newp->next);

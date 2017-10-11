@@ -1,0 +1,128 @@
+commit 39bd76df3d61c6d83c5aa8bab06c7c1dbe7159ac
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Jun 27 10:21:34 2017 +0200
+
+    resolv: Avoid timeouts in test-resolv-res-init, test-resolv-res_init-thread
+    
+    Some Linux kernels have very aggressive ICMP rate limiting on the
+    loopback interface.  This commit introduces a minimal echoing DNS server
+    inside the network namespace, so that there is no need for ICMP error
+    messages anymore.
+
+diff --git a/resolv/tst-resolv-res_init-skeleton.c b/resolv/tst-resolv-res_init-skeleton.c
+index 1d2c475c4b233131..2b68c5ff9a69a291 100644
+--- a/resolv/tst-resolv-res_init-skeleton.c
++++ b/resolv/tst-resolv-res_init-skeleton.c
+@@ -21,6 +21,7 @@
+    in.  */
+ 
+ #include <arpa/inet.h>
++#include <errno.h>
+ #include <gnu/lib-names.h>
+ #include <netdb.h>
+ #include <resolv/resolv-internal.h> /* For DEPRECATED_RES_USE_INET6.  */
+@@ -33,6 +34,7 @@
+ #include <support/support.h>
+ #include <support/temp_file.h>
+ #include <support/test-driver.h>
++#include <support/xsocket.h>
+ #include <support/xstdio.h>
+ #include <support/xunistd.h>
+ 
+@@ -527,6 +529,73 @@ test_file_contents (const struct test_case *t)
+       }
+ }
+ 
++/* Dummy DNS server.  It ensures that the probe queries sent by
++   gethostbyname and getaddrinfo receive a reply even if the system
++   applies a very strict rate limit to localhost.  */
++static pid_t
++start_dummy_server (void)
++{
++  int server_socket = xsocket (AF_INET, SOCK_DGRAM, 0);
++  {
++    struct sockaddr_in sin =
++      {
++        .sin_family = AF_INET,
++        .sin_addr = { .s_addr = htonl (INADDR_LOOPBACK) },
++        .sin_port = htons (53),
++      };
++    int ret = bind (server_socket, (struct sockaddr *) &sin, sizeof (sin));
++    if (ret < 0)
++      {
++        if (errno == EACCES)
++          /* The port is reserved, which means we cannot start the
++             server.  */
++          return -1;
++        FAIL_EXIT1 ("cannot bind socket to port 53: %m");
++      }
++  }
++
++  pid_t pid = xfork ();
++  if (pid == 0)
++    {
++      /* Child process.  Echo back queries as SERVFAIL responses.  */
++      while (true)
++        {
++          union
++          {
++            HEADER header;
++            unsigned char bytes[512];
++          } packet;
++          struct sockaddr_in sin;
++          socklen_t sinlen = sizeof (sin);
++
++          ssize_t ret = recvfrom
++            (server_socket, &packet, sizeof (packet),
++             MSG_NOSIGNAL, (struct sockaddr *) &sin, &sinlen);
++          if (ret < 0)
++            FAIL_EXIT1 ("recvfrom on fake server socket: %m");
++          if (ret > sizeof (HEADER))
++            {
++              /* Turn the query into a SERVFAIL response.  */
++              packet.header.qr = 1;
++              packet.header.rcode = ns_r_servfail;
++
++              /* Send the response.  */
++              ret = sendto (server_socket, &packet, ret,
++                            MSG_NOSIGNAL, (struct sockaddr *) &sin, sinlen);
++              if (ret < 0)
++                /* The peer may have closed socket prematurely, so
++                   this is not an error.  */
++                printf ("warning: sending DNS server reply: %m\n");
++            }
++        }
++    }
++
++  /* In the parent, close the socket.  */
++  xclose (server_socket);
++
++  return pid;
++}
++
+ static int
+ do_test (void)
+ {
+@@ -552,6 +621,8 @@ do_test (void)
+     support_capture_subprocess_free (&proc);
+   }
+ 
++  pid_t server = start_dummy_server ();
++
+   for (size_t i = 0; test_cases[i].name != NULL; ++i)
+     {
+       if (test_verbose > 0)
+@@ -590,6 +661,13 @@ do_test (void)
+         }
+     }
+ 
++  if (server > 0)
++    {
++      if (kill (server, SIGTERM) < 0)
++        FAIL_EXIT1 ("could not terminate server process: %m");
++      xwaitpid (server, NULL, 0);
++    }
++
+   free (path_chroot);
+   path_chroot = NULL;
+   free (path_resolv_conf);

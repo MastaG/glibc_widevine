@@ -1,0 +1,52 @@
+commit 94f094f22b50a20de9042cb1e78c7299992a91c9
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jun 19 13:19:00 2017 +0200
+
+    resolv: Introduce is_sort_mask and call it from res_vinit
+
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index eb24fca3a6ecef9a..eb8e308fdaa899ef 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -85,9 +85,6 @@
+ 
+ static void res_setoptions (res_state, const char *, const char *)
+      internal_function;
+-
+-static const char sort_mask_chars[] = "/&";
+-#define ISSORTMASK(ch) (strchr(sort_mask_chars, ch) != NULL)
+ static u_int32_t net_mask (struct in_addr) __THROW;
+ 
+ unsigned long long int __res_initstamp attribute_hidden;
+@@ -109,6 +106,14 @@ res_ninit(res_state statp) {
+ }
+ libc_hidden_def (__res_ninit)
+ 
++/* Return true if CH separates the netmask in the "sortlist"
++   directive.  */
++static inline bool
++is_sort_mask (char ch)
++{
++  return ch == '/' || ch == '&';
++}
++
+ /* This function has to be reachable by res_data.c but not publically. */
+ int
+ __res_vinit(res_state statp, int preinit) {
+@@ -305,14 +310,14 @@ __res_vinit(res_state statp, int preinit) {
+ 			if (*cp == '\0' || *cp == '\n' || *cp == ';')
+ 			    break;
+ 			net = cp;
+-			while (*cp && !ISSORTMASK(*cp) && *cp != ';' &&
++			while (*cp && !is_sort_mask (*cp) && *cp != ';' &&
+ 			       isascii(*cp) && !isspace(*cp))
+ 				cp++;
+ 			n = *cp;
+ 			*cp = 0;
+ 			if (__inet_aton(net, &a)) {
+ 			    statp->sort_list[nsort].addr = a;
+-			    if (ISSORTMASK(n)) {
++			    if (is_sort_mask (n)) {
+ 				*cp++ = n;
+ 				net = cp;
+ 				while (*cp && *cp != ';' &&

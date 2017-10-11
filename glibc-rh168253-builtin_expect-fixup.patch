@@ -1,0 +1,21 @@
+commit a0704b1ac7e8dc26f0e0feac58468958305ae844
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Apr 19 19:34:42 2017 +0200
+
+    nss_dns: Correct parentheses for the __glibc_unlikely argument
+    
+    This fixes commit bee05c9d58a34ec5886faf3b56ecaa56355d94bf.
+
+diff --git a/resolv/nss_dns/dns-host.c b/resolv/nss_dns/dns-host.c
+index 7099d093f357e16c..f121aa3de73704ea 100644
+--- a/resolv/nss_dns/dns-host.c
++++ b/resolv/nss_dns/dns-host.c
+@@ -633,7 +633,7 @@ getanswer_r (const querybuf *answer, int anslen, const char *qname, int qtype,
+ 			packtmp, sizeof packtmp);
+   if (n != -1 && __ns_name_ntop (packtmp, bp, linebuflen) == -1)
+     {
+-      if (__glibc_unlikely (errno) == EMSGSIZE)
++      if (__glibc_unlikely (errno == EMSGSIZE))
+ 	goto too_small;
+ 
+       n = -1;

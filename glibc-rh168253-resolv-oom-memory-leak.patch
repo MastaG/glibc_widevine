@@ -1,0 +1,24 @@
+commit 905a6129147e7ee80e8918e23efe212433b8cce7
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Sep 6 15:46:54 2017 +0200
+
+    resolv: Fix memory leak with OOM during resolv.conf parsing [BZ #22095]
+    
+    (cherry picked from commit 5670c4ab256114e869b1df4b05653aa5f909182c)
+
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index fa46ce7813c1f8af..4e1f9fe8dea93e8a 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -446,6 +446,11 @@ res_vinit_1 (FILE *fp, struct resolv_conf_parser *parser)
+                     (&parser->nameserver_list);
+                   if (p != NULL)
+                     *p = sa;
++                  else
++                    {
++                      free (sa);
++                      return false;
++                    }
+                 }
+               continue;
+             }

@@ -1,0 +1,91 @@
+commit 5ca4aaea1840b3005c2de4cc73269a55e34ae2c3
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 30 11:31:18 2017 +0200
+
+    resolv: Move the res_mkquery function to the resolv/mk_query.c file
+
+diff --git a/resolv/res_data.c b/resolv/res_data.c
+index 569ff4c0ea306e74..d907bfc9bd8a55fd 100644
+--- a/resolv/res_data.c
++++ b/resolv/res_data.c
+@@ -73,25 +73,6 @@ fp_nquery(const u_char *msg, int len, FILE *file) {
+ libresolv_hidden_def (fp_nquery)
+ 
+ int
+-res_mkquery(int op,			/* opcode of query */
+-	    const char *dname,		/* domain name */
+-	    int class, int type,	/* class and type of query */
+-	    const u_char *data,		/* resource record data */
+-	    int datalen,		/* length of data */
+-	    const u_char *newrr_in,	/* new rr for modify or append */
+-	    u_char *buf,		/* buffer to put query */
+-	    int buflen)			/* size of buffer */
+-{
+-	if (__res_maybe_init (&_res, 1) == -1) {
+-		RES_SET_H_ERRNO(&_res, NETDB_INTERNAL);
+-		return (-1);
+-	}
+-	return (res_nmkquery(&_res, op, dname, class, type,
+-			     data, datalen,
+-			     newrr_in, buf, buflen));
+-}
+-
+-int
+ res_query(const char *name,	/* domain name */
+ 	  int class, int type,	/* class and type of query */
+ 	  u_char *answer,	/* buffer to put answer */
+@@ -180,11 +161,9 @@ libresolv_hidden_def (hostalias)
+ #include <shlib-compat.h>
+ 
+ #if SHLIB_COMPAT(libresolv, GLIBC_2_0, GLIBC_2_2)
+-# undef res_mkquery
+ # undef res_query
+ # undef res_querydomain
+ # undef res_search
+-weak_alias (__res_mkquery, res_mkquery);
+ weak_alias (__res_query, res_query);
+ weak_alias (__res_querydomain, res_querydomain);
+ weak_alias (__res_search, res_search);
+diff --git a/resolv/res_mkquery.c b/resolv/res_mkquery.c
+index a601b6988545a149..9afb410980e47ca7 100644
+--- a/resolv/res_mkquery.c
++++ b/resolv/res_mkquery.c
+@@ -90,6 +90,7 @@
+ #include <resolv/resolv-internal.h>
+ #include <string.h>
+ #include <sys/time.h>
++#include <shlib-compat.h>
+ 
+ #include <hp-timing.h>
+ #include <stdint.h>
+@@ -202,6 +203,21 @@ res_nmkquery (res_state statp, int op, const char *dname,
+ }
+ libresolv_hidden_def (res_nmkquery)
+ 
++int
++res_mkquery (int op, const char *dname, int class, int type,
++             const unsigned char *data, int datalen,
++             const unsigned char *newrr_in,
++             unsigned char *buf, int buflen)
++{
++  if (__res_maybe_init (&_res, 1) == -1)
++    {
++      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
++      return -1;
++    }
++  return res_nmkquery (&_res, op, dname, class, type,
++                       data, datalen, newrr_in, buf, buflen);
++}
++
+ /* Create an OPT resource record.  Return the length of the final
+    packet, or -1 on error.
+ 
+@@ -262,3 +278,8 @@ __res_nopt (res_state statp, int n0, unsigned char *buf, int buflen,
+ 
+   return cp - buf;
+ }
++
++#if SHLIB_COMPAT (libresolv, GLIBC_2_0, GLIBC_2_2)
++# undef res_mkquery
++weak_alias (__res_mkquery, res_mkquery);
++#endif

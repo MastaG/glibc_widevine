@@ -1,0 +1,119 @@
+commit f8bf87face3304f216bcd838081fa33bb4976ac6
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Jun 13 17:03:56 2017 +0200
+
+    dynarray: Implement begin/end functions in the spirit of C++
+
+diff --git a/malloc/dynarray-skeleton.c b/malloc/dynarray-skeleton.c
+index 7a10e083f477dd7a..7ec58788087e80d3 100644
+--- a/malloc/dynarray-skeleton.c
++++ b/malloc/dynarray-skeleton.c
+@@ -65,6 +65,8 @@
+      bool DYNARRAY_PREFIX##has_failed (const struct DYNARRAY_STRUCT *);
+      void DYNARRAY_PREFIX##mark_failed (struct DYNARRAY_STRUCT *);
+      size_t DYNARRAY_PREFIX##size (const struct DYNARRAY_STRUCT *);
++     DYNARRAY_ELEMENT *DYNARRAY_PREFIX##begin (const struct DYNARRAY_STRUCT *);
++     DYNARRAY_ELEMENT *DYNARRAY_PREFIX##end (const struct DYNARRAY_STRUCT *);
+      DYNARRAY_ELEMENT *DYNARRAY_PREFIX##at (struct DYNARRAY_STRUCT *, size_t);
+      void DYNARRAY_PREFIX##add (struct DYNARRAY_STRUCT *, DYNARRAY_ELEMENT);
+      DYNARRAY_ELEMENT *DYNARRAY_PREFIX##emplace (struct DYNARRAY_STRUCT *);
+@@ -248,6 +250,26 @@ DYNARRAY_NAME (at) (struct DYNARRAY_STRUCT *list, size_t index)
+   return list->dynarray_header.array + index;
+ }
+ 
++/* Return a pointer to the first array element, if any.  For a
++   zero-length array, the pointer can be NULL even though the dynamic
++   array has not entered the failure state.  */
++__attribute__ ((nonnull (1)))
++static inline DYNARRAY_ELEMENT *
++DYNARRAY_NAME (begin) (struct DYNARRAY_STRUCT *list)
++{
++  return list->dynarray_header.array;
++}
++
++/* Return a pointer one element past the last array element.  For a
++   zero-length array, the pointer can be NULL even though the dynamic
++   array has not entered the failure state.  */
++__attribute__ ((nonnull (1)))
++static inline DYNARRAY_ELEMENT *
++DYNARRAY_NAME (end) (struct DYNARRAY_STRUCT *list)
++{
++  return list->dynarray_header.array + list->dynarray_header.used;
++}
++
+ /* Internal function.  Slow path for the add function below.  */
+ static void
+ DYNARRAY_NAME (add__) (struct DYNARRAY_STRUCT *list, DYNARRAY_ELEMENT item)
+diff --git a/malloc/tst-dynarray-shared.h b/malloc/tst-dynarray-shared.h
+index faba66f580733a2d..1de9c04be88843d0 100644
+--- a/malloc/tst-dynarray-shared.h
++++ b/malloc/tst-dynarray-shared.h
+@@ -73,5 +73,8 @@ struct str_array
+     TEST_VERIFY_EXIT (dynarray_##type##_emplace (dyn) == NULL);      \
+     dynarray_##type##_free (dyn);                                    \
+     CHECK_INIT_STATE (type, (dyn));                                  \
++    /* These functions should not assert.  */                        \
++    dynarray_##type##_begin (dyn);                                   \
++    dynarray_##type##_end (dyn);                                     \
+     (void) 0;                                                        \
+   })
+diff --git a/malloc/tst-dynarray.c b/malloc/tst-dynarray.c
+index 7aee85aa39ff2e0b..2206d75e318aaa3f 100644
+--- a/malloc/tst-dynarray.c
++++ b/malloc/tst-dynarray.c
+@@ -111,6 +111,13 @@ test_int (void)
+                 }
+               TEST_VERIFY_EXIT (dynarray_int_size (&dyn) == count);
+               TEST_VERIFY_EXIT (count <= dyn.dynarray_header.allocated);
++              if (count > 0)
++                {
++                  TEST_VERIFY (dynarray_int_begin (&dyn)
++                               == dynarray_int_at (&dyn, 0));
++                  TEST_VERIFY (dynarray_int_end (&dyn)
++                               == dynarray_int_at (&dyn, count - 1) + 1);
++                }
+               unsigned final_count;
+               bool heap_array = dyn.dynarray_header.array != dyn.scratch;
+               if (do_remove_last)
+@@ -123,6 +130,13 @@ test_int (void)
+                 }
+               else
+                 final_count = count;
++              if (final_count > 0)
++                {
++                  TEST_VERIFY (dynarray_int_begin (&dyn)
++                               == dynarray_int_at (&dyn, 0));
++                  TEST_VERIFY (dynarray_int_end (&dyn)
++                               == dynarray_int_at (&dyn, final_count - 1) + 1);
++                }
+               if (do_clear)
+                 {
+                   dynarray_int_clear (&dyn);
+@@ -225,6 +239,13 @@ test_str (void)
+                 }
+               TEST_VERIFY_EXIT (dynarray_str_size (&dyn) == count);
+               TEST_VERIFY_EXIT (count <= dyn.dynarray_header.allocated);
++              if (count > 0)
++                {
++                  TEST_VERIFY (dynarray_str_begin (&dyn)
++                               == dynarray_str_at (&dyn, 0));
++                  TEST_VERIFY (dynarray_str_end (&dyn)
++                               == dynarray_str_at (&dyn, count - 1) + 1);
++                }
+               unsigned final_count;
+               bool heap_array = dyn.dynarray_header.array != dyn.scratch;
+               if (do_remove_last)
+@@ -237,6 +258,13 @@ test_str (void)
+                 }
+               else
+                 final_count = count;
++              if (final_count > 0)
++                {
++                  TEST_VERIFY (dynarray_str_begin (&dyn)
++                               == dynarray_str_at (&dyn, 0));
++                  TEST_VERIFY (dynarray_str_end (&dyn)
++                               == dynarray_str_at (&dyn, final_count - 1) + 1);
++                }
+               if (do_clear)
+                 {
+                   dynarray_str_clear (&dyn);

@@ -1,0 +1,45 @@
+commit b1e7c13cc58572600809d5173fed2c00c38af2e7
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 23 17:52:55 2017 +0200
+
+    resolv: Clean up declarations of the __res_initstamp variable
+
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index ed5a4d4804a792de..9aa907ee199f01a6 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -105,7 +105,7 @@
+ static void res_setoptions (res_state, const char *, const char *);
+ static uint32_t net_mask (struct in_addr);
+ 
+-unsigned long long int __res_initstamp attribute_hidden;
++unsigned long long int __res_initstamp;
+ 
+ int
+ res_ninit (res_state statp)
+diff --git a/resolv/res_libc.c b/resolv/res_libc.c
+index 3ef885762e890a40..5202b756ff17518a 100644
+--- a/resolv/res_libc.c
++++ b/resolv/res_libc.c
+@@ -25,8 +25,8 @@
+ #include <arpa/nameser.h>
+ #include <resolv.h>
+ #include <libc-lock.h>
++#include <resolv-internal.h>
+ 
+-extern unsigned long long int __res_initstamp attribute_hidden;
+ /* We have atomic increment operations on 64-bit platforms.  */
+ #if __WORDSIZE == 64
+ # define atomicinclock(lock) (void) 0
+diff --git a/resolv/resolv-internal.h b/resolv/resolv-internal.h
+index 9afaa07d8b03d31f..5a9faf8de975f316 100644
+--- a/resolv/resolv-internal.h
++++ b/resolv/resolv-internal.h
+@@ -65,4 +65,7 @@ int __res_nopt (res_state, int n0, unsigned char *buf, int buflen,
+ int __inet_pton_length (int af, const char *src, size_t srclen, void *);
+ libc_hidden_proto (__inet_pton_length)
+ 
++/* Used to propagate the effect of res_init calls across threads.  */
++extern unsigned long long int __res_initstamp attribute_hidden;
++
+ #endif  /* _RESOLV_INTERNAL_H */

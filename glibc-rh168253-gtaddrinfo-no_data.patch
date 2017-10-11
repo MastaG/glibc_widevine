@@ -1,0 +1,27 @@
+commit 7966331555df43bb7e2a55ce5a17a330e57f487f
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Sep 4 11:25:34 2017 +0200
+
+    getaddrinfo: Return EAI_NODATA if gethostbyname2_r reports NO_DATA [BZ #21922]
+    
+    (cherry picked from commit 5f8340f583fe3d4f5734bd2371c5a45ecff2db0d)
+
+diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
+index 9d9e7e2bf2a78cbb..0cf87c224dff5c66 100644
+--- a/sysdeps/posix/getaddrinfo.c
++++ b/sysdeps/posix/getaddrinfo.c
+@@ -619,6 +619,14 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 			}
+ 		      *pat = addrmem;
+ 		    }
++		  else
++		    {
++		      if (h_errno == NO_DATA)
++			result = -EAI_NODATA;
++		      else
++			result = -EAI_NONAME;
++		      goto free_and_return;
++		    }
+ 		}
+ 	      else
+ 		{

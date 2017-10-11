@@ -1,0 +1,217 @@
+commit 44500cbb25bc6e76723304b9ff39f875c04309f9
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Thu Apr 13 13:22:51 2017 +0200
+
+    resolv: Remove EDNS fallback [BZ #21369]
+    
+    EDNS is disabled by default (so there is interoperability issue), and
+    the fallback code is problematic because it prevents an application
+    from obtaining DNSSEC data after a FORMERR response.
+
+diff --git a/resolv/res_query.c b/resolv/res_query.c
+index c3ebcbf6b50fcf4b..ec65bab04153c2ff 100644
+--- a/resolv/res_query.c
++++ b/resolv/res_query.c
+@@ -122,7 +122,6 @@ __libc_res_nquery(res_state statp,
+ 	HEADER *hp = (HEADER *) answer;
+ 	HEADER *hp2;
+ 	int n, use_malloc = 0;
+-	u_int oflags = statp->_flags;
+ 
+ 	size_t bufsize = (type == T_QUERY_A_AND_AAAA ? 2 : 1) * QUERYSIZE;
+ 	u_char *buf = alloca (bufsize);
+@@ -145,8 +144,7 @@ __libc_res_nquery(res_state statp,
+ 			     query1, bufsize);
+ 	    if (n > 0)
+ 	      {
+-		if ((oflags & RES_F_EDNS0ERR) == 0
+-		    && (statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
++		if ((statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
+ 		  {
+ 		    /* Use RESOLV_EDNS_BUFFER_SIZE because the receive
+ 		       buffer can be reallocated.  */
+@@ -170,7 +168,6 @@ __libc_res_nquery(res_state statp,
+ 		n = res_nmkquery(statp, QUERY, name, class, T_AAAA, NULL, 0,
+ 				 NULL, query2, bufsize - nused);
+ 		if (n > 0
+-		    && (oflags & RES_F_EDNS0ERR) == 0
+ 		    && (statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
+ 		  /* Use RESOLV_EDNS_BUFFER_SIZE because the receive
+ 		     buffer can be reallocated.  */
+@@ -187,7 +184,6 @@ __libc_res_nquery(res_state statp,
+ 			     query1, bufsize);
+ 
+ 	    if (n > 0
+-		&& (oflags & RES_F_EDNS0ERR) == 0
+ 		&& (statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
+ 	      {
+ 		/* Use RESOLV_EDNS_BUFFER_SIZE if the receive buffer
+@@ -215,16 +211,6 @@ __libc_res_nquery(res_state statp,
+ 		}
+ 	}
+ 	if (__glibc_unlikely (n <= 0))       {
+-		/* If the query choked with EDNS0, retry without EDNS0.  */
+-		if ((statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0
+-		    && ((oflags ^ statp->_flags) & RES_F_EDNS0ERR) != 0) {
+-			statp->_flags |= RES_F_EDNS0ERR;
+-#ifdef DEBUG
+-			if (statp->options & RES_DEBUG)
+-				printf(";; res_nquery: retry without EDNS0\n");
+-#endif
+-			goto again;
+-		}
+ #ifdef DEBUG
+ 		if (statp->options & RES_DEBUG)
+ 			printf(";; res_query: mkquery failed\n");
+diff --git a/resolv/res_send.c b/resolv/res_send.c
+index 77d59dcc4e3b8d23..98968d6239d0c8f7 100644
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -1321,26 +1321,6 @@ send_dg(res_state statp,
+ 				? *thisanssizp : *thisresplenp);
+ 			goto wait;
+ 		}
+-#ifdef RES_USE_EDNS0
+-		if (anhp->rcode == FORMERR
+-		    && (statp->options & RES_USE_EDNS0) != 0U) {
+-			/*
+-			 * Do not retry if the server does not understand
+-			 * EDNS0.  The case has to be captured here, as
+-			 * FORMERR packet do not carry query section, hence
+-			 * res_queriesmatch() returns 0.
+-			 */
+-			DprintQ(statp->options & RES_DEBUG,
+-				(stdout,
+-				 "server rejected query with EDNS0:\n"),
+-				*thisansp,
+-				(*thisresplenp > *thisanssizp)
+-				? *thisanssizp : *thisresplenp);
+-			/* record the error */
+-			statp->_flags |= RES_F_EDNS0ERR;
+-			return close_and_return_error (statp, resplen2);
+-	}
+-#endif
+ 		if (!(statp->options & RES_INSECURE2)
+ 		    && (recvresp1 || !res_queriesmatch(buf, buf + buflen,
+ 						       *thisansp,
+diff --git a/resolv/tst-resolv-edns.c b/resolv/tst-resolv-edns.c
+index f17dbc3450f52b85..093a4f5f22aaaa51 100644
+--- a/resolv/tst-resolv-edns.c
++++ b/resolv/tst-resolv-edns.c
+@@ -115,8 +115,23 @@ response (const struct resolv_response_context *ctx,
+ {
+   TEST_VERIFY_EXIT (qname != NULL);
+ 
+-  /* The "tcp." prefix can be used to request TCP fallback.  */
+   const char *qname_compare = qname;
++
++  /* The "formerr." prefix can be used to request a FORMERR response on the
++     first server.  */
++  bool send_formerr;
++  if (strncmp ("formerr.", qname, strlen ("formerr.")) == 0)
++    {
++      send_formerr = true;
++      qname_compare = qname + strlen ("formerr.");
++    }
++  else
++    {
++      send_formerr = false;
++      qname_compare = qname;
++    }
++
++  /* The "tcp." prefix can be used to request TCP fallback.  */
+   bool force_tcp;
+   if (strncmp ("tcp.", qname_compare, strlen ("tcp.")) == 0)
+     {
+@@ -132,14 +147,20 @@ response (const struct resolv_response_context *ctx,
+   else
+     {
+       support_record_failure ();
+-      printf ("error: unexpected QNAME: %s\n", qname);
++      printf ("error: unexpected QNAME: %s (reduced: %s)\n",
++              qname, qname_compare);
+       return;
+     }
+   TEST_VERIFY_EXIT (qclass == C_IN);
+-  struct resolv_response_flags flags = {.tc = force_tcp && !ctx->tcp};
++  struct resolv_response_flags flags = { };
++  flags.tc = force_tcp && !ctx->tcp;
++  if (!flags.tc && send_formerr && ctx->server_index == 0)
++    /* Send a FORMERR for the first full response from the first
++       server.  */
++    flags.rcode = 1;          /* FORMERR */
+   resolv_response_init (b, flags);
+   resolv_response_add_question (b, qname, qclass, qtype);
+-  if (flags.tc)
++  if (flags.tc || flags.rcode != 0)
+     return;
+ 
+   if (test_verbose)
+@@ -466,33 +487,42 @@ do_test (void)
+   for (int do_edns = 0; do_edns < 2; ++do_edns)
+     for (int do_dnssec = 0; do_dnssec < 2; ++do_dnssec)
+       for (int do_tcp = 0; do_tcp < 2; ++do_tcp)
+-        {
+-          struct resolv_test *aux = resolv_test_start
+-            ((struct resolv_redirect_config)
+-             {
+-               .response_callback = response,
+-                 });
+-
+-          use_edns = do_edns;
+-          if (do_edns)
+-            _res.options |= RES_USE_EDNS0;
+-          use_dnssec = do_dnssec;
+-          if (do_dnssec)
+-            _res.options |= RES_USE_DNSSEC;
+-
+-          char *probe_name = xstrdup (EDNS_PROBE_EXAMPLE);
+-          if (do_tcp)
+-            {
+-              char *n = xasprintf ("tcp.%s", probe_name);
+-              free (probe_name);
+-              probe_name = n;
+-            }
++        for (int do_formerr = 0; do_formerr < 2; ++do_formerr)
++          {
++            struct resolv_test *aux = resolv_test_start
++              ((struct resolv_redirect_config)
++               {
++                 .response_callback = response,
++               });
++
++            use_edns = do_edns;
++            if (do_edns)
++              _res.options |= RES_USE_EDNS0;
++            use_dnssec = do_dnssec;
++            if (do_dnssec)
++              _res.options |= RES_USE_DNSSEC;
++
++            char *probe_name = xstrdup (EDNS_PROBE_EXAMPLE);
++            if (do_tcp)
++              {
++                char *n = xasprintf ("tcp.%s", probe_name);
++                free (probe_name);
++                probe_name = n;
++              }
++            if (do_formerr)
++              {
++                /* Send a garbage query in an attempt to trigger EDNS
++                   fallback.  */
++                char *n = xasprintf ("formerr.%s", probe_name);
++                gethostbyname (n);
++                free (n);
++              }
+ 
+-          run_test (probe_name);
++            run_test (probe_name);
+ 
+-          free (probe_name);
+-          resolv_test_end (aux);
+-        }
++            free (probe_name);
++            resolv_test_end (aux);
++          }
+ 
+   free_response_data ();
+   return 0;

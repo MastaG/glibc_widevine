@@ -1,0 +1,63 @@
+Partial backport of:
+
+commit 6781d8e693eb9e1251875222db5c9885d7ebb596
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 30 11:31:41 2017 +0200
+
+    resolv: Turn _res_opcodes into a compatibility symbol
+
+The backport avoids depending on the GLIBC_2.26 symbol version.
+
+diff --git a/include/resolv.h b/include/resolv.h
+index 4d5b51e873ad62a1..2938506d75ee5d43 100644
+--- a/include/resolv.h
++++ b/include/resolv.h
+@@ -90,8 +90,5 @@ libresolv_hidden_proto (__b64_ntop)
+ libresolv_hidden_proto (__dn_count_labels)
+ libresolv_hidden_proto (__p_secstodate)
+ 
+-extern const char *_res_opcodes[];
+-libresolv_hidden_proto (_res_opcodes)
+-
+ # endif /* _RESOLV_H_ && !_ISOMAC */
+ #endif
+diff --git a/resolv/res_debug.c b/resolv/res_debug.c
+index 182aeefa1f8683f4..b26c38bae0a1674b 100644
+--- a/resolv/res_debug.c
++++ b/resolv/res_debug.c
+@@ -106,6 +106,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <time.h>
++#include <shlib-compat.h>
+ 
+ #ifdef SPRINTF_CHAR
+ # define SPRINTF(x) strlen(sprintf/**/x)
+@@ -115,7 +116,8 @@
+ 
+ extern const char *_res_sectioncodes[] attribute_hidden;
+ 
+-const char *_res_opcodes[] =
++/* _res_opcodes was exported by accident as a variable.  */
++static const char *res_opcodes[] =
+   {
+     "QUERY",
+     "IQUERY",
+@@ -134,7 +136,7 @@ const char *_res_opcodes[] =
+     "ZONEINIT",
+     "ZONEREF",
+   };
+-libresolv_hidden_data_def (_res_opcodes)
++strong_alias (res_opcodes, _res_opcodes)
+ 
+ static const char *p_section(int section, int opcode);
+ 
+@@ -259,7 +261,7 @@ fp_nquery (const unsigned char *msg, int len, FILE *file)
+ 	if ((!pfcode) || (pfcode & RES_PRF_HEADX) || rcode)
+ 		fprintf(file,
+ 			";; ->>HEADER<<- opcode: %s, status: %s, id: %d\n",
+-			_res_opcodes[opcode], p_rcode(rcode), id);
++			res_opcodes[opcode], p_rcode(rcode), id);
+ 	if ((!pfcode) || (pfcode & RES_PRF_HEADX))
+ 		putc(';', file);
+ 	if ((!pfcode) || (pfcode & RES_PRF_HEAD2)) {

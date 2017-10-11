@@ -1,0 +1,1155 @@
+commit a1c4eb8794e789b5055d7ceb13b2b3231abf5e26
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 30 20:19:10 2017 +0200
+
+    resolv: Mirror the entire resolver configuration in struct resolv_conf
+    
+    This commit adds the remaining unchanging members (which are loaded
+    from /etc/resolv.conf) to struct resolv_conf.
+    
+    The extended name server list is currently not used by the stub
+    resolver.  The switch depends on a cleanup: The _u._ext.nssocks
+    array stores just a single socket, and needs to be replaced with
+    a single socket value.
+    
+    (The compatibility gethostname implementation does not use the
+    extended addres sort list, either.  Updating the compat code is
+    not worthwhile.)
+
+diff --git a/resolv/nss_dns/dns-host.c b/resolv/nss_dns/dns-host.c
+index 9d7ceb1691987b27..7cd54ab5048dcd37 100644
+--- a/resolv/nss_dns/dns-host.c
++++ b/resolv/nss_dns/dns-host.c
+@@ -108,7 +108,8 @@ typedef union querybuf
+   u_char buf[MAXPACKET];
+ } querybuf;
+ 
+-static enum nss_status getanswer_r (const querybuf *answer, int anslen,
++static enum nss_status getanswer_r (struct resolv_context *ctx,
++				    const querybuf *answer, int anslen,
+ 				    const char *qname, int qtype,
+ 				    struct hostent *result, char *buffer,
+ 				    size_t buflen, int *errnop, int *h_errnop,
+@@ -264,8 +265,9 @@ gethostbyname3_context (struct resolv_context *ctx,
+       result->h_length = INADDRSZ;
+     }
+ 
+-  status = getanswer_r (host_buffer.buf, n, name, type, result, buffer, buflen,
+-			errnop, h_errnop, map, ttlp, canonp);
++  status = getanswer_r
++    (ctx, host_buffer.buf, n, name, type, result, buffer, buflen,
++     errnop, h_errnop, map, ttlp, canonp);
+   if (host_buffer.buf != orig_host_buffer)
+     free (host_buffer.buf);
+   return status;
+@@ -522,8 +524,9 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+       return errno == ECONNREFUSED ? NSS_STATUS_UNAVAIL : NSS_STATUS_NOTFOUND;
+     }
+ 
+-  status = getanswer_r (host_buffer.buf, n, qbuf, T_PTR, result, buffer, buflen,
+-			errnop, h_errnop, 0 /* XXX */, ttlp, NULL);
++  status = getanswer_r
++    (ctx, host_buffer.buf, n, qbuf, T_PTR, result, buffer, buflen,
++     errnop, h_errnop, 0 /* XXX */, ttlp, NULL);
+   if (host_buffer.buf != orig_host_buffer)
+     free (host_buffer.buf);
+   if (status != NSS_STATUS_SUCCESS)
+@@ -553,25 +556,27 @@ _nss_dns_gethostbyaddr_r (const void *addr, socklen_t len, int af,
+ 				    errnop, h_errnop, NULL);
+ }
+ 
+-static void addrsort (char **ap, int num);
+-
+ static void
+-addrsort (char **ap, int num)
++addrsort (struct resolv_context *ctx, char **ap, int num)
+ {
+   int i, j;
+   char **p;
+   short aval[MAX_NR_ADDRS];
+   int needsort = 0;
++  size_t nsort = __resolv_context_sort_count (ctx);
+ 
+   p = ap;
+   if (num > MAX_NR_ADDRS)
+     num = MAX_NR_ADDRS;
+   for (i = 0; i < num; i++, p++)
+     {
+-      for (j = 0 ; (unsigned)j < _res.nsort; j++)
+-	if (_res.sort_list[j].addr.s_addr ==
+-	    (((struct in_addr *)(*p))->s_addr & _res.sort_list[j].mask))
+-	  break;
++      for (j = 0 ; (unsigned)j < nsort; j++)
++	{
++	  struct resolv_sortlist_entry e
++	    = __resolv_context_sort_entry (ctx, j);
++	  if (e.addr.s_addr == (((struct in_addr *)(*p))->s_addr & e.mask))
++	    break;
++	}
+       aval[i] = j;
+       if (needsort == 0 && i > 0 && j < aval[i-1])
+ 	needsort = i;
+@@ -598,7 +603,8 @@ addrsort (char **ap, int num)
+ }
+ 
+ static enum nss_status
+-getanswer_r (const querybuf *answer, int anslen, const char *qname, int qtype,
++getanswer_r (struct resolv_context *ctx,
++	     const querybuf *answer, int anslen, const char *qname, int qtype,
+ 	     struct hostent *result, char *buffer, size_t buflen,
+ 	     int *errnop, int *h_errnop, int map, int32_t *ttlp, char **canonp)
+ {
+@@ -961,8 +967,9 @@ getanswer_r (const querybuf *answer, int anslen, const char *qname, int qtype,
+        * in its return structures - should give it the "best"
+        * address in that case, not some random one
+        */
+-      if (_res.nsort && haveanswer > 1 && qtype == T_A)
+-	addrsort (host_data->h_addr_ptrs, haveanswer);
++      if (haveanswer > 1 && qtype == T_A
++	  && __resolv_context_sort_count (ctx) > 0)
++	addrsort (ctx, host_data->h_addr_ptrs, haveanswer);
+ 
+       if (result->h_name == NULL)
+ 	{
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index 5941d37f3241b1e7..80a21fb90d991e95 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -104,7 +104,6 @@
+ #include <errno.h>
+ #include <resolv_conf.h>
+ 
+-static void res_setoptions (res_state, const char *);
+ static uint32_t net_mask (struct in_addr);
+ 
+ unsigned long long int __res_initstamp;
+@@ -124,28 +123,70 @@ is_sort_mask (char ch)
+   return ch == '/' || ch == '&';
+ }
+ 
++/* Array of name server addresses.  */
++#define DYNARRAY_STRUCT nameserver_list
++#define DYNARRAY_ELEMENT const struct sockaddr *
++#define DYNARRAY_ELEMENT_FREE(e) free ((struct sockaddr *) *(e))
++#define DYNARRAY_INITIAL_SIZE 3
++#define DYNARRAY_PREFIX nameserver_list_
++#include <malloc/dynarray-skeleton.c>
++
+ /* Array of strings for the search array.  The backing store is
+    managed separately.  */
+ #define DYNARRAY_STRUCT search_list
+ #define DYNARRAY_ELEMENT const char *
+-#define DYNARRAY_INITIAL_SIZE 4
++#define DYNARRAY_INITIAL_SIZE 6
+ #define DYNARRAY_PREFIX search_list_
+ #include <malloc/dynarray-skeleton.c>
+ 
++/* Array of name server addresses.  */
++#define DYNARRAY_STRUCT sort_list
++#define DYNARRAY_ELEMENT struct resolv_sortlist_entry
++#define DYNARRAY_INITIAL_SIZE 0
++#define DYNARRAY_PREFIX sort_list_
++#include <malloc/dynarray-skeleton.c>
++
+ /* resolv.conf parser state and results.  */
+ struct resolv_conf_parser
+ {
+   char *buffer;            /* Temporary buffer for reading lines.  */
++
++  struct nameserver_list nameserver_list; /* Nameserver addresses.  */
++
+   char *search_list_store; /* Backing storage for search list entries.  */
+   struct search_list search_list; /* Points into search_list_store.  */
++
++  struct sort_list sort_list;   /* Address preference sorting list.  */
++
++  /* Configuration template.  The non-array elements are filled in
++     directly.  The array elements are updated prior to the call to
++     __resolv_conf_attach.  */
++  struct resolv_conf template;
+ };
+ 
+ static void
+-resolv_conf_parser_init (struct resolv_conf_parser *parser)
++resolv_conf_parser_init (struct resolv_conf_parser *parser,
++                         const struct __res_state *preinit)
+ {
+   parser->buffer = NULL;
+   parser->search_list_store = NULL;
++  nameserver_list_init (&parser->nameserver_list);
+   search_list_init (&parser->search_list);
++  sort_list_init (&parser->sort_list);
++
++  if (preinit != NULL)
++    {
++      parser->template.retrans = preinit->retrans;
++      parser->template.retry = preinit->retry;
++      parser->template.options = preinit->options | RES_INIT;
++    }
++  else
++    {
++      parser->template.retrans = RES_TIMEOUT;
++      parser->template.retry = RES_DFLRETRY;
++      parser->template.options = RES_DEFAULT | RES_INIT;
++    }
++  parser->template.ndots = 1;
+ }
+ 
+ static void
+@@ -153,7 +194,23 @@ resolv_conf_parser_free (struct resolv_conf_parser *parser)
+ {
+   free (parser->buffer);
+   free (parser->search_list_store);
++  nameserver_list_free (&parser->nameserver_list);
+   search_list_free (&parser->search_list);
++  sort_list_free (&parser->sort_list);
++}
++
++/* Allocate a struct sockaddr_in object on the heap, with the
++   specified address and port.  */
++static struct sockaddr *
++allocate_address_v4 (struct in_addr a, uint16_t port)
++{
++  struct sockaddr_in *sa4 = malloc (sizeof (*sa4));
++  if (sa4 == NULL)
++    return NULL;
++  sa4->sin_family = AF_INET;
++  sa4->sin_addr = a;
++  sa4->sin_port = htons (port);
++  return (struct sockaddr *) sa4;
+ }
+ 
+ /* Try to obtain the domain name from the host name and store it in
+@@ -181,40 +238,17 @@ domain_from_hostname (char **result)
+   return true;
+ }
+ 
++static void res_setoptions (struct resolv_conf_parser *, const char *options);
++
+ /* Internal helper function for __res_vinit, to aid with resource
+    deallocation and error handling.  Return true on success, false on
+    failure.  */
+ static bool
+-res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+-             struct resolv_conf_parser *parser)
++res_vinit_1 (FILE *fp, struct resolv_conf_parser *parser)
+ {
+   char *cp;
+   size_t buffer_size = 0;
+-  int nserv = 0;    /* Number of nameservers read from file.  */
+-  bool have_serv6 = false;
+   bool haveenv = false;
+-  int nsort = 0;
+-  char *net;
+-
+-  if (!preinit)
+-    {
+-      statp->retrans = RES_TIMEOUT;
+-      statp->retry = RES_DFLRETRY;
+-      statp->options = RES_DEFAULT;
+-      statp->id = res_randomid ();
+-    }
+-
+-  statp->nscount = 0;
+-  statp->defdname[0] = '\0';
+-  statp->ndots = 1;
+-  statp->pfcode = 0;
+-  statp->_vcsock = -1;
+-  statp->_flags = 0;
+-  statp->__glibc_unused_qhook = NULL;
+-  statp->__glibc_unused_rhook = NULL;
+-  statp->_u._ext.nscount = 0;
+-  for (int n = 0; n < MAXNS; n++)
+-    statp->_u._ext.nsaddrs[n] = NULL;
+ 
+   /* Allow user to override the local domain definition.  */
+   if ((cp = getenv ("LOCALDOMAIN")) != NULL)
+@@ -350,19 +384,19 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+               continue;
+             }
+           /* Read nameservers to query.  */
+-          if (MATCH (parser->buffer, "nameserver") && nserv < MAXNS)
++          if (MATCH (parser->buffer, "nameserver"))
+             {
+               struct in_addr a;
+ 
+               cp = parser->buffer + sizeof ("nameserver") - 1;
+               while (*cp == ' ' || *cp == '\t')
+                 cp++;
++              struct sockaddr *sa;
+               if ((*cp != '\0') && (*cp != '\n') && __inet_aton (cp, &a))
+                 {
+-                  statp->nsaddr_list[nserv].sin_addr = a;
+-                  statp->nsaddr_list[nserv].sin_family = AF_INET;
+-                  statp->nsaddr_list[nserv].sin_port = htons (NAMESERVER_PORT);
+-                  nserv++;
++                  sa = allocate_address_v4 (a, NAMESERVER_PORT);
++                  if (sa == NULL)
++                    return false;
+                 }
+               else
+                 {
+@@ -392,13 +426,18 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+                            compatibility.  */
+                         __inet6_scopeid_pton
+                           (&a6, el + 1, &sa6->sin6_scope_id);
+-
+-                      statp->nsaddr_list[nserv].sin_family = 0;
+-                      statp->_u._ext.nsaddrs[nserv] = sa6;
+-                      statp->_u._ext.nssocks[nserv] = -1;
+-                      have_serv6 = true;
+-                      nserv++;
++                      sa = (struct sockaddr *) sa6;
+                     }
++                  else
++                    /* IPv6 address parse failure.  */
++                    sa = NULL;
++                }
++              if (sa != NULL)
++                {
++                  const struct sockaddr **p = nameserver_list_emplace
++                    (&parser->nameserver_list);
++                  if (p != NULL)
++                    *p = sa;
+                 }
+               continue;
+             }
+@@ -407,21 +446,22 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+               struct in_addr a;
+ 
+               cp = parser->buffer + sizeof ("sortlist") - 1;
+-              while (nsort < MAXRESOLVSORT)
++              while (true)
+                 {
+                   while (*cp == ' ' || *cp == '\t')
+                     cp++;
+                   if (*cp == '\0' || *cp == '\n' || *cp == ';')
+                     break;
+-                  net = cp;
++                  char *net = cp;
+                   while (*cp && !is_sort_mask (*cp) && *cp != ';'
+                          && isascii (*cp) && !isspace (*cp))
+                     cp++;
+                   char separator = *cp;
+                   *cp = 0;
++                  struct resolv_sortlist_entry e;
+                   if (__inet_aton (net, &a))
+                     {
+-                      statp->sort_list[nsort].addr = a;
++                      e.addr = a;
+                       if (is_sort_mask (separator))
+                         {
+                           *cp++ = separator;
+@@ -432,15 +472,13 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+                           separator = *cp;
+                           *cp = 0;
+                           if (__inet_aton (net, &a))
+-                            statp->sort_list[nsort].mask = a.s_addr;
++                            e.mask = a.s_addr;
+                           else
+-                            statp->sort_list[nsort].mask
+-                              = net_mask (statp->sort_list[nsort].addr);
++                            e.mask = net_mask (e.addr);
+                         }
+                       else
+-                        statp->sort_list[nsort].mask
+-                          = net_mask (statp->sort_list[nsort].addr);
+-                      nsort++;
++                        e.mask = net_mask (e.addr);
++                      sort_list_add (&parser->sort_list, e);
+                     }
+                   *cp = separator;
+                 }
+@@ -448,23 +486,22 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+             }
+           if (MATCH (parser->buffer, "options"))
+             {
+-              res_setoptions (statp, parser->buffer + sizeof ("options") - 1);
++              res_setoptions (parser, parser->buffer + sizeof ("options") - 1);
+               continue;
+             }
+         }
+-      statp->nscount = nserv;
+-      if (have_serv6)
+-        /* We try IPv6 servers again.  */
+-        statp->ipv6_unavail = false;
+-      statp->nsort = nsort;
+       fclose (fp);
+     }
+-  if (__glibc_unlikely (statp->nscount == 0))
++  if (__glibc_unlikely (nameserver_list_size (&parser->nameserver_list) == 0))
+     {
+-      statp->nsaddr.sin_addr = __inet_makeaddr (IN_LOOPBACKNET, 1);
+-      statp->nsaddr.sin_family = AF_INET;
+-      statp->nsaddr.sin_port = htons (NAMESERVER_PORT);
+-      statp->nscount = 1;
++      const struct sockaddr **p
++        = nameserver_list_emplace (&parser->nameserver_list);
++      if (p == NULL)
++        return false;
++      *p = allocate_address_v4 (__inet_makeaddr (IN_LOOPBACKNET, 1),
++                                NAMESERVER_PORT);
++      if (*p == NULL)
++        return false;
+     }
+ 
+   if (search_list_size (&parser->search_list) == 0)
+@@ -481,15 +518,16 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp,
+     }
+ 
+   if ((cp = getenv ("RES_OPTIONS")) != NULL)
+-    res_setoptions (statp, cp);
++    res_setoptions (parser, cp);
+ 
+-  if (search_list_has_failed (&parser->search_list))
++  if (nameserver_list_has_failed (&parser->nameserver_list)
++      || search_list_has_failed (&parser->search_list)
++      || sort_list_has_failed (&parser->sort_list))
+     {
+       __set_errno (ENOMEM);
+       return false;
+     }
+ 
+-  statp->options |= RES_INIT;
+   return true;
+ }
+ 
+@@ -525,17 +563,27 @@ __res_vinit (res_state statp, int preinit)
+       }
+ 
+   struct resolv_conf_parser parser;
+-  resolv_conf_parser_init (&parser);
+-  bool ok = res_vinit_1 (statp, preinit, fp, &parser);
++  if (preinit)
++    {
++      resolv_conf_parser_init (&parser, statp);
++      statp->id = res_randomid ();
++    }
++  else
++    resolv_conf_parser_init (&parser, NULL);
+ 
++  bool ok = res_vinit_1 (fp, &parser);
+   if (ok)
+     {
+-      struct resolv_conf init =
+-        {
+-          .search_list = search_list_begin (&parser.search_list),
+-          .search_list_size = search_list_size (&parser.search_list),
+-        };
+-      struct resolv_conf *conf = __resolv_conf_allocate (&init);
++      parser.template.nameserver_list
++        = nameserver_list_begin (&parser.nameserver_list);
++      parser.template.nameserver_list_size
++        = nameserver_list_size (&parser.nameserver_list);
++      parser.template.search_list = search_list_begin (&parser.search_list);
++      parser.template.search_list_size
++        = search_list_size (&parser.search_list);
++      parser.template.sort_list = sort_list_begin (&parser.sort_list);
++      parser.template.sort_list_size = sort_list_size (&parser.sort_list);
++      struct resolv_conf *conf = __resolv_conf_allocate (&parser.template);
+       if (conf == NULL)
+         ok = false;
+       else
+@@ -547,18 +595,13 @@ __res_vinit (res_state statp, int preinit)
+   resolv_conf_parser_free (&parser);
+ 
+   if (!ok)
+-    {
+-      /* Deallocate the name server addresses which have been
+-         allocated.  */
+-      for (int n = 0; n < MAXNS; n++)
+-        free (statp->_u._ext.nsaddrs[n]);
+-      return -1;
+-    }
+-  return 0;
++    return -1;
++  else
++    return 0;
+ }
+ 
+ static void
+-res_setoptions (res_state statp, const char *options)
++res_setoptions (struct resolv_conf_parser *parser, const char *options)
+ {
+   const char *cp = options;
+ 
+@@ -572,25 +615,25 @@ res_setoptions (res_state statp, const char *options)
+         {
+           int i = atoi (cp + sizeof ("ndots:") - 1);
+           if (i <= RES_MAXNDOTS)
+-            statp->ndots = i;
++            parser->template.ndots = i;
+           else
+-            statp->ndots = RES_MAXNDOTS;
++            parser->template.ndots = RES_MAXNDOTS;
+         }
+       else if (!strncmp (cp, "timeout:", sizeof ("timeout:") - 1))
+         {
+           int i = atoi (cp + sizeof ("timeout:") - 1);
+           if (i <= RES_MAXRETRANS)
+-            statp->retrans = i;
++            parser->template.retrans = i;
+           else
+-            statp->retrans = RES_MAXRETRANS;
++            parser->template.retrans = RES_MAXRETRANS;
+         }
+       else if (!strncmp (cp, "attempts:", sizeof ("attempts:") - 1))
+         {
+           int i = atoi (cp + sizeof ("attempts:") - 1);
+           if (i <= RES_MAXRETRY)
+-            statp->retry = i;
++            parser->template.retry = i;
+           else
+-            statp->retry = RES_MAXRETRY;
++            parser->template.retry = RES_MAXRETRY;
+         }
+       else
+         {
+@@ -616,9 +659,9 @@ res_setoptions (res_state statp, const char *options)
+             if (strncmp (cp, options[i].str, options[i].len) == 0)
+               {
+                 if (options[i].clear)
+-                  statp->options &= options[i].flag;
++                  parser->template.options &= options[i].flag;
+                 else
+-                  statp->options |= options[i].flag;
++                  parser->template.options |= options[i].flag;
+                 break;
+               }
+         }
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+index 76d55fc32c8f0662..dd665239926cbac7 100644
+--- a/resolv/resolv_conf.c
++++ b/resolv/resolv_conf.c
+@@ -128,11 +128,80 @@ resolv_conf_get_1 (const struct __res_state *resp)
+   return conf;
+ }
+ 
++/* Return true if both IPv4 addresses are equal.  */
++static bool
++same_address_v4 (const struct sockaddr_in *left,
++                 const struct sockaddr_in *right)
++{
++  return left->sin_addr.s_addr == right->sin_addr.s_addr
++    && left->sin_port == right->sin_port;
++}
++
++/* Return true if both IPv6 addresses are equal.  This ignores the
++   flow label.  */
++static bool
++same_address_v6 (const struct sockaddr_in6 *left,
++                 const struct sockaddr_in6 *right)
++{
++  return memcmp (&left->sin6_addr, &right->sin6_addr,
++                 sizeof (left->sin6_addr)) == 0
++    && left->sin6_port == right->sin6_port
++    && left->sin6_scope_id == right->sin6_scope_id;
++}
++
++static bool
++same_address (const struct sockaddr *left, const struct sockaddr *right)
++{
++  if (left->sa_family != right->sa_family)
++    return false;
++  switch (left->sa_family)
++    {
++    case AF_INET:
++      return same_address_v4 ((const struct sockaddr_in *) left,
++                              (const struct sockaddr_in *) right);
++    case AF_INET6:
++      return same_address_v6 ((const struct sockaddr_in6 *) left,
++                              (const struct sockaddr_in6 *) right);
++    }
++  return false;
++}
++
+ /* Check that *RESP and CONF match.  Used by __resolv_conf_get.  */
+ static bool
+ resolv_conf_matches (const struct __res_state *resp,
+                      const struct resolv_conf *conf)
+ {
++  /* NB: Do not compare the options, retrans, retry, ndots.  These can
++     be changed by applicaiton.  */
++
++  /* Check that the name servers in *RESP have not been modified by
++     the application.  */
++  {
++    size_t nserv = conf->nameserver_list_size;
++    if (nserv > MAXNS)
++      nserv = MAXNS;
++    /* _ext.nscount is 0 until initialized by res_send.c.  */
++    if (resp->nscount != nserv
++        && (resp->_u._ext.nscount != 0 && resp->_u._ext.nscount != nserv))
++      return false;
++    for (size_t i = 0; i < nserv; ++i)
++      {
++        if (resp->nsaddr_list[i].sin_family == 0)
++          {
++            if (resp->_u._ext.nsaddrs[i]->sin6_family != AF_INET6)
++              return false;
++            if (!same_address ((struct sockaddr *) resp->_u._ext.nsaddrs[i],
++                               conf->nameserver_list[i]))
++              return false;
++          }
++        else if (resp->nsaddr_list[i].sin_family != AF_INET)
++          return false;
++        else if (!same_address ((struct sockaddr *) &resp->nsaddr_list[i],
++                                conf->nameserver_list[i]))
++          return false;
++      }
++  }
++
+   /* Check that the search list in *RESP has not been modified by the
+      application.  */
+   {
+@@ -161,6 +230,18 @@ resolv_conf_matches (const struct __res_state *resp,
+           }
+       }
+   }
++
++  /* Check that the sort list has not been modified.  */
++  {
++    size_t nsort = conf->sort_list_size;
++    if (nsort > MAXRESOLVSORT)
++      nsort = MAXRESOLVSORT;
++    for (size_t i = 0; i < nsort; ++i)
++      if (resp->sort_list[i].addr.s_addr != conf->sort_list[i].addr.s_addr
++          || resp->sort_list[i].mask != conf->sort_list[i].mask)
++        return false;
++  }
++
+   return true;
+ }
+ 
+@@ -190,7 +271,28 @@ __resolv_conf_put (struct resolv_conf *conf)
+ struct resolv_conf *
+ __resolv_conf_allocate (const struct resolv_conf *init)
+ {
+-  /* Space needed by the strings.  */
++  /* Allocate in decreasing order of alignment.  */
++  _Static_assert (__alignof__ (const char *const *)
++                  <= __alignof__ (struct resolv_conf), "alignment");
++  _Static_assert (__alignof__ (struct sockaddr_in6)
++                  <= __alignof__ (const char *const *), "alignment");
++  _Static_assert (__alignof__ (struct sockaddr_in)
++                  ==  __alignof__ (struct sockaddr_in6), "alignment");
++  _Static_assert (__alignof__ (struct resolv_sortlist_entry)
++                  <= __alignof__ (struct sockaddr_in), "alignment");
++
++  /* Space needed by the nameserver addresses.  */
++  size_t address_space = 0;
++  for (size_t i = 0; i < init->nameserver_list_size; ++i)
++    if (init->nameserver_list[i]->sa_family == AF_INET)
++      address_space += sizeof (struct sockaddr_in);
++    else
++      {
++        assert (init->nameserver_list[i]->sa_family == AF_INET6);
++        address_space += sizeof (struct sockaddr_in6);
++      }
++
++  /* Space needed by the search list strings.  */
+   size_t string_space = 0;
+   for (size_t i = 0; i < init->search_list_size; ++i)
+     string_space += strlen (init->search_list[i]) + 1;
+@@ -199,7 +301,10 @@ __resolv_conf_allocate (const struct resolv_conf *init)
+   void *ptr;
+   struct alloc_buffer buffer = alloc_buffer_allocate
+     (sizeof (struct resolv_conf)
++     + init->nameserver_list_size * sizeof (init->nameserver_list[0])
++     + address_space
+      + init->search_list_size * sizeof (init->search_list[0])
++     + init->sort_list_size * sizeof (init->sort_list[0])
+      + string_space,
+      &ptr);
+   struct resolv_conf *conf
+@@ -211,16 +316,57 @@ __resolv_conf_allocate (const struct resolv_conf *init)
+ 
+   /* Initialize the contents.  */
+   conf->__refcount = 1;
++  conf->retrans = init->retrans;
++  conf->retry = init->retry;
++  conf->options = init->options;
++  conf->ndots = init->ndots;
+   conf->initstamp = __res_initstamp;
+ 
+-  /* Allocate and fill the search list array.  */
++  /* Allocate the arrays with pointers.  These must come first because
++     they have the highets alignment.  */
++  conf->nameserver_list_size = init->nameserver_list_size;
++  const struct sockaddr **nameserver_array = alloc_buffer_alloc_array
++    (&buffer, const struct sockaddr *, init->nameserver_list_size);
++  conf->nameserver_list = nameserver_array;
++
++  conf->search_list_size = init->search_list_size;
++  const char **search_array = alloc_buffer_alloc_array
++    (&buffer, const char *, init->search_list_size);
++  conf->search_list = search_array;
++
++  /* Fill the name server list array.  */
++  for (size_t i = 0; i < init->nameserver_list_size; ++i)
++    if (init->nameserver_list[i]->sa_family == AF_INET)
++      {
++        struct sockaddr_in *sa = alloc_buffer_alloc
++          (&buffer, struct sockaddr_in);
++        *sa = *(struct sockaddr_in *) init->nameserver_list[i];
++        nameserver_array[i] = (struct sockaddr *) sa;
++      }
++    else
++      {
++        struct sockaddr_in6 *sa = alloc_buffer_alloc
++          (&buffer, struct sockaddr_in6);
++        *sa = *(struct sockaddr_in6 *) init->nameserver_list[i];
++        nameserver_array[i] = (struct sockaddr *) sa;
++      }
++
++  /* Allocate and fill the sort list array.  */
++  {
++    conf->sort_list_size = init->sort_list_size;
++    struct resolv_sortlist_entry *array = alloc_buffer_alloc_array
++      (&buffer, struct resolv_sortlist_entry, init->sort_list_size);
++    conf->sort_list = array;
++    for (size_t i = 0; i < init->sort_list_size; ++i)
++      array[i] = init->sort_list[i];
++  }
++
++  /* Fill the search list array.  This must come last because the
++     strings are the least aligned part of the allocation.  */
+   {
+-    conf->search_list_size = init->search_list_size;
+-    const char **array = alloc_buffer_alloc_array
+-      (&buffer, const char *, init->search_list_size);
+-    conf->search_list = array;
+     for (size_t i = 0; i < init->search_list_size; ++i)
+-      array[i] = alloc_buffer_copy_string (&buffer, init->search_list[i]);
++      search_array[i] = alloc_buffer_copy_string
++        (&buffer, init->search_list[i]);
+   }
+ 
+   assert (!alloc_buffer_has_failed (&buffer));
+@@ -231,6 +377,56 @@ __resolv_conf_allocate (const struct resolv_conf *init)
+ static __attribute__ ((nonnull (1, 2), warn_unused_result)) bool
+ update_from_conf (struct __res_state *resp, const struct resolv_conf *conf)
+ {
++  resp->defdname[0] = '\0';
++  resp->pfcode = 0;
++  resp->_vcsock = -1;
++  resp->_flags = 0;
++  resp->ipv6_unavail = false;
++  resp->__glibc_unused_qhook = NULL;
++  resp->__glibc_unused_rhook = NULL;
++
++  resp->retrans = conf->retrans;
++  resp->retry = conf->retry;
++  resp->options = conf->options;
++  resp->ndots = conf->ndots;
++
++  /* Copy the name server addresses.  */
++  {
++    resp->nscount = 0;
++    resp->_u._ext.nscount = 0;
++    size_t nserv = conf->nameserver_list_size;
++    if (nserv > MAXNS)
++      nserv = MAXNS;
++    for (size_t i = 0; i < nserv; i++)
++      {
++        if (conf->nameserver_list[i]->sa_family == AF_INET)
++          {
++            resp->nsaddr_list[i]
++              = *(struct sockaddr_in *)conf->nameserver_list[i];
++            resp->_u._ext.nsaddrs[i] = NULL;
++          }
++        else
++          {
++            assert (conf->nameserver_list[i]->sa_family == AF_INET6);
++            resp->nsaddr_list[i].sin_family = 0;
++            /* Make a defensive copy of the name server address, in
++               case the application overwrites it.  */
++            struct sockaddr_in6 *sa = malloc (sizeof (*sa));
++            if (sa == NULL)
++              {
++                for (size_t j = 0; j < i; ++j)
++                  free (resp->_u._ext.nsaddrs[j]);
++                return false;
++              }
++            *sa = *(struct sockaddr_in6 *)conf->nameserver_list[i];
++            resp->_u._ext.nsaddrs[i] = sa;
++          }
++        resp->_u._ext.nssocks[i] = -1;
++      }
++    resp->nscount = nserv;
++    /* Leave resp->_u._ext.nscount at 0.  res_send.c handles this.  */
++  }
++
+   /* Fill in the prefix of the search list.  It is truncated either at
+      MAXDNSRCH, or if reps->defdname has insufficient space.  */
+   {
+@@ -249,6 +445,19 @@ update_from_conf (struct __res_state *resp, const struct resolv_conf *conf)
+     resp->dnsrch[i] = NULL;
+   }
+ 
++  /* Copy the sort list.  */
++  {
++    size_t nsort = conf->sort_list_size;
++    if (nsort > MAXRESOLVSORT)
++      nsort = MAXRESOLVSORT;
++    for (size_t i = 0; i < nsort; ++i)
++      {
++        resp->sort_list[i].addr = conf->sort_list[i].addr;
++        resp->sort_list[i].mask = conf->sort_list[i].mask;
++      }
++    resp->nsort = nsort;
++  }
++
+   /* The overlapping parts of both configurations should agree after
+      initialization.  */
+   assert (resolv_conf_matches (resp, conf));
+diff --git a/resolv/resolv_conf.h b/resolv/resolv_conf.h
+index 80a0b93f94588e89..7ca80cdeba115c12 100644
+--- a/resolv/resolv_conf.h
++++ b/resolv/resolv_conf.h
+@@ -19,9 +19,17 @@
+ #ifndef RESOLV_STATE_H
+ #define RESOLV_STATE_H
+ 
++#include <netinet/in.h>
+ #include <stdbool.h>
+ #include <stddef.h>
+ 
++/* This type corresponds to members of the _res.sort_list array.  */
++struct resolv_sortlist_entry
++{
++  struct in_addr addr;
++  uint32_t mask;
++};
++
+ /* Extended resolver state associated with res_state objects.  Client
+    code can reach this state through a struct resolv_context
+    object.  */
+@@ -36,9 +44,24 @@ struct resolv_conf
+      zero.  For internal use within resolv_conf only.  */
+   size_t __refcount;
+ 
++  /* List of IPv4 and IPv6 name server addresses.  */
++  const struct sockaddr **nameserver_list;
++  size_t nameserver_list_size;
++
+   /* The domain names forming the search list.  */
+   const char *const *search_list;
+   size_t search_list_size;
++
++  /* IPv4 address preference rules.  */
++  const struct resolv_sortlist_entry *sort_list;
++  size_t sort_list_size;
++
++  /* _res.options has type unsigned long, but we can only use 32 bits
++     for portability across all architectures.  */
++  unsigned int options;
++  unsigned int retrans;         /* Timeout.  */
++  unsigned int retry;           /* Number of times to retry.  */
++  unsigned int ndots; /* Dots needed for initial non-search query.  */
+ };
+ 
+ /* The functions below are for use by the res_init resolv.conf parser
+diff --git a/resolv/resolv_context.h b/resolv/resolv_context.h
+index 0f4d47d26dd513f4..e2f7ad66458f94bc 100644
+--- a/resolv/resolv_context.h
++++ b/resolv/resolv_context.h
+@@ -112,6 +112,67 @@ __resolv_context_search_list (const struct resolv_context *ctx, size_t index)
+   return NULL;
+ }
+ 
++/* Return the number of name servers.  */
++static __attribute__ ((nonnull (1), unused)) size_t
++__resolv_context_nameserver_count (const struct resolv_context *ctx)
++{
++  if (ctx->conf != NULL)
++    return ctx->conf->nameserver_list_size;
++  else
++    return ctx->resp->nscount;
++}
++
++/* Return a pointer to the socket address of the name server INDEX, or
++   NULL if the index is out of bounds.  */
++static __attribute__ ((nonnull (1), unused)) const struct sockaddr *
++__resolv_context_nameserver (const struct resolv_context *ctx, size_t index)
++{
++  if (ctx->conf != NULL)
++    {
++      if (index < ctx->conf->nameserver_list_size)
++        return ctx->conf->nameserver_list[index];
++    }
++  else
++    if (index < ctx->resp->nscount)
++      {
++        if (ctx->resp->nsaddr_list[index].sin_family != 0)
++          return (const struct sockaddr *) &ctx->resp->nsaddr_list[index];
++        else
++          return (const struct sockaddr *) &ctx->resp->_u._ext.nsaddrs[index];
++      }
++  return NULL;
++}
++
++/* Return the number of sort list entries.  */
++static __attribute__ ((nonnull (1), unused)) size_t
++__resolv_context_sort_count (const struct resolv_context *ctx)
++{
++  if (ctx->conf != NULL)
++    return ctx->conf->sort_list_size;
++  else
++    return ctx->resp->nsort;
++}
++
++/* Return the sort list entry at INDEX.  */
++static __attribute__ ((nonnull (1), unused)) struct resolv_sortlist_entry
++__resolv_context_sort_entry (const struct resolv_context *ctx, size_t index)
++{
++  if (ctx->conf != NULL)
++    {
++      if (index < ctx->conf->sort_list_size)
++        return ctx->conf->sort_list[index];
++      /* Fall through.  */
++    }
++  else if (index < ctx->resp->nsort)
++    return (struct resolv_sortlist_entry)
++      {
++        .addr = ctx->resp->sort_list[index].addr,
++        .mask = ctx->resp->sort_list[index].mask,
++      };
++
++  return (struct resolv_sortlist_entry) { .mask = 0, };
++}
++
+ /* Called during thread shutdown to free the associated resolver
+    context (mostly in response to cancellation, otherwise the
+    __resolv_context_get/__resolv_context_put pairing will already have
+diff --git a/resolv/tst-resolv-res_init-skeleton.c b/resolv/tst-resolv-res_init-skeleton.c
+index cea14569b89cb51f..f98e9f40305d4897 100644
+--- a/resolv/tst-resolv-res_init-skeleton.c
++++ b/resolv/tst-resolv-res_init-skeleton.c
+@@ -242,6 +242,46 @@ print_resp (FILE *fp, res_state resp)
+         }
+     }
+ 
++  /* The extended name server list.  */
++  {
++    size_t i = 0;
++    while (true)
++      {
++        const struct sockaddr *addr = __resolv_context_nameserver (ctx, i);
++        if (addr == NULL)
++          break;
++        size_t addrlen;
++        switch (addr->sa_family)
++          {
++          case AF_INET:
++            addrlen = sizeof (struct sockaddr_in);
++            break;
++          case AF_INET6:
++            addrlen = sizeof (struct sockaddr_in6);
++            break;
++          default:
++            FAIL_EXIT1 ("invalid address family %d", addr->sa_family);
++          }
++
++        char host[NI_MAXHOST];
++        char service[NI_MAXSERV];
++        int ret = getnameinfo (addr, addrlen,
++                               host, sizeof (host), service, sizeof (service),
++                               NI_NUMERICHOST | NI_NUMERICSERV);
++
++        if (ret != 0)
++          {
++            if (ret == EAI_SYSTEM)
++              fprintf (fp, "; error: getnameinfo: %m\n");
++            else
++              fprintf (fp, "; error: getnameinfo: %s\n", gai_strerror (ret));
++          }
++        else
++          fprintf (fp, "; nameserver[%zu]: [%s]:%s\n", i, host, service);
++        ++i;
++      }
++  }
++
+   TEST_VERIFY (!ferror (fp));
+ 
+   __resolv_context_put (ctx);
+@@ -391,12 +431,14 @@ struct test_case test_cases[] =
+      .expected = "search example.com\n"
+      "; search[0]: example.com\n"
+      "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n"
+     },
+     {.name = "empty file with LOCALDOMAIN",
+      .conf = "",
+      .expected = "search example.net\n"
+      "; search[0]: example.net\n"
+-     "nameserver 127.0.0.1\n",
++     "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n",
+      .localdomain = "example.net",
+     },
+     {.name = "empty file with RES_OPTIONS",
+@@ -404,7 +446,8 @@ struct test_case test_cases[] =
+      .expected = "options attempts:5 edns0\n"
+      "search example.com\n"
+      "; search[0]: example.com\n"
+-     "nameserver 127.0.0.1\n",
++     "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n",
+      .res_options = "edns0 attempts:5",
+     },
+     {.name = "empty file with RES_OPTIONS and LOCALDOMAIN",
+@@ -412,7 +455,8 @@ struct test_case test_cases[] =
+      .expected = "options attempts:5 edns0\n"
+      "search example.org\n"
+      "; search[0]: example.org\n"
+-     "nameserver 127.0.0.1\n",
++     "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n",
+      .localdomain = "example.org",
+      .res_options = "edns0 attempts:5",
+     },
+@@ -424,6 +468,7 @@ struct test_case test_cases[] =
+      "; search[0]: corp.example.com\n"
+      "; search[1]: example.com\n"
+      "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     {.name = "whitespace",
+      .conf = "# This test covers comment and whitespace processing "
+@@ -440,6 +485,8 @@ struct test_case test_cases[] =
+      "; search[1]: example.com\n"
+      "nameserver 192.0.2.1\n"
+      "nameserver 192.0.2.2\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
++     "; nameserver[1]: [192.0.2.2]:53\n"
+     },
+     {.name = "domain",
+      .conf = "domain example.net\n"
+@@ -447,6 +494,7 @@ struct test_case test_cases[] =
+      .expected = "search example.net\n"
+      "; search[0]: example.net\n"
+      "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     {.name = "domain space",
+      .conf = "domain example.net \n"
+@@ -454,6 +502,7 @@ struct test_case test_cases[] =
+      .expected = "search example.net\n"
+      "; search[0]: example.net\n"
+      "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     {.name = "domain tab",
+      .conf = "domain example.net\t\n"
+@@ -461,6 +510,7 @@ struct test_case test_cases[] =
+      .expected = "search example.net\n"
+      "; search[0]: example.net\n"
+      "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     {.name = "domain override",
+      .conf = "search example.com example.org\n"
+@@ -469,6 +519,7 @@ struct test_case test_cases[] =
+      .expected = "search example.net\n"
+      "; search[0]: example.net\n"
+      "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     {.name = "option values, multiple servers",
+      .conf = "options\tinet6\tndots:3 edns0\tattempts:5\ttimeout:19\n"
+@@ -485,6 +536,9 @@ struct test_case test_cases[] =
+      "nameserver 192.0.2.1\n"
+      "nameserver ::1\n"
+      "nameserver 192.0.2.2\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
++     "; nameserver[1]: [::1]:53\n"
++     "; nameserver[2]: [192.0.2.2]:53\n"
+     },
+     {.name = "out-of-range option vales",
+      .conf = "options use-vc timeout:999 attempts:999 ndots:99\n"
+@@ -493,6 +547,7 @@ struct test_case test_cases[] =
+      "search example.com\n"
+      "; search[0]: example.com\n"
+      "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n"
+     },
+     {.name = "repeated directives",
+      .conf = "options ndots:3 use-vc\n"
+@@ -505,6 +560,7 @@ struct test_case test_cases[] =
+      "search example.org\n"
+      "; search[0]: example.org\n"
+      "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n"
+     },
+     {.name = "many name servers, sortlist",
+      .conf = "options single-request\n"
+@@ -528,6 +584,14 @@ struct test_case test_cases[] =
+      "nameserver 192.0.2.1\n"
+      "nameserver 192.0.2.2\n"
+      "nameserver 192.0.2.3\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
++     "; nameserver[1]: [192.0.2.2]:53\n"
++     "; nameserver[2]: [192.0.2.3]:53\n"
++     "; nameserver[3]: [192.0.2.4]:53\n"
++     "; nameserver[4]: [192.0.2.5]:53\n"
++     "; nameserver[5]: [192.0.2.6]:53\n"
++     "; nameserver[6]: [192.0.2.7]:53\n"
++     "; nameserver[7]: [192.0.2.8]:53\n"
+     },
+     {.name = "IPv4 and IPv6 nameservers",
+      .conf = "options single-request\n"
+@@ -554,6 +618,14 @@ struct test_case test_cases[] =
+      "nameserver 192.0.2.1\n"
+      "nameserver 2001:db8::2\n"
+      "nameserver 192.0.2.3\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
++     "; nameserver[1]: [2001:db8::2]:53\n"
++     "; nameserver[2]: [192.0.2.3]:53\n"
++     "; nameserver[3]: [2001:db8::4]:53\n"
++     "; nameserver[4]: [192.0.2.5]:53\n"
++     "; nameserver[5]: [2001:db8::6]:53\n"
++     "; nameserver[6]: [192.0.2.7]:53\n"
++     "; nameserver[7]: [2001:db8::8]:53\n",
+     },
+     {.name = "garbage after nameserver",
+      .conf = "nameserver 192.0.2.1 garbage\n"
+@@ -563,6 +635,8 @@ struct test_case test_cases[] =
+      "; search[0]: example.com\n"
+      "nameserver 192.0.2.1\n"
+      "nameserver 192.0.2.3\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
++     "; nameserver[1]: [192.0.2.3]:53\n"
+     },
+     {.name = "RES_OPTIONS is cummulative",
+      .conf = "options timeout:7 ndots:2 use-vc\n"
+@@ -570,7 +644,8 @@ struct test_case test_cases[] =
+      .expected = "options ndots:3 timeout:7 attempts:5 use-vc edns0\n"
+      "search example.com\n"
+      "; search[0]: example.com\n"
+-     "nameserver 192.0.2.1\n",
++     "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n",
+      .res_options = "attempts:5 ndots:3 edns0 ",
+     },
+     {.name = "many search list entries (bug 19569)",
+@@ -588,7 +663,8 @@ struct test_case test_cases[] =
+      "; search[5]: example.com\n"
+      "; search[6]: example.org\n"
+      "; search[7]: example.net\n"
+-     "nameserver 192.0.2.1\n",
++     "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     {.name = "very long search list entries (bug 21475)",
+      .conf = "nameserver 192.0.2.1\n"
+@@ -603,7 +679,8 @@ struct test_case test_cases[] =
+      "; search[2]: " H63 "." D63 ".example.net\n"
+ #undef H63
+ #undef D63
+-     "nameserver 192.0.2.1\n",
++     "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
+     },
+     { NULL }
+   };

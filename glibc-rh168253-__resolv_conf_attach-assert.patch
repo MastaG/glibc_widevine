@@ -1,0 +1,162 @@
+commit 89f6307c5d270ed4f11cee373031fa9f2222f2b9
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Jul 4 11:18:34 2017 +0200
+
+    resolv: Fix improper assert in __resolv_conf_attach
+
+diff --git a/resolv/Makefile b/resolv/Makefile
+index c1fcf341746cf1a8..e80583c72b96efb4 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -51,6 +51,7 @@ tests += \
+   tst-resolv-basic \
+   tst-resolv-edns \
+   tst-resolv-network \
++  tst-resolv-res_init-multi \
+   tst-resolv-search \
+ 
+ # These tests need libdl.
+@@ -160,6 +161,8 @@ $(objpfx)tst-resolv-basic: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-resolv-edns: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-resolv-network: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-resolv-res_init: $(libdl) $(objpfx)libresolv.so
++$(objpfx)tst-resolv-res_init-multi: $(objpfx)libresolv.so \
++  $(shared-thread-library)
+ $(objpfx)tst-resolv-res_init-thread: $(libdl) $(objpfx)libresolv.so \
+   $(shared-thread-library)
+ $(objpfx)tst-resolv-qtypes: $(objpfx)libresolv.so $(shared-thread-library)
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+index b98cf92890a121f9..0ed36cde02608f2d 100644
+--- a/resolv/resolv_conf.c
++++ b/resolv/resolv_conf.c
+@@ -58,8 +58,10 @@ struct resolv_conf_global
+      the array element is overwritten with NULL.  */
+   struct resolv_conf_array array;
+ 
+-  /* Start of the free list in the array.  The MSB is set if this
+-     field has been initialized.  */
++  /* Start of the free list in the array.  Zero if the free list is
++     empty.  Otherwise, free_list_start >> 1 is the first element of
++     the free list (and the free list entries all have their LSB set
++     and are shifted one to the left).  */
+   uintptr_t free_list_start;
+ 
+   /* Cached current configuration object for /etc/resolv.conf.  */
+@@ -567,11 +569,7 @@ decrement_at_index (struct resolv_conf_global *global_copy, size_t index)
+           struct resolv_conf *conf = (struct resolv_conf *) *slot;
+           conf_decrement (conf);
+           /* Put the slot onto the free list.  */
+-          if (global_copy->free_list_start == 0)
+-            /* Not yet initialized.  */
+-            *slot = 1;
+-          else
+-            *slot = global_copy->free_list_start;
++          *slot = global_copy->free_list_start;
+           global_copy->free_list_start = (index << 1) | 1;
+         }
+     }
+@@ -598,7 +596,8 @@ __resolv_conf_attach (struct __res_state *resp, struct resolv_conf *conf)
+         index = global_copy->free_list_start >> 1;
+         uintptr_t *slot = resolv_conf_array_at (&global_copy->array, index);
+         global_copy->free_list_start = *slot;
+-        assert (global_copy->free_list_start & 1);
++        assert (global_copy->free_list_start == 0
++                || global_copy->free_list_start & 1);
+         /* Install the configuration pointer.  */
+         *slot = (uintptr_t) conf;
+       }
+diff --git a/resolv/tst-resolv-res_init-multi.c b/resolv/tst-resolv-res_init-multi.c
+new file mode 100644
+index 0000000000000000..bdc68a5a33f7f017
+--- /dev/null
++++ b/resolv/tst-resolv-res_init-multi.c
+@@ -0,0 +1,89 @@
++/* Multi-threaded test for resolver initialization.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <netdb.h>
++#include <resolv.h>
++#include <stdlib.h>
++#include <support/check.h>
++#include <support/support.h>
++#include <support/xthread.h>
++
++/* Whether name lookups succeed does not really matter.  We use this
++   to trigger initialization of the resolver.  */
++static const char *test_hostname = "www.gnu.org";
++
++/* The different initialization methods.  */
++enum test_type { init, byname, gai };
++enum { type_count = 3 };
++
++/* Thread function.  Perform a few resolver options.  */
++static void *
++thread_func (void *closure)
++{
++  enum test_type *ptype = closure;
++  /* Perform a few calls to the requested operation.  */
++  TEST_VERIFY (*ptype >= 0);
++  TEST_VERIFY (*ptype < (int) type_count);
++  for (int i = 0; i < 3; ++i)
++    switch (*ptype)
++      {
++      case init:
++	res_init ();
++	break;
++      case byname:
++	gethostbyname (test_hostname);
++	break;
++      case gai:
++	{
++	  struct addrinfo hints = { 0, };
++	  struct addrinfo *ai = NULL;
++	  if (getaddrinfo (test_hostname, "80", &hints, &ai) == 0)
++	    freeaddrinfo (ai);
++	}
++	break;
++      }
++  free (ptype);
++  return NULL;
++}
++
++static int
++do_test (void)
++{
++  /* Start a small number of threads which perform resolver
++     operations.  */
++  enum { thread_count = 30 };
++
++  pthread_t threads[thread_count];
++  for (int i = 0; i < thread_count; ++i)
++    {
++      enum test_type *ptype = xmalloc (sizeof (*ptype));
++      *ptype = i % type_count;
++      threads[i] = xpthread_create (NULL, thread_func, ptype);
++    }
++  for (int i = 0; i < type_count; ++i)
++    {
++      enum test_type *ptype = xmalloc (sizeof (*ptype));
++      *ptype = i;
++      thread_func (ptype);
++    }
++  for (int i = 0; i < thread_count; ++i)
++    xpthread_join (threads[i]);
++  return 0;
++}
++
++#include <support/test-driver.c>

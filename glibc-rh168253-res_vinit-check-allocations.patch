@@ -1,0 +1,211 @@
+commit ea4924ce5bccfccc4e8a492faa96933131abd9ef
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jun 19 14:05:49 2017 +0200
+
+    resolv: Report allocation errors in __res_vinit
+
+diff --git a/resolv/nss_dns/dns-host.c b/resolv/nss_dns/dns-host.c
+index f121aa3de73704ea..206924de8603b4dd 100644
+--- a/resolv/nss_dns/dns-host.c
++++ b/resolv/nss_dns/dns-host.c
+@@ -164,7 +164,11 @@ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
+   enum nss_status status;
+ 
+   if (__res_maybe_init (&_res, 0) == -1)
+-    return NSS_STATUS_UNAVAIL;
++    {
++      *errnop = errno;
++      *h_errnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
+ 
+   switch (af) {
+   case AF_INET:
+@@ -289,7 +293,11 @@ _nss_dns_gethostbyname4_r (const char *name, struct gaih_addrtuple **pat,
+ 			   int *herrnop, int32_t *ttlp)
+ {
+   if (__res_maybe_init (&_res, 0) == -1)
+-    return NSS_STATUS_UNAVAIL;
++    {
++      *errnop = errno;
++      *herrnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
+ 
+   /*
+    * if there aren't any dots, it could be a user-level alias.
+@@ -416,7 +424,11 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+  host_data = (struct host_data *) buffer;
+ 
+   if (__res_maybe_init (&_res, 0) == -1)
+-    return NSS_STATUS_UNAVAIL;
++    {
++      *errnop = errno;
++      *h_errnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
+ 
+   if (af == AF_INET6 && len == IN6ADDRSZ
+       && (memcmp (uaddr, mapped, sizeof mapped) == 0
+diff --git a/resolv/nss_dns/dns-network.c b/resolv/nss_dns/dns-network.c
+index 2be72d33a30f917e..dc1599b47122fea2 100644
+--- a/resolv/nss_dns/dns-network.c
++++ b/resolv/nss_dns/dns-network.c
+@@ -116,7 +116,11 @@ _nss_dns_getnetbyname_r (const char *name, struct netent *result,
+   enum nss_status status;
+ 
+   if (__res_maybe_init (&_res, 0) == -1)
+-    return NSS_STATUS_UNAVAIL;
++    {
++      *errnop = errno;
++      *herrnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
+ 
+   net_buffer.buf = orig_net_buffer = (querybuf *) alloca (1024);
+ 
+@@ -166,7 +170,11 @@ _nss_dns_getnetbyaddr_r (uint32_t net, int type, struct netent *result,
+     return NSS_STATUS_UNAVAIL;
+ 
+   if (__res_maybe_init (&_res, 0) == -1)
+-    return NSS_STATUS_UNAVAIL;
++    {
++      *errnop = errno;
++      *herrnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
+ 
+   net2 = (u_int32_t) net;
+   for (cnt = 4; net2 != 0; net2 >>= 8)
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index 49fc94595bfe147f..e604a0212fa13624 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -100,6 +100,7 @@
+ #include <sys/time.h>
+ #include <sys/types.h>
+ #include <inet/net-internal.h>
++#include <errno.h>
+ 
+ static void res_setoptions (res_state, const char *, const char *);
+ static uint32_t net_mask (struct in_addr);
+@@ -121,14 +122,11 @@ is_sort_mask (char ch)
+   return ch == '/' || ch == '&';
+ }
+ 
+-/* Set up default settings.  If the /etc/resolv.conf configuration
+-   file exist, the values there will have precedence.  Otherwise, the
+-   server address is set to INADDR_LOOPBACK and the default domain
+-   name comes from gethostname.  The RES_OPTIONS and LOCALDOMAIN
+-   environment variables can be used to override some settings.
+-   Return 0 if completes successfully, -1 on error.  */
+-int
+-__res_vinit (res_state statp, int preinit)
++/* Internal helper function for __res_vinit, to aid with resource
++   deallocation and error handling.  Return true on success, false on
++   failure.  */
++static bool
++res_vinit_1 (res_state statp, bool preinit, FILE *fp)
+ {
+   char *cp, **pp;
+   char buf[BUFSIZ];
+@@ -203,7 +201,6 @@ __res_vinit (res_state statp, int preinit)
+    && (line[sizeof (name) - 1] == ' '           \
+        || line[sizeof (name) - 1] == '\t'))
+ 
+-  FILE *fp = fopen (_PATH_RESCONF, "rce");
+   if (fp != NULL)
+     {
+       /* No threads use this stream.  */
+@@ -302,26 +299,26 @@ __res_vinit (res_state statp, int preinit)
+                       struct sockaddr_in6 *sa6;
+ 
+                       sa6 = malloc (sizeof (*sa6));
+-                      if (sa6 != NULL)
+-                        {
+-                          sa6->sin6_family = AF_INET6;
+-                          sa6->sin6_port = htons (NAMESERVER_PORT);
+-                          sa6->sin6_flowinfo = 0;
+-                          sa6->sin6_addr = a6;
+-
+-                          sa6->sin6_scope_id = 0;
+-                          if (__glibc_likely (el != NULL))
+-                            /* Ignore errors, for backwards
+-                               compatibility.  */
+-                            __inet6_scopeid_pton
+-                              (&a6, el + 1, &sa6->sin6_scope_id);
+-
+-                          statp->nsaddr_list[nserv].sin_family = 0;
+-                          statp->_u._ext.nsaddrs[nserv] = sa6;
+-                          statp->_u._ext.nssocks[nserv] = -1;
+-                          have_serv6 = true;
+-                          nserv++;
+-                        }
++                      if (sa6 == NULL)
++                        return -1;
++
++                      sa6->sin6_family = AF_INET6;
++                      sa6->sin6_port = htons (NAMESERVER_PORT);
++                      sa6->sin6_flowinfo = 0;
++                      sa6->sin6_addr = a6;
++
++                      sa6->sin6_scope_id = 0;
++                      if (__glibc_likely (el != NULL))
++                        /* Ignore errors, for backwards
++                           compatibility.  */
++                        __inet6_scopeid_pton
++                          (&a6, el + 1, &sa6->sin6_scope_id);
++
++                      statp->nsaddr_list[nserv].sin_family = 0;
++                      statp->_u._ext.nsaddrs[nserv] = sa6;
++                      statp->_u._ext.nssocks[nserv] = -1;
++                      have_serv6 = true;
++                      nserv++;
+                     }
+                 }
+               continue;
+@@ -410,6 +407,44 @@ __res_vinit (res_state statp, int preinit)
+   return 0;
+ }
+ 
++/* Set up default settings.  If the /etc/resolv.conf configuration
++   file exist, the values there will have precedence.  Otherwise, the
++   server address is set to INADDR_LOOPBACK and the default domain
++   name comes from gethostname.  The RES_OPTIONS and LOCALDOMAIN
++   environment variables can be used to override some settings.
++   Return 0 if completes successfully, -1 on error.  */
++int
++__res_vinit (res_state statp, int preinit)
++{
++  FILE *fp = fopen (_PATH_RESCONF, "rce");
++  if (fp == NULL)
++    switch (errno)
++      {
++      case EACCES:
++      case EISDIR:
++      case ELOOP:
++      case ENOENT:
++      case ENOTDIR:
++      case EPERM:
++        /* Ignore these errors.  They are persistent errors caused
++           by file system contents.  */
++        break;
++      default:
++        /* Other errors refer to resource allocation problems and
++           need to be handled by the application.  */
++        return -1;
++      }
++  if (!res_vinit_1 (statp, preinit, fp))
++    {
++      /* Deallocate the name server addresses which have been
++         allocated.  */
++      for (int n = 0; n < MAXNS; n++)
++        free (statp->_u._ext.nsaddrs[n]);
++      return -1;
++    }
++  return 0;
++}
++
+ static void
+ res_setoptions (res_state statp, const char *options, const char *source)
+ {

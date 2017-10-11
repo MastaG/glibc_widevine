@@ -1,0 +1,33 @@
+commit f768b450204f54b080ea5dc5c2071940604b424c
+Author: Benjamin Cama <b.cama@kerlink.fr>
+Date:   Thu Jun 22 15:49:28 2017 +0200
+
+    inet: __inet6_scopeid_pton should accept node-local addresses [BZ #21657]
+
+diff --git a/inet/inet6_scopeid_pton.c b/inet/inet6_scopeid_pton.c
+index f842ffcadb391960..e09b1cb34dcc9424 100644
+--- a/inet/inet6_scopeid_pton.c
++++ b/inet/inet6_scopeid_pton.c
+@@ -33,6 +33,7 @@ __inet6_scopeid_pton (const struct in6_addr *address, const char *scope,
+                       uint32_t *result)
+ {
+   if (IN6_IS_ADDR_LINKLOCAL (address)
++      || IN6_IS_ADDR_MC_NODELOCAL (address)
+       || IN6_IS_ADDR_MC_LINKLOCAL (address))
+     {
+       uint32_t number = __if_nametoindex (scope);
+diff --git a/inet/tst-inet6_scopeid_pton.c b/inet/tst-inet6_scopeid_pton.c
+index a1bafa9021c5cf3b..8225b3b80abe6331 100644
+--- a/inet/tst-inet6_scopeid_pton.c
++++ b/inet/tst-inet6_scopeid_pton.c
+@@ -218,9 +218,9 @@ do_test (void)
+     {
+       expect_success ("fe80::1", interface_name, interface_index);
+       expect_success ("ff02::1", interface_name, interface_index);
++      expect_success ("ff01::1", interface_name, interface_index);
+       expect_failure ("::", interface_name);
+       expect_failure ("::1", interface_name);
+-      expect_failure ("ff01::1", interface_name);
+       expect_failure ("2001:db8::1", interface_name);
+     }
+ 

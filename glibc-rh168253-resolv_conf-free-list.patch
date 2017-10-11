@@ -1,0 +1,251 @@
+commit e237357a5a0559dee92261f1914d1fa2cd43a1a8
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jul 3 15:01:34 2017 +0200
+
+    resolv: Introduce free list for resolv_conf index slosts
+
+diff --git a/resolv/Makefile b/resolv/Makefile
+index ef5ed2966e4d6c51..c1fcf341746cf1a8 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -63,6 +63,9 @@ tests += \
+   tst-resolv-res_init \
+   tst-resolv-res_init-thread \
+ 
++# Needs resolv_context.
++tests += tst-resolv-res_ninit
++
+ endif
+ 
+ # This test accesses __inet_ntop_range, an internal libc function.
+@@ -103,6 +106,7 @@ ifeq ($(run-built-tests),yes)
+ ifneq (no,$(PERL))
+ tests-special += $(objpfx)mtrace-tst-leaks.out
+ xtests-special += $(objpfx)mtrace-tst-leaks2.out
++tests-special += $(objpfx)mtrace-tst-resolv-res_ninit.out
+ endif
+ endif
+ 
+@@ -114,7 +118,8 @@ headers += rpc/netdb.h
+ endif
+ 
+ generated += mtrace-tst-leaks.out tst-leaks.mtrace \
+-	     mtrace-tst-leaks2.out tst-leaks2.mtrace
++	     mtrace-tst-leaks2.out tst-leaks2.mtrace \
++	     mtrace-tst-resolv-res_ninit.out tst-resolv-res_ninit.mtrace \
+ 
+ include ../Rules
+ 
+@@ -142,6 +147,12 @@ $(objpfx)mtrace-tst-leaks2.out: $(objpfx)tst-leaks2.out
+ 	$(common-objpfx)malloc/mtrace $(objpfx)tst-leaks2.mtrace > $@; \
+ 	$(evaluate-test)
+ 
++tst-resolv-res_ninit-ENV = MALLOC_TRACE=$(objpfx)tst-resolv-res_ninit.mtrace
++$(objpfx)mtrace-tst-resolv-res_ninit.out: $(objpfx)tst-resolv-res_ninit.out
++	$(common-objpfx)malloc/mtrace \
++	  $(objpfx)tst-resolv-res_ninit.mtrace > $@; \
++	  $(evaluate-test)
++
+ $(objpfx)tst-bug18665-tcp: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-bug18665: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-res_use_inet6: $(objpfx)libresolv.so $(shared-thread-library)
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+index 9ef59240ebc57a70..b98cf92890a121f9 100644
+--- a/resolv/resolv_conf.c
++++ b/resolv/resolv_conf.c
+@@ -28,9 +28,12 @@
+    struct resolv_conf_array object.  The intent of this construction
+    is to make reasonably sure that even if struct __res_state objects
+    are copied around and patched by applications, we can still detect
+-   accesses to stale extended resolver state.  */
++   accesses to stale extended resolver state.  The array elements are
++   either struct resolv_conf * pointers (if the LSB is cleared) or
++   free list entries (if the LSB is set).  The free list is used to
++   speed up finding available entries in the array.  */
+ #define DYNARRAY_STRUCT resolv_conf_array
+-#define DYNARRAY_ELEMENT struct resolv_conf *
++#define DYNARRAY_ELEMENT uintptr_t
+ #define DYNARRAY_PREFIX resolv_conf_array_
+ #define DYNARRAY_INITIAL_SIZE 0
+ #include <malloc/dynarray-skeleton.c>
+@@ -55,6 +58,10 @@ struct resolv_conf_global
+      the array element is overwritten with NULL.  */
+   struct resolv_conf_array array;
+ 
++  /* Start of the free list in the array.  The MSB is set if this
++     field has been initialized.  */
++  uintptr_t free_list_start;
++
+   /* Cached current configuration object for /etc/resolv.conf.  */
+   struct resolv_conf *conf_current;
+ 
+@@ -194,15 +201,17 @@ resolv_conf_get_1 (const struct __res_state *resp)
+        contexts exists, so returning NULL is correct.  */
+     return NULL;
+   size_t index = resp->_u._ext.__glibc_extension_index ^ INDEX_MAGIC;
+-  struct resolv_conf *conf;
++  struct resolv_conf *conf = NULL;
+   if (index < resolv_conf_array_size (&global_copy->array))
+     {
+-      conf = *resolv_conf_array_at (&global_copy->array, index);
+-      assert (conf->__refcount > 0);
+-      ++conf->__refcount;
++      uintptr_t *slot = resolv_conf_array_at (&global_copy->array, index);
++      if (!(*slot & 1))
++        {
++          conf = (struct resolv_conf *) *slot;
++          assert (conf->__refcount > 0);
++          ++conf->__refcount;
++        }
+     }
+-  else
+-    conf = NULL;
+   put_locked_global (global_copy);
+   return conf;
+ }
+@@ -550,17 +559,20 @@ decrement_at_index (struct resolv_conf_global *global_copy, size_t index)
+ {
+   if (index < resolv_conf_array_size (&global_copy->array))
+     {
+-      /* Index found.  Deallocate the struct resolv_conf object once
+-         the reference counter reaches.  Free the array slot.  */
+-      struct resolv_conf **slot
+-        = resolv_conf_array_at (&global_copy->array, index);
+-      struct resolv_conf *conf = *slot;
+-      if (conf != NULL)
++      /* Index found.  */
++      uintptr_t *slot = resolv_conf_array_at (&global_copy->array, index);
++      /* Check that the slot is not already part of the free list.  */
++      if (!(*slot & 1))
+         {
++          struct resolv_conf *conf = (struct resolv_conf *) *slot;
+           conf_decrement (conf);
+-          /* Clear the slot even if the reference count is positive.
+-             Slots are not shared.  */
+-          *slot = NULL;
++          /* Put the slot onto the free list.  */
++          if (global_copy->free_list_start == 0)
++            /* Not yet initialized.  */
++            *slot = 1;
++          else
++            *slot = global_copy->free_list_start;
++          global_copy->free_list_start = (index << 1) | 1;
+         }
+     }
+ }
+@@ -580,24 +592,21 @@ __resolv_conf_attach (struct __res_state *resp, struct resolv_conf *conf)
+   /* Try to find an unused index in the array.  */
+   size_t index;
+   {
+-    size_t size = resolv_conf_array_size (&global_copy->array);
+-    bool found = false;
+-    for (index = 0; index < size; ++index)
++    if (global_copy->free_list_start & 1)
+       {
+-        struct resolv_conf **p
+-          = resolv_conf_array_at (&global_copy->array, index);
+-        if (*p == NULL)
+-          {
+-            *p = conf;
+-            found = true;
+-            break;
+-          }
++        /* Unlink from the free list.  */
++        index = global_copy->free_list_start >> 1;
++        uintptr_t *slot = resolv_conf_array_at (&global_copy->array, index);
++        global_copy->free_list_start = *slot;
++        assert (global_copy->free_list_start & 1);
++        /* Install the configuration pointer.  */
++        *slot = (uintptr_t) conf;
+       }
+-
+-    if (!found)
++    else
+       {
++        size_t size = resolv_conf_array_size (&global_copy->array);
+         /* No usable index found.  Increase the array size.  */
+-        resolv_conf_array_add (&global_copy->array, conf);
++        resolv_conf_array_add (&global_copy->array, (uintptr_t) conf);
+         if (resolv_conf_array_has_failed (&global_copy->array))
+           {
+             put_locked_global (global_copy);
+diff --git a/resolv/tst-resolv-res_ninit.c b/resolv/tst-resolv-res_ninit.c
+new file mode 100644
+index 0000000000000000..d08153fed78b5f03
+--- /dev/null
++++ b/resolv/tst-resolv-res_ninit.c
+@@ -0,0 +1,74 @@
++/* Test the creation of many struct __res_state objects.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <mcheck.h>
++#include <resolv.h>
++#include <resolv/resolv_context.h>
++#include <stdlib.h>
++#include <support/check.h>
++
++/* Order the resolver states by their extended resolver state
++   index.  */
++static int
++sort_res_state (const void *a, const void *b)
++{
++  res_state left = (res_state) a;
++  res_state right = (res_state) b;
++  return memcmp (&left->_u._ext.__glibc_extension_index,
++                 &right->_u._ext.__glibc_extension_index,
++                 sizeof (left->_u._ext.__glibc_extension_index));
++}
++
++static int
++do_test (void)
++{
++  mtrace ();
++
++  enum { count = 100 * 1000 };
++  res_state array = calloc (count, sizeof (*array));
++  const struct resolv_conf *conf = NULL;
++  for (size_t i = 0; i < count; ++i)
++    {
++      TEST_VERIFY (res_ninit (array + i) == 0);
++      TEST_VERIFY (array[i].nscount > 0);
++      struct resolv_context *ctx = __resolv_context_get_override (array + i);
++      TEST_VERIFY_EXIT (ctx != NULL);
++      TEST_VERIFY (ctx->resp == array + i);
++      if (i == 0)
++        {
++          conf = ctx->conf;
++          TEST_VERIFY (conf != NULL);
++        }
++      else
++        /* The underyling configuration should be identical across all
++           res_state opjects because resolv.conf did not change.  */
++        TEST_VERIFY (ctx->conf == conf);
++    }
++  qsort (array, count, sizeof (*array), sort_res_state);
++  for (size_t i = 1; i < count; ++i)
++    /* All extension indices should be different.  */
++    TEST_VERIFY (sort_res_state (array + i - 1, array + i) < 0);
++  for (size_t i = 0; i < count; ++i)
++    res_nclose (array + i);
++  free (array);
++
++  TEST_VERIFY (res_init () == 0);
++  return 0;
++}
++
++#include <support/test-driver.c>

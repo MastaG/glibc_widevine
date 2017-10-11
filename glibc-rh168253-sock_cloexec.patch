@@ -1,0 +1,130 @@
+commit 2f83a7294d0d0904d72839843a80531769525d59
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Apr 19 07:45:04 2017 +0200
+
+    Create more sockets with SOCK_CLOEXEC [BZ #15722]
+
+diff --git a/inet/rcmd.c b/inet/rcmd.c
+index 8613d96764b08cc8..f6c9ec54acfc800f 100644
+--- a/inet/rcmd.c
++++ b/inet/rcmd.c
+@@ -383,6 +383,7 @@ rresvport_af (int *alport, sa_family_t family)
+ 		__set_errno (EAFNOSUPPORT);
+ 		return -1;
+ 	}
++	/* NB: No SOCK_CLOXEC for backwards compatibility.  */
+ 	s = __socket(family, SOCK_STREAM, 0);
+ 	if (s < 0)
+ 		return -1;
+diff --git a/inet/rexec.c b/inet/rexec.c
+index 24ac4b11b6d745aa..96ebf3d59a5d97ac 100644
+--- a/inet/rexec.c
++++ b/inet/rexec.c
+@@ -86,6 +86,7 @@ rexec_af (char **ahost, int rport, const char *name, const char *pass,
+ 	}
+ 	ruserpass(res0->ai_canonname, &name, &pass);
+ retry:
++	/* NB: No SOCK_CLOXEC for backwards compatibility.  */
+ 	s = __socket(res0->ai_family, res0->ai_socktype, 0);
+ 	if (s < 0) {
+ 		perror("rexec: socket");
+diff --git a/nis/nis_findserv.c b/nis/nis_findserv.c
+index 77f3c7c3cea14fbc..8e01164e3db9252e 100644
+--- a/nis/nis_findserv.c
++++ b/nis/nis_findserv.c
+@@ -142,7 +142,7 @@ __nis_findfastest_with_timeout (dir_binding *bind,
+     }
+ 
+   /* Create RPC handle */
+-  sock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
++  sock = socket (AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP);
+   clnt = clntudp_create (&saved_sin, NIS_PROG, NIS_VERSION, *timeout, &sock);
+   if (clnt == NULL)
+     {
+diff --git a/resolv/res_hconf.c b/resolv/res_hconf.c
+index d0d116d308b31b40..8fc06e9abdc084f6 100644
+--- a/resolv/res_hconf.c
++++ b/resolv/res_hconf.c
+@@ -388,7 +388,7 @@ _res_hconf_reorder_addrs (struct hostent *hp)
+       /* Initialize interface table.  */
+ 
+       /* The SIOCGIFNETMASK ioctl will only work on an AF_INET socket.  */
+-      sd = __socket (AF_INET, SOCK_DGRAM, 0);
++      sd = __socket (AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+       if (sd < 0)
+ 	return;
+ 
+diff --git a/resolv/res_send.c b/resolv/res_send.c
+index 98968d6239d0c8f7..440da90a0b381b84 100644
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -692,7 +692,8 @@ send_vc(res_state statp,
+ 		if (statp->_vcsock >= 0)
+ 		  __res_iclose(statp, false);
+ 
+-		statp->_vcsock = socket(nsap->sa_family, SOCK_STREAM, 0);
++		statp->_vcsock = socket
++		  (nsap->sa_family, SOCK_STREAM | SOCK_CLOEXEC, 0);
+ 		if (statp->_vcsock < 0) {
+ 			*terrno = errno;
+ 			Perror(statp, stderr, "socket(vc)", errno);
+@@ -902,14 +903,16 @@ reopen (res_state statp, int *terrno, int ns)
+ 
+ 		/* only try IPv6 if IPv6 NS and if not failed before */
+ 		if (nsap->sa_family == AF_INET6 && !statp->ipv6_unavail) {
+-			EXT(statp).nssocks[ns]
+-				= socket(PF_INET6, SOCK_DGRAM|SOCK_NONBLOCK, 0);
++			EXT(statp).nssocks[ns] = socket
++			  (PF_INET6,
++			   SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+ 			if (EXT(statp).nssocks[ns] < 0)
+ 			    statp->ipv6_unavail = errno == EAFNOSUPPORT;
+ 			slen = sizeof (struct sockaddr_in6);
+ 		} else if (nsap->sa_family == AF_INET) {
+-			EXT(statp).nssocks[ns]
+-				= socket(PF_INET, SOCK_DGRAM|SOCK_NONBLOCK, 0);
++			EXT(statp).nssocks[ns] = socket
++			  (PF_INET,
++			   SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+ 			slen = sizeof (struct sockaddr_in);
+ 		}
+ 		if (EXT(statp).nssocks[ns] < 0) {
+diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
+index 43eb31365ed10059..1ea2b2218d263b28 100644
+--- a/sysdeps/posix/getaddrinfo.c
++++ b/sysdeps/posix/getaddrinfo.c
+@@ -2472,7 +2472,7 @@ getaddrinfo (const char *name, const char *service,
+ 		  close_retry:
+ 		    close_not_cancel_no_status (fd);
+ 		  af = q->ai_family;
+-		  fd = __socket (af, SOCK_DGRAM, IPPROTO_IP);
++		  fd = __socket (af, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_IP);
+ 		}
+ 	      else
+ 		{
+diff --git a/sysdeps/unix/sysv/linux/check_native.c b/sysdeps/unix/sysv/linux/check_native.c
+index 4a1646089ffb7f1e..7e5a7c9be30c05e7 100644
+--- a/sysdeps/unix/sysv/linux/check_native.c
++++ b/sysdeps/unix/sysv/linux/check_native.c
+@@ -41,7 +41,7 @@ void
+ __check_native (uint32_t a1_index, int *a1_native,
+ 		uint32_t a2_index, int *a2_native)
+ {
+-  int fd = __socket (PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
++  int fd = __socket (PF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, NETLINK_ROUTE);
+ 
+   struct sockaddr_nl nladdr;
+   memset (&nladdr, '\0', sizeof (nladdr));
+diff --git a/sysdeps/unix/sysv/linux/ifaddrs.c b/sysdeps/unix/sysv/linux/ifaddrs.c
+index cff12c2ac4517741..3bc99028639c7149 100644
+--- a/sysdeps/unix/sysv/linux/ifaddrs.c
++++ b/sysdeps/unix/sysv/linux/ifaddrs.c
+@@ -255,7 +255,7 @@ __netlink_open (struct netlink_handle *h)
+ {
+   struct sockaddr_nl nladdr;
+ 
+-  h->fd = __socket (PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
++  h->fd = __socket (PF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, NETLINK_ROUTE);
+   if (h->fd < 0)
+     goto out;
+ 

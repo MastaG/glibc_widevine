@@ -1,0 +1,24 @@
+commit 27233446a62ca35ce0b54566279a99a6774d4210
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Sep 6 15:47:27 2017 +0200
+
+    resolv: __resolv_conf_attach must not free passed conf object [BZ #22096]
+    
+    (cherry picked from commit a83047308196e3e54716a39dd85c0a08b198d6bd)
+
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+index f391d30c277bb348..e0f296d02e061a89 100644
+--- a/resolv/resolv_conf.c
++++ b/resolv/resolv_conf.c
+@@ -600,10 +600,7 @@ __resolv_conf_attach (struct __res_state *resp, struct resolv_conf *conf)
+ 
+   struct resolv_conf_global *global_copy = get_locked_global ();
+   if (global_copy == NULL)
+-    {
+-      free (conf);
+-      return false;
+-    }
++    return false;
+ 
+   /* Try to find an unused index in the array.  */
+   size_t index;

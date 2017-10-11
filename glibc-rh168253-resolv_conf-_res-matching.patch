@@ -1,0 +1,132 @@
+commit 4446a885f3aeb3a33b95c72bae1f115bed77f0cb
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Jul 4 14:47:29 2017 +0200
+
+    resolv: Fix resolv_conf _res matching
+    
+    A dot-less host name without an /etc/resolv.conf file caused an
+    assertion failure in update_from_conf because the function would not
+    deal correctly with the empty search list case.
+    
+    Thanks to Andreas Schwab for debugging assistence.
+
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+index 0ed36cde02608f2d..f391d30c277bb348 100644
+--- a/resolv/resolv_conf.c
++++ b/resolv/resolv_conf.c
+@@ -272,7 +272,7 @@ resolv_conf_matches (const struct __res_state *resp,
+       nserv = MAXNS;
+     /* _ext.nscount is 0 until initialized by res_send.c.  */
+     if (resp->nscount != nserv
+-        && (resp->_u._ext.nscount != 0 && resp->_u._ext.nscount != nserv))
++        || (resp->_u._ext.nscount != 0 && resp->_u._ext.nscount != nserv))
+       return false;
+     for (size_t i = 0; i < nserv; ++i)
+       {
+@@ -295,9 +295,25 @@ resolv_conf_matches (const struct __res_state *resp,
+   /* Check that the search list in *RESP has not been modified by the
+      application.  */
+   {
+-    if (!(resp->dnsrch[0] == resp->defdname
+-          && resp->dnsrch[MAXDNSRCH] == NULL))
++    if (resp->dnsrch[0] == NULL)
++      {
++        /* Empty search list.  No default domain name.  */
++        return conf->search_list_size == 0 && resp->defdname[0] == '\0';
++      }
++
++    if (resp->dnsrch[0] != resp->defdname)
++      /* If the search list is not empty, it must start with the
++         default domain name.  */
++      return false;
++
++    size_t nsearch;
++    for (nsearch = 0; nsearch < MAXDNSRCH; ++nsearch)
++      if (resp->dnsrch[nsearch] == NULL)
++        break;
++    if (nsearch > MAXDNSRCH)
++      /* Search list is not null-terminated.  */
+       return false;
++
+     size_t search_list_size = 0;
+     for (size_t i = 0; i < conf->search_list_size; ++i)
+       {
+@@ -326,6 +342,8 @@ resolv_conf_matches (const struct __res_state *resp,
+     size_t nsort = conf->sort_list_size;
+     if (nsort > MAXRESOLVSORT)
+       nsort = MAXRESOLVSORT;
++    if (resp->nsort != nsort)
++      return false;
+     for (size_t i = 0; i < nsort; ++i)
+       if (resp->sort_list[i].addr.s_addr != conf->sort_list[i].addr.s_addr
+           || resp->sort_list[i].mask != conf->sort_list[i].mask)
+diff --git a/resolv/tst-resolv-res_init-skeleton.c b/resolv/tst-resolv-res_init-skeleton.c
+index 9e496a3212b0f2ab..8f395d8ce92773a9 100644
+--- a/resolv/tst-resolv-res_init-skeleton.c
++++ b/resolv/tst-resolv-res_init-skeleton.c
+@@ -307,6 +307,10 @@ struct test_case
+   /* Setting for the RES_OPTIONS environment variable.  NULL if the
+      variable is not to be set.  */
+   const char *res_options;
++
++  /* Override the system host name.  NULL means that no change is made
++     and the default is used (test_hostname).  */
++  const char *hostname;
+ };
+ 
+ enum test_init
+@@ -358,6 +362,14 @@ run_res_init (void *closure)
+     setenv ("LOCALDOMAIN", ctx->t->localdomain, 1);
+   if (ctx->t->res_options != NULL)
+     setenv ("RES_OPTIONS", ctx->t->res_options, 1);
++  if (ctx->t->hostname != NULL)
++    {
++      /* This test needs its own namespace, to avoid changing the host
++         name for the parent, too.  */
++      TEST_VERIFY_EXIT (unshare (CLONE_NEWUTS) == 0);
++      if (sethostname (ctx->t->hostname, strlen (ctx->t->hostname)) != 0)
++        FAIL_EXIT1 ("sethostname (\"%s\"): %m", ctx->t->hostname);
++    }
+ 
+   switch (ctx->init)
+     {
+@@ -434,6 +446,12 @@ struct test_case test_cases[] =
+      "nameserver 127.0.0.1\n"
+      "; nameserver[0]: [127.0.0.1]:53\n"
+     },
++    {.name = "empty file, no-dot hostname",
++     .conf = "",
++     .expected = "nameserver 127.0.0.1\n"
++     "; nameserver[0]: [127.0.0.1]:53\n",
++     .hostname = "example",
++    },
+     {.name = "empty file with LOCALDOMAIN",
+      .conf = "",
+      .expected = "search example.net\n"
+@@ -462,8 +480,7 @@ struct test_case test_cases[] =
+      .res_options = "edns0 attempts:5",
+     },
+     {.name = "basic",
+-     .conf = "domain example.net\n"
+-     "search corp.example.com example.com\n"
++     .conf =  "search corp.example.com example.com\n"
+      "nameserver 192.0.2.1\n",
+      .expected = "search corp.example.com example.com\n"
+      "; search[0]: corp.example.com\n"
+@@ -471,6 +488,16 @@ struct test_case test_cases[] =
+      "nameserver 192.0.2.1\n"
+      "; nameserver[0]: [192.0.2.1]:53\n"
+     },
++    {.name = "basic with no-dot hostname",
++     .conf = "search corp.example.com example.com\n"
++     "nameserver 192.0.2.1\n",
++     .expected = "search corp.example.com example.com\n"
++     "; search[0]: corp.example.com\n"
++     "; search[1]: example.com\n"
++     "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n",
++     .hostname = "example",
++    },
+     {.name = "basic no-reload",
+      .conf = "options no-reload\n"
+      "search corp.example.com example.com\n"

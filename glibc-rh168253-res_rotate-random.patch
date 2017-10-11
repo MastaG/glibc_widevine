@@ -1,0 +1,468 @@
+commit 5b757a51b514ea163bbec0a53dbbc06bb1b29241
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 30 10:43:33 2017 +0200
+
+    resolv: Make RES_ROTATE start with a random name server [BZ #19570]
+    
+    Do not copy the actual name server addresses to rotate them.  Use a
+    global rotation offset instead.
+
+diff --git a/resolv/Makefile b/resolv/Makefile
+index 88766729087d54cf..79843d0d7ca92ffd 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -69,6 +69,9 @@ tests += tst-inet_pton
+ 
+ # This test sends millions of packets and is rather slow.
+ xtests += tst-resolv-qtypes
++
++# This test has dropped packet tests and runs for a long time.
++xtests += tst-resolv-rotate
+ endif
+ extra-libs-others = $(extra-libs)
+ libresolv-routines := res_comp res_debug \
+@@ -148,6 +151,7 @@ $(objpfx)tst-resolv-res_init: $(libdl) $(objpfx)libresolv.so
+ $(objpfx)tst-resolv-res_init-thread: $(libdl) $(objpfx)libresolv.so \
+   $(shared-thread-library)
+ $(objpfx)tst-resolv-qtypes: $(objpfx)libresolv.so $(shared-thread-library)
++$(objpfx)tst-resolv-rotate: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-resolv-search: $(objpfx)libresolv.so $(shared-thread-library)
+ $(objpfx)tst-resolv-canonname: \
+   $(libdl) $(objpfx)libresolv.so $(shared-thread-library)
+diff --git a/resolv/res_send.c b/resolv/res_send.c
+index 1835ec7ee507d215..1dbe30088167636c 100644
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -109,6 +109,8 @@
+ #include <unistd.h>
+ #include <kernel-features.h>
+ #include <libc-internal.h>
++#include <libc-diag.h>
++#include <hp-timing.h>
+ 
+ #if PACKETSZ > 65536
+ #define MAXPACKET       PACKETSZ
+@@ -188,7 +190,7 @@ evNowTime(struct timespec *res) {
+ 
+ /* Forward. */
+ 
+-static struct sockaddr *get_nsaddr (res_state, int);
++static struct sockaddr *get_nsaddr (res_state, unsigned int);
+ static int		send_vc(res_state, const u_char *, int,
+ 				const u_char *, int,
+ 				u_char **, int *, int *, int, u_char **,
+@@ -291,6 +293,62 @@ res_nameinquery(const char *name, int type, int class,
+ }
+ libresolv_hidden_def (res_nameinquery)
+ 
++/* Returns a shift value for the name server index.  Used to implement
++   RES_ROTATE.  */
++static unsigned int
++nameserver_offset (struct __res_state *statp)
++{
++  /* If we only have one name server or rotation is disabled, return
++     offset 0 (no rotation).  */
++  unsigned int nscount = statp->nscount;
++  if (nscount <= 1 || !(statp->options & RES_ROTATE))
++    return 0;
++
++  /* Global offset.  The lowest bit indicates whether the offset has
++     been initialized with a random value.  Use relaxed MO to access
++     global_offset because all we need is a sequence of roughly
++     sequential value.  */
++  static unsigned int global_offset;
++  unsigned int offset = atomic_fetch_add_relaxed (&global_offset, 2);
++  if ((offset & 1) == 0)
++    {
++      /* Initialization is required.  */
++#if HP_TIMING_AVAIL
++      uint64_t ticks;
++      HP_TIMING_NOW (ticks);
++      offset = ticks;
++#else
++      struct timeval tv;
++      __gettimeofday (&tv, NULL);
++      offset = ((tv.tv_sec << 8) ^ tv.tv_usec);
++#endif
++      /* The lowest bit is the most random.  Preserve it.  */
++      offset <<= 1;
++
++      /* Store the new starting value.  atomic_fetch_add_relaxed
++	 returns the old value, so emulate that by storing the new
++	 (incremented) value.  Concurrent initialization with
++	 different random values is harmless.  */
++      atomic_store_relaxed (&global_offset, (offset | 1) + 2);
++    }
++
++  /* Remove the initialization bit.  */
++  offset >>= 1;
++
++  /* Avoid the division in the most common cases.  */
++  switch (nscount)
++    {
++    case 2:
++      return offset & 1;
++    case 3:
++      return offset % 3;
++    case 4:
++      return offset & 3;
++    default:
++      return offset % nscount;
++    }
++}
++
+ /* int
+  * res_queriesmatch(buf1, eom1, buf2, eom2)
+  *	is there a 1:1 mapping of (name,type,class)
+@@ -352,7 +410,7 @@ __libc_res_nsend(res_state statp, const u_char *buf, int buflen,
+ 		 u_char *ans, int anssiz, u_char **ansp, u_char **ansp2,
+ 		 int *nansp2, int *resplen2, int *ansp2_malloced)
+ {
+-  int gotsomewhere, terrno, try, v_circuit, resplen, ns, n;
++	int gotsomewhere, terrno, try, v_circuit, resplen, n;
+ 
+ 	if (statp->nscount == 0) {
+ 		__set_errno (ESRCH);
+@@ -382,7 +440,7 @@ __libc_res_nsend(res_state statp, const u_char *buf, int buflen,
+ 		if (EXT(statp).nscount != statp->nscount)
+ 			needclose++;
+ 		else
+-			for (ns = 0; ns < statp->nscount; ns++) {
++			for (unsigned int ns = 0; ns < statp->nscount; ns++) {
+ 				if (statp->nsaddr_list[ns].sin_family != 0
+ 				    && !sock_eq((struct sockaddr_in6 *)
+ 						&statp->nsaddr_list[ns],
+@@ -402,7 +460,7 @@ __libc_res_nsend(res_state statp, const u_char *buf, int buflen,
+ 	 * Maybe initialize our private copy of the ns_addr_list.
+ 	 */
+ 	if (EXT(statp).nscount == 0) {
+-		for (ns = 0; ns < statp->nscount; ns++) {
++		for (unsigned int ns = 0; ns < statp->nscount; ns++) {
+ 			EXT(statp).nssocks[ns] = -1;
+ 			if (statp->nsaddr_list[ns].sin_family == 0)
+ 				continue;
+@@ -420,35 +478,21 @@ __libc_res_nsend(res_state statp, const u_char *buf, int buflen,
+ 		EXT(statp).nscount = statp->nscount;
+ 	}
+ 
+-	/*
+-	 * Some resolvers want to even out the load on their nameservers.
+-	 * Note that RES_BLAST overrides RES_ROTATE.
+-	 */
+-	if (__glibc_unlikely ((statp->options & RES_ROTATE) != 0)) {
+-		struct sockaddr_in ina;
+-		struct sockaddr_in6 *inp;
+-		int lastns = statp->nscount - 1;
+-		int fd;
+-
+-		inp = EXT(statp).nsaddrs[0];
+-		ina = statp->nsaddr_list[0];
+-		fd = EXT(statp).nssocks[0];
+-		for (ns = 0; ns < lastns; ns++) {
+-		    EXT(statp).nsaddrs[ns] = EXT(statp).nsaddrs[ns + 1];
+-		    statp->nsaddr_list[ns] = statp->nsaddr_list[ns + 1];
+-		    EXT(statp).nssocks[ns] = EXT(statp).nssocks[ns + 1];
+-		}
+-		EXT(statp).nsaddrs[lastns] = inp;
+-		statp->nsaddr_list[lastns] = ina;
+-		EXT(statp).nssocks[lastns] = fd;
+-	}
++	/* Name server index offset.  Used to implement
++	   RES_ROTATE.  */
++	unsigned int ns_offset = nameserver_offset (statp);
+ 
+ 	/*
+ 	 * Send request, RETRY times, or until successful.
+ 	 */
+ 	for (try = 0; try < statp->retry; try++) {
+-	    for (ns = 0; ns < statp->nscount; ns++)
++	    for (unsigned ns_shift = 0; ns_shift < statp->nscount; ns_shift++)
+ 	    {
++		/* The actual name server index.  This implements
++		   RES_ROTATE.  */
++		unsigned int ns = ns_shift + ns_offset;
++		if (ns >= statp->nscount)
++			ns -= statp->nscount;
+ #ifdef DEBUG
+ 		char tmpbuf[40];
+ 		struct sockaddr *nsap = get_nsaddr (statp, ns);
+@@ -544,8 +588,9 @@ libresolv_hidden_def (res_nsend)
+ /* Private */
+ 
+ static struct sockaddr *
+-get_nsaddr (res_state statp, int n)
++get_nsaddr (res_state statp, unsigned int n)
+ {
++  assert (n < statp->nscount);
+ 
+   if (statp->nsaddr_list[n].sin_family == 0 && EXT(statp).nsaddrs[n] != NULL)
+     /* EXT(statp).nsaddrs[n] holds an address that is larger than
+diff --git a/resolv/tst-resolv-rotate.c b/resolv/tst-resolv-rotate.c
+new file mode 100644
+index 0000000000000000..d01b85b2fe82930b
+--- /dev/null
++++ b/resolv/tst-resolv-rotate.c
+@@ -0,0 +1,263 @@
++/* Check that RES_ROTATE works with few nameserver entries (bug 13028).
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <netdb.h>
++#include <resolv.h>
++#include <stdlib.h>
++#include <string.h>
++#include <support/check.h>
++#include <support/check_nss.h>
++#include <support/resolv_test.h>
++#include <support/test-driver.h>
++
++static volatile int drop_server = -1;
++static volatile unsigned int query_counts[resolv_max_test_servers];
++
++static const char address_ipv4[4] = {192, 0, 2, 1};
++static const char address_ipv6[16]
++  = {0x20, 0x01, 0xd, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
++
++static void
++response (const struct resolv_response_context *ctx,
++          struct resolv_response_builder *b,
++          const char *qname, uint16_t qclass, uint16_t qtype)
++{
++  if (ctx->server_index == drop_server)
++    {
++      resolv_response_drop (b);
++      resolv_response_close (b);
++      return;
++    }
++
++  bool force_tcp = strncmp (qname, "2.", 2) == 0;
++  struct resolv_response_flags flags = {.tc = force_tcp && !ctx->tcp};
++  resolv_response_init (b, flags);
++  resolv_response_add_question (b, qname, qclass, qtype);
++  if (flags.tc)
++    return;
++
++  TEST_VERIFY_EXIT (ctx->server_index < resolv_max_test_servers);
++  ++query_counts[ctx->server_index];
++
++  resolv_response_section (b, ns_s_an);
++  resolv_response_open_record (b, qname, qclass, qtype, 0);
++  switch (qtype)
++    {
++    case T_A:
++      {
++        char addr[sizeof (address_ipv4)];
++        memcpy (addr, address_ipv4, sizeof (address_ipv4));
++        addr[3] = 1 + ctx->tcp;
++        resolv_response_add_data (b, addr, sizeof (addr));
++      }
++      break;
++    case T_AAAA:
++      {
++        char addr[sizeof (address_ipv6)];
++        memcpy (addr, address_ipv6, sizeof (address_ipv6));
++        addr[15] = 1 + ctx->tcp;
++        resolv_response_add_data (b, addr, sizeof (addr));
++      }
++      break;
++    case T_PTR:
++      if (force_tcp)
++        resolv_response_add_name (b, "2.host.example");
++      else
++        resolv_response_add_name (b, "host.example");
++      break;
++    default:
++      FAIL_EXIT1 ("unexpected QTYPE: %s/%u/%u", qname, qclass, qtype);
++    }
++  resolv_response_close_record (b);
++}
++
++static void
++check_forward_1 (const char *name, int family)
++{
++  unsigned char lsb;
++  if (strncmp (name, "2.", 2) == 0)
++    lsb = 2;
++  else
++    lsb = 1;
++
++  char expected_hostent_v4[200];
++  snprintf (expected_hostent_v4, sizeof (expected_hostent_v4),
++            "name: %s\naddress: 192.0.2.%d\n", name, lsb);
++  char expected_hostent_v6[200];
++  snprintf (expected_hostent_v6, sizeof (expected_hostent_v6),
++            "name: %s\naddress: 2001:db8::%d\n", name, lsb);
++  char expected_ai[200];
++
++  unsigned char address[16];
++  size_t address_length;
++
++  char *expected_hostent;
++  switch (family)
++    {
++    case AF_INET:
++      expected_hostent = expected_hostent_v4;
++      snprintf (expected_ai, sizeof (expected_ai),
++                "address: STREAM/TCP 192.0.2.%d 80\n", lsb);
++      TEST_VERIFY_EXIT (sizeof (address_ipv4) == sizeof (struct in_addr));
++      memcpy (address, address_ipv4, sizeof (address_ipv4));
++      address_length = sizeof (address_ipv4);
++      break;
++    case AF_INET6:
++      expected_hostent = expected_hostent_v6;
++      snprintf (expected_ai, sizeof (expected_ai),
++                "address: STREAM/TCP 2001:db8::%d 80\n", lsb);
++      TEST_VERIFY_EXIT (sizeof (address_ipv6) == sizeof (struct in6_addr));
++      memcpy (address, address_ipv6, sizeof (address_ipv6));
++      address_length = sizeof (address_ipv6);
++      break;
++    case AF_UNSPEC:
++      expected_hostent = NULL;
++      snprintf (expected_ai, sizeof (expected_ai),
++                "address: STREAM/TCP 192.0.2.%d 80\n"
++                "address: STREAM/TCP 2001:db8::%d 80\n",
++                lsb, lsb);
++      address_length = 0;
++      break;
++    default:
++      FAIL_EXIT1 ("unknown address family %d", family);
++    }
++
++
++  if (family == AF_INET)
++    {
++      struct hostent *e = gethostbyname (name);
++      check_hostent (name, e, expected_hostent_v4);
++    }
++
++  if (family != AF_UNSPEC)
++    {
++      struct hostent *e = gethostbyname2 (name, family);
++      check_hostent (name, e, expected_hostent);
++    }
++
++  if (address_length > 0)
++    {
++      address[address_length - 1] = lsb;
++      struct hostent *e = gethostbyaddr (address, address_length, family);
++      check_hostent (name, e, expected_hostent);
++    }
++
++  struct addrinfo hints =
++    {
++      .ai_family = family,
++      .ai_socktype = SOCK_STREAM,
++      .ai_protocol = IPPROTO_TCP,
++    };
++  struct addrinfo *ai;
++  int ret = getaddrinfo (name, "80", &hints, &ai);
++  check_addrinfo (name, ai, ret, expected_ai);
++  if (ret == 0)
++    {
++      for (struct addrinfo *p = ai; p != NULL; p = p->ai_next)
++        {
++          char host[200];
++          ret = getnameinfo (p->ai_addr, p->ai_addrlen,
++                             host, sizeof (host),
++                             NULL, 0, /* service */
++                             0);
++          if (ret != 0)
++            {
++              support_record_failure ();
++              printf ("error: getnameinfo: %d\n", ret);
++            }
++          else
++            {
++              if (lsb == 1)
++                TEST_VERIFY (strcmp (host, "host.example") == 0);
++              else
++                TEST_VERIFY (strcmp (host, "2.host.example") == 0);
++            }
++        }
++      freeaddrinfo (ai);
++    }
++}
++
++static void
++check_forward (int family)
++{
++  check_forward_1 ("host.example", family);
++  check_forward_1 ("2.host.example", family);
++}
++
++static int
++do_test (void)
++{
++  for (int force_tcp = 0; force_tcp < 2; ++force_tcp)
++    for (int nscount = 1; nscount <= 3; ++nscount)
++      for (int disable_server = -1; disable_server < nscount; ++disable_server)
++        for (drop_server = -1; drop_server < nscount; ++drop_server)
++          {
++            /* A disabled server will never receive queries and
++               therefore cannot drop them.  */
++            if (drop_server >= 0 && drop_server == disable_server)
++              continue;
++            /* No servers remaining to query, all queries are expected
++               to fail.  */
++            int broken_servers = (disable_server >= 0) + (drop_server >= 0);
++            if (nscount <= broken_servers)
++              continue;
++
++            if (test_verbose > 0)
++              printf ("info: tcp=%d nscount=%d disable=%d drop=%d\n",
++                      force_tcp, nscount, disable_server, drop_server);
++            struct resolv_redirect_config config =
++              {
++                .response_callback = response,
++                .nscount = nscount
++              };
++            if (disable_server >= 0)
++              {
++                config.servers[disable_server].disable_udp = true;
++                config.servers[disable_server].disable_tcp = true;
++              }
++
++            struct resolv_test *aux = resolv_test_start (config);
++            _res.options |= RES_ROTATE;
++
++            /* Run a few queries to make sure that all of them
++               succeed.  We always perform more than nscount queries,
++               so we cover all active servers due to RES_ROTATE.  */
++            for (size_t i = 0; i < resolv_max_test_servers; ++i)
++              query_counts[i] = 0;
++            check_forward (AF_INET);
++            check_forward (AF_INET6);
++            check_forward (AF_UNSPEC);
++
++            for (int i = 0; i < nscount; ++i)
++              {
++                if (i != disable_server && i != drop_server
++                    && query_counts[i] == 0)
++                  {
++                    support_record_failure ();
++                    printf ("error: nscount=%d, but no query to server %d\n",
++                            nscount, i);
++                  }
++              }
++
++            resolv_test_end (aux);
++          }
++  return 0;
++}
++
++#define TIMEOUT 300
++#include <support/test-driver.c>

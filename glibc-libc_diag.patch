@@ -1,0 +1,17 @@
+Add <libc-diag.h> to simplify backports.
+
+Added upstream as part of this commit:
+
+commit e15f7de60c26bb75fe1923b17c5f0461164d1a41
+Author: Zack Weinberg <zackw@panix.com>
+Date:   Sun Nov 20 20:46:30 2016 -0500
+
+    Split DIAG_* macros to new header libc-diag.h.
+
+diff --git a/include/libc-diag.h b/include/libc-diag.h
+new file mode 100644
+index 0000000000000000..5876a41e8e5fcc15
+--- /dev/null
++++ b/include/libc-diag.h
+@@ -0,0 +1 @@
++#include <libc-internal.h>

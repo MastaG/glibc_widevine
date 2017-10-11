@@ -1,0 +1,46 @@
+commit a9270e673dcc1ef1d2c2d96fa09d468c59883d88
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 30 18:02:11 2017 +0200
+
+    resolv: Improve debugging output from tst-resolv-res_init
+
+diff --git a/resolv/tst-resolv-res_init-skeleton.c b/resolv/tst-resolv-res_init-skeleton.c
+index 2b68c5ff9a69a291..b5fe2cfb002679f2 100644
+--- a/resolv/tst-resolv-res_init-skeleton.c
++++ b/resolv/tst-resolv-res_init-skeleton.c
+@@ -257,6 +257,15 @@ enum test_init
+   test_init_method_last = test_getaddrinfo
+ };
+ 
++static const char *const test_init_names[] =
++  {
++    [test_init] = "res_init",
++    [test_ninit] = "res_init",
++    [test_mkquery] = "res_mkquery",
++    [test_gethostbyname] = "gethostbyname",
++    [test_getaddrinfo] = "getaddrinfo",
++  };
++
+ /* Closure argument for run_res_init.  */
+ struct test_context
+ {
+@@ -507,7 +516,8 @@ test_file_contents (const struct test_case *t)
+          ++init_method)
+       {
+         if (test_verbose > 0)
+-          printf ("info:  testing init method %d\n", init_method);
++          printf ("info:  testing init method %s\n",
++                  test_init_names[init_method]);
+         struct test_context ctx = { .init = init_method, .t = t };
+         void (*func) (void *) = run_res_init;
+ #if TEST_THREAD
+@@ -519,7 +529,8 @@ test_file_contents (const struct test_case *t)
+         if (strcmp (proc.out.buffer, t->expected) != 0)
+           {
+             support_record_failure ();
+-            printf ("error: output mismatch for %s\n", t->name);
++            printf ("error: output mismatch for %s (init method %s)\n",
++                    t->name, test_init_names[init_method]);
+             support_run_diff ("expected", t->expected,
+                               "actual", proc.out.buffer);
+           }

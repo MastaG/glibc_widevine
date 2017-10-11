@@ -1,0 +1,21 @@
+This change happened upstream in this commit:
+
+commit ae65d4f3c3995279ca458c460ebf8bab1885fa03
+Author: Wilco Dijkstra <wdijkstr@arm.com>
+Date:   Mon Mar 13 18:42:35 2017 +0000
+
+     Remove the str(n)dup inlines from string/bits/string2.h.
+
+diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
+index 317413c9ef1559e6..b3d0a5ca74d926bb 100644
+--- a/sysdeps/posix/getaddrinfo.c
++++ b/sysdeps/posix/getaddrinfo.c
+@@ -1106,7 +1106,7 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 		  canonbuf = NULL;
+ 		else
+ 		  {
+-		    canon = strdup (canon);
++		    canon = __strdup (canon);
+ 		    if (canon == NULL)
+ 		      {
+ 			result = -EAI_MEMORY;

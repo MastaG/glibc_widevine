@@ -1,0 +1,637 @@
+commit f30a54b21b83f254533c59ca72ad17af5249c6be
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jul 3 20:31:23 2017 +0200
+
+    resolv: Introduce struct resolv_conf with extended resolver state
+    
+    This change provides additional resolver configuration state which
+    is not exposed through the _res ABI.  It reuses the existing
+    initstamp field in the supposedly-private part of _res.  Some effort
+    is undertaken to avoid memory safety issues introduced by applications
+    which directly patch the _res object.
+    
+    With this commit, only the initstamp field is moved into struct
+    resolv_conf.  Additional members will be added later, eventually
+    migrating the entire resolver configuration.
+
+diff --git a/resolv/Makefile b/resolv/Makefile
+index 7f5e07d618297f60..ef5ed2966e4d6c51 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -29,7 +29,7 @@ headers	:= resolv.h \
+ 
+ routines := herror inet_addr inet_ntop inet_pton nsap_addr res_init \
+ 	    res_hconf res_libc res-state res_randomid res-close \
+-	    resolv_context
++	    resolv_context resolv_conf
+ 
+ tests = tst-aton tst-leaks tst-inet_ntop
+ xtests = tst-leaks2
+diff --git a/resolv/res-close.c b/resolv/res-close.c
+index 97da73c99cfd0e12..21f038c2c77f7375 100644
+--- a/resolv/res-close.c
++++ b/resolv/res-close.c
+@@ -84,6 +84,7 @@
+ 
+ #include <resolv-internal.h>
+ #include <resolv_context.h>
++#include <resolv_conf.h>
+ #include <not-cancel.h>
+ 
+ /* Close all open sockets.  If FREE_ADDR is true, deallocate any
+@@ -111,6 +112,8 @@ __res_iclose (res_state statp, bool free_addr)
+             statp->_u._ext.nsaddrs[ns] = NULL;
+           }
+       }
++  if (free_addr)
++    __resolv_conf_detach (statp);
+ }
+ libc_hidden_def (__res_iclose)
+ 
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index 5d8b2c994d8e6f04..659d3ea81f973257 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -102,6 +102,7 @@
+ #include <sys/types.h>
+ #include <inet/net-internal.h>
+ #include <errno.h>
++#include <resolv_conf.h>
+ 
+ static void res_setoptions (res_state, const char *);
+ static uint32_t net_mask (struct in_addr);
+@@ -137,7 +138,6 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp, char **buffer)
+   bool havesearch = false;
+   int nsort = 0;
+   char *net;
+-  statp->_u._ext.initstamp = __res_initstamp;
+ 
+   if (!preinit)
+     {
+@@ -457,6 +457,19 @@ __res_vinit (res_state statp, int preinit)
+   bool ok = res_vinit_1 (statp, preinit, fp, &buffer);
+   free (buffer);
+ 
++  if (ok)
++    {
++      struct resolv_conf init = { 0 }; /* No data yet.  */
++      struct resolv_conf *conf = __resolv_conf_allocate (&init);
++      if (conf == NULL)
++        ok = false;
++      else
++        {
++          ok = __resolv_conf_attach (statp, conf);
++          __resolv_conf_put (conf);
++        }
++    }
++
+   if (!ok)
+     {
+       /* Deallocate the name server addresses which have been
+diff --git a/resolv/resolv.h b/resolv/resolv.h
+index 9fef8e9f248c84e6..b83232cca8e8f0c3 100644
+--- a/resolv/resolv.h
++++ b/resolv/resolv.h
+@@ -122,10 +122,10 @@ struct __res_state {
+ 			uint16_t		nsinit;
+ 			struct sockaddr_in6	*nsaddrs[MAXNS];
+ #ifdef _LIBC
+-			unsigned long long int	initstamp
++			unsigned long long int __glibc_extension_index
+ 			  __attribute__((packed));
+ #else
+-			unsigned int		_initstamp[2];
++			unsigned int		__glibc_reserved[2];
+ #endif
+ 		} _ext;
+ 	} _u;
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+new file mode 100644
+index 0000000000000000..cabe69cf1ba3f4d5
+--- /dev/null
++++ b/resolv/resolv_conf.c
+@@ -0,0 +1,322 @@
++/* Extended resolver state separate from struct __res_state.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <resolv_conf.h>
++
++#include <alloc_buffer.h>
++#include <assert.h>
++#include <libc-lock.h>
++#include <resolv-internal.h>
++
++/* _res._u._ext.__glibc_extension_index is used as an index into a
++   struct resolv_conf_array object.  The intent of this construction
++   is to make reasonably sure that even if struct __res_state objects
++   are copied around and patched by applications, we can still detect
++   accesses to stale extended resolver state.  */
++#define DYNARRAY_STRUCT resolv_conf_array
++#define DYNARRAY_ELEMENT struct resolv_conf *
++#define DYNARRAY_PREFIX resolv_conf_array_
++#define DYNARRAY_INITIAL_SIZE 0
++#include <malloc/dynarray-skeleton.c>
++
++/* A magic constant for XORing the extension index
++   (_res._u._ext.__glibc_extension_index).  This makes it less likely
++   that a valid index is created by accident.  In particular, a zero
++   value leads to an invalid index.  */
++#define INDEX_MAGIC 0x26a8fa5e48af8061ULL
++
++/* Global resolv.conf-related state.  */
++struct resolv_conf_global
++{
++  /* struct __res_state objects contain the extension index
++     (_res._u._ext.__glibc_extension_index ^ INDEX_MAGIC), which
++     refers to an element of this array.  When a struct resolv_conf
++     object (extended resolver state) is associated with a struct
++     __res_state object (legacy resolver state), its reference count
++     is increased and added to this array.  Conversely, if the
++     extended state is detached from the basic state (during
++     reinitialization or deallocation), the index is decremented, and
++     the array element is overwritten with NULL.  */
++  struct resolv_conf_array array;
++
++};
++
++/* Lazily allocated storage for struct resolv_conf_global.  */
++static struct resolv_conf_global *global;
++
++/* The lock synchronizes access to global and *global.  It also
++   protects the __refcount member of struct resolv_conf.  */
++__libc_lock_define_initialized (static, lock);
++
++/* Ensure that GLOBAL is allocated and lock it.  Return NULL if
++   memory allocation failes.  */
++static struct resolv_conf_global *
++get_locked_global (void)
++{
++  __libc_lock_lock (lock);
++  /* Use relaxed MO through because of load outside the lock in
++     __resolv_conf_detach.  */
++  struct resolv_conf_global *global_copy = atomic_load_relaxed (&global);
++  if (global_copy == NULL)
++    {
++      global_copy = calloc (1, sizeof (*global));
++      if (global_copy == NULL)
++        return NULL;
++      atomic_store_relaxed (&global, global_copy);
++      resolv_conf_array_init (&global_copy->array);
++    }
++  return global_copy;
++}
++
++/* Relinquish the lock acquired by get_locked_global.  */
++static void
++put_locked_global (struct resolv_conf_global *global_copy)
++{
++  __libc_lock_unlock (lock);
++}
++
++/* Decrement the reference counter.  The caller must acquire the lock
++   around the function call.  */
++static void
++conf_decrement (struct resolv_conf *conf)
++{
++  assert (conf->__refcount > 0);
++  if (--conf->__refcount == 0)
++    free (conf);
++}
++
++/* Internal implementation of __resolv_conf_get, without validation
++   against *RESP.  */
++static struct resolv_conf *
++resolv_conf_get_1 (const struct __res_state *resp)
++{
++  /* Not initialized, and therefore no assoicated context.  */
++  if (!(resp->options & RES_INIT))
++    return NULL;
++
++  struct resolv_conf_global *global_copy = get_locked_global ();
++  if (global_copy == NULL)
++    /* A memory allocation failure here means that no associated
++       contexts exists, so returning NULL is correct.  */
++    return NULL;
++  size_t index = resp->_u._ext.__glibc_extension_index ^ INDEX_MAGIC;
++  struct resolv_conf *conf;
++  if (index < resolv_conf_array_size (&global_copy->array))
++    {
++      conf = *resolv_conf_array_at (&global_copy->array, index);
++      assert (conf->__refcount > 0);
++      ++conf->__refcount;
++    }
++  else
++    conf = NULL;
++  put_locked_global (global_copy);
++  return conf;
++}
++
++/* Check that *RESP and CONF match.  Used by __resolv_conf_get.  */
++static bool
++resolv_conf_matches (const struct __res_state *resp,
++                     const struct resolv_conf *conf)
++{
++  return true;
++}
++
++struct resolv_conf *
++__resolv_conf_get (struct __res_state *resp)
++{
++  struct resolv_conf *conf = resolv_conf_get_1 (resp);
++  if (conf == NULL)
++    return NULL;
++  if (resolv_conf_matches (resp, conf))
++    return conf;
++  __resolv_conf_put (conf);
++  return NULL;
++}
++
++void
++__resolv_conf_put (struct resolv_conf *conf)
++{
++  if (conf == NULL)
++    return;
++
++  __libc_lock_lock (lock);
++  conf_decrement (conf);
++  __libc_lock_unlock (lock);
++}
++
++struct resolv_conf *
++__resolv_conf_allocate (const struct resolv_conf *init)
++{
++  /* Allocate the buffer.  */
++  void *ptr;
++  struct alloc_buffer buffer = alloc_buffer_allocate
++    (sizeof (struct resolv_conf),
++     &ptr);
++  struct resolv_conf *conf
++    = alloc_buffer_alloc (&buffer, struct resolv_conf);
++  if (conf == NULL)
++    /* Memory allocation failure.  */
++    return NULL;
++  assert (conf == ptr);
++
++  /* Initialize the contents.  */
++  conf->__refcount = 1;
++  conf->initstamp = __res_initstamp;
++
++  assert (!alloc_buffer_has_failed (&buffer));
++  return conf;
++}
++
++/* Update *RESP from the extended state.  */
++static __attribute__ ((nonnull (1, 2), warn_unused_result)) bool
++update_from_conf (struct __res_state *resp, const struct resolv_conf *conf)
++{
++  /* The overlapping parts of both configurations should agree after
++     initialization.  */
++  assert (resolv_conf_matches (resp, conf));
++  return true;
++}
++
++/* Decrement the configuration object at INDEX and free it if the
++   reference counter reaches 0.  *GLOBAL_COPY must be locked and
++   remains so.  */
++static void
++decrement_at_index (struct resolv_conf_global *global_copy, size_t index)
++{
++  if (index < resolv_conf_array_size (&global_copy->array))
++    {
++      /* Index found.  Deallocate the struct resolv_conf object once
++         the reference counter reaches.  Free the array slot.  */
++      struct resolv_conf **slot
++        = resolv_conf_array_at (&global_copy->array, index);
++      struct resolv_conf *conf = *slot;
++      if (conf != NULL)
++        {
++          conf_decrement (conf);
++          /* Clear the slot even if the reference count is positive.
++             Slots are not shared.  */
++          *slot = NULL;
++        }
++    }
++}
++
++bool
++__resolv_conf_attach (struct __res_state *resp, struct resolv_conf *conf)
++{
++  assert (conf->__refcount > 0);
++
++  struct resolv_conf_global *global_copy = get_locked_global ();
++  if (global_copy == NULL)
++    {
++      free (conf);
++      return false;
++    }
++
++  /* Try to find an unused index in the array.  */
++  size_t index;
++  {
++    size_t size = resolv_conf_array_size (&global_copy->array);
++    bool found = false;
++    for (index = 0; index < size; ++index)
++      {
++        struct resolv_conf **p
++          = resolv_conf_array_at (&global_copy->array, index);
++        if (*p == NULL)
++          {
++            *p = conf;
++            found = true;
++            break;
++          }
++      }
++
++    if (!found)
++      {
++        /* No usable index found.  Increase the array size.  */
++        resolv_conf_array_add (&global_copy->array, conf);
++        if (resolv_conf_array_has_failed (&global_copy->array))
++          {
++            put_locked_global (global_copy);
++            __set_errno (ENOMEM);
++            return false;
++          }
++        /* The new array element was added at the end.  */
++        index = size;
++      }
++  }
++
++  /* We have added a new reference to the object.  */
++  ++conf->__refcount;
++  assert (conf->__refcount > 0);
++  put_locked_global (global_copy);
++
++  if (!update_from_conf (resp, conf))
++    {
++      /* Drop the reference we acquired.  Reacquire the lock.  The
++         object has already been allocated, so it cannot be NULL this
++         time.  */
++      global_copy = get_locked_global ();
++      decrement_at_index (global_copy, index);
++      put_locked_global (global_copy);
++      return false;
++    }
++  resp->_u._ext.__glibc_extension_index = index ^ INDEX_MAGIC;
++
++  return true;
++}
++
++void
++__resolv_conf_detach (struct __res_state *resp)
++{
++  if (atomic_load_relaxed (&global) == NULL)
++    /* Detach operation after a shutdown, or without any prior
++       attachment.  We cannot free the data (and there might not be
++       anything to free anyway).  */
++    return;
++
++  struct resolv_conf_global *global_copy = get_locked_global ();
++  size_t index = resp->_u._ext.__glibc_extension_index ^ INDEX_MAGIC;
++  decrement_at_index (global_copy, index);
++
++  /* Clear the index field, so that accidental reuse is less
++     likely.  */
++  resp->_u._ext.__glibc_extension_index = 0;
++
++  put_locked_global (global_copy);
++}
++
++/* Deallocate the global data.  */
++static void __attribute__ ((section ("__libc_thread_freeres_fn")))
++freeres (void)
++{
++  /* No locking because this function is supposed to be called when
++     the process has turned single-threaded.  */
++  if (global == NULL)
++    return;
++
++  /* Note that this frees only the array itself.  The pointed-to
++     configuration objects should have been deallocated by res_nclose
++     and per-thread cleanup functions.  */
++  resolv_conf_array_free (&global->array);
++
++  free (global);
++
++  /* Stop potential future __resolv_conf_detach calls from accessing
++     deallocated memory.  */
++  global = NULL;
++}
++text_set_element (__libc_subfreeres, freeres);
+diff --git a/resolv/resolv_conf.h b/resolv/resolv_conf.h
+new file mode 100644
+index 0000000000000000..48f92d6d5753aef1
+--- /dev/null
++++ b/resolv/resolv_conf.h
+@@ -0,0 +1,69 @@
++/* Extended resolver state separate from struct __res_state.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#ifndef RESOLV_STATE_H
++#define RESOLV_STATE_H
++
++#include <stdbool.h>
++#include <stddef.h>
++
++/* Extended resolver state associated with res_state objects.  Client
++   code can reach this state through a struct resolv_context
++   object.  */
++struct resolv_conf
++{
++  /* Used to propagate the effect of res_init across threads.  This
++     member is mutable and prevents sharing of the same struct
++     resolv_conf object among multiple struct __res_state objects.  */
++  unsigned long long int initstamp;
++
++  /* Reference counter.  The object is deallocated once it reaches
++     zero.  For internal use within resolv_conf only.  */
++  size_t __refcount;
++};
++
++/* The functions below are for use by the res_init resolv.conf parser
++   and the struct resolv_context facility.  */
++
++struct __res_state;
++
++/* Return the extended resolver state for *RESP, or NULL if it cannot
++   be determined.  A call to this function must be paired with a call
++   to __resolv_conf_put.  */
++struct resolv_conf *__resolv_conf_get (struct __res_state *) attribute_hidden;
++
++/* Converse of __resolv_conf_get.  */
++void __resolv_conf_put (struct resolv_conf *) attribute_hidden;
++
++/* Allocate a new struct resolv_conf object and copy the
++   pre-configured values from *INIT.  Return NULL on allocation
++   failure.  The object must be deallocated using
++   __resolv_conf_put.  */
++struct resolv_conf *__resolv_conf_allocate (const struct resolv_conf *init)
++  attribute_hidden __attribute__ ((nonnull (1), warn_unused_result));
++
++/* Associate an existing extended resolver state with *RESP.  Return
++   false on allocation failure.  In addition, update *RESP with the
++   overlapping non-extended resolver state.  */
++bool __resolv_conf_attach (struct __res_state *, struct resolv_conf *)
++  attribute_hidden;
++
++/* Detach the extended resolver state from *RESP.  */
++void __resolv_conf_detach (struct __res_state *resp) attribute_hidden;
++
++#endif /* RESOLV_STATE_H */
+diff --git a/resolv/resolv_context.c b/resolv/resolv_context.c
+index 5083a40419bc463c..0ee2184055911d02 100644
+--- a/resolv/resolv_context.c
++++ b/resolv/resolv_context.c
+@@ -17,9 +17,11 @@
+    <http://www.gnu.org/licenses/>.  */
+ 
+ #include <resolv_context.h>
++#include <resolv_conf.h>
+ #include <resolv-internal.h>
+ 
+ #include <assert.h>
++#include <errno.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+ 
+@@ -52,19 +54,37 @@ static __thread struct resolv_context *current attribute_tls_model_ie;
+ /* Initialize *RESP if RES_INIT is not yet set in RESP->options, or if
+    res_init in some other thread requested re-initializing.  */
+ static __attribute__ ((warn_unused_result)) bool
+-maybe_init (struct __res_state *resp, bool preinit)
++maybe_init (struct resolv_context *ctx, bool preinit)
+ {
++  struct __res_state *resp = ctx->resp;
+   if (resp->options & RES_INIT)
+     {
+-      if (__res_initstamp != resp->_u._ext.initstamp)
++      /* If there is no associated resolv_conf object despite the
++         initialization, something modified *ctx->resp.  Do not
++         override those changes.  */
++      if (ctx->conf != NULL && ctx->conf->initstamp != __res_initstamp)
+         {
+           if (resp->nscount > 0)
++            /* This call will detach the extended resolver state.  */
+             __res_iclose (resp, true);
+-          return __res_vinit (resp, 1) == 0;
++          /* And this call will attach it again.  */
++          if (__res_vinit (resp, 1) < 0)
++            {
++              /* The configuration no longer matches after failed
++                 initialization.  */
++              __resolv_conf_put (ctx->conf);
++              ctx->conf = NULL;
++              return false;
++            }
++          /* Delay the release of the old configuration until this
++             point, so that __res_vinit can reuse it if possible.  */
++          __resolv_conf_put (ctx->conf);
++          ctx->conf = __resolv_conf_get (ctx->resp);
+         }
+       return true;
+     }
+ 
++  assert (ctx->conf == NULL);
+   if (preinit)
+     {
+       if (!resp->retrans)
+@@ -75,7 +95,11 @@ maybe_init (struct __res_state *resp, bool preinit)
+       if (!resp->id)
+         resp->id = res_randomid ();
+     }
+-  return __res_vinit (resp, preinit) == 0;
++
++  if (__res_vinit (resp, preinit) < 0)
++    return false;
++  ctx->conf = __resolv_conf_get (ctx->resp);
++  return true;
+ }
+ 
+ /* Allocate a new context object and initialize it.  The object is put
+@@ -87,6 +111,7 @@ context_alloc (struct __res_state *resp)
+   if (ctx == NULL)
+     return NULL;
+   ctx->resp = resp;
++  ctx->conf = __resolv_conf_get (resp);
+   ctx->__refcount = 1;
+   ctx->__from_res = true;
+   ctx->__next = current;
+@@ -98,8 +123,11 @@ context_alloc (struct __res_state *resp)
+ static void
+ context_free (struct resolv_context *ctx)
+ {
++  int error_code = errno;
+   current = ctx->__next;
++  __resolv_conf_put (ctx->conf);
+   free (ctx);
++  __set_errno (error_code);
+ }
+ 
+ /* Reuse the current context object.  */
+@@ -130,7 +158,7 @@ context_get (bool preinit)
+   struct resolv_context *ctx = context_alloc (&_res);
+   if (ctx == NULL)
+     return NULL;
+-  if (!maybe_init (ctx->resp, preinit))
++  if (!maybe_init (ctx, preinit))
+     {
+       context_free (ctx);
+       return NULL;
+diff --git a/resolv/resolv_context.h b/resolv/resolv_context.h
+index 27c8d56b36104521..ff9ef2c7fe6101f3 100644
+--- a/resolv/resolv_context.h
++++ b/resolv/resolv_context.h
+@@ -40,15 +40,22 @@
+ #ifndef _RESOLV_CONTEXT_H
+ #define _RESOLV_CONTEXT_H
+ 
++#include <bits/types/res_state.h>
++#include <resolv/resolv_conf.h>
+ #include <stdbool.h>
+ #include <stddef.h>
+-#include <bits/types/res_state.h>
+ 
+ /* Temporary resolver state.  */
+ struct resolv_context
+ {
+   struct __res_state *resp;     /* Backing resolver state.   */
+ 
++  /* Extended resolver state.  This is set to NULL if the
++     __resolv_context_get functions are unable to locate an associated
++     extended state.  In this case, the configuration data in *resp
++     has to be used; otherwise, the data from *conf should be
++     preferred (because it is a superset).  */
++  struct resolv_conf *conf;
+ 
+   /* The following fields are for internal use within the
+      resolv_context module.  */

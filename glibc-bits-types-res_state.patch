@@ -1,0 +1,17 @@
+Add <bits/types/res_state.h> to simplify backports.
+
+Introduced upstream as part of this commit:
+
+commit 500b3a499fff61157db464a99f459c772d7eb6c0
+Author: Zack Weinberg <zackw@panix.com>
+Date:   Wed Mar 22 09:55:25 2017 -0400
+
+    Remove __need_list_t and __need_res_state.
+
+diff --git a/include/bits/types/res_state.h b/include/bits/types/res_state.h
+new file mode 100644
+index 0000000000000000..172103878d28a7ee
+--- /dev/null
++++ b/include/bits/types/res_state.h
+@@ -0,0 +1 @@
++#include <resolv.h>

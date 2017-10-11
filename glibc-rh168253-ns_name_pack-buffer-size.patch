@@ -1,0 +1,386 @@
+commit c803cb9b24c6cea15698768e4301e963b98e742c
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Thu Apr 13 11:56:28 2017 +0200
+
+    resolv: Support an exactly sized buffer in ns_name_pack [BZ #21359]
+    
+    This bug did not affect name resolution because those functions
+    indirectly call ns_name_pack with a buffer which is always larger
+    than the generated query packet, even in the case of the
+    longest-possible domain name.
+
+diff --git a/resolv/Makefile b/resolv/Makefile
+index db287947a4f7e9a6..d41fd4603d7b7d77 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -44,6 +44,7 @@ tests += \
+   tst-bug18665 \
+   tst-bug18665-tcp \
+   tst-ns_name \
++  tst-ns_name_compress \
+   tst-res_hconf_reorder \
+   tst-res_use_inet6 \
+   tst-resolv-basic \
+@@ -142,6 +143,7 @@ $(objpfx)tst-resolv-canonname: \
+ 
+ $(objpfx)tst-ns_name: $(objpfx)libresolv.so
+ $(objpfx)tst-ns_name.out: tst-ns_name.data
++$(objpfx)tst-ns_name_compress: $(objpfx)libresolv.so
+ 
+ 
+ # This test case uses the deprecated RES_USE_INET6 resolver option.
+diff --git a/resolv/ns_name.c b/resolv/ns_name.c
+index 0d76fe53a6f2245f..08a75e2fe0b4edd6 100644
+--- a/resolv/ns_name.c
++++ b/resolv/ns_name.c
+@@ -475,7 +475,7 @@ ns_name_pack(const u_char *src, u_char *dst, int dstsiz,
+ 			goto cleanup;
+ 		}
+ 		n = labellen(srcp);
+-		if (dstp + 1 + n >= eob) {
++		if (n + 1 > eob - dstp) {
+ 			goto cleanup;
+ 		}
+ 		memcpy(dstp, srcp, n + 1);
+diff --git a/resolv/tst-ns_name.c b/resolv/tst-ns_name.c
+index 66d9a6666b2ebde2..65eea4c827780826 100644
+--- a/resolv/tst-ns_name.c
++++ b/resolv/tst-ns_name.c
+@@ -195,6 +195,7 @@ print_hex (const char *label, struct buffer buffer)
+ static void
+ run_test_case (struct test_case *t)
+ {
++  /* Test ns_name_unpack.  */
+   unsigned char *unpacked = xmalloc (NS_MAXCDNAME);
+   int consumed = ns_name_unpack
+     (t->input.data, t->input.data + t->input.length,
+@@ -211,16 +212,19 @@ run_test_case (struct test_case *t)
+     }
+   if (consumed != -1)
+     {
+-      if (memcmp (unpacked, t->unpack_output.data, consumed) != 0)
++      if (memcmp (unpacked, t->unpack_output.data,
++                  t->unpack_output.length) != 0)
+         {
+           support_record_failure ();
+           printf ("%s:%zu: error: wrong data from ns_name_unpack\n",
+                   t->path, t->lineno);
+           print_hex ("expected:", t->unpack_output);
+-          print_hex ("actual:  ", (struct buffer) { unpacked, consumed });
++          print_hex ("actual:  ",
++                     (struct buffer) { unpacked, t->unpack_output.length });
+           return;
+         }
+ 
++      /* Test ns_name_ntop.  */
+       char *text = xmalloc (NS_MAXDNAME);
+       int ret = ns_name_ntop (unpacked, text, NS_MAXDNAME);
+       if (ret != t->ntop_result)
+@@ -243,6 +247,137 @@ run_test_case (struct test_case *t)
+               printf ("  actual:   \"%s\"\n", text);
+               return;
+             }
++
++          /* Test ns_name_pton.  Unpacking does not check the
++             NS_MAXCDNAME limit, but packing does, so we need to
++             adjust the expected result.  */
++          int expected;
++          if (t->unpack_output.length > NS_MAXCDNAME)
++            expected = -1;
++          else if (strcmp (text, ".") == 0)
++            /* The root domain is fully qualified.  */
++            expected = 1;
++          else
++            /* The domain name is never fully qualified.  */
++            expected = 0;
++          unsigned char *repacked = xmalloc (NS_MAXCDNAME);
++          ret = ns_name_pton (text, repacked, NS_MAXCDNAME);
++          if (ret != expected)
++            {
++              support_record_failure ();
++              printf ("%s:%zu: error: wrong result from ns_name_pton\n"
++                      "  expected: %d\n"
++                      "  actual:   %d\n",
++                      t->path, t->lineno, expected, ret);
++              return;
++            }
++          if (ret >= 0
++              && memcmp (repacked, unpacked, t->unpack_output.length) != 0)
++            {
++              support_record_failure ();
++              printf ("%s:%zu: error: wrong data from ns_name_pton\n",
++                      t->path, t->lineno);
++              print_hex ("expected:", t->unpack_output);
++              print_hex ("actual:  ",
++                         (struct buffer) { repacked, t->unpack_output.length });
++              return;
++            }
++
++          /* Test ns_name_compress, no compression case.  */
++          if (t->unpack_output.length > NS_MAXCDNAME)
++            expected = -1;
++          else
++            expected = t->unpack_output.length;
++          memset (repacked, '$', NS_MAXCDNAME);
++          {
++            enum { ptr_count = 5 };
++            const unsigned char *dnptrs[ptr_count] = { repacked, };
++            ret = ns_name_compress (text, repacked, NS_MAXCDNAME,
++                                    dnptrs, dnptrs + ptr_count);
++            if (ret != expected)
++              {
++                support_record_failure ();
++                printf ("%s:%zu: error: wrong result from ns_name_compress\n"
++                        "  expected: %d\n"
++                        "  actual:   %d\n",
++                        t->path, t->lineno, expected, ret);
++                return;
++              }
++            if (ret < 0)
++              {
++                TEST_VERIFY (dnptrs[0] == repacked);
++                TEST_VERIFY (dnptrs[1] == NULL);
++              }
++            else
++              {
++                if (memcmp (repacked, unpacked, t->unpack_output.length) != 0)
++                  {
++                    support_record_failure ();
++                    printf ("%s:%zu: error: wrong data from ns_name_compress\n",
++                            t->path, t->lineno);
++                    print_hex ("expected:", t->unpack_output);
++                    print_hex ("actual:  ", (struct buffer) { repacked, ret });
++                    return;
++                  }
++                TEST_VERIFY (dnptrs[0] == repacked);
++                if (unpacked[0] == '\0')
++                  /* The root domain is not a compression target.  */
++                  TEST_VERIFY (dnptrs[1] == NULL);
++                else
++                  {
++                    TEST_VERIFY (dnptrs[1] == repacked);
++                    TEST_VERIFY (dnptrs[2] == NULL);
++                  }
++              }
++          }
++
++          /* Test ns_name_compress, full compression case.  Skip this
++             test for invalid names and the root domain.  */
++          if (expected >= 0 && unpacked[0] != '\0')
++            {
++              /* The destination buffer needs additional room for the
++                 offset, the initial name, and the compression
++                 reference.  */
++              enum { name_offset = 259 };
++              size_t target_offset = name_offset + t->unpack_output.length;
++              size_t repacked_size = target_offset + 2;
++              repacked = xrealloc (repacked, repacked_size);
++              memset (repacked, '@', repacked_size);
++              memcpy (repacked + name_offset,
++                      t->unpack_output.data, t->unpack_output.length);
++              enum { ptr_count = 5 };
++              const unsigned char *dnptrs[ptr_count]
++                = { repacked, repacked + name_offset, };
++              ret = ns_name_compress
++                (text, repacked + target_offset, NS_MAXCDNAME,
++                 dnptrs, dnptrs + ptr_count);
++              if (ret != 2)
++                {
++                  support_record_failure ();
++                  printf ("%s:%zu: error: wrong result from ns_name_compress"
++                          " (2)\n"
++                          "  expected: 2\n"
++                          "  actual:   %d\n",
++                          t->path, t->lineno, ret);
++                  return;
++                }
++              if (memcmp (repacked + target_offset, "\xc1\x03", 2) != 0)
++                {
++                  support_record_failure ();
++                  printf ("%s:%zu: error: wrong data from ns_name_compress"
++                          " (2)\n"
++                          "  expected: C103\n",
++                          t->path, t->lineno);
++                  print_hex ("actual:  ",
++                             (struct buffer) { repacked + target_offset, ret });
++                  return;
++                }
++              TEST_VERIFY (dnptrs[0] == repacked);
++              TEST_VERIFY (dnptrs[1] == repacked + name_offset);
++              TEST_VERIFY (dnptrs[2] == NULL);
++            }
++
++          free (repacked);
+         }
+       free (text);
+     }
+diff --git a/resolv/tst-ns_name_compress.c b/resolv/tst-ns_name_compress.c
+new file mode 100644
+index 0000000000000000..300ba0bf8f0b3ad1
+--- /dev/null
++++ b/resolv/tst-ns_name_compress.c
+@@ -0,0 +1,75 @@
++/* Test ns_name_compress corner cases.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <resolv.h>
++#include <stdlib.h>
++#include <support/check.h>
++#include <support/support.h>
++
++/* Check that we can process names which fit into the destination
++   buffer exactly.  See bug 21359.  */
++static void
++test_exact_fit (const char *name, size_t length)
++{
++  unsigned char *buf = xmalloc (length + 1);
++  memset (buf, '$', length + 1);
++  enum { ptr_count = 5 };
++  const unsigned char *dnptrs[ptr_count] = { buf, };
++  int ret = ns_name_compress (name, buf, length,
++                          dnptrs, dnptrs + ptr_count);
++  if (ret < 0)
++    {
++      support_record_failure ();
++      printf ("error: ns_name_compress for %s/%zu failed\n", name, length);
++      return;
++    }
++  if ((size_t) ret != length)
++    {
++      support_record_failure ();
++      printf ("error: ns_name_compress for %s/%zu result mismatch: %d\n",
++              name, length, ret);
++    }
++  if (buf[length] != '$')
++    {
++      support_record_failure ();
++      printf ("error: ns_name_compress for %s/%zu padding write\n",
++              name, length);
++    }
++  free (buf);
++}
++
++static int
++do_test (void)
++{
++  test_exact_fit ("abc", 5);
++  test_exact_fit ("abc.", 5);
++  {
++    char long_name[]
++      = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa."
++      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa."
++      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa."
++      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.";
++    TEST_VERIFY (strlen (long_name) == NS_MAXCDNAME - 1);
++    test_exact_fit (long_name, NS_MAXCDNAME);
++    long_name[sizeof (long_name) - 1] = '\0';
++    test_exact_fit (long_name, NS_MAXCDNAME);
++  }
++  return 0;
++}
++
++#include <support/test-driver.c>
+diff --git a/resolv/tst-resolv-basic.c b/resolv/tst-resolv-basic.c
+index 94b1631121de01f3..f2b1fc7490430bce 100644
+--- a/resolv/tst-resolv-basic.c
++++ b/resolv/tst-resolv-basic.c
+@@ -25,6 +25,12 @@
+ #include <support/resolv_test.h>
+ #include <support/support.h>
+ 
++#define LONG_NAME                                                       \
++  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaax."    \
++  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaay."    \
++  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaz."    \
++  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaat"
++
+ static void
+ response (const struct resolv_response_context *ctx,
+           struct resolv_response_builder *b,
+@@ -43,13 +49,15 @@ response (const struct resolv_response_context *ctx,
+     qname_compare = qname + 2;
+   else
+     qname_compare = qname;
+-  enum {www, alias, nxdomain} requested_qname;
++  enum {www, alias, nxdomain, long_name} requested_qname;
+   if (strcmp (qname_compare, "www.example") == 0)
+     requested_qname = www;
+   else if (strcmp (qname_compare, "alias.example") == 0)
+     requested_qname = alias;
+   else if (strcmp (qname_compare, "nxdomain.example") == 0)
+     requested_qname = nxdomain;
++  else if (strcmp (qname_compare, LONG_NAME) == 0)
++    requested_qname = long_name;
+   else
+     {
+       support_record_failure ();
+@@ -69,6 +77,7 @@ response (const struct resolv_response_context *ctx,
+   switch (requested_qname)
+     {
+     case www:
++    case long_name:
+       resolv_response_open_record (b, qname, qclass, qtype, 0);
+       break;
+     case alias:
+@@ -209,6 +218,10 @@ do_test (void)
+            "name: www.example\n"
+            "alias: alias.example\n"
+            "address: 2001:db8::2\n");
++  check_h (LONG_NAME, AF_INET,
++           "name: " LONG_NAME "\n"
++           "address: 192.0.2.20\n");
++
+   check_ai ("www.example", "80", AF_UNSPEC,
+             "address: STREAM/TCP 192.0.2.17 80\n"
+             "address: DGRAM/UDP 192.0.2.17 80\n"
+@@ -223,6 +236,13 @@ do_test (void)
+             "address: STREAM/TCP 2001:db8::2 80\n"
+             "address: DGRAM/UDP 2001:db8::2 80\n"
+             "address: RAW/IP 2001:db8::2 80\n");
++  check_ai (LONG_NAME, "80", AF_UNSPEC,
++            "address: STREAM/TCP 192.0.2.20 80\n"
++            "address: DGRAM/UDP 192.0.2.20 80\n"
++            "address: RAW/IP 192.0.2.20 80\n"
++            "address: STREAM/TCP 2001:db8::4 80\n"
++            "address: DGRAM/UDP 2001:db8::4 80\n"
++            "address: RAW/IP 2001:db8::4 80\n");
+   check_ai ("www.example", "80", AF_INET,
+             "address: STREAM/TCP 192.0.2.17 80\n"
+             "address: DGRAM/UDP 192.0.2.17 80\n"
+@@ -231,6 +251,10 @@ do_test (void)
+             "address: STREAM/TCP 192.0.2.18 80\n"
+             "address: DGRAM/UDP 192.0.2.18 80\n"
+             "address: RAW/IP 192.0.2.18 80\n");
++  check_ai (LONG_NAME, "80", AF_INET,
++            "address: STREAM/TCP 192.0.2.20 80\n"
++            "address: DGRAM/UDP 192.0.2.20 80\n"
++            "address: RAW/IP 192.0.2.20 80\n");
+   check_ai ("www.example", "80", AF_INET6,
+             "address: STREAM/TCP 2001:db8::1 80\n"
+             "address: DGRAM/UDP 2001:db8::1 80\n"
+@@ -239,6 +263,10 @@ do_test (void)
+             "address: STREAM/TCP 2001:db8::2 80\n"
+             "address: DGRAM/UDP 2001:db8::2 80\n"
+             "address: RAW/IP 2001:db8::2 80\n");
++  check_ai (LONG_NAME, "80", AF_INET6,
++            "address: STREAM/TCP 2001:db8::4 80\n"
++            "address: DGRAM/UDP 2001:db8::4 80\n"
++            "address: RAW/IP 2001:db8::4 80\n");
+ 
+   check_h ("t.www.example", AF_INET,
+            "name: t.www.example\n"

@@ -1,0 +1,132 @@
+commit a7ff1da8239a5f0e1927db9d5310f53cfea97fc2
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Thu Apr 13 10:52:27 2017 +0200
+
+    resolv: Remove internal and unused definitions from <resolv.h>
+    
+    The RES_F_* constants are only used with the private _res._flags
+    member.  RES_EXHAUSTIVE is unused.  The removed function
+    declarations refer to functions not actually exported by glibc,
+    so they are unusable by applications.
+
+diff --git a/resolv/res_debug.c b/resolv/res_debug.c
+index 14557dd323f5f4b2..e23559bad3d92e71 100644
+--- a/resolv/res_debug.c
++++ b/resolv/res_debug.c
+@@ -115,6 +115,8 @@
+ 
+ extern const char *_res_sectioncodes[] attribute_hidden;
+ 
++static const char *p_section(int section, int opcode);
++
+ /*
+  * Print the current options.
+  */
+@@ -512,7 +514,7 @@ libresolv_hidden_def (p_type)
+ /*
+  * Return a string for the type.
+  */
+-const char *
++static const char *
+ p_section(int section, int opcode) {
+ 	const struct res_sym *symbols;
+ 
+diff --git a/resolv/res_query.c b/resolv/res_query.c
+index 57156d01ec3c9fc2..c3ebcbf6b50fcf4b 100644
+--- a/resolv/res_query.c
++++ b/resolv/res_query.c
+@@ -74,6 +74,7 @@
+ #include <errno.h>
+ #include <netdb.h>
+ #include <resolv.h>
++#include <resolv/resolv-internal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+diff --git a/resolv/res_send.c b/resolv/res_send.c
+index 93db5b9a615ffde7..77d59dcc4e3b8d23 100644
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -101,7 +101,7 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <netdb.h>
+-#include <resolv.h>
++#include <resolv/resolv-internal.h>
+ #include <signal.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/resolv/resolv-internal.h b/resolv/resolv-internal.h
+index 76fbe2f1a61b79bb..0d69ce10d33afcc5 100644
+--- a/resolv/resolv-internal.h
++++ b/resolv/resolv-internal.h
+@@ -22,6 +22,12 @@
+ #include <resolv.h>
+ #include <stdbool.h>
+ 
++/* Resolver flags.  Used for _flags in struct __res_state.  */
++#define RES_F_VC        0x00000001 /* Socket is TCP.  */
++#define RES_F_CONN      0x00000002 /* Socket is connected.  */
++#define RES_F_EDNS0ERR  0x00000004 /* EDNS0 caused errors.  */
++
++
+ /* Internal version of RES_USE_INET6 which does not trigger a
+    deprecation warning.  */
+ #define DEPRECATED_RES_USE_INET6 0x00002000
+diff --git a/resolv/resolv.h b/resolv/resolv.h
+index 7809e2eb194f48ef..9fef8e9f248c84e6 100644
+--- a/resolv/resolv.h
++++ b/resolv/resolv.h
+@@ -163,16 +163,6 @@ struct res_sym {
+ };
+ 
+ /*
+- * Resolver flags (used to be discrete per-module statics ints).
+- */
+-#define	RES_F_VC	0x00000001	/* socket is TCP */
+-#define	RES_F_CONN	0x00000002	/* socket is connected */
+-#define RES_F_EDNS0ERR	0x00000004	/* EDNS0 caused errors */
+-
+-/* res_findzonecut() options */
+-#define	RES_EXHAUSTIVE	0x00000001	/* always do all queries */
+-
+-/*
+  * Resolver options (keep these in synch with res_debug.c, please)
+  */
+ #define RES_INIT	0x00000001	/* address initialized */
+@@ -285,7 +275,6 @@ __END_DECLS
+ #define p_fqnname		__p_fqnname
+ #define p_option		__p_option
+ #define p_secstodate		__p_secstodate
+-#define p_section		__p_section
+ #define p_time			__p_time
+ #define p_type			__p_type
+ #define p_rcode			__p_rcode
+@@ -299,12 +288,10 @@ __END_DECLS
+ #define res_nclose		__res_nclose
+ #define res_ninit		__res_ninit
+ #define res_nmkquery		__res_nmkquery
+-#define res_npquery		__res_npquery
+ #define res_nquery		__res_nquery
+ #define res_nquerydomain	__res_nquerydomain
+ #define res_nsearch		__res_nsearch
+ #define res_nsend		__res_nsend
+-#define res_nisourserver	__res_nisourserver
+ #define res_ownok		__res_ownok
+ #define res_queriesmatch	__res_queriesmatch
+ #define res_randomid		__res_randomid
+@@ -356,14 +343,9 @@ int		res_queriesmatch (const unsigned char *,
+ 				  const unsigned char *,
+ 				  const unsigned char *,
+ 				  const unsigned char *) __THROW;
+-const char *	p_section (int __section, int __opcode) __THROW;
+ /* Things involving a resolver context. */
+ int		res_ninit (res_state) __THROW;
+-int		res_nisourserver (const res_state,
+-				  const struct sockaddr_in *) __THROW;
+ void		fp_resstat (const res_state, FILE *) __THROW;
+-void		res_npquery (const res_state, const unsigned char *, int,
+-			     FILE *) __THROW;
+ const char *	res_hostalias (const res_state, const char *, char *, size_t)
+      __THROW;
+ int		res_nquery (res_state, const char *, int, int,

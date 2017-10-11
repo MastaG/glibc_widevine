@@ -1,0 +1,2318 @@
+commit 352f4ff9a268b81ef5d4b2413f582565806e4790
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Fri Jun 30 21:10:23 2017 +0200
+
+    resolv: Introduce struct resolv_context [BZ #21668]
+    
+    struct resolv_context objects provide a temporary resolver context
+    which does not change during a name lookup operation.  Only when the
+    outmost context is created, the stub resolver configuration is
+    verified to be current (at present, only against previous res_init
+    calls).  Subsequent attempts to obtain the context will reuse the
+    result of the initial verification operation.
+    
+    struct resolv_context can also be extended in the future to store
+    data which needs to be deallocated during thread cancellation.
+
+diff --git a/include/resolv.h b/include/resolv.h
+index 2938506d75ee5d43..634f5525fe9d357a 100644
+--- a/include/resolv.h
++++ b/include/resolv.h
+@@ -24,7 +24,6 @@ extern __thread struct __res_state *__resp attribute_tls_model_ie;
+ 
+ /* Now define the internal interfaces.  */
+ extern int __res_vinit (res_state, int) attribute_hidden;
+-extern int __res_maybe_init (res_state, int);
+ extern void _sethtent (int);
+ extern struct hostent *_gethtent (void);
+ extern struct hostent *_gethtbyname (const char *__name);
+@@ -36,24 +35,11 @@ extern int res_ourserver_p (const res_state __statp,
+ 			    const struct sockaddr_in6 *__inp);
+ extern void __res_iclose (res_state statp, bool free_addr);
+ libc_hidden_proto (__res_ninit)
+-libc_hidden_proto (__res_maybe_init)
+ libc_hidden_proto (__res_nclose)
+ libc_hidden_proto (__res_iclose)
+ libc_hidden_proto (__res_randomid)
+ libc_hidden_proto (__res_state)
+ 
+-int __libc_res_nquery (res_state, const char *, int, int,
+-		       unsigned char *, int, unsigned char **,
+-		       unsigned char **, int *, int *, int *);
+-int __libc_res_nsearch (res_state, const char *, int, int,
+-			unsigned char *, int, unsigned char **,
+-			unsigned char **, int *, int *, int *);
+-int __libc_res_nsend (res_state, const unsigned char *, int,
+-		      const unsigned char *, int, unsigned char *,
+-		      int, unsigned char **, unsigned char **,
+-		      int *, int *, int *)
+-  attribute_hidden;
+-
+ libresolv_hidden_proto (_sethtent)
+ libresolv_hidden_proto (_gethtent)
+ libresolv_hidden_proto (_gethtbyaddr)
+@@ -75,17 +61,8 @@ libresolv_hidden_proto (__p_type)
+ libresolv_hidden_proto (__loc_ntoa)
+ libresolv_hidden_proto (__fp_nquery)
+ libresolv_hidden_proto (__fp_query)
+-libresolv_hidden_proto (__hostalias)
+-libresolv_hidden_proto (__res_nmkquery)
+-libresolv_hidden_proto (__libc_res_nquery)
+-libresolv_hidden_proto (__res_nquery)
+-libresolv_hidden_proto (__res_nquerydomain)
+-libresolv_hidden_proto (__res_hostalias)
+-libresolv_hidden_proto (__libc_res_nsearch)
+-libresolv_hidden_proto (__res_nsearch)
+ libresolv_hidden_proto (__res_nameinquery)
+ libresolv_hidden_proto (__res_queriesmatch)
+-libresolv_hidden_proto (__res_nsend)
+ libresolv_hidden_proto (__b64_ntop)
+ libresolv_hidden_proto (__dn_count_labels)
+ libresolv_hidden_proto (__p_secstodate)
+diff --git a/nscd/aicache.c b/nscd/aicache.c
+index 358945140e04b2a9..c9a1205d7958822f 100644
+--- a/nscd/aicache.c
++++ b/nscd/aicache.c
+@@ -27,6 +27,8 @@
+ #include <sys/mman.h>
+ #include <resolv/resolv-internal.h>
+ #include <scratch_buffer.h>
++#include <resolv/resolv_context.h>
++#include <resolv/res_use_inet6.h>
+ 
+ #include "dbg_log.h"
+ #include "nscd.h"
+@@ -101,17 +103,15 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
+     no_more = 0;
+   nip = hosts_database;
+ 
+-  /* Initialize configurations.  */
+-  if (__res_maybe_init (&_res, 0) == -1)
++  /* Initialize configurations.  If we are looking for both IPv4 and
++     IPv6 address we don't want the lookup functions to automatically
++     promote IPv4 addresses to IPv6 addresses.  Therefore, use the
++     _no_inet6 variant.  */
++  struct resolv_context *ctx = __resolv_context_get ();
++  bool enable_inet6 = __resolv_context_disable_inet6 (ctx);
++  if (ctx == NULL)
+     no_more = 1;
+ 
+-  /* If we are looking for both IPv4 and IPv6 address we don't want
+-     the lookup functions to automatically promote IPv4 addresses to
+-     IPv6 addresses.  Currently this is decided by setting the
+-     RES_USE_INET6 bit in _res.options.  */
+-  int old_res_options = _res.options;
+-  _res.options &= ~DEPRECATED_RES_USE_INET6;
+-
+   struct scratch_buffer tmpbuf6;
+   scratch_buffer_init (&tmpbuf6);
+   struct scratch_buffer tmpbuf4;
+@@ -541,7 +541,8 @@ next_nip:
+    }
+ 
+  out:
+-  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;
++  __resolv_context_enable_inet6 (ctx, enable_inet6);
++  __resolv_context_put (ctx);
+ 
+   if (dataset != NULL && !alloca_used)
+     {
+diff --git a/nss/digits_dots.c b/nss/digits_dots.c
+index 8dcbf9eb0aebf0f1..0c1fa97e3977a81e 100644
+--- a/nss/digits_dots.c
++++ b/nss/digits_dots.c
+@@ -23,6 +23,7 @@
+ #include <ctype.h>
+ #include <wctype.h>
+ #include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
+ #include <netdb.h>
+ #include <arpa/inet.h>
+ #include "nsswitch.h"
+@@ -38,11 +39,10 @@ __nss_hostname_digits_dots (const char *name, struct hostent *resbuf,
+ 			    size_t buflen, struct hostent **result,
+ 			    enum nss_status *status, int af, int *h_errnop)
+ {
+-  int save;
+-
+   /* We have to test for the use of IPv6 which can only be done by
+      examining `_res'.  */
+-  if (__res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
+     {
+       if (h_errnop)
+ 	*h_errnop = NETDB_INTERNAL;
+@@ -52,6 +52,21 @@ __nss_hostname_digits_dots (const char *name, struct hostent *resbuf,
+ 	*result = NULL;
+       return -1;
+     }
++  int ret = __nss_hostname_digits_dots_context
++    (ctx, name, resbuf, buffer, buffer_size, buflen,
++     result, status, af, h_errnop);
++  __resolv_context_put (ctx);
++  return ret;
++}
++
++int
++__nss_hostname_digits_dots_context (struct resolv_context *ctx,
++				    const char *name, struct hostent *resbuf,
++				    char **buffer, size_t *buffer_size,
++				    size_t buflen, struct hostent **result,
++				    enum nss_status *status, int af, int *h_errnop)
++{
++  int save;
+ 
+   /*
+    * disallow names consisting only of digits/dots, unless
+diff --git a/nss/getXXbyYY.c b/nss/getXXbyYY.c
+index d027b1425080c6f7..a439b816f70aa2e7 100644
+--- a/nss/getXXbyYY.c
++++ b/nss/getXXbyYY.c
+@@ -47,6 +47,11 @@
+ |*								   *|
+ \*******************************************************************/
+ 
++
++#ifdef HANDLE_DIGITS_DOTS
++# include <resolv/resolv_context.h>
++#endif
++
+ /* To make the real sources a bit prettier.  */
+ #define REENTRANT_NAME APPEND_R (FUNCTION_NAME)
+ #define APPEND_R(name) APPEND_R1 (name)
+@@ -93,6 +98,19 @@ FUNCTION_NAME (ADD_PARAMS)
+   int h_errno_tmp = 0;
+ #endif
+ 
++#ifdef HANDLE_DIGITS_DOTS
++  /* Wrap both __nss_hostname_digits_dots and the actual lookup
++     function call in the same context.  */
++  struct resolv_context *res_ctx = __resolv_context_get ();
++  if (res_ctx == NULL)
++    {
++# if NEED_H_ERRNO
++      __set_h_errno (NETDB_INTERNAL);
++# endif
++      return NULL;
++    }
++#endif
++
+   /* Get lock.  */
+   __libc_lock_lock (lock);
+ 
+@@ -105,9 +123,9 @@ FUNCTION_NAME (ADD_PARAMS)
+ #ifdef HANDLE_DIGITS_DOTS
+   if (buffer != NULL)
+     {
+-      if (__nss_hostname_digits_dots (name, &resbuf, &buffer,
+-				      &buffer_size, 0, &result, NULL, AF_VAL,
+-				      H_ERRNO_VAR_P))
++      if (__nss_hostname_digits_dots_context
++	  (res_ctx, name, &resbuf, &buffer, &buffer_size, 0, &result, NULL,
++	   AF_VAL, H_ERRNO_VAR_P))
+ 	goto done;
+     }
+ #endif
+@@ -143,6 +161,10 @@ done:
+   /* Release lock.  */
+   __libc_lock_unlock (lock);
+ 
++#ifdef HANDLE_DIGITS_DOTS
++  __resolv_context_put (res_ctx);
++#endif
++
+ #ifdef NEED_H_ERRNO
+   if (h_errno_tmp != 0)
+     __set_h_errno (h_errno_tmp);
+diff --git a/nss/getXXbyYY_r.c b/nss/getXXbyYY_r.c
+index 7cab825cf05503f6..6c547ea1ca6646c9 100644
+--- a/nss/getXXbyYY_r.c
++++ b/nss/getXXbyYY_r.c
+@@ -26,7 +26,7 @@
+ # include <nscd/nscd_proto.h>
+ #endif
+ #ifdef NEED__RES
+-# include <resolv.h>
++# include <resolv/resolv_context.h>
+ #endif
+ /*******************************************************************\
+ |* Here we assume several symbols to be defined:		   *|
+@@ -53,8 +53,7 @@
+ |* NEED_H_ERRNO  - an extra parameter will be passed to point to   *|
+ |*		   the global `h_errno' variable.		   *|
+ |*								   *|
+-|* NEED__RES     - the global _res variable might be used so we	   *|
+-|*		   will have to initialize it if necessary	   *|
++|* NEED__RES     - obtain a struct resolv_context resolver context *|
+ |*								   *|
+ |* PREPROCESS    - code run before anything else		   *|
+ |*								   *|
+@@ -213,6 +212,18 @@ INTERNAL (REENTRANT_NAME) (ADD_PARAMS, LOOKUP_TYPE *resbuf, char *buffer,
+   bool any_service = false;
+ #endif
+ 
++#ifdef NEED__RES
++  /* The HANDLE_DIGITS_DOTS case below already needs the resolver
++     configuration, so this has to happen early.  */
++  struct resolv_context *res_ctx = __resolv_context_get ();
++  if (res_ctx == NULL)
++    {
++      *h_errnop = NETDB_INTERNAL;
++      *result = NULL;
++      return errno;
++    }
++#endif /* NEED__RES */
++
+ #ifdef PREPROCESS
+   PREPROCESS;
+ #endif
+@@ -260,17 +271,6 @@ INTERNAL (REENTRANT_NAME) (ADD_PARAMS, LOOKUP_TYPE *resbuf, char *buffer,
+ 	}
+       else
+ 	{
+-#ifdef NEED__RES
+-	  /* The resolver code will really be used so we have to
+-	     initialize it.  */
+-	  if (__res_maybe_init (&_res, 0) == -1)
+-	    {
+-	      *h_errnop = NETDB_INTERNAL;
+-	      *result = NULL;
+-	      return errno;
+-	    }
+-#endif /* need _res */
+-
+ 	  void *tmp_ptr = fct.l;
+ #ifdef PTR_MANGLE
+ 	  PTR_MANGLE (tmp_ptr);
+@@ -399,6 +399,12 @@ done:
+   POSTPROCESS;
+ #endif
+ 
++#ifdef NEED__RES
++  /* This has to happen late because the POSTPROCESS stage above might
++     need the resolver context.  */
++  __resolv_context_put (res_ctx);
++#endif /* NEED__RES */
++
+   int res;
+   if (status == NSS_STATUS_SUCCESS || status == NSS_STATUS_NOTFOUND)
+     res = 0;
+diff --git a/nss/getnssent_r.c b/nss/getnssent_r.c
+index 5fdbf3be0061aae1..d85065b6cc05dbcb 100644
+--- a/nss/getnssent_r.c
++++ b/nss/getnssent_r.c
+@@ -18,6 +18,7 @@
+ #include <errno.h>
+ #include <netdb.h>
+ #include "nsswitch.h"
++#include <resolv/resolv_context.h>
+ 
+ /* Set up NIP to run through the services.  If ALL is zero, use NIP's
+    current location if it's not nil.  Return nonzero if there are no
+@@ -59,10 +60,15 @@ __nss_setent (const char *func_name, db_lookup_function lookup_fct,
+   } fct;
+   int no_more;
+ 
+-  if (res && __res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *res_ctx = NULL;
++  if (res)
+     {
+-      __set_h_errno (NETDB_INTERNAL);
+-      return;
++      res_ctx = __resolv_context_get ();
++      if (res_ctx == NULL)
++	{
++	  __set_h_errno (NETDB_INTERNAL);
++	  return;
++	}
+     }
+ 
+   /* Cycle through the services and run their `setXXent' functions until
+@@ -95,6 +101,8 @@ __nss_setent (const char *func_name, db_lookup_function lookup_fct,
+ 	*last_nip = *nip;
+     }
+ 
++  __resolv_context_put (res_ctx);
++
+   if (stayopen_tmp)
+     *stayopen_tmp = stayopen;
+ }
+@@ -112,10 +120,15 @@ __nss_endent (const char *func_name, db_lookup_function lookup_fct,
+   } fct;
+   int no_more;
+ 
+-  if (res && __res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *res_ctx = NULL;
++  if (res)
+     {
+-      __set_h_errno (NETDB_INTERNAL);
+-      return;
++      res_ctx = __resolv_context_get ();
++      if (res_ctx == NULL)
++	{
++	  __set_h_errno (NETDB_INTERNAL);
++	  return;
++	}
+     }
+ 
+   /* Cycle through all the services and run their endXXent functions.  */
+@@ -132,6 +145,8 @@ __nss_endent (const char *func_name, db_lookup_function lookup_fct,
+       no_more = __nss_next2 (nip, func_name, NULL, &fct.ptr, 0, 1);
+     }
+   *last_nip = *nip = NULL;
++
++  __resolv_context_put (res_ctx);
+ }
+ 
+ 
+@@ -152,11 +167,16 @@ __nss_getent_r (const char *getent_func_name,
+   int no_more;
+   enum nss_status status;
+ 
+-  if (res && __res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *res_ctx = NULL;
++  if (res)
+     {
+-      *h_errnop = NETDB_INTERNAL;
+-      *result = NULL;
+-      return errno;
++      res_ctx = __resolv_context_get ();
++      if (res_ctx == NULL)
++	{
++	  *h_errnop = NETDB_INTERNAL;
++	  *result = NULL;
++	  return errno;
++	}
+     }
+ 
+   /* Initialize status to return if no more functions are found.  */
+@@ -227,6 +247,8 @@ __nss_getent_r (const char *getent_func_name,
+       while (! no_more && status != NSS_STATUS_SUCCESS);
+     }
+ 
++  __resolv_context_put (res_ctx);
++
+   *result = status == NSS_STATUS_SUCCESS ? resbuf : NULL;
+   return (status == NSS_STATUS_SUCCESS ? 0
+ 	  : status != NSS_STATUS_TRYAGAIN ? ENOENT
+diff --git a/nss/nsswitch.h b/nss/nsswitch.h
+index f3e756b68448f6ea..bd3fbcb08250c61c 100644
+--- a/nss/nsswitch.h
++++ b/nss/nsswitch.h
+@@ -197,7 +197,17 @@ extern int __nss_getent_r (const char *getent_func_name,
+ extern void *__nss_getent (getent_r_function func,
+ 			   void **resbuf, char **buffer, size_t buflen,
+ 			   size_t *buffer_size, int *h_errnop);
++struct resolv_context;
+ struct hostent;
++extern int __nss_hostname_digits_dots_context (struct resolv_context *,
++					       const char *name,
++					       struct hostent *resbuf,
++					       char **buffer,
++					       size_t *buffer_size,
++					       size_t buflen,
++					       struct hostent **result,
++					       enum nss_status *status, int af,
++					       int *h_errnop) attribute_hidden;
+ extern int __nss_hostname_digits_dots (const char *name,
+ 				       struct hostent *resbuf, char **buffer,
+ 				       size_t *buffer_size, size_t buflen,
+diff --git a/resolv/Makefile b/resolv/Makefile
+index 79843d0d7ca92ffd..7f5e07d618297f60 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -28,7 +28,8 @@ headers	:= resolv.h \
+ 	   sys/bitypes.h
+ 
+ routines := herror inet_addr inet_ntop inet_pton nsap_addr res_init \
+-	    res_hconf res_libc res-state res_randomid res-close
++	    res_hconf res_libc res-state res_randomid res-close \
++	    resolv_context
+ 
+ tests = tst-aton tst-leaks tst-inet_ntop
+ xtests = tst-leaks2
+diff --git a/resolv/Versions b/resolv/Versions
+index f528ed51e898a61d..b05778d9654aa0f2 100644
+--- a/resolv/Versions
++++ b/resolv/Versions
+@@ -26,8 +26,12 @@ libc {
+ 
+     __h_errno; __resp;
+ 
+-    __res_maybe_init; __res_iclose;
++    __res_iclose;
+     __inet_pton_length;
++    __resolv_context_get;
++    __resolv_context_get_preinit;
++    __resolv_context_get_override;
++    __resolv_context_put;
+   }
+ }
+ 
+@@ -79,7 +83,9 @@ libresolv {
+     # Needed in libnss_dns.
+     __ns_name_unpack; __ns_name_ntop;
+     __ns_get16; __ns_get32;
+-    __libc_res_nquery; __libc_res_nsearch;
++    __res_context_query;
++    __res_context_search;
++    __res_context_hostalias;
+   }
+ }
+ 
+diff --git a/resolv/compat-gethnamaddr.c b/resolv/compat-gethnamaddr.c
+index 813c7d4e8508df34..259378b2be2d5f63 100644
+--- a/resolv/compat-gethnamaddr.c
++++ b/resolv/compat-gethnamaddr.c
+@@ -67,6 +67,7 @@
+ # include <stdio.h>
+ # include <netdb.h>
+ # include <resolv/resolv-internal.h>
++# include <resolv/resolv_context.h>
+ # include <ctype.h>
+ # include <errno.h>
+ # include <stdlib.h>
+@@ -84,6 +85,9 @@ static u_char host_addr[16];	/* IPv4 or IPv6 */
+ static FILE *hostf = NULL;
+ static int stayopen = 0;
+ 
++static struct hostent *res_gethostbyname2_context (struct resolv_context *,
++						   const char *name, int af);
++
+ static void map_v4v6_address (const char *src, char *dst) __THROW;
+ static void map_v4v6_hostent (struct hostent *hp, char **bp, int *len) __THROW;
+ 
+@@ -428,23 +432,31 @@ libresolv_hidden_proto (res_gethostbyname2)
+ struct hostent *
+ res_gethostbyname (const char *name)
+ {
+-	struct hostent *hp;
+-
+-	if (__res_maybe_init (&_res, 0) == -1) {
+-		__set_h_errno (NETDB_INTERNAL);
+-		return (NULL);
+-	}
+-	if (res_use_inet6 ()) {
+-		hp = res_gethostbyname2(name, AF_INET6);
+-		if (hp)
+-			return (hp);
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
++    {
++      __set_h_errno (NETDB_INTERNAL);
++      return NULL;
++    }
++
++  if (res_use_inet6 ())
++    {
++      struct hostent *hp = res_gethostbyname2_context (ctx, name, AF_INET6);
++      if (hp != NULL)
++	{
++	  __resolv_context_put (ctx);
++	  return hp;
+ 	}
+-	return (res_gethostbyname2(name, AF_INET));
++    }
++  struct hostent *hp = res_gethostbyname2_context (ctx, name, AF_INET);
++  __resolv_context_put (ctx);
++  return hp;
+ }
+ compat_symbol (libresolv, res_gethostbyname, res_gethostbyname, GLIBC_2_0);
+ 
+-struct hostent *
+-res_gethostbyname2 (const char *name, int af)
++static struct hostent *
++res_gethostbyname2_context (struct resolv_context *ctx,
++			    const char *name, int af)
+ {
+ 	union
+ 	{
+@@ -457,11 +469,6 @@ res_gethostbyname2 (const char *name, int af)
+ 	int n, size, type, len;
+ 	struct hostent *ret;
+ 
+-	if (__res_maybe_init (&_res, 0) == -1) {
+-		__set_h_errno (NETDB_INTERNAL);
+-		return (NULL);
+-	}
+-
+ 	switch (af) {
+ 	case AF_INET:
+ 		size = INADDRSZ;
+@@ -485,8 +492,10 @@ res_gethostbyname2 (const char *name, int af)
+ 	 * this is also done in res_query() since we are not the only
+ 	 * function that looks up host names.
+ 	 */
+-	if (!strchr(name, '.') && (cp = __hostalias(name)))
+-		name = cp;
++	char abuf[MAXDNAME];
++	if (strchr (name, '.') != NULL
++	    && (cp = __res_context_hostalias (ctx, name, abuf, sizeof (abuf))))
++	  name = cp;
+ 
+ 	/*
+ 	 * disallow names consisting only of digits/dots, unless
+@@ -558,8 +567,9 @@ res_gethostbyname2 (const char *name, int af)
+ 
+ 	buf.buf = origbuf = (querybuf *) alloca (1024);
+ 
+-	if ((n = __libc_res_nsearch(&_res, name, C_IN, type, buf.buf->buf, 1024,
+-				    &buf.ptr, NULL, NULL, NULL, NULL)) < 0) {
++	if ((n = __res_context_search
++	     (ctx, name, C_IN, type, buf.buf->buf, 1024,
++	      &buf.ptr, NULL, NULL, NULL, NULL)) < 0) {
+ 		if (buf.buf != origbuf)
+ 			free (buf.buf);
+ 		Dprintf("res_nsearch failed (%d)\n", n);
+@@ -572,11 +582,26 @@ res_gethostbyname2 (const char *name, int af)
+ 		free (buf.buf);
+ 	return ret;
+ }
++
++struct hostent *
++res_gethostbyname2 (const char *name, int af)
++{
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
++    {
++      __set_h_errno (NETDB_INTERNAL);
++      return NULL;
++    }
++  struct hostent *hp = res_gethostbyname2_context (ctx, name, AF_INET);
++  __resolv_context_put (ctx);
++  return hp;
++}
+ libresolv_hidden_def (res_gethostbyname2)
+ compat_symbol (libresolv, res_gethostbyname2, res_gethostbyname2, GLIBC_2_0);
+ 
+-struct hostent *
+-res_gethostbyaddr (const void *addr, socklen_t len, int af)
++static struct hostent *
++res_gethostbyaddr_context (struct resolv_context *ctx,
++			   const void *addr, socklen_t len, int af)
+ {
+ 	const u_char *uaddr = (const u_char *)addr;
+ 	static const u_char mapped[] = { 0,0, 0,0, 0,0, 0,0, 0,0, 0xff,0xff };
+@@ -592,10 +617,6 @@ res_gethostbyaddr (const void *addr, socklen_t len, int af)
+ 	struct hostent *hp;
+ 	char qbuf[MAXDNAME+1], *qp = NULL;
+ 
+-	if (__res_maybe_init (&_res, 0) == -1) {
+-		__set_h_errno (NETDB_INTERNAL);
+-		return (NULL);
+-	}
+ 	if (af == AF_INET6 && len == IN6ADDRSZ &&
+ 	    (!memcmp(uaddr, mapped, sizeof mapped) ||
+ 	     !memcmp(uaddr, tunnelled, sizeof tunnelled))) {
+@@ -645,8 +666,8 @@ res_gethostbyaddr (const void *addr, socklen_t len, int af)
+ 
+ 	buf.buf = orig_buf = (querybuf *) alloca (1024);
+ 
+-	n = __libc_res_nquery(&_res, qbuf, C_IN, T_PTR, buf.buf->buf, 1024,
+-			      &buf.ptr, NULL, NULL, NULL, NULL);
++	n = __res_context_query (ctx, qbuf, C_IN, T_PTR, buf.buf->buf, 1024,
++				 &buf.ptr, NULL, NULL, NULL, NULL);
+ 	if (n < 0) {
+ 		if (buf.buf != orig_buf)
+ 			free (buf.buf);
+@@ -673,6 +694,20 @@ res_gethostbyaddr (const void *addr, socklen_t len, int af)
+ 	__set_h_errno (NETDB_SUCCESS);
+ 	return (hp);
+ }
++
++struct hostent *
++res_gethostbyaddr (const void *addr, socklen_t len, int af)
++{
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
++    {
++      __set_h_errno (NETDB_INTERNAL);
++      return NULL;
++    }
++  struct hostent *hp = res_gethostbyaddr_context (ctx, addr, len, af);
++  __resolv_context_put (ctx);
++  return hp;
++}
+ compat_symbol (libresolv, res_gethostbyaddr, res_gethostbyaddr, GLIBC_2_0);
+ 
+ void
+diff --git a/resolv/nss_dns/dns-canon.c b/resolv/nss_dns/dns-canon.c
+index 4276eb65424da5fe..7a5c39dc20f6ebb8 100644
+--- a/resolv/nss_dns/dns-canon.c
++++ b/resolv/nss_dns/dns-canon.c
+@@ -23,7 +23,8 @@
+ #include <stdint.h>
+ #include <arpa/nameser.h>
+ #include <nsswitch.h>
+-
++#include <resolv/resolv_context.h>
++#include <resolv/resolv-internal.h>
+ 
+ #if PACKETSZ > 65536
+ # define MAXPACKET	PACKETSZ
+@@ -58,11 +59,19 @@ _nss_dns_getcanonname_r (const char *name, char *buffer, size_t buflen,
+   } ansp = { .ptr = buf };
+   enum nss_status status = NSS_STATUS_UNAVAIL;
+ 
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
++    {
++      *errnop = errno;
++      *h_errnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
++
+   for (int i = 0; i < nqtypes; ++i)
+     {
+-      int r = __libc_res_nquery (&_res, name, ns_c_in, qtypes[i],
+-				 buf, sizeof (buf), &ansp.ptr, NULL, NULL,
+-				 NULL, NULL);
++      int r = __res_context_query (ctx, name, ns_c_in, qtypes[i],
++				   buf, sizeof (buf), &ansp.ptr, NULL, NULL,
++				   NULL, NULL);
+       if (r > 0)
+ 	{
+ 	  /* We need to decode the response.  Just one question record.
+@@ -168,6 +177,6 @@ _nss_dns_getcanonname_r (const char *name, char *buffer, size_t buflen,
+ 
+   if (ansp.ptr != buf)
+     free (ansp.ptr);
+-
++  __resolv_context_put (ctx);
+   return status;
+ }
+diff --git a/resolv/nss_dns/dns-host.c b/resolv/nss_dns/dns-host.c
+index 206924de8603b4dd..9d7ceb1691987b27 100644
+--- a/resolv/nss_dns/dns-host.c
++++ b/resolv/nss_dns/dns-host.c
+@@ -84,6 +84,7 @@
+ 
+ /* Get implementeation for some internal functions.  */
+ #include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
+ #include <resolv/mapv4v6addr.h>
+ #include <resolv/mapv4v6hostent.h>
+ 
+@@ -121,13 +122,13 @@ static enum nss_status gaih_getanswer (const querybuf *answer1, int anslen1,
+ 				       int *errnop, int *h_errnop,
+ 				       int32_t *ttlp);
+ 
+-extern enum nss_status _nss_dns_gethostbyname3_r (const char *name, int af,
+-						  struct hostent *result,
+-						  char *buffer, size_t buflen,
+-						  int *errnop, int *h_errnop,
+-						  int32_t *ttlp,
+-						  char **canonp);
+-hidden_proto (_nss_dns_gethostbyname3_r)
++static enum nss_status gethostbyname3_context (struct resolv_context *ctx,
++					       const char *name, int af,
++					       struct hostent *result,
++					       char *buffer, size_t buflen,
++					       int *errnop, int *h_errnop,
++					       int32_t *ttlp,
++					       char **canonp);
+ 
+ /* Return the expected RDATA length for an address record type (A or
+    AAAA).  */
+@@ -145,11 +146,31 @@ rrtype_to_rdata_length (int type)
+     }
+ }
+ 
++
+ enum nss_status
+ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
+ 			   char *buffer, size_t buflen, int *errnop,
+ 			   int *h_errnop, int32_t *ttlp, char **canonp)
+ {
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
++    {
++      *errnop = errno;
++      *h_errnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
++  enum nss_status status = gethostbyname3_context
++    (ctx, name, af, result, buffer, buflen, errnop, h_errnop, ttlp, canonp);
++  __resolv_context_put (ctx);
++  return status;
++}
++
++static enum nss_status
++gethostbyname3_context (struct resolv_context *ctx,
++			const char *name, int af, struct hostent *result,
++			char *buffer, size_t buflen, int *errnop,
++			int *h_errnop, int32_t *ttlp, char **canonp)
++{
+   union
+   {
+     querybuf *buf;
+@@ -163,13 +184,6 @@ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
+   int olderr = errno;
+   enum nss_status status;
+ 
+-  if (__res_maybe_init (&_res, 0) == -1)
+-    {
+-      *errnop = errno;
+-      *h_errnop = NETDB_INTERNAL;
+-      return NSS_STATUS_UNAVAIL;
+-    }
+-
+   switch (af) {
+   case AF_INET:
+     size = INADDRSZ;
+@@ -194,13 +208,13 @@ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
+    * function that looks up host names.
+    */
+   if (strchr (name, '.') == NULL
+-      && (cp = res_hostalias (&_res, name, tmp, sizeof (tmp))) != NULL)
++      && (cp = __res_context_hostalias (ctx, name, tmp, sizeof (tmp))) != NULL)
+     name = cp;
+ 
+   host_buffer.buf = orig_host_buffer = (querybuf *) alloca (1024);
+ 
+-  n = __libc_res_nsearch (&_res, name, C_IN, type, host_buffer.buf->buf,
+-			  1024, &host_buffer.ptr, NULL, NULL, NULL, NULL);
++  n = __res_context_search (ctx, name, C_IN, type, host_buffer.buf->buf,
++			    1024, &host_buffer.ptr, NULL, NULL, NULL, NULL);
+   if (n < 0)
+     {
+       switch (errno)
+@@ -232,10 +246,10 @@ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
+ 	 by having the RES_USE_INET6 bit in _res.options set, we try
+ 	 another lookup.  */
+       if (af == AF_INET6 && res_use_inet6 ())
+-	n = __libc_res_nsearch (&_res, name, C_IN, T_A, host_buffer.buf->buf,
+-				host_buffer.buf != orig_host_buffer
+-				? MAXPACKET : 1024, &host_buffer.ptr,
+-				NULL, NULL, NULL, NULL);
++	n = __res_context_search (ctx, name, C_IN, T_A, host_buffer.buf->buf,
++				  host_buffer.buf != orig_host_buffer
++				  ? MAXPACKET : 1024, &host_buffer.ptr,
++				  NULL, NULL, NULL, NULL);
+ 
+       if (n < 0)
+ 	{
+@@ -256,8 +270,6 @@ _nss_dns_gethostbyname3_r (const char *name, int af, struct hostent *result,
+     free (host_buffer.buf);
+   return status;
+ }
+-hidden_def (_nss_dns_gethostbyname3_r)
+-
+ 
+ enum nss_status
+ _nss_dns_gethostbyname2_r (const char *name, int af, struct hostent *result,
+@@ -274,15 +286,21 @@ _nss_dns_gethostbyname_r (const char *name, struct hostent *result,
+ 			  char *buffer, size_t buflen, int *errnop,
+ 			  int *h_errnop)
+ {
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
++    {
++      *errnop = errno;
++      *h_errnop = NETDB_INTERNAL;
++      return NSS_STATUS_UNAVAIL;
++    }
+   enum nss_status status = NSS_STATUS_NOTFOUND;
+-
+   if (res_use_inet6 ())
+-    status = _nss_dns_gethostbyname3_r (name, AF_INET6, result, buffer,
+-					buflen, errnop, h_errnop, NULL, NULL);
++    status = gethostbyname3_context (ctx, name, AF_INET6, result, buffer,
++				     buflen, errnop, h_errnop, NULL, NULL);
+   if (status == NSS_STATUS_NOTFOUND)
+-    status = _nss_dns_gethostbyname3_r (name, AF_INET, result, buffer,
+-					buflen, errnop, h_errnop, NULL, NULL);
+-
++    status = gethostbyname3_context (ctx, name, AF_INET, result, buffer,
++				     buflen, errnop, h_errnop, NULL, NULL);
++  __resolv_context_put (ctx);
+   return status;
+ }
+ 
+@@ -292,7 +310,8 @@ _nss_dns_gethostbyname4_r (const char *name, struct gaih_addrtuple **pat,
+ 			   char *buffer, size_t buflen, int *errnop,
+ 			   int *herrnop, int32_t *ttlp)
+ {
+-  if (__res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
+     {
+       *errnop = errno;
+       *herrnop = NETDB_INTERNAL;
+@@ -307,7 +326,7 @@ _nss_dns_gethostbyname4_r (const char *name, struct gaih_addrtuple **pat,
+   if (strchr (name, '.') == NULL)
+     {
+       char *tmp = alloca (NS_MAXDNAME);
+-      const char *cp = res_hostalias (&_res, name, tmp, NS_MAXDNAME);
++      const char *cp = __res_context_hostalias (ctx, name, tmp, NS_MAXDNAME);
+       if (cp != NULL)
+ 	name = cp;
+     }
+@@ -326,9 +345,9 @@ _nss_dns_gethostbyname4_r (const char *name, struct gaih_addrtuple **pat,
+ 
+   int olderr = errno;
+   enum nss_status status;
+-  int n = __libc_res_nsearch (&_res, name, C_IN, T_QUERY_A_AND_AAAA,
+-			      host_buffer.buf->buf, 2048, &host_buffer.ptr,
+-			      &ans2p, &nans2p, &resplen2, &ans2p_malloced);
++  int n = __res_context_search (ctx, name, C_IN, T_QUERY_A_AND_AAAA,
++				host_buffer.buf->buf, 2048, &host_buffer.ptr,
++				&ans2p, &nans2p, &resplen2, &ans2p_malloced);
+   if (n >= 0)
+     {
+       status = gaih_getanswer (host_buffer.buf, n, (const querybuf *) ans2p,
+@@ -371,6 +390,7 @@ _nss_dns_gethostbyname4_r (const char *name, struct gaih_addrtuple **pat,
+   if (host_buffer.buf != orig_host_buffer)
+     free (host_buffer.buf);
+ 
++  __resolv_context_put (ctx);
+   return status;
+ }
+ 
+@@ -423,7 +443,8 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+ 
+  host_data = (struct host_data *) buffer;
+ 
+-  if (__res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
+     {
+       *errnop = errno;
+       *h_errnop = NETDB_INTERNAL;
+@@ -453,12 +474,14 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+     default:
+       *errnop = EAFNOSUPPORT;
+       *h_errnop = NETDB_INTERNAL;
++      __resolv_context_put (ctx);
+       return NSS_STATUS_UNAVAIL;
+     }
+   if (size > len)
+     {
+       *errnop = EAFNOSUPPORT;
+       *h_errnop = NETDB_INTERNAL;
++      __resolv_context_put (ctx);
+       return NSS_STATUS_UNAVAIL;
+     }
+ 
+@@ -487,14 +510,15 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+       break;
+     }
+ 
+-  n = __libc_res_nquery (&_res, qbuf, C_IN, T_PTR, host_buffer.buf->buf,
+-			 1024, &host_buffer.ptr, NULL, NULL, NULL, NULL);
++  n = __res_context_query (ctx, qbuf, C_IN, T_PTR, host_buffer.buf->buf,
++			   1024, &host_buffer.ptr, NULL, NULL, NULL, NULL);
+   if (n < 0)
+     {
+       *h_errnop = h_errno;
+       __set_errno (olderr);
+       if (host_buffer.buf != orig_host_buffer)
+ 	free (host_buffer.buf);
++      __resolv_context_put (ctx);
+       return errno == ECONNREFUSED ? NSS_STATUS_UNAVAIL : NSS_STATUS_NOTFOUND;
+     }
+ 
+@@ -503,7 +527,10 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+   if (host_buffer.buf != orig_host_buffer)
+     free (host_buffer.buf);
+   if (status != NSS_STATUS_SUCCESS)
+-    return status;
++    {
++      __resolv_context_put (ctx);
++      return status;
++    }
+ 
+   result->h_addrtype = af;
+   result->h_length = len;
+@@ -511,6 +538,7 @@ _nss_dns_gethostbyaddr2_r (const void *addr, socklen_t len, int af,
+   host_data->h_addr_ptrs[0] = (char *) host_data->host_addr;
+   host_data->h_addr_ptrs[1] = NULL;
+   *h_errnop = NETDB_SUCCESS;
++  __resolv_context_put (ctx);
+   return NSS_STATUS_SUCCESS;
+ }
+ hidden_def (_nss_dns_gethostbyaddr2_r)
+diff --git a/resolv/nss_dns/dns-network.c b/resolv/nss_dns/dns-network.c
+index dc1599b47122fea2..f190eb2225d39d16 100644
+--- a/resolv/nss_dns/dns-network.c
++++ b/resolv/nss_dns/dns-network.c
+@@ -67,6 +67,8 @@
+ #include "nsswitch.h"
+ #include <arpa/inet.h>
+ #include <arpa/nameser.h>
++#include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
+ 
+ /* Maximum number of aliases we allow.  */
+ #define MAX_NR_ALIASES	48
+@@ -115,7 +117,8 @@ _nss_dns_getnetbyname_r (const char *name, struct netent *result,
+   int anslen;
+   enum nss_status status;
+ 
+-  if (__res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
+     {
+       *errnop = errno;
+       *herrnop = NETDB_INTERNAL;
+@@ -124,14 +127,16 @@ _nss_dns_getnetbyname_r (const char *name, struct netent *result,
+ 
+   net_buffer.buf = orig_net_buffer = (querybuf *) alloca (1024);
+ 
+-  anslen = __libc_res_nsearch (&_res, name, C_IN, T_PTR, net_buffer.buf->buf,
+-			       1024, &net_buffer.ptr, NULL, NULL, NULL, NULL);
++  anslen = __res_context_search
++    (ctx, name, C_IN, T_PTR, net_buffer.buf->buf,
++     1024, &net_buffer.ptr, NULL, NULL, NULL, NULL);
+   if (anslen < 0)
+     {
+       /* Nothing found.  */
+       *errnop = errno;
+       if (net_buffer.buf != orig_net_buffer)
+ 	free (net_buffer.buf);
++      __resolv_context_put (ctx);
+       return (errno == ECONNREFUSED
+ 	      || errno == EPFNOSUPPORT
+ 	      || errno == EAFNOSUPPORT)
+@@ -142,6 +147,7 @@ _nss_dns_getnetbyname_r (const char *name, struct netent *result,
+ 			errnop, herrnop, BYNAME);
+   if (net_buffer.buf != orig_net_buffer)
+     free (net_buffer.buf);
++  __resolv_context_put (ctx);
+   return status;
+ }
+ 
+@@ -169,7 +175,8 @@ _nss_dns_getnetbyaddr_r (uint32_t net, int type, struct netent *result,
+   if (type != AF_INET)
+     return NSS_STATUS_UNAVAIL;
+ 
+-  if (__res_maybe_init (&_res, 0) == -1)
++  struct resolv_context *ctx = __resolv_context_get ();
++  if (ctx == NULL)
+     {
+       *errnop = errno;
+       *herrnop = NETDB_INTERNAL;
+@@ -204,8 +211,8 @@ _nss_dns_getnetbyaddr_r (uint32_t net, int type, struct netent *result,
+ 
+   net_buffer.buf = orig_net_buffer = (querybuf *) alloca (1024);
+ 
+-  anslen = __libc_res_nquery (&_res, qbuf, C_IN, T_PTR, net_buffer.buf->buf,
+-			      1024, &net_buffer.ptr, NULL, NULL, NULL, NULL);
++  anslen = __res_context_query (ctx, qbuf, C_IN, T_PTR, net_buffer.buf->buf,
++				1024, &net_buffer.ptr, NULL, NULL, NULL, NULL);
+   if (anslen < 0)
+     {
+       /* Nothing found.  */
+@@ -213,6 +220,7 @@ _nss_dns_getnetbyaddr_r (uint32_t net, int type, struct netent *result,
+       __set_errno (olderr);
+       if (net_buffer.buf != orig_net_buffer)
+ 	free (net_buffer.buf);
++      __resolv_context_put (ctx);
+       return (err == ECONNREFUSED
+ 	      || err == EPFNOSUPPORT
+ 	      || err == EAFNOSUPPORT)
+@@ -233,6 +241,7 @@ _nss_dns_getnetbyaddr_r (uint32_t net, int type, struct netent *result,
+       result->n_net = u_net;
+     }
+ 
++  __resolv_context_put (ctx);
+   return status;
+ }
+ 
+diff --git a/resolv/res-close.c b/resolv/res-close.c
+index 73f18d15256c6f87..97da73c99cfd0e12 100644
+--- a/resolv/res-close.c
++++ b/resolv/res-close.c
+@@ -83,6 +83,7 @@
+  */
+ 
+ #include <resolv-internal.h>
++#include <resolv_context.h>
+ #include <not-cancel.h>
+ 
+ /* Close all open sockets.  If FREE_ADDR is true, deallocate any
+@@ -124,6 +125,8 @@ libc_hidden_def (__res_nclose)
+ static void __attribute__ ((section ("__libc_thread_freeres_fn")))
+ res_thread_freeres (void)
+ {
++  __resolv_context_freeres ();
++
+   if (_res.nscount == 0)
+     /* Never called res_ninit.  */
+     return;
+diff --git a/resolv/res_libc.c b/resolv/res_libc.c
+index 4b979f39a7c8e8ba..b90816472ab09dc2 100644
+--- a/resolv/res_libc.c
++++ b/resolv/res_libc.c
+@@ -98,37 +98,6 @@ res_init (void)
+ 
+   return __res_vinit (&_res, 1);
+ }
+-
+-/* Initialize *RESP if RES_INIT is not yet set in RESP->options, or if
+-   res_init in some other thread requested re-initializing.  */
+-int
+-__res_maybe_init (res_state resp, int preinit)
+-{
+-  if (resp->options & RES_INIT)
+-    {
+-      if (__res_initstamp != resp->_u._ext.initstamp)
+-        {
+-          if (resp->nscount > 0)
+-            __res_iclose (resp, true);
+-          return __res_vinit (resp, 1);
+-        }
+-      return 0;
+-    }
+-  else if (preinit)
+-    {
+-      if (!resp->retrans)
+-        resp->retrans = RES_TIMEOUT;
+-      if (!resp->retry)
+-        resp->retry = RES_DFLRETRY;
+-      resp->options = RES_DEFAULT;
+-      if (!resp->id)
+-        resp->id = res_randomid ();
+-      return __res_vinit (resp, 1);
+-    }
+-  else
+-    return __res_ninit (resp);
+-}
+-libc_hidden_def (__res_maybe_init)
+ 
+ /* This needs to be after the use of _res in res_init, above.  */
+ #undef _res
+diff --git a/resolv/res_mkquery.c b/resolv/res_mkquery.c
+index 9afb410980e47ca7..59fc5ab28c0faa66 100644
+--- a/resolv/res_mkquery.c
++++ b/resolv/res_mkquery.c
+@@ -88,6 +88,7 @@
+ #include <arpa/nameser.h>
+ #include <netdb.h>
+ #include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
+ #include <string.h>
+ #include <sys/time.h>
+ #include <shlib-compat.h>
+@@ -98,22 +99,10 @@
+ # define RANDOM_BITS(Var) { uint64_t v64; HP_TIMING_NOW (v64); Var = v64; }
+ #endif
+ 
+-/* Form all types of queries.  Returns the size of the result or -1 on
+-   error.
+-
+-   STATP points to an initialized resolver state.  OP is the opcode of
+-   the query.  DNAME is the domain.  CLASS and TYPE are the DNS query
+-   class and type.  DATA can be NULL; otherwise, it is a pointer to a
+-   domain name which is included in the generated packet (if op ==
+-   NS_NOTIFY_OP).  BUF must point to the out buffer of BUFLEN bytes.
+-
+-   DATALEN and NEWRR_IN are currently ignored.  */
+ int
+-res_nmkquery (res_state statp, int op, const char *dname,
+-              int class, int type,
+-              const unsigned char *data, int datalen,
+-              const unsigned char *newrr_in,
+-              unsigned char *buf, int buflen)
++__res_context_mkquery (struct resolv_context *ctx, int op, const char *dname,
++                       int class, int type, const unsigned char *data,
++                       unsigned char *buf, int buflen)
+ {
+   HEADER *hp;
+   unsigned char *cp;
+@@ -132,22 +121,17 @@ res_nmkquery (res_state statp, int op, const char *dname,
+      by one after the initial randomization which still predictable if
+      the application does multiple requests.  */
+   int randombits;
+-  do
+-    {
+ #ifdef RANDOM_BITS
+-      RANDOM_BITS (randombits);
++  RANDOM_BITS (randombits);
+ #else
+-      struct timeval tv;
+-      __gettimeofday (&tv, NULL);
+-      randombits = (tv.tv_sec << 8) ^ tv.tv_usec;
++  struct timeval tv;
++  __gettimeofday (&tv, NULL);
++  randombits = (tv.tv_sec << 8) ^ tv.tv_usec;
+ #endif
+-    }
+-  while ((randombits & 0xffff) == 0);
+ 
+-  statp->id = (statp->id + randombits) & 0xffff;
+-  hp->id = statp->id;
++  hp->id = randombits;
+   hp->opcode = op;
+-  hp->rd = (statp->options & RES_RECURSE) != 0;
++  hp->rd = (ctx->resp->options & RES_RECURSE) != 0;
+   hp->rcode = NOERROR;
+   cp = buf + HFIXEDSZ;
+   buflen -= HFIXEDSZ;
+@@ -201,7 +185,45 @@ res_nmkquery (res_state statp, int op, const char *dname,
+     }
+   return cp - buf;
+ }
+-libresolv_hidden_def (res_nmkquery)
++
++/* Common part of res_nmkquery and res_mkquery.  */
++static int
++context_mkquery_common (struct resolv_context *ctx,
++                        int op, const char *dname, int class, int type,
++                        const unsigned char *data,
++                        unsigned char *buf, int buflen)
++{
++  if (ctx == NULL)
++    return -1;
++  int result = __res_context_mkquery
++    (ctx, op, dname, class, type, data, buf, buflen);
++  if (result >= 2)
++    memcpy (&ctx->resp->id, buf, 2);
++  __resolv_context_put (ctx);
++  return result;
++}
++
++/* Form all types of queries.  Returns the size of the result or -1 on
++   error.
++
++   STATP points to an initialized resolver state.  OP is the opcode of
++   the query.  DNAME is the domain.  CLASS and TYPE are the DNS query
++   class and type.  DATA can be NULL; otherwise, it is a pointer to a
++   domain name which is included in the generated packet (if op ==
++   NS_NOTIFY_OP).  BUF must point to the out buffer of BUFLEN bytes.
++
++   DATALEN and NEWRR_IN are currently ignored.  */
++int
++res_nmkquery (res_state statp, int op, const char *dname,
++              int class, int type,
++              const unsigned char *data, int datalen,
++              const unsigned char *newrr_in,
++              unsigned char *buf, int buflen)
++{
++  return context_mkquery_common
++    (__resolv_context_get_override (statp),
++     op, dname, class, type, data, buf, buflen);
++}
+ 
+ int
+ res_mkquery (int op, const char *dname, int class, int type,
+@@ -209,13 +231,9 @@ res_mkquery (int op, const char *dname, int class, int type,
+              const unsigned char *newrr_in,
+              unsigned char *buf, int buflen)
+ {
+-  if (__res_maybe_init (&_res, 1) == -1)
+-    {
+-      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
+-      return -1;
+-    }
+-  return res_nmkquery (&_res, op, dname, class, type,
+-                       data, datalen, newrr_in, buf, buflen);
++  return context_mkquery_common
++    (__resolv_context_get_preinit (),
++     op, dname, class, type, data, buf, buflen);
+ }
+ 
+ /* Create an OPT resource record.  Return the length of the final
+@@ -227,8 +245,8 @@ res_mkquery (int op, const char *dname, int class, int type,
+    pointers to must be BUFLEN bytes long.  ANSLEN is the advertised
+    EDNS buffer size (to be included in the OPT resource record).  */
+ int
+-__res_nopt (res_state statp, int n0, unsigned char *buf, int buflen,
+-            int anslen)
++__res_nopt (struct resolv_context *ctx,
++            int n0, unsigned char *buf, int buflen, int anslen)
+ {
+   uint16_t flags = 0;
+   HEADER *hp = (HEADER *) buf;
+@@ -269,7 +287,7 @@ __res_nopt (res_state statp, int n0, unsigned char *buf, int buflen,
+   *cp++ = NOERROR;              /* Extended RCODE.  */
+   *cp++ = 0;                    /* EDNS version.  */
+ 
+-  if (statp->options & RES_USE_DNSSEC)
++  if (ctx->resp->options & RES_USE_DNSSEC)
+     flags |= NS_OPT_DNSSEC_OK;
+ 
+   NS_PUT16 (flags, cp);
+diff --git a/resolv/res_query.c b/resolv/res_query.c
+index 760bf324e817c79e..33249e36f51bcf9a 100644
+--- a/resolv/res_query.c
++++ b/resolv/res_query.c
+@@ -75,6 +75,7 @@
+ #include <netdb.h>
+ #include <resolv.h>
+ #include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -89,33 +90,28 @@
+ #define QUERYSIZE	(HFIXEDSZ + QFIXEDSZ + MAXCDNAME + 1)
+ 
+ static int
+-__libc_res_nquerydomain(res_state statp, const char *name, const char *domain,
+-			int class, int type, u_char *answer, int anslen,
+-			u_char **answerp, u_char **answerp2, int *nanswerp2,
+-			int *resplen2, int *answerp2_malloced);
+-
+-/*
+- * Formulate a normal query, send, and await answer.
+- * Returned answer is placed in supplied buffer "answer".
+- * Perform preliminary check of answer, returning success only
+- * if no error is indicated and the answer count is nonzero.
+- * Return the size of the response on success, -1 on error.
+- * Error number is left in H_ERRNO.
+- *
+- * Caller must parse answer and determine whether it answers the question.
+- */
++__res_context_querydomain (struct resolv_context *,
++			   const char *name, const char *domain,
++			   int class, int type, unsigned char *answer, int anslen,
++			   unsigned char **answerp, unsigned char **answerp2, int *nanswerp2,
++			   int *resplen2, int *answerp2_malloced);
++
++/* Formulate a normal query, send, and await answer.  Returned answer
++   is placed in supplied buffer ANSWER.  Perform preliminary check of
++   answer, returning success only if no error is indicated and the
++   answer count is nonzero.  Return the size of the response on
++   success, -1 on error.  Error number is left in h_errno.
++
++   Caller must parse answer and determine whether it answers the
++   question.  */
+ int
+-__libc_res_nquery(res_state statp,
+-		  const char *name,	/* domain name */
+-		  int class, int type,	/* class and type of query */
+-		  u_char *answer,	/* buffer to put answer */
+-		  int anslen,		/* size of answer buffer */
+-		  u_char **answerp,	/* if buffer needs to be enlarged */
+-		  u_char **answerp2,
+-		  int *nanswerp2,
+-		  int *resplen2,
+-		  int *answerp2_malloced)
++__res_context_query (struct resolv_context *ctx, const char *name,
++		     int class, int type,
++		     unsigned char *answer, int anslen,
++		     unsigned char **answerp, unsigned char **answerp2,
++		     int *nanswerp2, int *resplen2, int *answerp2_malloced)
+ {
++	struct __res_state *statp = ctx->resp;
+ 	HEADER *hp = (HEADER *) answer;
+ 	HEADER *hp2;
+ 	int n, use_malloc = 0;
+@@ -132,15 +128,15 @@ __libc_res_nquery(res_state statp,
+ 
+ 	if (type == T_QUERY_A_AND_AAAA)
+ 	  {
+-	    n = res_nmkquery(statp, QUERY, name, class, T_A, NULL, 0, NULL,
+-			     query1, bufsize);
++	    n = __res_context_mkquery (ctx, QUERY, name, class, T_A, NULL,
++				       query1, bufsize);
+ 	    if (n > 0)
+ 	      {
+ 		if ((statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
+ 		  {
+ 		    /* Use RESOLV_EDNS_BUFFER_SIZE because the receive
+ 		       buffer can be reallocated.  */
+-		    n = __res_nopt (statp, n, query1, bufsize,
++		    n = __res_nopt (ctx, n, query1, bufsize,
+ 				    RESOLV_EDNS_BUFFER_SIZE);
+ 		    if (n < 0)
+ 		      goto unspec_nomem;
+@@ -157,13 +153,13 @@ __libc_res_nquery(res_state statp,
+ 		  }
+ 		int nused = n + npad;
+ 		query2 = buf + nused;
+-		n = res_nmkquery(statp, QUERY, name, class, T_AAAA, NULL, 0,
+-				 NULL, query2, bufsize - nused);
++		n = __res_context_mkquery (ctx, QUERY, name, class, T_AAAA,
++					   NULL, query2, bufsize - nused);
+ 		if (n > 0
+ 		    && (statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
+ 		  /* Use RESOLV_EDNS_BUFFER_SIZE because the receive
+ 		     buffer can be reallocated.  */
+-		  n = __res_nopt (statp, n, query2, bufsize,
++		  n = __res_nopt (ctx, n, query2, bufsize,
+ 				  RESOLV_EDNS_BUFFER_SIZE);
+ 		nquery2 = n;
+ 	      }
+@@ -172,8 +168,8 @@ __libc_res_nquery(res_state statp,
+ 	  }
+ 	else
+ 	  {
+-	    n = res_nmkquery(statp, QUERY, name, class, type, NULL, 0, NULL,
+-			     query1, bufsize);
++	    n = __res_context_mkquery (ctx, QUERY, name, class, type, NULL,
++				       query1, bufsize);
+ 
+ 	    if (n > 0
+ 		&& (statp->options & (RES_USE_EDNS0|RES_USE_DNSSEC)) != 0)
+@@ -185,7 +181,7 @@ __libc_res_nquery(res_state statp,
+ 		  advertise = anslen;
+ 		else
+ 		  advertise = RESOLV_EDNS_BUFFER_SIZE;
+-		n = __res_nopt (statp, n, query1, bufsize, advertise);
++		n = __res_nopt (ctx, n, query1, bufsize, advertise);
+ 	      }
+ 
+ 	    nquery1 = n;
+@@ -209,9 +205,9 @@ __libc_res_nquery(res_state statp,
+ 		return (n);
+ 	}
+ 	assert (answerp == NULL || (void *) *answerp == (void *) answer);
+-	n = __libc_res_nsend(statp, query1, nquery1, query2, nquery2, answer,
+-			     anslen, answerp, answerp2, nanswerp2, resplen2,
+-			     answerp2_malloced);
++	n = __res_context_send (ctx, query1, nquery1, query2, nquery2, answer,
++				anslen, answerp, answerp2, nanswerp2, resplen2,
++				answerp2_malloced);
+ 	if (use_malloc)
+ 		free (buf);
+ 	if (n < 0) {
+@@ -220,7 +216,7 @@ __libc_res_nquery(res_state statp,
+ 	}
+ 
+ 	if (answerp != NULL)
+-	  /* __libc_res_nsend might have reallocated the buffer.  */
++	  /* __res_context_send might have reallocated the buffer.  */
+ 	  hp = (HEADER *) *answerp;
+ 
+ 	/* We simplify the following tests by assigning HP to HP2 or
+@@ -280,7 +276,24 @@ __libc_res_nquery(res_state statp,
+  success:
+ 	return (n);
+ }
+-libresolv_hidden_def (__libc_res_nquery)
++libresolv_hidden_def (__res_context_query)
++
++/* Common part of res_nquery and res_query.  */
++static int
++context_query_common (struct resolv_context *ctx,
++		      const char *name, int class, int type,
++		      unsigned char *answer, int anslen)
++{
++  if (ctx == NULL)
++    {
++      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
++      return -1;
++    }
++  int result = __res_context_query (ctx, name, class, type, answer, anslen,
++				    NULL, NULL, NULL, NULL, NULL);
++  __resolv_context_put (ctx);
++  return result;
++}
+ 
+ int
+ res_nquery(res_state statp,
+@@ -289,41 +302,30 @@ res_nquery(res_state statp,
+ 	   u_char *answer,	/* buffer to put answer */
+ 	   int anslen)		/* size of answer buffer */
+ {
+-	return __libc_res_nquery(statp, name, class, type, answer, anslen,
+-				 NULL, NULL, NULL, NULL, NULL);
++  return context_query_common
++    (__resolv_context_get_override (statp), name, class, type, answer, anslen);
+ }
+-libresolv_hidden_def (res_nquery)
+ 
+ int
+ res_query (const char *name, int class, int type,
+ 	   unsigned char *answer, int anslen)
+ {
+-  if (__res_maybe_init (&_res, 1) == -1)
+-    {
+-      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
+-      return -1;
+-    }
+-  return res_nquery (&_res, name, class, type, answer, anslen);
++  return context_query_common
++    (__resolv_context_get (), name, class, type, answer, anslen);
+ }
+ 
+-/*
+- * Formulate a normal query, send, and retrieve answer in supplied buffer.
+- * Return the size of the response on success, -1 on error.
+- * If enabled, implement search rules until answer or unrecoverable failure
+- * is detected.  Error code, if any, is left in H_ERRNO.
+- */
++/* Formulate a normal query, send, and retrieve answer in supplied
++   buffer.  Return the size of the response on success, -1 on error.
++   If enabled, implement search rules until answer or unrecoverable
++   failure is detected.  Error code, if any, is left in h_errno.  */
+ int
+-__libc_res_nsearch(res_state statp,
+-		   const char *name,	/* domain name */
+-		   int class, int type,	/* class and type of query */
+-		   u_char *answer,	/* buffer to put answer */
+-		   int anslen,		/* size of answer */
+-		   u_char **answerp,
+-		   u_char **answerp2,
+-		   int *nanswerp2,
+-		   int *resplen2,
+-		   int *answerp2_malloced)
++__res_context_search (struct resolv_context *ctx,
++		      const char *name, int class, int type,
++		      unsigned char *answer, int anslen,
++		      unsigned char **answerp, unsigned char **answerp2,
++		      int *nanswerp2, int *resplen2, int *answerp2_malloced)
+ {
++	struct __res_state *statp = ctx->resp;
+ 	const char *cp, * const *domain;
+ 	HEADER *hp = (HEADER *) answer;
+ 	char tmp[NS_MAXDNAME];
+@@ -344,10 +346,11 @@ __libc_res_nsearch(res_state statp,
+ 		trailing_dot++;
+ 
+ 	/* If there aren't any dots, it could be a user-level alias. */
+-	if (!dots && (cp = res_hostalias(statp, name, tmp, sizeof tmp))!= NULL)
+-		return (__libc_res_nquery(statp, cp, class, type, answer,
+-					  anslen, answerp, answerp2,
+-					  nanswerp2, resplen2, answerp2_malloced));
++	if (!dots && (cp = __res_context_hostalias
++		      (ctx, name, tmp, sizeof tmp))!= NULL)
++	  return __res_context_query (ctx, cp, class, type, answer,
++				      anslen, answerp, answerp2,
++				      nanswerp2, resplen2, answerp2_malloced);
+ 
+ 	/*
+ 	 * If there are enough dots in the name, let's just give it a
+@@ -356,10 +359,10 @@ __libc_res_nsearch(res_state statp,
+ 	 */
+ 	saved_herrno = -1;
+ 	if (dots >= statp->ndots || trailing_dot) {
+-		ret = __libc_res_nquerydomain(statp, name, NULL, class, type,
+-					      answer, anslen, answerp,
+-					      answerp2, nanswerp2, resplen2,
+-					      answerp2_malloced);
++		ret = __res_context_querydomain (ctx, name, NULL, class, type,
++						 answer, anslen, answerp,
++						 answerp2, nanswerp2, resplen2,
++						 answerp2_malloced);
+ 		if (ret > 0 || trailing_dot
+ 		    /* If the second response is valid then we use that.  */
+ 		    || (ret == 0 && resplen2 != NULL && *resplen2 > 0))
+@@ -395,7 +398,7 @@ __libc_res_nsearch(res_state statp,
+ 			const char *dname = domain[0];
+ 			searched = 1;
+ 
+-			/* __libc_res_nquerydoman concatenates name
++			/* __res_context_querydoman concatenates name
+ 			   with dname with a "." in between.  If we
+ 			   pass it in dname the "." we got from the
+ 			   configured default search path, we'll end
+@@ -409,11 +412,10 @@ __libc_res_nsearch(res_state statp,
+ 			if (dname[0] == '\0')
+ 				root_on_list++;
+ 
+-			ret = __libc_res_nquerydomain(statp, name, dname,
+-						      class, type,
+-						      answer, anslen, answerp,
+-						      answerp2, nanswerp2,
+-						      resplen2, answerp2_malloced);
++			ret = __res_context_querydomain
++			  (ctx, name, dname, class, type,
++			   answer, anslen, answerp, answerp2, nanswerp2,
++			   resplen2, answerp2_malloced);
+ 			if (ret > 0 || (ret == 0 && resplen2 != NULL
+ 					&& *resplen2 > 0))
+ 				return (ret);
+@@ -481,10 +483,10 @@ __libc_res_nsearch(res_state statp,
+ 	 */
+ 	if ((dots || !searched || (statp->options & RES_NOTLDQUERY) == 0)
+ 	    && !(tried_as_is || root_on_list)) {
+-		ret = __libc_res_nquerydomain(statp, name, NULL, class, type,
+-					      answer, anslen, answerp,
+-					      answerp2, nanswerp2, resplen2,
+-					      answerp2_malloced);
++		ret = __res_context_querydomain
++		  (ctx, name, NULL, class, type,
++		   answer, anslen, answerp, answerp2, nanswerp2,
++		   resplen2, answerp2_malloced);
+ 		if (ret > 0 || (ret == 0 && resplen2 != NULL
+ 				&& *resplen2 > 0))
+ 			return (ret);
+@@ -512,7 +514,24 @@ __libc_res_nsearch(res_state statp,
+ 		RES_SET_H_ERRNO(statp, TRY_AGAIN);
+ 	return (-1);
+ }
+-libresolv_hidden_def (__libc_res_nsearch)
++libresolv_hidden_def (__res_context_search)
++
++/* Common part of res_nsearch and res_search.  */
++static int
++context_search_common (struct resolv_context *ctx,
++		       const char *name, int class, int type,
++		       unsigned char *answer, int anslen)
++{
++  if (ctx == NULL)
++    {
++      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
++      return -1;
++    }
++  int result = __res_context_search (ctx, name, class, type, answer, anslen,
++				     NULL, NULL, NULL, NULL, NULL);
++  __resolv_context_put (ctx);
++  return result;
++}
+ 
+ int
+ res_nsearch(res_state statp,
+@@ -521,40 +540,30 @@ res_nsearch(res_state statp,
+ 	    u_char *answer,	/* buffer to put answer */
+ 	    int anslen)		/* size of answer */
+ {
+-	return __libc_res_nsearch(statp, name, class, type, answer,
+-				  anslen, NULL, NULL, NULL, NULL, NULL);
++  return context_search_common
++    (__resolv_context_get_override (statp), name, class, type, answer, anslen);
+ }
+-libresolv_hidden_def (res_nsearch)
+ 
+ int
+ res_search (const char *name, int class, int type,
+ 	    unsigned char *answer, int anslen)
+ {
+-  if (__res_maybe_init (&_res, 1) == -1)
+-    {
+-      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
+-      return -1;
+-    }
+-
+-  return res_nsearch (&_res, name, class, type, answer, anslen);
++  return context_search_common
++    (__resolv_context_get (), name, class, type, answer, anslen);
+ }
+ 
+-/*
+- * Perform a call on res_query on the concatenation of name and domain.
+- */
++/*  Perform a call on res_query on the concatenation of name and
++    domain.  */
+ static int
+-__libc_res_nquerydomain(res_state statp,
+-			const char *name,
+-			const char *domain,
+-			int class, int type,	/* class and type of query */
+-			u_char *answer,		/* buffer to put answer */
+-			int anslen,			/* size of answer */
+-			u_char **answerp,
+-			u_char **answerp2,
+-			int *nanswerp2,
+-			int *resplen2,
+-			int *answerp2_malloced)
++__res_context_querydomain (struct resolv_context *ctx,
++			   const char *name, const char *domain,
++			   int class, int type,
++			   unsigned char *answer, int anslen,
++			   unsigned char **answerp, unsigned char **answerp2,
++			   int *nanswerp2, int *resplen2,
++			   int *answerp2_malloced)
+ {
++	struct __res_state *statp = ctx->resp;
+ 	char nbuf[MAXDNAME];
+ 	const char *longname = nbuf;
+ 	size_t n, d;
+@@ -580,9 +589,28 @@ __libc_res_nquerydomain(res_state statp,
+ 		}
+ 		sprintf(nbuf, "%s.%s", name, domain);
+ 	}
+-	return (__libc_res_nquery(statp, longname, class, type, answer,
+-				  anslen, answerp, answerp2, nanswerp2,
+-				  resplen2, answerp2_malloced));
++	return __res_context_query (ctx, longname, class, type, answer,
++				    anslen, answerp, answerp2, nanswerp2,
++				    resplen2, answerp2_malloced);
++}
++
++/* Common part of res_nquerydomain and res_querydomain.  */
++static int
++context_querydomain_common (struct resolv_context *ctx,
++			    const char *name, const char *domain,
++			    int class, int type,
++			    unsigned char *answer, int anslen)
++{
++  if (ctx == NULL)
++    {
++      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
++      return -1;
++    }
++  int result = __res_context_querydomain (ctx, name, domain, class, type,
++					  answer, anslen,
++					  NULL, NULL, NULL, NULL, NULL);
++  __resolv_context_put (ctx);
++  return result;
+ }
+ 
+ int
+@@ -593,32 +621,28 @@ res_nquerydomain(res_state statp,
+ 	    u_char *answer,		/* buffer to put answer */
+ 	    int anslen)		/* size of answer */
+ {
+-	return __libc_res_nquerydomain(statp, name, domain, class, type,
+-				       answer, anslen, NULL, NULL, NULL, NULL,
+-				       NULL);
++  return context_querydomain_common
++    (__resolv_context_get_override (statp),
++     name, domain, class, type, answer, anslen);
+ }
+-libresolv_hidden_def (res_nquerydomain)
+ 
+ int
+ res_querydomain (const char *name, const char *domain, int class, int type,
+ 		 unsigned char *answer, int anslen)
+ {
+-  if (__res_maybe_init (&_res, 1) == -1)
+-    {
+-      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
+-      return -1;
+-    }
+-
+-  return res_nquerydomain (&_res, name, domain, class, type, answer, anslen);
++  return context_querydomain_common
++    (__resolv_context_get (), name, domain, class, type, answer, anslen);
+ }
+ 
+ const char *
+-res_hostalias(const res_state statp, const char *name, char *dst, size_t siz) {
++__res_context_hostalias (struct resolv_context *ctx,
++			 const char *name, char *dst, size_t siz)
++{
+ 	char *file, *cp1, *cp2;
+ 	char buf[BUFSIZ];
+ 	FILE *fp;
+ 
+-	if (statp->options & RES_NOALIASES)
++	if (ctx->resp->options & RES_NOALIASES)
+ 		return (NULL);
+ 	file = getenv("HOSTALIASES");
+ 	if (file == NULL || (fp = fopen(file, "rce")) == NULL)
+@@ -648,15 +672,37 @@ res_hostalias(const res_state statp, const char *name, char *dst, size_t siz) {
+ 	fclose(fp);
+ 	return (NULL);
+ }
+-libresolv_hidden_def (res_hostalias)
++libresolv_hidden_def (__res_context_hostalias)
++
++/* Common part of res_hostalias and hostalias.  */
++static const char *
++context_hostalias_common (struct resolv_context *ctx,
++			  const char *name, char *dst, size_t siz)
++{
++  if (ctx == NULL)
++    {
++      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
++      return NULL;
++    }
++  const char *result = __res_context_hostalias (ctx, name, dst, siz);
++  __resolv_context_put (ctx);
++  return result;
++}
++
++const char *
++res_hostalias (res_state statp, const char *name, char *dst, size_t siz)
++{
++  return context_hostalias_common
++    (__resolv_context_get_override (statp), name, dst, siz);
++}
+ 
+ const char *
+ hostalias (const char *name)
+ {
+   static char abuf[MAXDNAME];
+-  return res_hostalias (&_res, name, abuf, sizeof abuf);
++  return context_hostalias_common
++    (__resolv_context_get (), name, abuf, sizeof (abuf));
+ }
+-libresolv_hidden_def (hostalias)
+ 
+ #if SHLIB_COMPAT (libresolv, GLIBC_2_0, GLIBC_2_2)
+ # undef res_query
+diff --git a/resolv/res_send.c b/resolv/res_send.c
+index 2e0b6c226105400a..cb6d7751bb53ac79 100644
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -102,6 +102,7 @@
+ #include <fcntl.h>
+ #include <netdb.h>
+ #include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
+ #include <signal.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -401,11 +402,14 @@ res_queriesmatch(const u_char *buf1, const u_char *eom1,
+ libresolv_hidden_def (res_queriesmatch)
+ 
+ int
+-__libc_res_nsend(res_state statp, const u_char *buf, int buflen,
+-		 const u_char *buf2, int buflen2,
+-		 u_char *ans, int anssiz, u_char **ansp, u_char **ansp2,
+-		 int *nansp2, int *resplen2, int *ansp2_malloced)
++__res_context_send (struct resolv_context *ctx,
++		    const unsigned char *buf, int buflen,
++		    const unsigned char *buf2, int buflen2,
++		    unsigned char *ans, int anssiz,
++		    unsigned char **ansp, unsigned char **ansp2,
++		    int *nansp2, int *resplen2, int *ansp2_malloced)
+ {
++	struct __res_state *statp = ctx->resp;
+ 	int gotsomewhere, terrno, try, v_circuit, resplen, n;
+ 
+ 	if (statp->nscount == 0) {
+@@ -542,22 +546,36 @@ __libc_res_nsend(res_state statp, const u_char *buf, int buflen,
+ 	return (-1);
+ }
+ 
++/* Common part of res_nsend and res_send.  */
++static int
++context_send_common (struct resolv_context *ctx,
++		     const unsigned char *buf, int buflen,
++		     unsigned char *ans, int anssiz)
++{
++  if (ctx == NULL)
++    {
++      RES_SET_H_ERRNO (&_res, NETDB_INTERNAL);
++      return -1;
++    }
++  int result = __res_context_send (ctx, buf, buflen, NULL, 0, ans, anssiz,
++				   NULL, NULL, NULL, NULL, NULL);
++  __resolv_context_put (ctx);
++  return result;
++}
++
+ int
+-res_nsend(res_state statp,
+-	  const u_char *buf, int buflen, u_char *ans, int anssiz)
++res_nsend (res_state statp, const unsigned char *buf, int buflen,
++	   unsigned char *ans, int anssiz)
+ {
+-  return __libc_res_nsend(statp, buf, buflen, NULL, 0, ans, anssiz,
+-			  NULL, NULL, NULL, NULL, NULL);
++  return context_send_common
++    (__resolv_context_get_override (statp), buf, buflen, ans, anssiz);
+ }
+-libresolv_hidden_def (res_nsend)
+ 
+ int
+ res_send (const unsigned char *buf, int buflen, unsigned char *ans, int anssiz)
+ {
+-  if (__res_maybe_init (&_res, 1) == -1)
+-    /* errno should have been set by res_init in this case.  */
+-    return -1;
+-  return res_nsend (&_res, buf, buflen, ans, anssiz);
++  return context_send_common
++    (__resolv_context_get (), buf, buflen, ans, anssiz);
+ }
+ 
+ /* Private */
+diff --git a/resolv/res_use_inet6.h b/resolv/res_use_inet6.h
+new file mode 100644
+index 0000000000000000..8649833072ade9cf
+--- /dev/null
++++ b/resolv/res_use_inet6.h
+@@ -0,0 +1,49 @@
++/* Support functions for handling RES_USE_INET6 in getaddrinfo/nscd.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#ifndef _RES_USE_INET6_H
++#define _RES_USE_INET6_H
++
++#include <resolv/resolv_context.h>
++#include <resolv/resolv-internal.h>
++
++/* Ensure that RES_USE_INET6 is disabled in *CTX.  Return true if
++   __resolv_context_enable_inet6 below should enable RES_USE_INET6
++   again.  */
++static inline bool
++__resolv_context_disable_inet6 (struct resolv_context *ctx)
++{
++  if (ctx != NULL && ctx->resp->options & DEPRECATED_RES_USE_INET6)
++    {
++      ctx->resp->options &= ~DEPRECATED_RES_USE_INET6;
++      return true;
++    }
++  else
++    return false;
++}
++
++/* If ENABLE, re-enable RES_USE_INET6 in *CTX.  To be paired with
++   __resolv_context_disable_inet6.  */
++static inline void
++__resolv_context_enable_inet6 (struct resolv_context *ctx, bool enable)
++{
++  if (ctx != NULL && enable)
++    ctx->resp->options |= DEPRECATED_RES_USE_INET6;
++}
++
++#endif
+diff --git a/resolv/resolv-internal.h b/resolv/resolv-internal.h
+index 5a9faf8de975f316..9246497196adab7d 100644
+--- a/resolv/resolv-internal.h
++++ b/resolv/resolv-internal.h
+@@ -52,9 +52,41 @@ enum
+     RESOLV_EDNS_BUFFER_SIZE = 1200,
+   };
+ 
++struct resolv_context;
++
++/* Internal function for implementing res_nmkquery and res_mkquery.
++   Also used by __res_context_query.  */
++int __res_context_mkquery (struct resolv_context *, int op, const char *dname,
++                           int class, int type, const unsigned char *data,
++                           unsigned char *buf, int buflen) attribute_hidden;
++
++/* Main resolver query function for use within glibc.  */
++int __res_context_search (struct resolv_context *, const char *, int, int,
++                          unsigned char *, int, unsigned char **,
++                          unsigned char **, int *, int *, int *);
++libresolv_hidden_proto (__res_context_search)
++
++/* Main resolver query function for use within glibc.  */
++int __res_context_query (struct resolv_context *, const char *, int, int,
++                         unsigned char *, int, unsigned char **,
++                         unsigned char **, int *, int *, int *);
++libresolv_hidden_proto (__res_context_query)
++
++/* Internal function used to implement the query and search
++   functions.  */
++int __res_context_send (struct resolv_context *, const unsigned char *, int,
++                        const unsigned char *, int, unsigned char *,
++                        int, unsigned char **, unsigned char **,
++                        int *, int *, int *) attribute_hidden;
++
++/* Internal function similar to res_hostalias.  */
++const char *__res_context_hostalias (struct resolv_context *,
++                                     const char *, char *, size_t);
++libresolv_hidden_proto (__res_context_hostalias);
++
+ /* Add an OPT record to a DNS query.  */
+-int __res_nopt (res_state, int n0, unsigned char *buf, int buflen,
+-                int anslen) attribute_hidden;
++int __res_nopt (struct resolv_context *, int n0,
++                unsigned char *buf, int buflen, int anslen) attribute_hidden;
+ 
+ /* Convert from presentation format (which usually means ASCII
+    printable) to network format (which is usually some kind of binary
+diff --git a/resolv/resolv_context.c b/resolv/resolv_context.c
+new file mode 100644
+index 0000000000000000..5083a40419bc463c
+--- /dev/null
++++ b/resolv/resolv_context.c
+@@ -0,0 +1,201 @@
++/* Temporary, thread-local resolver state.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <resolv_context.h>
++#include <resolv-internal.h>
++
++#include <assert.h>
++#include <stdlib.h>
++#include <stdio.h>
++
++/* Currently active struct resolv_context object.  This pointer forms
++   the start of a single-linked list, using the __next member of
++   struct resolv_context.  This list serves two purposes:
++
++   (a) A subsequent call to __resolv_context_get will only increment
++       the reference counter and will not allocate a new object.  The
++       _res state freshness check is skipped in this case, too.
++
++   (b) The per-thread cleanup function defined by the resolver calls
++       __resolv_context_freeres, which will deallocate all the context
++       objects.  This avoids the need for cancellation handlers and
++       the complexity they bring, but it requires heap allocation of
++       the context object because the per-thread cleanup functions run
++       only after the stack has been fully unwound (and all on-stack
++       objects have been deallocated at this point).
++
++   The TLS variable current is updated even in
++   __resolv_context_get_override, to support case (b) above.  This does
++   not override the per-thread resolver state (as obtained by the
++   non-res_state function such as __resolv_context_get) in an
++   observable way because the wrapped context is only used to
++   implement the res_n* functions in the resolver, and those do not
++   call back into user code which could indirectly use the per-thread
++   resolver state.  */
++static __thread struct resolv_context *current attribute_tls_model_ie;
++
++/* Initialize *RESP if RES_INIT is not yet set in RESP->options, or if
++   res_init in some other thread requested re-initializing.  */
++static __attribute__ ((warn_unused_result)) bool
++maybe_init (struct __res_state *resp, bool preinit)
++{
++  if (resp->options & RES_INIT)
++    {
++      if (__res_initstamp != resp->_u._ext.initstamp)
++        {
++          if (resp->nscount > 0)
++            __res_iclose (resp, true);
++          return __res_vinit (resp, 1) == 0;
++        }
++      return true;
++    }
++
++  if (preinit)
++    {
++      if (!resp->retrans)
++        resp->retrans = RES_TIMEOUT;
++      if (!resp->retry)
++        resp->retry = RES_DFLRETRY;
++      resp->options = RES_DEFAULT;
++      if (!resp->id)
++        resp->id = res_randomid ();
++    }
++  return __res_vinit (resp, preinit) == 0;
++}
++
++/* Allocate a new context object and initialize it.  The object is put
++   on the current list.  */
++static struct resolv_context *
++context_alloc (struct __res_state *resp)
++{
++  struct resolv_context *ctx = malloc (sizeof (*ctx));
++  if (ctx == NULL)
++    return NULL;
++  ctx->resp = resp;
++  ctx->__refcount = 1;
++  ctx->__from_res = true;
++  ctx->__next = current;
++  current = ctx;
++  return ctx;
++}
++
++/* Deallocate the context object and all the state within.   */
++static void
++context_free (struct resolv_context *ctx)
++{
++  current = ctx->__next;
++  free (ctx);
++}
++
++/* Reuse the current context object.  */
++static struct resolv_context *
++context_reuse (void)
++{
++  /* A context object created by __resolv_context_get_override cannot
++     be reused.  */
++  assert (current->__from_res);
++
++  ++current->__refcount;
++
++  /* Check for reference counter wraparound.  This can only happen if
++     the get/put functions are not properly paired.  */
++  assert (current->__refcount > 0);
++
++  return current;
++}
++
++/* Backing function for the __resolv_context_get family of
++   functions.  */
++static struct resolv_context *
++context_get (bool preinit)
++{
++  if (current != NULL)
++    return context_reuse ();
++
++  struct resolv_context *ctx = context_alloc (&_res);
++  if (ctx == NULL)
++    return NULL;
++  if (!maybe_init (ctx->resp, preinit))
++    {
++      context_free (ctx);
++      return NULL;
++    }
++  return ctx;
++}
++
++struct resolv_context *
++__resolv_context_get (void)
++{
++  return context_get (false);
++}
++libc_hidden_def (__resolv_context_get)
++
++struct resolv_context *
++__resolv_context_get_preinit (void)
++{
++  return context_get (true);
++}
++libc_hidden_def (__resolv_context_get_preinit)
++
++struct resolv_context *
++__resolv_context_get_override (struct __res_state *resp)
++{
++  /* NB: As explained asbove, context_alloc will put the context on
++     the current list.  */
++  struct resolv_context *ctx = context_alloc (resp);
++  if (ctx == NULL)
++    return NULL;
++
++  ctx->__from_res = false;
++  return ctx;
++}
++libc_hidden_def (__resolv_context_get_override)
++
++void
++__resolv_context_put (struct resolv_context *ctx)
++{
++  if (ctx == NULL)
++    return;
++
++  /* NB: Callers assume that this function preserves errno and
++     h_errno.  */
++
++  assert (current == ctx);
++  assert (ctx->__refcount > 0);
++
++  if (ctx->__from_res && --ctx->__refcount > 0)
++    /* Do not pop this context yet.  */
++    return;
++
++  context_free (ctx);
++}
++libc_hidden_def (__resolv_context_put)
++
++void
++__resolv_context_freeres (void)
++{
++  /* Deallocate the entire chain of context objects.  */
++  struct resolv_context *ctx = current;
++  current = NULL;
++  while (ctx != NULL)
++    {
++      struct resolv_context *next = ctx->__next;
++      context_free (ctx);
++      ctx = next;
++    }
++}
+diff --git a/resolv/resolv_context.h b/resolv/resolv_context.h
+new file mode 100644
+index 0000000000000000..27c8d56b36104521
+--- /dev/null
++++ b/resolv/resolv_context.h
+@@ -0,0 +1,95 @@
++/* Temporary, thread-local resolver state.
++   Copyright (C) 2017 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++/* struct resolv_context objects are allocated on the heap,
++   initialized by __resolv_context_get (and its variants), and
++   destroyed by __resolv_context_put.
++
++   A nested call to __resolv_context_get (after another call to
++   __resolv_context_get without a matching __resolv_context_put call,
++   on the same thread) returns the original pointer, instead of
++   allocating a new context.  This prevents unexpected reloading of
++   the resolver configuration.  Care is taken to keep the context in
++   sync with the thread-local _res object.  (This does not happen with
++   __resolv_context_get_override, and __resolv_context_get_no_inet6 may
++   also interpose another context object if RES_USE_INET6 needs to be
++   disabled.)
++
++   In contrast to struct __res_state, struct resolv_context is not
++   affected by ABI compatibility concerns.
++
++   For the benefit of the res_n* functions, a struct __res_state
++   pointer is included in the context object, and a separate
++   initialization function is provided.  */
++
++#ifndef _RESOLV_CONTEXT_H
++#define _RESOLV_CONTEXT_H
++
++#include <stdbool.h>
++#include <stddef.h>
++#include <bits/types/res_state.h>
++
++/* Temporary resolver state.  */
++struct resolv_context
++{
++  struct __res_state *resp;     /* Backing resolver state.   */
++
++
++  /* The following fields are for internal use within the
++     resolv_context module.  */
++  size_t __refcount;            /* Count of reusages by the get functions.  */
++  bool __from_res;              /* True if created from _res.  */
++
++  /* If RES_USE_INET6 was disabled at this level, this field points to
++     the previous context.  */
++  struct resolv_context *__next;
++};
++
++/* Return the current temporary resolver context, or NULL if there was
++   an error (indicated by errno).  A call to this function must be
++   paired with a call to __resolv_context_put.  */
++struct resolv_context *__resolv_context_get (void)
++  __attribute__ ((warn_unused_result));
++libc_hidden_proto (__resolv_context_get)
++
++/* Deallocate the temporary resolver context.  Converse of
++   __resolv_context_get.  Restore the RES_USE_INET6 flag if necessary.
++   Do nothing if CTX is NULL.  */
++void __resolv_context_put (struct resolv_context *ctx);
++libc_hidden_proto (__resolv_context_put)
++
++/* Like __resolv_context_get, but the _res structure can be partially
++   initialzed and those changes will not be overwritten.  */
++struct resolv_context *__resolv_context_get_preinit (void)
++  __attribute__ ((warn_unused_result));
++libc_hidden_proto (__resolv_context_get_preinit)
++
++/* Wrap a struct __res_state object in a struct resolv_context object.
++   A call to this function must be paired with a call to
++   __resolv_context_put.  */
++struct resolv_context *__resolv_context_get_override (struct __res_state *)
++  __attribute__ ((nonnull (1), warn_unused_result));
++libc_hidden_proto (__resolv_context_get_override)
++
++/* Called during thread shutdown to free the associated resolver
++   context (mostly in response to cancellation, otherwise the
++   __resolv_context_get/__resolv_context_put pairing will already have
++   deallocated the context object).  */
++void __resolv_context_freeres (void) attribute_hidden;
++
++#endif /* _RESOLV_CONTEXT_H */
+diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
+index 4fb1eaef79bc66a3..efa7118498990073 100644
+--- a/sysdeps/posix/getaddrinfo.c
++++ b/sysdeps/posix/getaddrinfo.c
+@@ -60,6 +60,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include <netdb.h>
+ #include <nss.h>
+ #include <resolv/resolv-internal.h>
++#include <resolv/resolv_context.h>
++#include <resolv/res_use_inet6.h>
+ #include <stdbool.h>
+ #include <stdio.h>
+ #include <stdio_ext.h>
+@@ -266,7 +268,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
+       if (herrno == NETDB_INTERNAL)					      \
+ 	{								      \
+ 	  __set_h_errno (herrno);					      \
+-	  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;	      \
++	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);	      \
++	  __resolv_context_put (res_ctx);				      \
+ 	  result = -EAI_SYSTEM;						      \
+ 	  goto free_and_return;						      \
+ 	}								      \
+@@ -279,7 +282,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
+     {									      \
+       if (!convert_hostent_to_gaih_addrtuple (req, _family,h, &addrmem))      \
+ 	{								      \
+-	  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;	      \
++	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);	      \
++	  __resolv_context_put (res_ctx);				      \
+ 	  result = -EAI_SYSTEM;						      \
+ 	  goto free_and_return;						      \
+ 	}								      \
+@@ -582,7 +586,8 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 	  enum nss_status inet6_status = NSS_STATUS_UNAVAIL;
+ 	  enum nss_status status = NSS_STATUS_UNAVAIL;
+ 	  int no_more;
+-	  int old_res_options;
++	  struct resolv_context *res_ctx = NULL;
++	  bool res_enable_inet6 = false;
+ 
+ 	  /* If we do not have to look for IPv6 addresses or the canonical
+ 	     name, use the simple, old functions, which do not support
+@@ -765,16 +770,14 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 	    no_more = 0;
+ 	  nip = __nss_hosts_database;
+ 
+-	  /* Initialize configurations.  */
+-	  if (__res_maybe_init (&_res, 0) == -1)
+-	    no_more = 1;
+-
+ 	  /* If we are looking for both IPv4 and IPv6 address we don't
+ 	     want the lookup functions to automatically promote IPv4
+-	     addresses to IPv6 addresses.  Currently this is decided
+-	     by setting the RES_USE_INET6 bit in _res.options.  */
+-	  old_res_options = _res.options;
+-	  _res.options &= ~DEPRECATED_RES_USE_INET6;
++	     addresses to IPv6 addresses, so we use the no_inet6
++	     function variant.  */
++	  res_ctx = __resolv_context_get ();
++	  res_enable_inet6 = __resolv_context_disable_inet6 (res_ctx);
++	  if (res_ctx == NULL)
++	    no_more = 1;
+ 
+ 	  while (!no_more)
+ 	    {
+@@ -811,8 +814,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 
+ 		      if (!scratch_buffer_grow (tmpbuf))
+ 			{
+-			  _res.options
+-			    |= old_res_options & DEPRECATED_RES_USE_INET6;
++			  __resolv_context_enable_inet6
++			    (res_ctx, res_enable_inet6);
++			  __resolv_context_put (res_ctx);
+ 			  result = -EAI_MEMORY;
+ 			  goto free_and_return;
+ 			}
+@@ -911,9 +915,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 			      canonbuf = getcanonname (nip, at, name);
+ 			      if (canonbuf == NULL)
+ 				{
+-				  _res.options
+-				    |= old_res_options
+-				    & DEPRECATED_RES_USE_INET6;
++				  __resolv_context_enable_inet6
++				    (res_ctx, res_enable_inet6);
++				  __resolv_context_put (res_ctx);
+ 				  result = -EAI_MEMORY;
+ 				  goto free_and_return;
+ 				}
+@@ -953,7 +957,8 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 		nip = nip->next;
+ 	    }
+ 
+-	  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;
++	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);
++	  __resolv_context_put (res_ctx);
+ 
+ 	  if (h_errno == NETDB_INTERNAL)
+ 	    {

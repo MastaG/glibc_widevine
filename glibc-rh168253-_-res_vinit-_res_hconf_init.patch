@@ -1,0 +1,201 @@
+commit e6b4e2de6dd91efdcac80b79149c596de8a26b70
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Tue Jun 27 09:26:46 2017 +0200
+
+    resolv: Call _res_hconf_init from __res_vinit
+    
+    Many callers of __res_maybe_init also call _res_hconf_init.
+    Additional calls to the latter do not hurt because the function
+    does its work only once.  (/etc/hosts.conf is not reloaded or
+    even checked for changes.)  This means that we can simplify the
+    code by calling _res_hconf_init directly from __res_vinit.
+
+diff --git a/inet/gethstbyad_r.c b/inet/gethstbyad_r.c
+index 88f428c1dbd3c177..6b5c13105059dd35 100644
+--- a/inet/gethstbyad_r.c
++++ b/inet/gethstbyad_r.c
+@@ -18,7 +18,7 @@
+ 
+ #include <netdb.h>
+ #include <string.h>
+-
++#include <resolv/res_hconf.h>
+ 
+ #define LOOKUP_TYPE	struct hostent
+ #define FUNCTION_NAME	gethostbyaddr
+@@ -27,7 +27,6 @@
+ #define ADD_VARIABLES	addr, len, type
+ #define NEED_H_ERRNO	1
+ #define NEED__RES	1
+-#define NEED__RES_HCONF	1
+ /* If the addr parameter is the IPv6 unspecified address no query must
+    be performed.  */
+ #define PREPROCESS \
+diff --git a/inet/gethstbynm2_r.c b/inet/gethstbynm2_r.c
+index 57047979900accfc..580ba6d1cfbd63ec 100644
+--- a/inet/gethstbynm2_r.c
++++ b/inet/gethstbynm2_r.c
+@@ -22,7 +22,7 @@
+ #include <string.h>
+ #include <arpa/inet.h>
+ #include <netinet/in.h>
+-
++#include <resolv/res_hconf.h>
+ 
+ #define LOOKUP_TYPE	struct hostent
+ #define FUNCTION_NAME	gethostbyname2
+@@ -30,7 +30,7 @@
+ #define ADD_PARAMS	const char *name, int af
+ #define ADD_VARIABLES	name, af
+ #define NEED_H_ERRNO	1
+-#define NEED__RES_HCONF	1
++#define NEED__RES	1
+ #define POSTPROCESS \
+   if (status == NSS_STATUS_SUCCESS)					      \
+     _res_hconf_reorder_addrs (resbuf);
+diff --git a/inet/gethstbynm_r.c b/inet/gethstbynm_r.c
+index 3758a9dde8e016f4..8f464b5ff1914b86 100644
+--- a/inet/gethstbynm_r.c
++++ b/inet/gethstbynm_r.c
+@@ -22,7 +22,7 @@
+ #include <string.h>
+ #include <arpa/inet.h>
+ #include <netinet/in.h>
+-
++#include <resolv/res_hconf.h>
+ 
+ #define LOOKUP_TYPE	struct hostent
+ #define FUNCTION_NAME	gethostbyname
+@@ -30,7 +30,7 @@
+ #define ADD_PARAMS	const char *name
+ #define ADD_VARIABLES	name
+ #define NEED_H_ERRNO	1
+-#define NEED__RES_HCONF	1
++#define NEED__RES	1
+ #define POSTPROCESS \
+   if (status == NSS_STATUS_SUCCESS)					      \
+     _res_hconf_reorder_addrs (resbuf);
+diff --git a/nscd/aicache.c b/nscd/aicache.c
+index ea29b1c3d99bb530..358945140e04b2a9 100644
+--- a/nscd/aicache.c
++++ b/nscd/aicache.c
+@@ -26,7 +26,6 @@
+ #include <unistd.h>
+ #include <sys/mman.h>
+ #include <resolv/resolv-internal.h>
+-#include <resolv/res_hconf.h>
+ #include <scratch_buffer.h>
+ 
+ #include "dbg_log.h"
+@@ -103,7 +102,6 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
+   nip = hosts_database;
+ 
+   /* Initialize configurations.  */
+-  _res_hconf_init ();
+   if (__res_maybe_init (&_res, 0) == -1)
+     no_more = 1;
+ 
+diff --git a/nscd/gethstbyad_r.c b/nscd/gethstbyad_r.c
+index b17f0d2b5100c151..842ced2ec64048ea 100644
+--- a/nscd/gethstbyad_r.c
++++ b/nscd/gethstbyad_r.c
+@@ -28,7 +28,6 @@
+ #define EXTRA_VARIABLES , ttlp
+ #define NEED_H_ERRNO	1
+ #define NEED__RES	1
+-#define NEED__RES_HCONF 1
+ 
+ /* We are nscd, so we don't want to be talking to ourselves.  */
+ #undef	USE_NSCD
+diff --git a/nscd/gethstbynm3_r.c b/nscd/gethstbynm3_r.c
+index 41bb26845d7b9592..2ab75e469eca1589 100644
+--- a/nscd/gethstbynm3_r.c
++++ b/nscd/gethstbynm3_r.c
+@@ -32,7 +32,7 @@
+ #define ADD_VARIABLES	name, af
+ #define EXTRA_VARIABLES	, ttlp, canonp
+ #define NEED_H_ERRNO	1
+-#define NEED__RES_HCONF 1
++#define NEED__RES       1
+ 
+ #define HANDLE_DIGITS_DOTS	1
+ #define HAVE_LOOKUP_BUFFER	1
+diff --git a/nss/getXXbyYY_r.c b/nss/getXXbyYY_r.c
+index 5962475737dee6ba..7cab825cf05503f6 100644
+--- a/nss/getXXbyYY_r.c
++++ b/nss/getXXbyYY_r.c
+@@ -25,9 +25,6 @@
+ #ifdef USE_NSCD
+ # include <nscd/nscd_proto.h>
+ #endif
+-#ifdef NEED__RES_HCONF
+-# include <resolv/res_hconf.h>
+-#endif
+ #ifdef NEED__RES
+ # include <resolv.h>
+ #endif
+@@ -273,9 +270,6 @@ INTERNAL (REENTRANT_NAME) (ADD_PARAMS, LOOKUP_TYPE *resbuf, char *buffer,
+ 	      return errno;
+ 	    }
+ #endif /* need _res */
+-#ifdef NEED__RES_HCONF
+-	  _res_hconf_init ();
+-#endif /* need _res_hconf */
+ 
+ 	  void *tmp_ptr = fct.l;
+ #ifdef PTR_MANGLE
+diff --git a/resolv/res_hconf.h b/resolv/res_hconf.h
+index 6eaf4039f3451511..209f76a0d6ef8193 100644
+--- a/resolv/res_hconf.h
++++ b/resolv/res_hconf.h
+@@ -46,7 +46,7 @@ struct hconf
+ };
+ extern struct hconf _res_hconf;
+ 
+-extern void _res_hconf_init (void);
++extern void _res_hconf_init (void) attribute_hidden;
+ extern void _res_hconf_trim_domain (char *domain);
+ extern void _res_hconf_trim_domains (struct hostent *hp);
+ extern void _res_hconf_reorder_addrs (struct hostent *hp);
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index 9aa907ee199f01a6..821f06061b4c3fb1 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -85,6 +85,7 @@
+ #include <ctype.h>
+ #include <netdb.h>
+ #include <resolv/resolv-internal.h>
++#include <res_hconf.h>
+ #include <stdio.h>
+ #include <stdio_ext.h>
+ #include <stdlib.h>
+@@ -430,6 +431,9 @@ res_vinit_1 (res_state statp, bool preinit, FILE *fp, char **buffer)
+ int
+ __res_vinit (res_state statp, int preinit)
+ {
++  /* Ensure that /etc/hosts.conf has been loaded (once).  */
++  _res_hconf_init ();
++
+   FILE *fp = fopen (_PATH_RESCONF, "rce");
+   if (fp == NULL)
+     switch (errno)
+diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
+index 91e0a76c5cfa027f..4fb1eaef79bc66a3 100644
+--- a/sysdeps/posix/getaddrinfo.c
++++ b/sysdeps/posix/getaddrinfo.c
+@@ -80,7 +80,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include <not-cancel.h>
+ #include <nscd/nscd-client.h>
+ #include <nscd/nscd_proto.h>
+-#include <resolv/res_hconf.h>
+ #include <scratch_buffer.h>
+ #include <inet/net-internal.h>
+ 
+@@ -767,7 +766,6 @@ gaih_inet (const char *name, const struct gaih_service *service,
+ 	  nip = __nss_hosts_database;
+ 
+ 	  /* Initialize configurations.  */
+-	  _res_hconf_init ();
+ 	  if (__res_maybe_init (&_res, 0) == -1)
+ 	    no_more = 1;
+ 

@@ -1,0 +1,22 @@
+commit ab5ac271e6210fa0af11cf3ca525ce573bc47c48
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Sep 6 11:25:14 2017 +0200
+
+    __libc_dynarray_emplace_enlarge: Add missing else
+    
+    Before, arrays of small elements received a starting allocation size of
+    8, not 16.
+
+diff --git a/malloc/dynarray_emplace_enlarge.c b/malloc/dynarray_emplace_enlarge.c
+index 0fb032765cc99952..a15245f4cb3d4288 100644
+--- a/malloc/dynarray_emplace_enlarge.c
++++ b/malloc/dynarray_emplace_enlarge.c
+@@ -33,7 +33,7 @@ __libc_dynarray_emplace_enlarge (struct dynarray_header *list,
+          size.  */
+       if (element_size < 4)
+         new_allocated = 16;
+-      if (element_size < 8)
++      else if (element_size < 8)
+         new_allocated = 8;
+       else
+         new_allocated = 4;

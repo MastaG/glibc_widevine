@@ -1,0 +1,602 @@
+commit aef16cc8a4c670036d45590877d411a97f01e0cd
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jul 3 21:06:23 2017 +0200
+
+    resolv: Automatically reload a changed /etc/resolv.conf file [BZ #984]
+    
+    This commit enhances the stub resolver to reload the configuration
+    in the per-thread _res object if the /etc/resolv.conf file has
+    changed.  The resolver checks whether the application has modified
+    _res and will not overwrite the _res object in that case.
+    
+    The struct resolv_context mechanism is used to check the
+    configuration file only once per name lookup.
+
+diff --git a/resolv/res_debug.c b/resolv/res_debug.c
+index b26c38bae0a1674b..1914324dcc3cabc3 100644
+--- a/resolv/res_debug.c
++++ b/resolv/res_debug.c
+@@ -607,6 +607,7 @@ p_option(u_long option) {
+ 	case RES_SNGLKUPREOP:	return "single-request-reopen";
+ 	case RES_USE_DNSSEC:	return "dnssec";
+ 	case RES_NOTLDQUERY:	return "no-tld-query";
++	case RES_NORELOAD:	return "no-reload";
+ 				/* XXX nonreentrant */
+ 	default:		sprintf(nbuf, "?0x%lx?", (u_long)option);
+ 				return (nbuf);
+diff --git a/resolv/res_init.c b/resolv/res_init.c
+index 80a21fb90d991e95..fa46ce7813c1f8af 100644
+--- a/resolv/res_init.c
++++ b/resolv/res_init.c
+@@ -106,8 +106,6 @@
+ 
+ static uint32_t net_mask (struct in_addr);
+ 
+-unsigned long long int __res_initstamp;
+-
+ int
+ res_ninit (res_state statp)
+ {
+@@ -164,6 +162,16 @@ struct resolv_conf_parser
+   struct resolv_conf template;
+ };
+ 
++/* Return true if *PREINIT contains actual preinitialization.  */
++static bool
++has_preinit_values (const struct __res_state *preinit)
++{
++  return (preinit->retrans != 0 && preinit->retrans != RES_TIMEOUT)
++    || (preinit->retry != 0 && preinit->retry != RES_DFLRETRY)
++    || (preinit->options != 0
++        && (preinit->options & ~RES_INIT) != RES_DEFAULT);
++}
++
+ static void
+ resolv_conf_parser_init (struct resolv_conf_parser *parser,
+                          const struct __res_state *preinit)
+@@ -531,14 +539,8 @@ res_vinit_1 (FILE *fp, struct resolv_conf_parser *parser)
+   return true;
+ }
+ 
+-/* Set up default settings.  If the /etc/resolv.conf configuration
+-   file exist, the values there will have precedence.  Otherwise, the
+-   server address is set to INADDR_LOOPBACK and the default domain
+-   name comes from gethostname.  The RES_OPTIONS and LOCALDOMAIN
+-   environment variables can be used to override some settings.
+-   Return 0 if completes successfully, -1 on error.  */
+-int
+-__res_vinit (res_state statp, int preinit)
++struct resolv_conf *
++__resolv_conf_load (struct __res_state *preinit)
+ {
+   /* Ensure that /etc/hosts.conf has been loaded (once).  */
+   _res_hconf_init ();
+@@ -559,20 +561,14 @@ __res_vinit (res_state statp, int preinit)
+       default:
+         /* Other errors refer to resource allocation problems and
+            need to be handled by the application.  */
+-        return -1;
++        return NULL;
+       }
+ 
+   struct resolv_conf_parser parser;
+-  if (preinit)
+-    {
+-      resolv_conf_parser_init (&parser, statp);
+-      statp->id = res_randomid ();
+-    }
+-  else
+-    resolv_conf_parser_init (&parser, NULL);
++  resolv_conf_parser_init (&parser, preinit);
+ 
+-  bool ok = res_vinit_1 (fp, &parser);
+-  if (ok)
++  struct resolv_conf *conf = NULL;
++  if (res_vinit_1 (fp, &parser))
+     {
+       parser.template.nameserver_list
+         = nameserver_list_begin (&parser.nameserver_list);
+@@ -583,21 +579,42 @@ __res_vinit (res_state statp, int preinit)
+         = search_list_size (&parser.search_list);
+       parser.template.sort_list = sort_list_begin (&parser.sort_list);
+       parser.template.sort_list_size = sort_list_size (&parser.sort_list);
+-      struct resolv_conf *conf = __resolv_conf_allocate (&parser.template);
+-      if (conf == NULL)
+-        ok = false;
+-      else
+-        {
+-          ok = __resolv_conf_attach (statp, conf);
+-          __resolv_conf_put (conf);
+-        }
++      conf = __resolv_conf_allocate (&parser.template);
+     }
+   resolv_conf_parser_free (&parser);
+ 
+-  if (!ok)
++  return conf;
++}
++
++/* Set up default settings.  If the /etc/resolv.conf configuration
++   file exist, the values there will have precedence.  Otherwise, the
++   server address is set to INADDR_LOOPBACK and the default domain
++   name comes from gethostname.  The RES_OPTIONS and LOCALDOMAIN
++   environment variables can be used to override some settings.
++   Return 0 if completes successfully, -1 on error.  */
++int
++__res_vinit (res_state statp, int preinit)
++{
++  struct resolv_conf *conf;
++  if (preinit && has_preinit_values (statp))
++    /* For the preinit case, we cannot use the cached configuration
++       because some settings could be different.  */
++    conf = __resolv_conf_load (statp);
++  else
++    conf = __resolv_conf_get_current ();
++  if (conf == NULL)
+     return -1;
++
++  bool ok = __resolv_conf_attach (statp, conf);
++  __resolv_conf_put (conf);
++  if (ok)
++    {
++      if (preinit)
++        statp->id = res_randomid ();
++      return 0;
++    }
+   else
+-    return 0;
++    return -1;
+ }
+ 
+ static void
+@@ -652,6 +669,7 @@ res_setoptions (struct resolv_conf_parser *parser, const char *options)
+             { STRnLEN ("single-request"), 0, RES_SNGLKUP },
+             { STRnLEN ("no_tld_query"), 0, RES_NOTLDQUERY },
+             { STRnLEN ("no-tld-query"), 0, RES_NOTLDQUERY },
++            { STRnLEN ("no-reload"), 0, RES_NORELOAD },
+             { STRnLEN ("use-vc"), 0, RES_USEVC }
+           };
+ #define noptions (sizeof (options) / sizeof (options[0]))
+diff --git a/resolv/res_libc.c b/resolv/res_libc.c
+index b90816472ab09dc2..8dd06f9f1310248a 100644
+--- a/resolv/res_libc.c
++++ b/resolv/res_libc.c
+@@ -42,18 +42,6 @@
+ #include <libc-lock.h>
+ #include <resolv-internal.h>
+ 
+-/* We have atomic increment operations on 64-bit platforms.  */
+-#if __WORDSIZE == 64
+-# define atomicinclock(lock) (void) 0
+-# define atomicincunlock(lock) (void) 0
+-# define atomicinc(var) catomic_increment (&(var))
+-#else
+-__libc_lock_define_initialized (static, lock);
+-# define atomicinclock(lock) __libc_lock_lock (lock)
+-# define atomicincunlock(lock) __libc_lock_unlock (lock)
+-# define atomicinc(var) ++var
+-#endif
+-
+ int
+ res_init (void)
+ {
+@@ -90,12 +78,6 @@ res_init (void)
+   if (!_res.id)
+     _res.id = res_randomid ();
+ 
+-  atomicinclock (lock);
+-  /* Request all threads to re-initialize their resolver states,
+-     resolv.conf might have changed.  */
+-  atomicinc (__res_initstamp);
+-  atomicincunlock (lock);
+-
+   return __res_vinit (&_res, 1);
+ }
+ 
+diff --git a/resolv/resolv-internal.h b/resolv/resolv-internal.h
+index 9246497196adab7d..32dc44777e311849 100644
+--- a/resolv/resolv-internal.h
++++ b/resolv/resolv-internal.h
+@@ -97,7 +97,4 @@ int __res_nopt (struct resolv_context *, int n0,
+ int __inet_pton_length (int af, const char *src, size_t srclen, void *);
+ libc_hidden_proto (__inet_pton_length)
+ 
+-/* Used to propagate the effect of res_init calls across threads.  */
+-extern unsigned long long int __res_initstamp attribute_hidden;
+-
+ #endif  /* _RESOLV_INTERNAL_H */
+diff --git a/resolv/resolv.h b/resolv/resolv.h
+index b83232cca8e8f0c3..6d4271987a0d705a 100644
+--- a/resolv/resolv.h
++++ b/resolv/resolv.h
+@@ -196,6 +196,7 @@ struct res_sym {
+ #define RES_USE_DNSSEC	0x00800000	/* use DNSSEC using OK bit in OPT */
+ #define RES_NOTLDQUERY	0x01000000	/* Do not look up unqualified name
+ 					   as a TLD.  */
++#define RES_NORELOAD    0x02000000 /* No automatic configuration reload.  */
+ 
+ #define RES_DEFAULT	(RES_RECURSE|RES_DEFNAMES|RES_DNSRCH)
+ 
+diff --git a/resolv/resolv_conf.c b/resolv/resolv_conf.c
+index dd665239926cbac7..9ef59240ebc57a70 100644
+--- a/resolv/resolv_conf.c
++++ b/resolv/resolv_conf.c
+@@ -22,6 +22,7 @@
+ #include <assert.h>
+ #include <libc-lock.h>
+ #include <resolv-internal.h>
++#include <sys/stat.h>
+ 
+ /* _res._u._ext.__glibc_extension_index is used as an index into a
+    struct resolv_conf_array object.  The intent of this construction
+@@ -54,6 +55,15 @@ struct resolv_conf_global
+      the array element is overwritten with NULL.  */
+   struct resolv_conf_array array;
+ 
++  /* Cached current configuration object for /etc/resolv.conf.  */
++  struct resolv_conf *conf_current;
++
++  /* These properties of /etc/resolv.conf are used to check if the
++     configuration needs reloading.  */
++  struct timespec conf_mtime;
++  struct timespec conf_ctime;
++  off64_t conf_size;
++  ino64_t conf_ino;
+ };
+ 
+ /* Lazily allocated storage for struct resolv_conf_global.  */
+@@ -100,6 +110,75 @@ conf_decrement (struct resolv_conf *conf)
+     free (conf);
+ }
+ 
++struct resolv_conf *
++__resolv_conf_get_current (void)
++{
++  struct stat64 st;
++  if (stat64 (_PATH_RESCONF, &st) != 0)
++    {
++    switch (errno)
++      {
++      case EACCES:
++      case EISDIR:
++      case ELOOP:
++      case ENOENT:
++      case ENOTDIR:
++      case EPERM:
++        /* Ignore errors due to file system contents.  */
++        memset (&st, 0, sizeof (st));
++        break;
++      default:
++        /* Other errors are fatal.  */
++        return NULL;
++      }
++    }
++
++  struct resolv_conf_global *global_copy = get_locked_global ();
++  if (global_copy == NULL)
++    return NULL;
++  struct resolv_conf *conf;
++  if (global_copy->conf_current != NULL
++      && (global_copy->conf_mtime.tv_sec == st.st_mtim.tv_sec
++          && global_copy->conf_mtime.tv_nsec == st.st_mtim.tv_nsec
++          && global_copy->conf_ctime.tv_sec == st.st_ctim.tv_sec
++          && global_copy->conf_ctime.tv_nsec == st.st_ctim.tv_nsec
++          && global_copy->conf_ino == st.st_ino
++          && global_copy->conf_size == st.st_size))
++    /* We can reuse the cached configuration object.  */
++    conf = global_copy->conf_current;
++  else
++    {
++      /* Parse configuration while holding the lock.  This avoids
++         duplicate work.  */
++      conf = __resolv_conf_load (NULL);
++      if (conf != NULL)
++        {
++          if (global_copy->conf_current != NULL)
++            conf_decrement (global_copy->conf_current);
++          global_copy->conf_current = conf; /* Takes ownership.  */
++
++          /* Update file modification stamps.  The configuration we
++             read could be a newer version of the file, but this does
++             not matter because this will lead to an extraneous reload
++             later.  */
++          global_copy->conf_mtime = st.st_mtim;
++          global_copy->conf_ctime = st.st_ctim;
++          global_copy->conf_ino = st.st_ino;
++          global_copy->conf_size = st.st_size;
++        }
++    }
++
++  if (conf != NULL)
++    {
++      /* Return an additional reference.  */
++      assert (conf->__refcount > 0);
++      ++conf->__refcount;
++      assert (conf->__refcount > 0);
++    }
++  put_locked_global (global_copy);
++  return conf;
++}
++
+ /* Internal implementation of __resolv_conf_get, without validation
+    against *RESP.  */
+ static struct resolv_conf *
+@@ -320,7 +399,6 @@ __resolv_conf_allocate (const struct resolv_conf *init)
+   conf->retry = init->retry;
+   conf->options = init->options;
+   conf->ndots = init->ndots;
+-  conf->initstamp = __res_initstamp;
+ 
+   /* Allocate the arrays with pointers.  These must come first because
+      they have the highets alignment.  */
+@@ -580,6 +658,12 @@ freeres (void)
+   if (global == NULL)
+     return;
+ 
++  if (global->conf_current != NULL)
++    {
++      conf_decrement (global->conf_current);
++      global->conf_current = NULL;
++    }
++
+   /* Note that this frees only the array itself.  The pointed-to
+      configuration objects should have been deallocated by res_nclose
+      and per-thread cleanup functions.  */
+diff --git a/resolv/resolv_conf.h b/resolv/resolv_conf.h
+index 7ca80cdeba115c12..0ff8bd7e928708fc 100644
+--- a/resolv/resolv_conf.h
++++ b/resolv/resolv_conf.h
+@@ -35,11 +35,6 @@ struct resolv_sortlist_entry
+    object.  */
+ struct resolv_conf
+ {
+-  /* Used to propagate the effect of res_init across threads.  This
+-     member is mutable and prevents sharing of the same struct
+-     resolv_conf object among multiple struct __res_state objects.  */
+-  unsigned long long int initstamp;
+-
+   /* Reference counter.  The object is deallocated once it reaches
+      zero.  For internal use within resolv_conf only.  */
+   size_t __refcount;
+@@ -69,6 +64,18 @@ struct resolv_conf
+ 
+ struct __res_state;
+ 
++/* Read /etc/resolv.conf and return a configuration object, or NULL if
++   /etc/resolv.conf cannot be read due to memory allocation errors.
++   If PREINIT is not NULL, some configuration values are taken from the
++   struct __res_state object.  */
++struct resolv_conf *__resolv_conf_load (struct __res_state *preinit)
++  attribute_hidden __attribute__ ((warn_unused_result));
++
++/* Return a configuration object for the current /etc/resolv.conf
++   settings, or NULL on failure.  The object is cached.  */
++struct resolv_conf *__resolv_conf_get_current (void)
++  attribute_hidden __attribute__ ((warn_unused_result));
++
+ /* Return the extended resolver state for *RESP, or NULL if it cannot
+    be determined.  A call to this function must be paired with a call
+    to __resolv_conf_put.  */
+diff --git a/resolv/resolv_context.c b/resolv/resolv_context.c
+index 0ee2184055911d02..35d4b3d41d59fc98 100644
+--- a/resolv/resolv_context.c
++++ b/resolv/resolv_context.c
+@@ -51,6 +51,20 @@
+    resolver state.  */
+ static __thread struct resolv_context *current attribute_tls_model_ie;
+ 
++/* The resolv_conf handling will gives us a ctx->conf pointer even if
++   these fields do not match because a mis-match does not cause a loss
++   of state (_res objects can store the full information).  This
++   function checks to ensure that there is a full patch, to prevent
++   overwriting a patched configuration.  */
++static bool
++replicated_configuration_matches (const struct resolv_context *ctx)
++{
++  return ctx->resp->options == ctx->conf->options
++    && ctx->resp->retrans == ctx->conf->retrans
++    && ctx->resp->retry == ctx->conf->retry
++    && ctx->resp->ndots == ctx->conf->ndots;
++}
++
+ /* Initialize *RESP if RES_INIT is not yet set in RESP->options, or if
+    res_init in some other thread requested re-initializing.  */
+ static __attribute__ ((warn_unused_result)) bool
+@@ -59,27 +73,36 @@ maybe_init (struct resolv_context *ctx, bool preinit)
+   struct __res_state *resp = ctx->resp;
+   if (resp->options & RES_INIT)
+     {
++      if (resp->options & RES_NORELOAD)
++        /* Configuration reloading was explicitly disabled.  */
++        return true;
++
+       /* If there is no associated resolv_conf object despite the
+          initialization, something modified *ctx->resp.  Do not
+          override those changes.  */
+-      if (ctx->conf != NULL && ctx->conf->initstamp != __res_initstamp)
++      if (ctx->conf != NULL && replicated_configuration_matches (ctx))
+         {
+-          if (resp->nscount > 0)
+-            /* This call will detach the extended resolver state.  */
+-            __res_iclose (resp, true);
+-          /* And this call will attach it again.  */
+-          if (__res_vinit (resp, 1) < 0)
++          struct resolv_conf *current = __resolv_conf_get_current ();
++          if (current == NULL)
++            return false;
++
++          /* Check if the configuration changed.  */
++          if (current != ctx->conf)
+             {
+-              /* The configuration no longer matches after failed
+-                 initialization.  */
+-              __resolv_conf_put (ctx->conf);
+-              ctx->conf = NULL;
+-              return false;
++              /* This call will detach the extended resolver state.  */
++              if (resp->nscount > 0)
++                __res_iclose (resp, true);
++              /* Reattach the current configuration.  */
++              if (__resolv_conf_attach (ctx->resp, current))
++                {
++                  __resolv_conf_put (ctx->conf);
++                  /* ctx takes ownership, so we do not release current.  */
++                  ctx->conf = current;
++                }
+             }
+-          /* Delay the release of the old configuration until this
+-             point, so that __res_vinit can reuse it if possible.  */
+-          __resolv_conf_put (ctx->conf);
+-          ctx->conf = __resolv_conf_get (ctx->resp);
++          else
++            /* No change.  Drop the reference count for current.  */
++            __resolv_conf_put (current);
+         }
+       return true;
+     }
+diff --git a/resolv/tst-resolv-res_init-skeleton.c b/resolv/tst-resolv-res_init-skeleton.c
+index f98e9f40305d4897..9e496a3212b0f2ab 100644
+--- a/resolv/tst-resolv-res_init-skeleton.c
++++ b/resolv/tst-resolv-res_init-skeleton.c
+@@ -151,6 +151,7 @@ print_resp (FILE *fp, res_state resp)
+         print_option_flag (fp, &options, RES_SNGLKUPREOP,
+                            "single-request-reopen");
+         print_option_flag (fp, &options, RES_NOTLDQUERY, "no-tld-query");
++        print_option_flag (fp, &options, RES_NORELOAD, "no-reload");
+         fputc ('\n', fp);
+         if (options != 0)
+           fprintf (fp, "; error: unresolved option bits: 0x%x\n", options);
+@@ -470,6 +471,28 @@ struct test_case test_cases[] =
+      "nameserver 192.0.2.1\n"
+      "; nameserver[0]: [192.0.2.1]:53\n"
+     },
++    {.name = "basic no-reload",
++     .conf = "options no-reload\n"
++     "search corp.example.com example.com\n"
++     "nameserver 192.0.2.1\n",
++     .expected = "options no-reload\n"
++     "search corp.example.com example.com\n"
++     "; search[0]: corp.example.com\n"
++     "; search[1]: example.com\n"
++     "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n"
++    },
++    {.name = "basic no-reload via RES_OPTIONS",
++     .conf = "search corp.example.com example.com\n"
++     "nameserver 192.0.2.1\n",
++     .expected = "options no-reload\n"
++     "search corp.example.com example.com\n"
++     "; search[0]: corp.example.com\n"
++     "; search[1]: example.com\n"
++     "nameserver 192.0.2.1\n"
++     "; nameserver[0]: [192.0.2.1]:53\n",
++     .res_options = "no-reload"
++    },
+     {.name = "whitespace",
+      .conf = "# This test covers comment and whitespace processing "
+      " (trailing whitespace,\n"
+@@ -722,18 +745,7 @@ test_file_contents (const struct test_case *t)
+ }
+ 
+ /* Special tests which do not follow the general pattern.  */
+-enum { special_tests_count = 7 };
+-
+-#if TEST_THREAD
+-/* Called from test number 3-6 to trigger reloading of the
+-   configuration.  */
+-static void *
+-special_test_call_res_init (void *closure)
+-{
+-  TEST_VERIFY (res_init () == 0);
+-  return NULL;
+-}
+-#endif
++enum { special_tests_count = 11 };
+ 
+ /* Implementation of special tests.  */
+ static void
+@@ -800,20 +812,29 @@ special_test_callback (void *closure)
+     case 4:
+     case 5:
+     case 6:
+-      /* Test res_init change broadcast.  This requires a second
+-         thread to trigger the reload.  */
+-#if TEST_THREAD
+       support_write_file_string (_PATH_RESCONF,
+                                  "options edns0\n"
+                                  "nameserver 192.0.2.1\n");
++      goto reload_tests;
++    case 7: /* 7 and the following tests are with no-reload.  */
++    case 8:
++    case 9:
++    case 10:
++        support_write_file_string (_PATH_RESCONF,
++                                   "options edns0 no-reload\n"
++                                   "nameserver 192.0.2.1\n");
++        /* Fall through.  */
++    reload_tests:
+       for (int iteration = 0; iteration < 2; ++iteration)
+         {
+           switch (test_index)
+             {
+             case 3:
++            case 7:
+               TEST_VERIFY (res_init () == 0);
+               break;
+             case 4:
++            case 8:
+               {
+                 unsigned char buf[512];
+                 TEST_VERIFY
+@@ -822,37 +843,44 @@ special_test_callback (void *closure)
+               }
+               break;
+             case 5:
++            case 9:
+               gethostbyname (test_hostname);
+               break;
+             case 6:
++            case 10:
+               {
+                 struct addrinfo *ai;
+                 (void) getaddrinfo (test_hostname, NULL, NULL, &ai);
+               }
+               break;
+             }
+-          if (iteration == 0)
++          /* test_index == 7 is res_init and performs a reload even
++             with no-reload.  */
++          if (iteration == 0 || test_index > 7)
+             {
+               TEST_VERIFY (_res.options & RES_USE_EDNS0);
+               TEST_VERIFY (!(_res.options & RES_ROTATE));
++              if (test_index < 7)
++                TEST_VERIFY (!(_res.options & RES_NORELOAD));
++              else
++                TEST_VERIFY (_res.options & RES_NORELOAD);
+               TEST_VERIFY (_res.nscount == 1);
++              /* File change triggers automatic reloading.  */
+               support_write_file_string (_PATH_RESCONF,
+                                          "options rotate\n"
+                                          "nameserver 192.0.2.1\n"
+                                          "nameserver 192.0.2.2\n");
+-              xpthread_join (xpthread_create
+-                             (NULL, special_test_call_res_init, NULL));
+             }
+           else
+             {
+-              /* edns0 was dropped, but the flag is not cleared.  See
+-                 bug 21701.  */
+-              /* TEST_VERIFY (!(_res.options & RES_USE_EDNS0)); */
++              if (test_index != 3 && test_index != 7)
++                /* test_index 3, 7 are res_init; this function does
++                   not reset flags.  See bug 21701.  */
++                TEST_VERIFY (!(_res.options & RES_USE_EDNS0));
+               TEST_VERIFY (_res.options & RES_ROTATE);
+               TEST_VERIFY (_res.nscount == 2);
+             }
+         }
+-#endif
+       break;
+     }
+ }

@@ -1,0 +1,29 @@
+commit d54bb9b1d3fd25779fba2c403003c5097ba9af73
+Author: Tulio Magno Quites Machado Filho <tuliom@linux.vnet.ibm.com>
+Date:   Mon Jun 26 09:55:41 2017 -0300
+
+    Prevent an implicit int promotion in malloc/tst-alloc_buffer.c
+    
+    According to ISO C11, section 6.5.3.3 "Unary arithmetic operators", the
+    result of the ~ operator is the bitwise complement of its (promoted)
+    operand.
+    This can lead to a comparison of a char with another integer type.
+    
+    Tested on powerpc, powerpc64 and powerpc64le.
+    
+            * malloc/tst-alloc_buffer.c (test_misaligned): Cast to char
+            before comparing with another char.
+
+diff --git a/malloc/tst-alloc_buffer.c b/malloc/tst-alloc_buffer.c
+index 1c143999c70180f7..9b2bd2046a12c0f2 100644
+--- a/malloc/tst-alloc_buffer.c
++++ b/malloc/tst-alloc_buffer.c
+@@ -429,7 +429,7 @@ test_misaligned (char pad)
+   }
+ 
+   /* Verify that padding was not overwritten.  */
+-  TEST_VERIFY (backing[0] == ~pad);
++  TEST_VERIFY (backing[0] == (char) ~pad);
+   TEST_VERIFY (backing[SIZE + 1] == pad);
+   free (backing);
+ }
