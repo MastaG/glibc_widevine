@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-543-g645ac9aaf8
+%define glibcsrcdir glibc-2.26-553-gd8425e116c
 %define glibcversion 2.26.90
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2116,6 +2116,12 @@ fi
 %endif
 
 %changelog
+* Wed Oct 11 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-20
+- Auto-sync with upstream branch master,
+  commit d8425e116cdd954fea0c04c0f406179b5daebbb3:
+- nss_files performance issue in multi mode (swbz#22078)
+- Ensure C99 and C11 interfaces are available for C++ (swbz#21326)
+
 * Mon Oct 09 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-19
 - Move /var/db/Makefile to nss_db (#1498900)
 - Auto-sync with upstream branch master,
