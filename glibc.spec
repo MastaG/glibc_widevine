@@ -1,6 +1,6 @@
 %define glibcsrcdir  glibc-2.26-48-gd5c6dea
 %define glibcversion 2.26
-%define glibcrelease 13%{?dist}
+%define glibcrelease 14%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -73,7 +73,11 @@
 # to disable HLE and RTM at boot and the Fedora kernel now applies it early
 # enough that keeping lock elision enabled should be harmless, but we have
 # disabled it anyway as a conservative measure.
-%define lock_elision_arches s390 s390x
+#
+# We have not yet tested enabling ppc64 or ppc64le lock elision.
+#
+# We have disabled elision on s390/s390 because of bug 1499260.
+#
 ##############################################################################
 # We build a special package for Xen that includes TLS support with
 # no negative segment offsets for use with Xen guests. This is
@@ -658,7 +662,7 @@ Requires: %{name}-common = %{version}-%{release}
 Provides: %{name}-langpack = %{version}-%{release}
 %description all-langpacks
 
-# No %files, this is an empty pacakge. The C/POSIX and
+# No %%files, this is an empty pacakge. The C/POSIX and
 # C.UTF-8 files are already installed by glibc. We create
 # minimal-langpack because the virtual provide of
 # glibc-langpack needs at least one package installed
@@ -813,8 +817,8 @@ This package provides debug information for package %{name}.
 Debug information is useful when developing applications that use this
 package or when debugging this package.
 
-%endif # %{debuginfocommonarches}
-%endif # 0%{?_enable_debug_packages}
+%endif # %%{debuginfocommonarches}
+%endif # 0%%{?_enable_debug_packages}
 
 %if %{with benchtests}
 %package benchtests
@@ -1008,7 +1012,7 @@ AddOns=`echo */configure | sed -e 's!/configure!!g;s!\(nptl\|powerpc-cpu\)\( \|$
 
 ##############################################################################
 # build()
-#	Build glibc in `build-%{target}$1', passing the rest of the arguments
+#	Build glibc in `build-%%{target}$1', passing the rest of the arguments
 #	as CFLAGS to the build (not the same as configure CFLAGS). Several
 #	global values are used to determine build flags, add-ons, kernel
 #	version, system tap support, etc.
@@ -1039,9 +1043,7 @@ build()
 %ifarch %{ix86}
 		--disable-multi-arch \
 %endif
-%ifarch %{lock_elision_arches}
-		--enable-lock-elision \
-%endif
+		--disable-lock-elision \
 %if %{without werror}
 		--disable-werror \
 %endif
@@ -1093,7 +1095,7 @@ build nosegneg -mno-tls-direct-seg-refs
 	core_with_options="--with-cpu=power6"
 	build power6
 )
-%endif # %{buildpower6}
+%endif # %%{buildpower6}
 
 %if %{buildpower7}
 (
@@ -1173,7 +1175,7 @@ popd
 #	ln -s SUBDIR_UP/foo.so DESTDIR/SUBDIR/foo.so.
 #	When you call this function it is expected that you are in the root
 #	of the build directory, and that the default build directory is:
-#	"../build-%{target}" (relatively).
+#	"../build-%%{target}" (relatively).
 #	The primary use of this function is to install alternate runtimes
 #	into the build directory and avoid duplicating this code for each
 #	runtime.
@@ -1248,7 +1250,7 @@ pushd build-%{target}-nosegneg
 destdir=$RPM_BUILD_ROOT/%{_lib}
 install_different "$destdir" "%{nosegneg_subdir}" "%{nosegneg_subdir_up}"
 popd
-%endif # %{buildxen}
+%endif # %%{buildxen}
 
 ##############################################################################
 # Install the power6 build files.
@@ -1270,7 +1272,7 @@ ln -sf %{power6_legacy_up}/%{power6_subdir}/*.so .
 cp -a %{power6_legacy_up}/%{power6_subdir}/*.so.* .
 popd
 popd
-%endif # %{buildpower6}
+%endif # %%{buildpower6}
 
 %if %{buildpower7}
 %define power7_subdir power7
@@ -1399,7 +1401,7 @@ truncate -s 0 $RPM_BUILD_ROOT/etc/sysconfig/nscd
 truncate -s 0 $RPM_BUILD_ROOT/etc/gai.conf
 %endif
 
-# Include %{_libdir}/gconv/gconv-modules.cache
+# Include %%{_libdir}/gconv/gconv-modules.cache
 truncate -s 0 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
 chmod 644 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
 
@@ -1656,7 +1658,7 @@ sed -i -e '\,/libcrypt,d' rpm.filelist
 #      Won't this impact what is shipped?
 rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
 
-# Make sure %config files have the same timestamp across multilib packages.
+# Make sure %%config files have the same timestamp across multilib packages.
 #
 # XXX: Ideally ld.so.conf should have the timestamp of the spec file, but there
 # doesn't seem to be any macro to give us that.  So we do the next best thing,
@@ -1831,7 +1833,7 @@ egrep "$auxarches_debugsources" debuginfocommon.sources >> debuginfo.filelist
 egrep -v "$auxarches_debugsources" \
   debuginfocommon.sources >> debuginfocommon.filelist
 
-%endif # %{biarcharches}
+%endif # %%{biarcharches}
 
 # Add the list of *.a archives in the debug directory to
 # the common debuginfo package.
@@ -1850,7 +1852,7 @@ list_debug_archives >> debuginfocommon.filelist
 sort -u debuginfocommon.filelist > debuginfocommon2.filelist
 mv debuginfocommon2.filelist debuginfocommon.filelist
 
-%endif # %{debuginfocommonarches}
+%endif # %%{debuginfocommonarches}
 
 # Remove any duplicates output by a buggy find-debuginfo.sh.
 sort -u debuginfo.filelist > debuginfo2.filelist
@@ -1874,7 +1876,7 @@ exclude_common_dirs debuginfocommon.filelist
 %endif
 exclude_common_dirs debuginfo.filelist
 
-%endif # 0%{?_enable_debug_packages}
+%endif # 0%%{?_enable_debug_packages}
 
 %if %{with docs}
 # Remove the `dir' info-heirarchy file which will be maintained
@@ -1900,7 +1902,7 @@ mkdir -p $RPM_BUILD_ROOT/var/{db,run}/nscd
 touch $RPM_BUILD_ROOT/var/{db,run}/nscd/{passwd,group,hosts,services}
 touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
 
-%endif # %{auxarches}
+%endif # %%{auxarches}
 
 %ifnarch %{auxarches}
 truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
@@ -1915,7 +1917,7 @@ truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
 %check
 %if %{with testsuite}
 
-# Run the glibc tests. If any tests fail to build we exit %check with an error
+# Run the glibc tests. If any tests fail to build we exit %%check with an error
 # of 1, otherwise we print the test failure list and the failed test output
 # and exit with 0. In the future we want to compare against a baseline and
 # exit with 1 if the results deviate from the baseline.
@@ -1923,7 +1925,7 @@ run_tests () {
 	truncate -s 0 check.log
 	tail -f check.log &
 	tailpid=$!
-	# Run the make a sub-shell (to avoid %check failing if make fails)
+	# Run the make a sub-shell (to avoid %%check failing if make fails)
 	# but capture the status for use later. We use the normal sub-shell
 	# trick of printing the status. The actual result of the sub-shell
 	# is the successful execution of the echo.
@@ -1939,7 +1941,7 @@ run_tests () {
 	echo ===================FAILED TESTS=====================
 	if [ $status -ne 0 ]; then
 		# We are not running with `-k`, therefore a test build failure
-		# terminates the test run and that terminates %check with an
+		# terminates the test run and that terminates %%check with an
 		# error which terminates the build. We want this behaviour to
 		# ensure that all tests build, and all tests run.
 		# If the test result summary is not present it means one of
@@ -2062,7 +2064,7 @@ elf/ld.so --library-path .:elf:nptl:dlfcn \
 %endif
 popd
 
-%endif # %{run_glibc_tests}
+%endif # %%{run_glibc_tests}
 
 
 %pre -p <lua>
@@ -2181,7 +2183,7 @@ rm -f *.filelist*
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/ld.so.cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/gai.conf
 %doc README NEWS INSTALL BUGS CONFORMANCE elf/rtld-debugger-interface.txt
-# If rpm doesn't support %license, then use %doc instead.
+# If rpm doesn't support %%license, then use %%doc instead.
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING.LIB LICENSES
 
@@ -2279,6 +2281,10 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Oct 13 2017 Carlos O'Donell <carlos@redhat.com> - 2.26-14
+- Disable lock elision for IBM z Series (#1499260)
+- As a precaution escape all % in spec file comments.
+
 * Mon Oct  9 2017 Florian Weimer <fweimer@redhat.com> - 2.26-13
 - Move /var/db/Makefile to nss_db (#1498900)
 
