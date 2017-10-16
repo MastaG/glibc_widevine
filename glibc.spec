@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-553-gd8425e116c
+%define glibcsrcdir glibc-2.26-578-g596f70134a
 %define glibcversion 2.26.90
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2116,6 +2116,18 @@ fi
 %endif
 
 %changelog
+* Mon Oct 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-21
+- Auto-sync with upstream branch master,
+  commit 596f70134a8f11967c65c1d55a94a3a2718c731d:
+- Silence -O3 -Wall warning in malloc/hooks.c with GCC 7 (swbz#22052)
+- locale: No warning for non-symbolic character (swbz#22295)
+- locale: Allow "" int_curr_Symbol (swbz#22294)
+- locale: Fix localedef exit code (swbz#22292)
+- nptl: Preserve error in setxid thread broadcast in coredumps (swbz#22153)
+- powerpc: Avoid putting floating point values in memory (swbz#22189)
+- powerpc: Fix the carry bit on mpn_[add|sub]_n on POWER7 (swbz#22142)
+- Support profiling PIE (swbz#22284)
+
 * Wed Oct 11 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-20
 - Auto-sync with upstream branch master,
   commit d8425e116cdd954fea0c04c0f406179b5daebbb3:
