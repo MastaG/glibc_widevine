@@ -1011,7 +1011,7 @@ build
 
 # Build libcrypt with glibc cryptographic implementations.
 %if %{without bootstrap}
-make %{?_smpflags} -C build-%{target} subdirs=crypt-glibc \
+make %{?_smp_mflags} -C build-%{target} subdirs=crypt-glibc \
     CFLAGS="$build_CFLAGS"
 %endif
 
