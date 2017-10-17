@@ -112,9 +112,6 @@
 # will be created for the architecture.
 %define debuginfocommonarches %{biarcharches} alpha alphaev6
 ##############################################################################
-# Add -s for a less verbose build output.
-%define silentrules PARALLELMFLAGS=
-##############################################################################
 # %%package glibc - The GNU C Library (glibc) core package.
 ##############################################################################
 Summary: The GNU libc libraries
@@ -961,7 +958,7 @@ build()
 %endif
 		{ cat config.log; false; }
 
-	make %{?_smp_mflags} -r CFLAGS="$build_CFLAGS" %{silentrules}
+	make %{?_smp_mflags} -r CFLAGS="$build_CFLAGS"
 	popd
 }
 
@@ -1015,7 +1012,7 @@ build
 # Build libcrypt with glibc cryptographic implementations.
 %if %{without bootstrap}
 make %{?_smpflags} -C build-%{target} subdirs=crypt-glibc \
-    CFLAGS="$build_CFLAGS" %{silentrules}
+    CFLAGS="$build_CFLAGS"
 %endif
 
 ##############################################################################
@@ -1054,8 +1051,7 @@ chmod 644 sysdeps/gnu/errlist.c
 GCC=`cat Gcc`
 
 # Build and install.
-make -j1 install_root=$RPM_BUILD_ROOT \
-	install -C build-%{target} %{silentrules}
+make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target}
 
 # If we are not building an auxiliary arch then install all of the supported
 # locales.
@@ -1790,7 +1786,7 @@ run_tests () {
 	# trick of printing the status. The actual result of the sub-shell
 	# is the successful execution of the echo.
 	status=$(set +e
-		 make %{?_smp_mflags} check %{silentrules} > check.log 2>&1
+		 make %{?_smp_mflags} check > check.log 2>&1
 		 status=$?
 		 echo $status)
 	# Wait for the tail to catch up with the output and then kill it.
@@ -1824,7 +1820,7 @@ run_tests () {
 
 	# If the crypt-glibc test suite fails, something is completely
 	# broken, so fail the build in this case.
-	make %{?_smp_mflags} subdirs=crypt-glibc check %{silentrules}
+	make %{?_smp_mflags} subdirs=crypt-glibc check
 
 	# Unconditonally dump differences in the system call list.
 	echo "* System call consistency checks:"
