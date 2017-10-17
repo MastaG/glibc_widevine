@@ -44,14 +44,6 @@
 %undefine with_valgrind
 %endif
 %endif
-%if %{with werror}
-%ifarch s390 s390x
-# The s390 and s390x builds are not -Werror clean yet.  For s390, the
-# latest problem may be due to questionable code in test-string.h
-# (upstream bug 19261, rhbz#1283184).
-%undefine with_werror
-%endif
-%endif
 %if %{with bootstrap}
 # Disable benchtests, -Werror, docs, and valgrind if we're bootstrapping
 %undefine with_benchtests
