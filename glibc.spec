@@ -9,7 +9,8 @@
 # gzip -9 $(git describe --match 'glibc-*').tar
 #
 # glibc_release_url is only defined when we have a release tarball.
-%define glibc_release_url http://ftp.gnu.org/gnu/glibc/
+%{lua: if string.match(rpm.expand("%glibcsrcdir"), "^glibc%-[0-9.]+$") then
+  rpm.define("glibc_release_url https://ftp.gnu.org/gnu/glibc/") end}
 ##############################################################################
 # We support hte following options:
 # --with/--without,
