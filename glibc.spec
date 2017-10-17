@@ -305,6 +305,9 @@ Conflicts: kernel < %{enablekernel}
 %endif
 %endif
 
+# GNU make 4.0 introduced the -O option.
+BuildRequires: make >= 4.0
+
 BuildRequires: binutils >= 2.25
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
@@ -958,7 +961,7 @@ build()
 %endif
 		{ cat config.log; false; }
 
-	make %{?_smp_mflags} -r CFLAGS="$build_CFLAGS"
+	make %{?_smp_mflags} -O -r CFLAGS="$build_CFLAGS"
 	popd
 }
 
@@ -1011,7 +1014,7 @@ build
 
 # Build libcrypt with glibc cryptographic implementations.
 %if %{without bootstrap}
-make %{?_smp_mflags} -C build-%{target} subdirs=crypt-glibc \
+make %{?_smp_mflags} -O -C build-%{target} subdirs=crypt-glibc \
     CFLAGS="$build_CFLAGS"
 %endif
 
@@ -1057,7 +1060,7 @@ make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target}
 # locales.
 %ifnarch %{auxarches}
 pushd build-%{target}
-make %{?_smp_mflags} install_root=$RPM_BUILD_ROOT \
+make %{?_smp_mflags} -O install_root=$RPM_BUILD_ROOT \
 	install-locales -C ../localedata objdir=`pwd`
 popd
 %endif
@@ -1786,7 +1789,7 @@ run_tests () {
 	# trick of printing the status. The actual result of the sub-shell
 	# is the successful execution of the echo.
 	status=$(set +e
-		 make %{?_smp_mflags} check > check.log 2>&1
+		 make %{?_smp_mflags} -O check > check.log 2>&1
 		 status=$?
 		 echo $status)
 	# Wait for the tail to catch up with the output and then kill it.
@@ -1820,7 +1823,7 @@ run_tests () {
 
 	# If the crypt-glibc test suite fails, something is completely
 	# broken, so fail the build in this case.
-	make %{?_smp_mflags} subdirs=crypt-glibc check
+	make %{?_smp_mflags} -O subdirs=crypt-glibc check
 
 	# Unconditonally dump differences in the system call list.
 	echo "* System call consistency checks:"
