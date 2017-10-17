@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-578-g596f70134a
+%define glibcsrcdir glibc-2.26.9000-582-gc38a4bfd59
 %define glibcversion 2.26.90
-%define glibcrelease 21%{?dist}
+%define glibcrelease 22%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2116,6 +2116,12 @@ fi
 %endif
 
 %changelog
+* Tue Oct 17 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-22
+- Switch to .9000 version numbers during development
+- Auto-sync with upstream branch master,
+  commit c38a4bfd596db2be2b9c1f96715bdc833eab760a:
+- malloc: Use compat_symbol_reference in libmcheck (swbz#22050)
+
 * Mon Oct 16 2017 Florian Weimer <fweimer@redhat.com> - 2.26.90-21
 - Auto-sync with upstream branch master,
   commit 596f70134a8f11967c65c1d55a94a3a2718c731d:
