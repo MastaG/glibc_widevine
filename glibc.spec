@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.24-71-g79c6f51428
 %define glibcversion 2.24
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2317,6 +2317,12 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Oct 19 2017 Florian Weimer <fweimer@redhat.com> - 2.24-12
+- Make build of nscd reproducible
+- Remove libnsl dependency from nss_compat
+- Move nss_compat to the main glibc package (#1400538)
+- iconv: Support the IBM858 character set (#1416405)
+
 * Thu Oct 19 2017 Florian Weimer <fweimer@redhat.com> - 2.24-11
 - Auto-sync with upstream branch release/2.24/master,
   commit 79c6f51428a9ec977e611e609a8be6aebcb00006:
