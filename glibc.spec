@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.24-66-gd5a4092c36
+%define glibcsrcdir glibc-2.24-71-g79c6f51428
 %define glibcversion 2.24
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2310,6 +2310,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Oct 19 2017 Florian Weimer <fweimer@redhat.com> - 2.24-11
+- Auto-sync with upstream branch release/2.24/master,
+  commit 79c6f51428a9ec977e611e609a8be6aebcb00006:
+- Incorrect pointer alignment in NSS group merge result construction (#1471985)
+- Fix nss_nisplus build with mainline GCC (swbz#20978)
+- Fix rpcgen buffer overrun (swbz#20790)
+
 * Wed Aug 16 2017 Florian Weimer <fweimer@redhat.com> - 2.24-10
 - Auto-sync with upstream release/2.24/master,
   commit d5a4092c367955ac0203ee603fdec625f6c924f9:
