@@ -309,6 +309,7 @@ Patch2111: glibc-rh1315476-1.patch
 Patch2112: glibc-rh1315476-2.patch
 
 Patch61: glibc-nscd-reproducible.patch
+Patch62: glibc-nss_compat.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -932,6 +933,7 @@ microbenchmark tests on the system.
 %patch2111 -p1
 %patch2112 -p1
 %patch61 -p1
+%patch62 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
