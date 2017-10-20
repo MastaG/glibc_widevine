@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-582-gc38a4bfd59
+%define glibcsrcdir glibc-2.26.9000-605-g63b4baa44e
 %define glibcversion 2.26.9000
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2107,6 +2107,26 @@ fi
 %endif
 
 %changelog
+* Fri Oct 20 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-24
+- Use make -O to serialize make output
+- Auto-sync with upstream branch master,
+  commit 63b4baa44e8d22501c433c4093aa3310f91b6aa2:
+- sysconf: Fix missing definition of UIO_MAXIOV on Linux (#1504165)
+- Install correct bits/long-double.h for MIPS64 (swbz#22322)
+- malloc: Fix deadlock in _int_free consistency check
+- x86-64: Don't set GLRO(dl_platform) to NULL (swbz#22299)
+- math: Add _Float128 function aliases
+- locale: Add new locale mjw_IN (swbz#13994)
+- aarch64: Rewrite elf_machine_load_address using _DYNAMIC symbol
+- powerpc: fix check-before-set in SET_RESTORE_ROUND
+- locale: Use U+202F as thousands separators in pl_PL locale (swbz#16777)
+- math: Use __f128 to define FLT128_* constants in include/float.h for old GCC
+- malloc: Improve malloc initialization sequence (swbz#22159)
+- malloc: Use relaxed atomics for malloc have_fastchunks
+- locale: New locale ca_ES@valencia (swbz#2522)
+- math: Let signbit use the builtin in C++ mode with gcc < 6.x (swbz#22296)
+- locale: Place monetary symbol in el_GR, el_CY after the amount (swbz#22019)
+
 * Tue Oct 17 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-23
 - Switch to .9000 version numbers during development
 
