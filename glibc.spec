@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-605-g63b4baa44e
+%define glibcsrcdir glibc-2.26.9000-618-g797ba44ba2
 %define glibcversion 2.26.9000
-%define glibcrelease 24%{?dist}
+%define glibcrelease 25%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2107,6 +2107,17 @@ fi
 %endif
 
 %changelog
+* Sat Oct 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-25
+- Auto-sync with upstream branch master,
+  commit 797ba44ba27521261f94cc521f1c2ca74f650147:
+- math: Add bits/floatn.h defines for more _FloatN / _FloatNx types
+- posix: Fix improper assert in Linux posix_spawn (swbz#22273)
+- x86-64: Use fxsave/xsave/xsavec in _dl_runtime_resolve (swbz#21265)
+- CVE-2017-15670: glob: Fix one-byte overflow (#1504807)
+- malloc: Add single-threaded path to _int_free
+- locale: Add new locale kab_DZ (swbz#18812)
+- locale: Add new locale shn_MM (swbz#13605)
+
 * Fri Oct 20 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-24
 - Use make -O to serialize make output
 - Auto-sync with upstream branch master,
