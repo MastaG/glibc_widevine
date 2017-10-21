@@ -1,6 +1,6 @@
-%define glibcsrcdir  glibc-2.26-48-gd5c6dea
+%define glibcsrcdir glibc-2.26-65-ga76376df7c
 %define glibcversion 2.26
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -269,6 +269,7 @@ Patch2027: glibc-rh819430.patch
 Patch2031: glibc-rh1070416.patch
 
 # extend_alloca removal, BZ 18023
+Patch2036: glibc-rh1315108-glob.patch
 Patch2037: glibc-rh1315108.patch
 
 # sln implemented by ldconfig, to conserve disk space.
@@ -860,6 +861,7 @@ microbenchmark tests on the system.
 %patch0053 -p1
 %patch0059 -p1
 %patch0060 -p1
+%patch2036 -p1
 %patch2037 -p1
 %patch2112 -p1
 %patch2115 -p1
@@ -2281,6 +2283,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Oct 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26-15
+- Auto-sync with upstream branch release/2.26/master,
+  commit a76376df7c07e577a9515c3faa5dbd50bda5da07:
+- CVE-2017-15670: glob: Fix one-byte overflow (#1504807)
+- CVE-2017-15671: glob: Fix memory leak (#1504807)
+- sysconf: Fix missing definition of UIO_MAXIOV on Linux (#1504165)
+- nss_files: Avoid large buffers with many host addresses (swbz#22078)
+- nss_files: Use struct scratch_buffer for gethostbyname (swbz#18023)
+- aarch64: Optimized implementation of memcpy, memmove for Qualcomm Falkor
+
 * Fri Oct 13 2017 Carlos O'Donell <carlos@redhat.com> - 2.26-14
 - Disable lock elision for IBM z Series (#1499260)
 - As a precaution escape all % in spec file comments.
