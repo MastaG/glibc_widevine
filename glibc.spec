@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26-65-ga76376df7c
 %define glibcversion 2.26
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -238,6 +238,7 @@ Patch63: glibc-rh1498880-1.patch
 Patch64: glibc-rh1498880-2.patch
 Patch65: glibc-nscd-reproducible.patch
 Patch66: glibc-nss_compat.patch
+Patch61: glibc-rh1506802.patch
 
 ##############################################################################
 #
@@ -871,6 +872,7 @@ microbenchmark tests on the system.
 %patch64 -p1
 %patch65 -p1
 %patch66 -p1
+%patch61 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2283,6 +2285,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Nov  2 2017 Florian Weimer <fweimer@redhat.com> - 2.26-16
+- x86: Add x86_64 to x86-64 HWCAP (#1506802)
+
 * Sat Oct 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26-15
 - Auto-sync with upstream branch release/2.26/master,
   commit a76376df7c07e577a9515c3faa5dbd50bda5da07:
