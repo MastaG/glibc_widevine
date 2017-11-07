@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-618-g797ba44ba2
+%define glibcsrcdir glibc-2.26.9000-732-g6b86036452
 %define glibcversion 2.26.9000
-%define glibcrelease 25%{?dist}
+%define glibcrelease 26%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2107,6 +2107,33 @@ fi
 %endif
 
 %changelog
+* Tue Nov 07 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-26
+- Auto-sync with upstream branch master,
+  commit 6b86036452b9ac47b4ee7789a50f2f37df7ecc4f:
+- CVE-2017-15804: glob: Fix buffer overflow during GLOB_TILDE unescaping
+- powerpc: Use latest string function optimization for internal function calls
+- math: No _Float128 support for ppc64le -mlong-double-64 (swbz#22402)
+- tpi_PG locale: Fix wrong d_fmt
+- aarch64: Disable lazy symbol binding of TLSDESC
+- tpi_PG locale: fix syntax error (swbz#22382)
+- i586: Use conditional branches in strcpy.S (swbz#22353)
+- ffsl, ffsll: Declare under __USE_MISC, not just __USE_GNU
+- csb_PL locale: Fix abmon/mon for March (swbz#19485)
+- locale: Various yesstr/nostr/yesexpr/noexpr fixes (swbz#15260, swbz#15261)
+- localedef: Add --no-warnings/--warnings option
+- powerpc: Replace lxvd2x/stxvd2x with lvx/stvx in P7's memcpy/memmove
+- locale: Use ASCII as much as possible in LC_MESSAGES
+- Add new locale yuw_PG (swbz#20952)
+- malloc: Add single-threaded path to malloc/realloc/calloc/memalloc
+- i386: Replace assembly versions of e_powf with generic e_powf.c
+- i386: Replace assembly versions of e_log2f with generic e_log2f.c
+- x86-64: Add powf with FMA
+- x86-64: Add logf with FMA
+- i386: Replace assembly versions of e_logf with generic e_logf.c
+- i386: Replace assembly versions of e_exp2f with generic e_exp2f.c
+- x86-64: Add exp2f with FMA
+- i386: Replace assembly versions of e_expf with generic e_expf.c
+
 * Sat Oct 21 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-25
 - Auto-sync with upstream branch master,
   commit 797ba44ba27521261f94cc521f1c2ca74f650147:
