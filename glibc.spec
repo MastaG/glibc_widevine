@@ -1542,6 +1542,7 @@ pushd build-%{target}
 $GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
 	../build-%{target}/locale/locarchive.o \
 	../build-%{target}/locale/md5.o \
+	../build-%{target}/locale/record-status.o \
 	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
 	-L../build-%{target} \
 	-B../build-%{target}/csu/ -lc -lc_nonshared
