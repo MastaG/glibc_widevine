@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-65-ga76376df7c
+%define glibcsrcdir glibc-2.26-79-ga81c1156c1
 %define glibcversion 2.26
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -238,7 +238,6 @@ Patch63: glibc-rh1498880-1.patch
 Patch64: glibc-rh1498880-2.patch
 Patch65: glibc-nscd-reproducible.patch
 Patch66: glibc-nss_compat.patch
-Patch61: glibc-rh1506802.patch
 
 ##############################################################################
 #
@@ -872,7 +871,6 @@ microbenchmark tests on the system.
 %patch64 -p1
 %patch65 -p1
 %patch66 -p1
-%patch61 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2285,6 +2283,18 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Nov 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26-17
+- Auto-sync with upstream branch release/2.26/master,
+  commit a81c1156c1a9a6161d49b295a09a4e4cff7a88d0:
+- posix: Fix improper assert in Linux posix_spawn (swbz#22273)
+- posix: Do not use WNOHANG in waitpid call for Linux posix_spawn
+- posix: Fix compat glob code on s390 and alpha
+- posix: Consolidate Linux glob implementation
+- Fix range check in do_tunable_update_val
+- Let signbit use the builtin in C++ mode with gcc < 6.x (swbz#22296)
+- x86-64: Don't set GLRO(dl_platform) to NULL (swbz#22299)
+- x86-64: Use fxsave/xsave/xsavec in _dl_runtime_resolve (swbz#21265)
+
 * Thu Nov  2 2017 Florian Weimer <fweimer@redhat.com> - 2.26-16
 - x86: Add x86_64 to x86-64 HWCAP (#1506802)
 
