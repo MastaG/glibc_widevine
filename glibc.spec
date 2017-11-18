@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-79-ga81c1156c1
+%define glibcsrcdir glibc-2.26-86-g2767ebd8bc
 %define glibcversion 2.26
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2283,6 +2283,14 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Sat Nov 18 2017 Florian Weimer <fweimer@redhat.com> - 2.26-18
+- Auto-sync with upstream branch release/2.26/master,
+  commit 2767ebd8bc34c8b632ea737296200a86f57289ad:
+- crypt: Use NSPR header files in addition to NSS header files (#1489339)
+- malloc: Use relaxed atomics for have_fastchunks
+- malloc: Inline tcache functions
+- x86-64: Regenerate libm-test-ulps for AVX512 mathvec tests
+
 * Mon Nov 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26-17
 - Auto-sync with upstream branch release/2.26/master,
   commit a81c1156c1a9a6161d49b295a09a4e4cff7a88d0:
