@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-732-g6b86036452
+%define glibcsrcdir glibc-2.26.9000-792-gf6e965ee94
 %define glibcversion 2.26.9000
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2108,6 +2108,22 @@ fi
 %endif
 
 %changelog
+* Sun Nov 19 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-27
+- Auto-sync with upstream branch master,
+  commit f6e965ee94b37289f64ecd3253021541f7c214c3:
+- powerpc: AT_HWCAP2 bit PPC_FEATURE2_HTM_NO_SUSPEND
+- aarch64: Add HWCAP_DCPOP bit
+- ttyname, ttyname_r: Don't bail prematurely (swbz#22145)
+- signal: Optimize sigrelse implementation
+- inet: Check length of ifname in if_nametoindex (swbz#22442)
+- malloc: Account for all heaps in an arena in malloc_info (swbz#22439)
+- malloc: Add missing arena lock in malloc_info (swbz#22408)
+- malloc: Use __builtin_tgmath in tgmath.h with GCC 8 (swbz#21660)
+- locale: Replaced unicode sequences in the ASCII printable range
+- resolv: More precise checks in res_hnok, res_dnok (swbz#22409, swbz#22412)
+- resolv: ns_name_pton should report trailing \ as error (swbz#22413)
+- locale: mfe_MU, miq_NI, an_ES, kab_DZ, om_ET: Escape / in d_fmt (swbz#22403)
+
 * Tue Nov 07 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-26
 - Auto-sync with upstream branch master,
   commit 6b86036452b9ac47b4ee7789a50f2f37df7ecc4f:
