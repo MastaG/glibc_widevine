@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-792-gf6e965ee94
+%define glibcsrcdir glibc-2.26.9000-811-gcccb6d4e87
 %define glibcversion 2.26.9000
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2108,6 +2108,18 @@ fi
 %endif
 
 %changelog
+* Thu Nov 23 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-28
+- Auto-sync with upstream branch master,
+  commit cccb6d4e87053ed63c74aee063fa84eb63ebf7b8:
+- sigwait can fail with EINTR (#1516394)
+- Add memfd_create function
+- resolv: Fix p_secstodate overflow handling (swbz#22463)
+- resolv: Obsolete p_secstodate
+- Avoid use of strlen in getlogin_r (swbz#22447)
+- lv_LV locale: fix collation (swbz#15537)
+- S390: Add cfi information for start routines in order to stop unwinding
+- aarch64: Optimized memset for falkor
+
 * Sun Nov 19 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-27
 - Auto-sync with upstream branch master,
   commit f6e965ee94b37289f64ecd3253021541f7c214c3:
