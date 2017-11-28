@@ -254,7 +254,9 @@ Requires(pre): basesystem
 
 # This is for building auxiliary programs like memusage, nscd
 # For initial glibc bootstraps it can be commented out
+%if %{without bootstrap}
 BuildRequires: gd-devel libpng-devel zlib-devel
+%endif
 %if %{with docs}
 # Removing texinfo will cause check-safety.sh test to fail because it seems to
 # trigger documentation generation based on dependencies.  We need to fix this
@@ -317,7 +319,7 @@ BuildRequires: elfutils >= 0.72
 BuildRequires: rpm >= 4.2-0.56
 %endif
 
-%if %{without boostrap}
+%if %{without bootstrap}
 %if %{with testsuite}
 # The testsuite builds static C++ binaries that require a C++ compiler,
 # static C++ runtime from libstdc++-static, and lastly static glibc.
@@ -840,9 +842,14 @@ BuildFlags="-mtune=generic"
 ##############################################################################
 # %%build - s390 options.
 ##############################################################################
-%ifarch s390 s390x
-# The default is to turne for z13 (newer hardware), but build for zEC12.
+# The default is to tune for z13 (newer hardware), but build for zEC12.
+%ifarch s390x
 BuildFlags="-march=zEC12 -mtune=z13"
+%endif
+%ifarch s390
+BuildFlags="-march=zEC12 -mtune=z13"
+GCC="$GCC -m31"
+GXX="$GXX -m31"
 %endif
 
 ##############################################################################
@@ -1397,6 +1404,9 @@ mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so $RPM_BUILD_ROOT%{_libdi
 # translated to a correct set of paths using the $LIB token which is
 # dynamically translated by ld.so as the default lib directory.
 for i in $RPM_BUILD_ROOT%{_prefix}/bin/{xtrace,memusage}; do
+%if %{with bootstrap}
+  test -w $i || continue
+%endif
   sed -e 's~=/%{_lib}/libpcprofile.so~=%{_libdir}/libpcprofile.so~' \
       -e 's~=/%{_lib}/libmemusage.so~=%{_libdir}/libmemusage.so~' \
       -e 's~='\''/\\\$LIB/libpcprofile.so~='\''%{_prefix}/\\$LIB/libpcprofile.so~' \
@@ -1488,11 +1498,11 @@ EOF
 
 # Add the utils scripts and programs to the utils subpackage.
 cat > utils.filelist <<EOF
+%if %{without bootstrap}
 %{_prefix}/bin/memusage
 %{_prefix}/bin/memusagestat
-%if %{without bootstrap}
-%{_prefix}/bin/mtrace
 %endif
+%{_prefix}/bin/mtrace
 %{_prefix}/bin/pcprofiledump
 %{_prefix}/bin/xtrace
 EOF
