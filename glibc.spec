@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-811-gcccb6d4e87
+%define glibcsrcdir glibc-2.26.9000-853-ga55430cb0e
 %define glibcversion 2.26.9000
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2118,6 +2118,17 @@ fi
 %endif
 
 %changelog
+* Wed Nov 29 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-29
+- Auto-sync with upstream branch master,
+  commit a55430cb0e261834ce7a4e118dd9e0f2b7fb14bc:
+- elf: Properly compute offsets of note descriptor and next note (swbz#22370)
+- cs_CZ locale: Base collation on iso14651_t1 (swbz#22336)
+- Implement the mlock2 function
+- Add _Float64x function aliases
+- elf: Consolidate link map sorting
+- pl_PL locale: Base collation on iso14651_t1 (swbz#22469)
+- nss: Export nscd hash function as __nss_hash (swbz#22459)
+
 * Thu Nov 23 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-28
 - Auto-sync with upstream branch master,
   commit cccb6d4e87053ed63c74aee063fa84eb63ebf7b8:
