@@ -290,9 +290,8 @@ BuildRequires: systemd
 # We use python for the microbenchmarks
 BuildRequires: python
 
-# This is to ensure that __frame_state_for is exported by glibc
-# will be compatible with egcs 1.x.y
-BuildRequires: gcc >= 4.9
+# This GCC version is needed for -fstack-clash-protection support.
+BuildRequires: gcc >= 7.2.1-3
 %define enablekernel 3.2
 Conflicts: kernel < %{enablekernel}
 %define target %{_target_cpu}-redhat-linux
@@ -934,7 +933,7 @@ build()
 	rm -rf $builddir
 	mkdir $builddir
 	pushd $builddir
-	build_CFLAGS="$BuildFlags -g -O2 $*"
+	build_CFLAGS="$BuildFlags -g -O2 -fstack-clash-protection $*"
 	# Some configure checks can spuriously fail for some architectures if
 	# unwind info is present
 	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
@@ -2119,6 +2118,7 @@ fi
 
 %changelog
 * Wed Nov 29 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-29
+- Enable -fstack-clash-protection (#1512531)
 - Auto-sync with upstream branch master,
   commit a55430cb0e261834ce7a4e118dd9e0f2b7fb14bc:
 - elf: Properly compute offsets of note descriptor and next note (swbz#22370)
