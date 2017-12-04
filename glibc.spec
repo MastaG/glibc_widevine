@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-853-ga55430cb0e
+%define glibcsrcdir glibc-2.26.9000-911-g7863a71181
 %define glibcversion 2.26.9000
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -308,6 +308,9 @@ Conflicts: kernel < %{enablekernel}
 
 # GNU make 4.0 introduced the -O option.
 BuildRequires: make >= 4.0
+
+# The intl subsystem generates a parser using bison.
+BuildRequires: bison >= 2.7
 
 BuildRequires: binutils >= 2.25
 # Earlier releases have broken support for IRELATIVE relocations
@@ -2117,6 +2120,19 @@ fi
 %endif
 
 %changelog
+* Mon Dec 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-30
+- Add build dependency on bison
+- Auto-sync with upstream branch master,
+  commit 7863a7118112fe502e8020a0db0fa74fef281f29:
+- math: New generic sinf (swbz#5997)
+- is_IS locale: Base collation on iso14651_t1 (swbz#22519)
+- intl: Improve reproducibility by using bison (swbz#22432)
+- sr_RS, bs_BA locales: make collation rules the same as for hr_HR (wbz#22534)
+- hr_HR locale: various updates (swbz#10580)
+- x86: Make a space in jmpbuf for shadow stack pointer
+- malloc: Fix integer overflow when tcache is enabled (swbz#22375)
+- locale: make forward accent sorting the default in collating (swbz#17750)
+
 * Wed Nov 29 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-29
 - Enable -fstack-clash-protection (#1512531)
 - Auto-sync with upstream branch master,
