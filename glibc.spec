@@ -2109,7 +2109,7 @@ fi
 
 %changelog
 * Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-31
-- Add elision tunables.  Drop related configure flag.
+- Add elision tunables.  Drop related configure flag.  (#1383986)
 - Auto-sync with upstream branch master,
   commit 37ac8e635a29810318f6d79902102e2e96b2b5bf:
 - Linux: Implement interfaces for memory protection keys
