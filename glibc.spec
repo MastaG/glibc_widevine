@@ -2130,7 +2130,7 @@ fi
 - sr_RS, bs_BA locales: make collation rules the same as for hr_HR (wbz#22534)
 - hr_HR locale: various updates (swbz#10580)
 - x86: Make a space in jmpbuf for shadow stack pointer
-- malloc: Fix integer overflow when tcache is enabled (swbz#22375)
+- CVE-2017-17426: malloc: Fix integer overflow in tcache (swbz#22375)
 - locale: make forward accent sorting the default in collating (swbz#17750)
 
 * Wed Nov 29 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-29
