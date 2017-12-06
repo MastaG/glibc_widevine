@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-911-g7863a71181
+%define glibcsrcdir glibc-2.26.9000-936-g37ac8e635a
 %define glibcversion 2.26.9000
-%define glibcrelease 30%{?dist}
+%define glibcrelease 31%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -57,15 +57,6 @@
 # you install the base arch, not both. You would do this in order
 # to provide a more optimized version of the package for your arch.
 %define auxarches athlon alphaev6
-##############################################################################
-# Enable lock elision support for these architectures
-#
-# At the moment lock elision is disabled on x86_64 until there's a CPU that
-# would actually benefit from enabling it.  Intel released a microcode update
-# to disable HLE and RTM at boot and the Fedora kernel now applies it early
-# enough that keeping lock elision enabled should be harmless, but we have
-# disabled it anyway as a conservative measure.
-%define lock_elision_arches s390 s390x
 ##############################################################################
 # We support only 64-bit POWER with the following runtimes:
 # 64-bit BE:
@@ -954,9 +945,6 @@ build()
 		${core_with_options} \
 %ifarch %{ix86}
 		--disable-multi-arch \
-%endif
-%ifarch %{lock_elision_arches}
-		--enable-lock-elision \
 %endif
 %if %{without werror}
 		--disable-werror \
@@ -2120,6 +2108,20 @@ fi
 %endif
 
 %changelog
+* Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-31
+- Add elision tunables.  Drop related configure flag.
+- Auto-sync with upstream branch master,
+  commit 37ac8e635a29810318f6d79902102e2e96b2b5bf:
+- Linux: Implement interfaces for memory protection keys
+- math: Add _Float64, _Float32x function aliases
+- math: Use sign as double for reduced case in sinf
+- math: fix sinf(NAN)
+- math: s_sinf.c: Replace floor with simple casts
+- et_EE locale: Base collation on iso14651_t1 (swbz#22517)
+- tr_TR locale: Base collation on iso14651_t1 (swbz#22527)
+- hr_HR locale: Avoid single code points for digraphs in LC_TIME (swbz#10580)
+- S390: Fix backtrace in vdso functions
+
 * Mon Dec 04 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-30
 - Add build dependency on bison
 - Auto-sync with upstream branch master,
