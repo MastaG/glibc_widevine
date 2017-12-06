@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-86-g2767ebd8bc
+%define glibcsrcdir glibc-2.26-106-gdf8c219cb9
 %define glibcversion 2.26
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2283,6 +2283,17 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26-19
+- Auto-sync with upstream branch release/2.26/master,
+  commit df8c219cb987cfe85c550efa693a1383a11e38aa:
+- CVE-2017-17426: malloc: Fix integer overflow in tcache (swbz#22375)
+- CVE-2017-15804: glob: Fix overflow in GLOB_TILDE unescaping (swbz#22332)
+- malloc: Add single-threaded path to _int_malloc
+- powerpc: Update AT_HWCAP2 bits
+- malloc: Abort on heap corruption, without a backtrace (swbz#21754)
+- Don't use IFUNC resolver for longjmp or system in libpthread (swbz#21041)
+- powerpc: Replace lxvd2x/stxvd2x with lvx/stvx in P7's memcpy/memmove
+
 * Sat Nov 18 2017 Florian Weimer <fweimer@redhat.com> - 2.26-18
 - Auto-sync with upstream branch release/2.26/master,
   commit 2767ebd8bc34c8b632ea737296200a86f57289ad:
