@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-106-gdf8c219cb9
+%define glibcsrcdir glibc-2.26-107-g73a9236361
 %define glibcversion 2.26
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2283,6 +2283,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26-20
+- Auto-sync with upstream branch release/2.26/master,
+  commit 73a92363619e52c458146e903dfb9b1ba823aa40:
+- malloc: Fix -Werror compilation failure with -O3 (swbz#22052)
+
 * Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26-19
 - Auto-sync with upstream branch release/2.26/master,
   commit df8c219cb987cfe85c550efa693a1383a11e38aa:
