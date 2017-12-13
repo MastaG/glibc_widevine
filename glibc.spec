@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-969-g243b63337c
 %define glibcversion 2.26.9000
-%define glibcrelease 32%{?dist}
+%define glibcrelease 33%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2034,6 +2034,9 @@ fi
 %endif
 
 %changelog
+* Wed Dec 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-33
+- Remove power6 platform directory (#1522675)
+
 * Wed Dec 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-32
 - Obsolete the libcrypt-nss subpackage (#1525396)
 - armhfp: Disable -fstack-clash-protection due to GCC bug (#1522678)

@@ -73,22 +73,23 @@ main (void)
   int i, j, fd;
   off_t base;
   ssize_t ret;
-#ifdef __i386__
   const char *remove_dirs[] =
     {
+#if defined (__i386__)
       "/lib/tls",
       "/lib/i686",
       "/lib/tls/i486",
       "/lib/tls/i586",
       "/lib/tls/i686",
       "/lib/i686/nosegneg",
-    };
+#elif defined (__powerpc64__) && _CALL_ELF != 2
+      "/lib64/power6",
+#elif defined (LIBTLS)
+      LIBTLS,
 #else
-#ifndef LIBTLS
-#define LIBTLS "/lib/tls"
+      "/lib/tls",
 #endif
-  const char *remove_dirs[] = { LIBTLS };
-#endif
+    };
   for (j = 0; j < sizeof (remove_dirs) / sizeof (remove_dirs[0]); ++j)
     {
       size_t rmlen = strlen (remove_dirs[j]);
