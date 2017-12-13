@@ -82,7 +82,7 @@
 #
 %ifarch ppc64
 # Build the additional runtimes for 64-bit BE POWER.
-%define buildpower6 1
+%define buildpower6 0
 %define buildpower7 1
 %define buildpower8 1
 %else
@@ -2109,6 +2109,7 @@ fi
 
 %changelog
 * Wed Dec 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-32
+- ppc64: Disable power6 multilib due to GCC bug (#1522675)
 - Auto-sync with upstream branch master,
   commit 243b63337c2c02f30ec3a988ecc44bc0f6ffa0ad:
 - libio: Free backup area when it not required (swbz#22415)
