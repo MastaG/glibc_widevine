@@ -927,7 +927,10 @@ build()
 	rm -rf $builddir
 	mkdir $builddir
 	pushd $builddir
-	build_CFLAGS="$BuildFlags -g -O2 -fstack-clash-protection $*"
+	build_CFLAGS="$BuildFlags -g -O2 $*"
+%ifnarch %{arm}
+	build_CFLAGS="$build_CFLAGS -fstack-clash-protection"
+%endif
 	# Some configure checks can spuriously fail for some architectures if
 	# unwind info is present
 	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
@@ -2109,6 +2112,7 @@ fi
 
 %changelog
 * Wed Dec 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-32
+- armhfp: Disable -fstack-clash-protection due to GCC bug (#1522678)
 - ppc64: Disable power6 multilib due to GCC bug (#1522675)
 - Auto-sync with upstream branch master,
   commit 243b63337c2c02f30ec3a988ecc44bc0f6ffa0ad:
