@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-936-g37ac8e635a
+%define glibcsrcdir glibc-2.26.9000-969-g243b63337c
 %define glibcversion 2.26.9000
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2108,6 +2108,21 @@ fi
 %endif
 
 %changelog
+* Wed Dec 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-32
+- Auto-sync with upstream branch master,
+  commit 243b63337c2c02f30ec3a988ecc44bc0f6ffa0ad:
+- libio: Free backup area when it not required (swbz#22415)
+- math: Fix nextafter and nexttoward declaration (swbz#22593)
+- math: New generic cosf
+- powerpc: POWER8 memcpy optimization for cached memory
+- x86-64: Add sinf with FMA
+- x86-64: Remove sysdeps/x86_64/fpu/s_sinf.S
+- math: Fix ctanh (0 + i NaN), ctanh (0 + i Inf) (swbz#22568)
+- lt_LT locale: Base collation on copy "iso14651_t1" (swbz#22524)
+- math: Add _Float32 function aliases
+- math: Make cacosh (0 + iNaN) return NaN + i pi/2 (swbz#22561)
+- hsb_DE locale: Base collation on copy "iso14651_t1" (swbz#22515)
+
 * Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-31
 - Add elision tunables.  Drop related configure flag.  (#1383986)
 - Auto-sync with upstream branch master,
