@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-969-g243b63337c
+%define glibcsrcdir glibc-2.26.9000-1033-gbad7a0c81f
 %define glibcversion 2.26.9000
-%define glibcrelease 33%{?dist}
+%define glibcrelease 34%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2034,6 +2034,28 @@ fi
 %endif
 
 %changelog
+* Fri Dec 22 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-34
+- Auto-sync with upstream branch master,
+  commit bad7a0c81f501fbbcc79af9eaa4b8254441c4a1f:
+- copy_file_range: New function to copy file data
+- nptl: Consolidate pthread_{timed,try}join{_np}
+- nptl: Implement pthread_self in libc.so (swbz#22635)
+- math: Provide a C++ version of iseqsig (swbz#22377)
+- elf: remove redundant __libc_enable_secure check from fillin_rpath
+- math: Avoid signed shift overflow in pow (swbz#21309)
+- x86: Add feature_1 to tcbhead_t (swbz#22563)
+- x86: Update cancel_jmp_buf to match __jmp_buf_tag (swbz#22563)
+- ld.so: Examine GLRO to detect inactive loader (swbz#20204)
+- nscd: Fix nscd readlink argument aliasing (swbz#22446)
+- elf: do not substitute dst in $LD_LIBRARY_PATH twice (swbz#22627)
+- ldconfig: set LC_COLLATE to C (swbz#22505)
+- math: New generic sincosf
+- powerpc: st{r,p}cpy optimization for aligned strings
+- CVE-2017-1000409: Count in expanded path in _dl_init_path (#1524867)
+- CVE-2017-1000408: Compute correct array size in _dl_init_paths (#1524867)
+- x86-64: Remove sysdeps/x86_64/fpu/s_cosf.S
+- aarch64: Improve strcmp unaligned performance
+
 * Wed Dec 13 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-33
 - Remove power6 platform directory (#1522675)
 
