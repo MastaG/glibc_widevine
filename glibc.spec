@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-107-g73a9236361
+%define glibcsrcdir glibc-2.26-123-g069c3dd05a
 %define glibcversion 2.26
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2283,6 +2283,13 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Dec 22 2017 Florian Weimer <fweimer@redhat.com> - 2.26-21
+- bash no longer has job control under systemd-nspawn (via mock) (#1468837)
+- Auto-sync with upstream branch release/2.26/master,
+  commit 069c3dd05abc91fced6e1e119e425c361ad97644:
+- CVE-2017-1000409: Count in expanded path in _dl_init_path (#1524867)
+- CVE-2017-1000408: Compute correct array size in _dl_init_paths (#1524867)
+
 * Wed Dec 06 2017 Florian Weimer <fweimer@redhat.com> - 2.26-20
 - Auto-sync with upstream branch release/2.26/master,
   commit 73a92363619e52c458146e903dfb9b1ba823aa40:
