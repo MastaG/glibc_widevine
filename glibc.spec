@@ -216,9 +216,6 @@ Patch2031: glibc-rh1070416.patch
 # extend_alloca removal, BZ 18023
 Patch2037: glibc-rh1315108.patch
 
-# sln implemented by ldconfig, to conserve disk space.
-Patch2112: glibc-rh1315476-2.patch
-
 ##############################################################################
 # End of glibc patches.
 ##############################################################################
@@ -736,7 +733,6 @@ microbenchmark tests on the system.
 %patch0053 -p1
 %patch0059 -p1
 %patch2037 -p1
-%patch2112 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1133,6 +1129,12 @@ rm -f $RPM_BUILD_ROOT%{_sbindir}/rpcinfo
 # Remove the old nss modules.
 rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss1-*
 rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss-*.so.1
+
+# This statically linked binary is no longer necessary in a world where
+# the default Fedora install uses an initramfs, and further we have rpm-ostree
+# which captures the whole userspace FS tree.
+# Further, see https://github.com/projectatomic/rpm-ostree/pull/1173#issuecomment-355014583
+rm -f ${RPM_BUILD_ROOT}/{usr/,}sbin/sln
 
 ##############################################################################
 # Install info files
