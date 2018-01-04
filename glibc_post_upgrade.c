@@ -73,6 +73,14 @@ main (void)
   int i, j, fd;
   off_t base;
   ssize_t ret;
+
+  /* In order to support in-place upgrades, we must immediately remove
+     obsolete platform directories after installing a new glibc
+     version.  RPM only deletes files removed by updates near the end
+     of the transaction.  If we did not remove the obsolete platform
+     directories here, they would be preferred by the dynamic linker
+     during the execution of subsequent RPM scriptlets, likely
+     resulting in process startup failures.  */
   const char *remove_dirs[] =
     {
 #if defined (__i386__)
