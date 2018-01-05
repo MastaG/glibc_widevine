@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1033-gbad7a0c81f
+%define glibcsrcdir glibc-2.26.9000-1075-gf1a844ac63
 %define glibcversion 2.26.9000
-%define glibcrelease 34%{?dist}
+%define glibcrelease 35%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -269,7 +269,7 @@ BuildRequires: systemd
 BuildRequires: python
 
 # This GCC version is needed for -fstack-clash-protection support.
-BuildRequires: gcc >= 7.2.1-3
+BuildRequires: gcc >= 7.2.1-6
 %define enablekernel 3.2
 Conflicts: kernel < %{enablekernel}
 %define target %{_target_cpu}-redhat-linux
@@ -2027,6 +2027,22 @@ fi
 %endif
 
 %changelog
+* Fri Jan 05 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-35
+- Remove sln (#1531546)
+- Remove Sun RPC interfaces (#1531540)
+- Rebuild with newer GCC to fix pthread_exit stack unwinding issue (#1529549)
+- Auto-sync with upstream branch master,
+  commit f1a844ac6389ea4e111afc019323ca982b5b027d:
+- CVE-2017-16997: elf: Check for empty tokens before DST expansion (#1526866)
+- i386: In makecontext, align the stack before calling exit (swbz#22667)
+- x86, armhfp: sync sys/ptrace.h with Linux 4.15 (swbz#22433)
+- elf: check for rpath emptiness before making a copy of it
+- elf: remove redundant is_path argument
+- elf: remove redundant code from is_dst
+- elf: remove redundant code from _dl_dst_substitute
+- scandir: fix wrong assumption about errno (swbz#17804)
+- Deprecate external use of libio.h and _G_config.h
+
 * Fri Dec 22 2017 Florian Weimer <fweimer@redhat.com> - 2.26.9000-34
 - Auto-sync with upstream branch master,
   commit bad7a0c81f501fbbcc79af9eaa4b8254441c4a1f:
