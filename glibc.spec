@@ -908,7 +908,6 @@ build()
 		--build=%{target} \
 		--enable-stack-protector=strong \
 		--enable-tunables \
-		--enable-obsolete-rpc \
 		--enable-obsolete-nsl \
 		--enable-systemtap \
 		${core_with_options} \
@@ -1119,12 +1118,6 @@ popd
 #      wrong files. We probably don't need this today.
 rm -f $RPM_BUILD_ROOT%{_libdir}/libNoVersion*
 rm -f $RPM_BUILD_ROOT/%{_lib}/libNoVersion*
-
-# rquota.x and rquota.h are now provided by quota
-rm -f $RPM_BUILD_ROOT%{_prefix}/include/rpcsvc/rquota.[hx]
-
-# In F7+ this is provided by rpcbind rpm
-rm -f $RPM_BUILD_ROOT%{_sbindir}/rpcinfo
 
 # Remove the old nss modules.
 rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss1-*
@@ -1372,12 +1365,12 @@ sed -i -e '\|%{_libdir}/lib.*_p.a|d' \
 
 # Put some static files into the devel package.
 grep '%{_libdir}/lib.*\.a' < rpm.filelist \
-  | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|rpcsvc\)\.a$' \
+  | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
   >> devel.filelist
 
 # Put the rest of the static files into the static package.
 grep '%{_libdir}/lib.*\.a' < rpm.filelist \
-  | grep -v '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|rpcsvc\)\.a$' \
+  | grep -v '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
   > static.filelist
 
 # Put all of the object files and *.so (not the versioned ones) into the
