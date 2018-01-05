@@ -170,7 +170,6 @@ Patch0024: glibc-fedora-locarchive.patch
 Patch0025: glibc-fedora-streams-rh436349.patch
 Patch0028: glibc-fedora-localedata-rh61908.patch
 Patch0031: glibc-fedora-__libc_multiple_libcs.patch
-Patch0033: glibc-fedora-elf-ORIGIN.patch
 
 # Allow applications to call pthread_atfork without libpthread.so.
 Patch0046: glibc-rh1013801.patch
@@ -726,7 +725,6 @@ microbenchmark tests on the system.
 %patch2027 -p1
 %patch0028 -p1
 %patch0031 -p1
-%patch0033 -p1
 %patch0046 -p1
 %patch2031 -p1
 %patch0047 -p1
