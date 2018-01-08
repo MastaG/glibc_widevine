@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1075-gf1a844ac63
+%define glibcsrcdir glibc-2.26.9000-1095-g579396ee08
 %define glibcversion 2.26.9000
-%define glibcrelease 35%{?dist}
+%define glibcrelease 36%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2027,6 +2027,16 @@ fi
 %endif
 
 %changelog
+* Mon Jan 08 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-36
+- Auto-sync with upstream branch master,
+  commit 579396ee082565ab5f42ff166a264891223b7b82:
+- nptl: Add test for callee-saved register restore in pthread_exit
+- getrlimit64: fix for 32-bit configurations with default version >= 2.2
+- elf: Add linux-4.15 VDSO hash for RISC-V
+- elf: Add RISC-V dynamic relocations to elf.h
+- powerpc: Fix error message during relocation overflow
+- prlimit: Replace old_rlimit RLIM64_INFINITY with RLIM_INFINITY (swbz#22678)
+
 * Fri Jan 05 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-35
 - Remove sln (#1531546)
 - Remove Sun RPC interfaces (#1531540)
