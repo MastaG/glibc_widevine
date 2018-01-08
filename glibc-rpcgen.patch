@@ -1,0 +1,22 @@
+Enable rpcgen unconditionally even if Sun RPC is disabled.
+rpcgen will be installed into the glibc-rpcgen subpackage.
+
+diff --git a/sunrpc/Makefile b/sunrpc/Makefile
+index 8f2a3c8213e3564e..69be5c119bf5ff85 100644
+--- a/sunrpc/Makefile
++++ b/sunrpc/Makefile
+@@ -85,14 +85,12 @@ shared-only-routines = $(routines)
+ endif
+ endif
+ 
+-ifeq ($(link-obsolete-rpc),yes)
+ install-bin := rpcgen
+ rpcgen-objs = rpc_main.o rpc_hout.o rpc_cout.o rpc_parse.o \
+ 	      rpc_scan.o rpc_util.o rpc_svcout.o rpc_clntout.o \
+ 	      rpc_tblout.o rpc_sample.o
+ extra-objs = $(rpcgen-objs) $(addprefix cross-,$(rpcgen-objs))
+ others += rpcgen
+-endif
+ 
+ tests = tst-xdrmem tst-xdrmem2 test-rpcent tst-udp-error tst-udp-timeout \
+   tst-udp-nonblocking
