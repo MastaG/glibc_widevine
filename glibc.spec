@@ -342,7 +342,7 @@ BuildRequires: valgrind
 BuildRequires: systemd
 
 # We use python for the microbenchmarks
-BuildRequires: python
+BuildRequires: python3
 
 # Required by rpcgen.
 BuildRequires: cpp
