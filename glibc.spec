@@ -267,7 +267,7 @@ BuildRequires: valgrind
 BuildRequires: systemd
 
 # We use python for the microbenchmarks
-BuildRequires: python
+BuildRequires: python3
 
 # This GCC version is needed for -fstack-clash-protection support.
 BuildRequires: gcc >= 7.2.1-6
