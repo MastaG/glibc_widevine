@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1095-g579396ee08
+%define glibcsrcdir glibc-2.26.9000-1106-g09085ede12
 %define glibcversion 2.26.9000
-%define glibcrelease 37%{?dist}
+%define glibcrelease 38%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2047,6 +2047,15 @@ fi
 %endif
 
 %changelog
+* Wed Jan 10 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-38
+- nptl: Fix stack guard size accounting (#1527887)
+- Remove invalid Obsoletes: on glibc-header provides
+- Require python3 instead of python during builds
+- Auto-sync with upstream branch master,
+  commit 09085ede12fb9650f286bdcd805609ae69f80618:
+- math: ldbl-128ibm lrintl/lroundl missing "invalid" exceptions (swbz#22690)
+- x86-64: Add sincosf with vector FMA
+
 * Mon Jan  8 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-37
 - Add glibc-rpcgen subpackage, until the replacement is packaged (#1531540)
 
