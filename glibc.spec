@@ -341,7 +341,9 @@ BuildRequires: valgrind
 # We use systemd rpm macros for nscd
 BuildRequires: systemd
 
-# We use python for the microbenchmarks
+# We use python for the microbenchmarks and locale data regeneration from
+# unicode sources (carried out manually). We choose python3 explicitly
+# because it supports both use cases.
 BuildRequires: python3
 
 # Required by rpcgen.
