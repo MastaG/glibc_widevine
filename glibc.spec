@@ -349,7 +349,7 @@ Linux system will not function.
 Summary: Password hashing library
 Requires: %{name}%{_isa} = %{version}-%{release}
 Provides: libcrypt%{_isa}
-Obsoletes: libcrypt-nss
+Obsoletes: libcrypt-nss < 2.26.9000-33
 
 %description -n libcrypt
 This package provides the crypt function, which implements password
