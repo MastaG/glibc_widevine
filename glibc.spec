@@ -362,6 +362,27 @@ hashing.
 /sbin/ldconfig
 
 ######################################################################
+# libnsl subpackage
+######################################################################
+
+%package -n libnsl
+Summary: Legacy support library for NIS
+Requires: %{name}%{_isa} = %{version}-%{release}
+
+%description -n libnsl
+This package provides the legacy version of libnsl library, for
+accessing NIS services.
+
+This library is provided for backwards compatibility only;
+applications should use libnsl2 instead to gain IPv6 support.
+
+%post -n libnsl
+/sbin/ldconfig
+
+%postun -n libnsl
+/sbin/ldconfig
+
+######################################################################
 # rpcgen subpackage
 ######################################################################
 
@@ -592,8 +613,8 @@ Requires(preun): systemd
 Requires(postun): systemd, /usr/sbin/userdel
 
 %description -n nscd
-Nscd caches name service lookups and can dramatically improve
-performance with NIS+, and may help with DNS as well.
+The nscd daemon caches name service lookups and can improve
+performance with LDAP, and may help with DNS as well.
 
 ##############################################################################
 # Subpackages for NSS modules except nss_files, nss_dns
@@ -607,15 +628,6 @@ Requires: %{name}%{_isa} = %{version}-%{release}
 The nss_db Name Service Switch module uses hash-indexed files in /var/db
 to speed up user, group, service, host name, and other NSS-based lookups.
 
-%package -n nss_nis
-Summary: Name Service Switch (NSS) module using NIS
-Requires: %{name}%{_isa} = %{version}-%{release}
-
-%description -n nss_nis
-The nss_nis and nss_nisplus Name Service Switch modules uses the
-Network Information System (NIS) to obtain user, group, host name, and
-other data.
-
 %package -n nss_hesiod
 Summary: Name Service Switch (NSS) module using Hesiod
 Requires: %{name}%{_isa} = %{version}-%{release}
@@ -628,7 +640,6 @@ the Hesiod convention of Project Athena.
 %package nss-devel
 Summary: Development files for directly linking NSS service modules
 Requires: nss_db%{_isa} = %{version}-%{release}
-Requires: nss_nis%{_isa} = %{version}-%{release}
 Requires: nss_hesiod%{_isa} = %{version}-%{release}
 
 %description nss-devel
@@ -917,7 +928,6 @@ build()
 		--build=%{target} \
 		--enable-stack-protector=strong \
 		--enable-tunables \
-		--enable-obsolete-nsl \
 		--enable-systemtap \
 		${core_with_options} \
 %ifarch %{ix86}
@@ -1205,9 +1215,6 @@ mv  ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/*.filelist .
 install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/etc/nsswitch.conf
 
 %ifnarch %{auxarches}
-mkdir -p $RPM_BUILD_ROOT/etc/default
-install -p -m 644 nis/nss $RPM_BUILD_ROOT/etc/default/nss
-
 # This is for ncsd - in glibc 2.2
 install -m 644 nscd/nscd.conf $RPM_BUILD_ROOT/etc
 mkdir -p $RPM_BUILD_ROOT%{_tmpfilesdir}
@@ -1284,7 +1291,9 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 #	- Contains the list of files for the static subpackage.
 # * libcrypt.filelist
 #       - Contains the list of files for the libcrypt subpackage
-# * nss_db.filelist, nss_nis.filelist, nss_hesiod.filelist
+# * libnsl.filelist
+#       - Contains the list of files for the libnsl subpackage
+# * nss_db.filelist, nss_hesiod.filelist
 #       - File lists for nss_* NSS module subpackages.
 # * nss-devel.filelist
 #       - File list with the .so symbolic links for NSS packages.
@@ -1450,12 +1459,10 @@ EOF
 
 # Move the NSS-related files to the NSS subpackages.  Be careful not
 # to pick up .debug files, and the -devel symbolic links.
-for module in db nis nisplus compat hesiod files dns; do
+for module in db compat hesiod files dns; do
   grep -E "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
     rpm.filelist > nss_$module.filelist
 done
-# nis includes nisplus
-cat nss_nisplus.filelist >> nss_nis.filelist
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
 grep '/libnss_[a-z]*\.so$' devel.filelist > nss-devel.filelist
@@ -1471,6 +1478,11 @@ cat nss_files.filelist nss_dns.filelist nss_compat.filelist >> rpm.filelist
 grep '/libcrypt-[0-9.]*.so$' rpm.filelist > libcrypt.filelist
 test $(wc -l < libcrypt.filelist) -eq 1
 sed -i -e '\,/libcrypt,d' rpm.filelist
+
+# Prepare the libnsl-related file lists.
+grep '/libnsl-[0-9.]*.so$' rpm.filelist > libnsl.filelist
+test $(wc -l < libnsl.filelist) -eq 1
+sed -i -e '\,/libnsl,d' rpm.filelist
 
 # Remove the zoneinfo files
 # XXX: Why isn't this don't earlier when we are removing files?
@@ -1587,8 +1599,8 @@ find_debuginfo_args="$find_debuginfo_args \
 	-l nscd.filelist \
 	-p '.*/(sbin|libexec)/.*' \
 	-o debuginfocommon.filelist \
-	-l nss_db.filelist -l nss_nis.filelist -l nss_hesiod.filelist \
-	-l libcrypt.filelist \
+	-l nss_db.filelist -l nss_hesiod.filelist \
+	-l libcrypt.filelist -l libnsl.filelist \
 	-l rpm.filelist \
 %if %{with benchtests}
 	-l benchtests.filelist
@@ -1969,8 +1981,6 @@ fi
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
 %{_prefix}/lib/locale/C.utf8/*
-%dir %attr(755,root,root) /etc/default
-%verify(not md5 size mtime) %config(noreplace) /etc/default/nss
 %doc documentation/README.timezone
 %doc documentation/gai.conf
 
@@ -2023,7 +2033,6 @@ fi
 
 %files -f nss_db.filelist -n nss_db
 /var/db/Makefile
-%files -f nss_nis.filelist -n nss_nis
 %files -f nss_hesiod.filelist -n nss_hesiod
 %doc hesiod/README.hesiod
 %files -f nss-devel.filelist nss-devel
@@ -2031,6 +2040,9 @@ fi
 %files -f libcrypt.filelist -n libcrypt
 %doc documentation/README.ufc-crypt
 %ghost /%{_lib}/libcrypt.so.1
+
+%files -f libnsl.filelist -n libnsl
+/%{_lib}/libnsl.so.1
 
 %if 0%{?_enable_debug_packages}
 %files debuginfo -f debuginfo.filelist
