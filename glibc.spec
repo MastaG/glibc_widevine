@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1106-g09085ede12
+%define glibcsrcdir glibc-2.26.9000-1111-g08c6e95234
 %define glibcversion 2.26.9000
-%define glibcrelease 38%{?dist}
+%define glibcrelease 39%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2061,6 +2061,15 @@ fi
 %endif
 
 %changelog
+* Thu Jan 11 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-39
+- nptl: Open libgcc.so with RTLD_NOW during pthread_cancel (#1527887)
+- Introduce libnsl subpackage and remove NIS headers (#1531540)
+- Use versioned Obsoletes: for libcrypt-nss.
+- Auto-sync with upstream branch master,
+  commit 08c6e95234c60a5c2f37532d1111acf084f39345:
+- nptl: Add tst-minstack-cancel, tst-minstack-exit (swbz#22636)
+- math: ldbl-128ibm log1pl (-qNaN) spurious "invalid" exception (swbz#22693)
+
 * Wed Jan 10 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-38
 - nptl: Fix stack guard size accounting (#1527887)
 - Remove invalid Obsoletes: on glibc-header provides
