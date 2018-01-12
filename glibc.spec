@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1111-g08c6e95234
+%define glibcsrcdir glibc-2.26.9000-1115-g9a08a366a7
 %define glibcversion 2.26.9000
-%define glibcrelease 39%{?dist}
+%define glibcrelease 40%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2061,6 +2061,15 @@ fi
 %endif
 
 %changelog
+* Fri Jan 12 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-40
+- libnsl: Do not install libnsl.so, libnsl.a (#1531540)
+- Use unversioned Supplements: for langpacks (#1490725)
+- Auto-sync with upstream branch master,
+  commit 9a08a366a7e7ddffe62113a9ffe5e50605ea0924:
+- hu_HU locale: Avoid double space (swbz#22657)
+- math: Make default libc_feholdsetround_noex_ctx use __feholdexcept
+  (swbz#22702)
+
 * Thu Jan 11 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-39
 - nptl: Open libgcc.so with RTLD_NOW during pthread_cancel (#1527887)
 - Introduce libnsl subpackage and remove NIS headers (#1531540)
