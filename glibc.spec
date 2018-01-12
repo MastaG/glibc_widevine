@@ -549,7 +549,7 @@ Summary: Locale data for ]]..lang..[[
 Provides: glibc-langpack = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
-Supplements: (glibc = %{version}-%{release} and (]]..suppl..[[))
+Supplements: (glibc and (]]..suppl..[[))
 %description langpack-]]..lang..[[
 
 The glibc-langpack-]]..lang..[[ package includes the basic information required
