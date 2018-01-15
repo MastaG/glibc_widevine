@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-123-g069c3dd05a
+%define glibcsrcdir glibc-2.26-131-gfabef2edbc
 %define glibcversion 2.26
-%define glibcrelease 22%{?dist}
+%define glibcrelease 23%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2286,6 +2286,15 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26-23
+- CVE-2018-1000001: Make getcwd fail if it cannot obtain an absolute path
+  (#1533837)
+- CVE-2017-16997: Check for empty tokens before dynamic string token
+  expansion in the dynamic linker (#1526866)
+- Auto-sync with upstream branch release/2.26/master,
+  commit fabef2edbc29424a8048bdd60eba1a201f95682b:
+- elf: do not substitute dst in $LD_LIBRARY_PATH twice (swbz#22627)
+
 * Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26-22
 - Add BuildRequires: cpp (for rpcgen)
 
