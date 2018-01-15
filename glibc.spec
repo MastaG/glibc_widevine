@@ -344,6 +344,9 @@ BuildRequires: systemd
 # We use python for the microbenchmarks
 BuildRequires: python
 
+# Required by rpcgen.
+BuildRequires: cpp
+
 # This is to ensure that __frame_state_for is exported by glibc
 # will be compatible with egcs 1.x.y
 BuildRequires: gcc >= 4.9
@@ -2283,6 +2286,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26-22
+- Add BuildRequires: cpp (for rpcgen)
+
 * Fri Dec 22 2017 Florian Weimer <fweimer@redhat.com> - 2.26-21
 - bash no longer has job control under systemd-nspawn (via mock) (#1468837)
 - Auto-sync with upstream branch release/2.26/master,
