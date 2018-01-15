@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-131-gfabef2edbc
+%define glibcsrcdir glibc-2.26-137-g247c1ddd30
 %define glibcversion 2.26
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2286,6 +2286,11 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26-24
+- PTHREAD_STACK_MIN is too small on x86-64 (#1527887)
+- Auto-sync with upstream branch release/2.26/master,
+  commit 247c1ddd309e3f4135045eab554f3817b7d765be.
+
 * Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26-23
 - CVE-2018-1000001: Make getcwd fail if it cannot obtain an absolute path
   (#1533837)
