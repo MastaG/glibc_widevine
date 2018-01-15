@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1115-g9a08a366a7
+%define glibcsrcdir glibc-2.26.9000-1125-g860b0240a5
 %define glibcversion 2.26.9000
-%define glibcrelease 40%{?dist}
+%define glibcrelease 41%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2061,6 +2061,15 @@ fi
 %endif
 
 %changelog
+* Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-41
+- CVE-2018-1000001: Make getcwd fail if it cannot obtain an absolute path
+  (#1533837)
+- elf: Synchronize DF_1_* flags with binutils (#1439328)
+- Auto-sync with upstream branch master,
+  commit 860b0240a5645edd6490161de3f8d1d1f2786025:
+- aarch64: fix static pie enabled libc when main is in a shared library
+- malloc: Ensure that the consolidated fast chunk has a sane size
+
 * Fri Jan 12 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-40
 - libnsl: Do not install libnsl.so, libnsl.a (#1531540)
 - Use unversioned Supplements: for langpacks (#1490725)
