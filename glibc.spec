@@ -371,7 +371,7 @@ Patch145: glibc-rh168253-getaddrinfo-errno.patch
 Patch146: glibc-rh168253-getaddrinfo-h_errno.patch
 Patch147: glibc-rh168253-getaddrinfo-errno-nss-failure.patch
 Patch148: glibc-rh168253-getaddrinfo-h_errno-no-success.patch
-Patch149: glibc-rh168253-gtaddrinfo-no_data.patch
+Patch149: glibc-rh168253-getaddrinfo-no_data.patch
 Patch150: glibc-rh168253-getaddrinfo-gethosts-error-handling.patch
 Patch151: glibc-rh168253-tst-res_use_inet6-mapping.patch
 Patch152: glibc-rh168253-nss_dns-dead-code.patch
