@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.25-57-g595f287ae0
+%define glibcsrcdir glibc-2.25-123-gedcf13e25c
 %define glibcversion 2.25
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -280,6 +280,7 @@ Patch2036: glibc-gcc-PR69537.patch
 
 # extend_alloca removal, BZ 18023
 Patch2037: glibc-rh1315108.patch
+Patch2038: glibc-rh1315108-glob.patch
 
 # Upstream BZ 20313
 Patch2110: glibc-rh1351108-update-to-unicode-9.0.0.patch
@@ -292,33 +293,18 @@ Patch62: glibc-nss_compat.patch
 Patch63: glibc-rh1416405.patch
 Patch64: glibc-bits-types-res_state.patch
 Patch69: glibc-libc_diag.patch
-Patch70: glibc-libc-pointer-arith.patch
-Patch71: glibc-dynarray-1.patch
-Patch72: glibc-dynarray-2.patch
-Patch73: glibc-dynarray-3.patch
-Patch74: glibc-dynarray-4.patch
-Patch75: glibc-dynarray-5.patch
-Patch76: glibc-alloc_buffer-1.patch
 Patch77: glibc-alloc_buffer-2.patch
-Patch78: glibc-rh168253-ns_name-tests.patch
 Patch79: glibc-rh168253-network-dn_expand-cleanup.patch
 Patch80: glibc-rh168253-nss_dns-declaration-cleanup.patch
 Patch81: glibc-rh168253-tst-resolv-canonname.patch
 Patch82: glibc-rh168253-remove-iquery.patch
 Patch83: glibc-rh168253-resolv-h-definitions-cleanup.patch
-Patch84: glibc-rh168253-ns_name_pack-buffer-size.patch
 Patch85: glibc-rh168253-remove-ends-fallback.patch
 Patch86: glibc-rh168253-sock_cloexec.patch
 Patch87: glibc-rh168253-builtin_expect.patch
 Patch88: glibc-rh168253-builtin_expect-fixup.patch
 Patch89: glibc-rh168253-res_dflretry.patch
-Patch90: glibc-rh168253-getaddrinfo-malloc-address-list.patch
-Patch91: glibc-rh168253-ai_canonname-tests.patch
-Patch92: glibc-rh168253-inet_pton-gnu-style.patch
-Patch93: glibc-rh168253-getaddrinfo-malloc-canonname.patch
 Patch94: glibc-rh168253-res_init-tests.patch
-Patch95: glibc-rh168253-getaddrinfo-malloc-canonname-strdup-1.patch
-Patch96: glibc-rh168253-getaddrinfo-malloc-canonname-strdup-2.patch
 Patch97: glibc-rh168253-getaddrinfo-malloc-canonname-strdup-3.patch
 Patch98: glibc-rh168253-res_vinit-hidden.patch
 Patch99: glibc-rh168253-res_randomid-reorg.patch
@@ -330,12 +316,10 @@ Patch104: glibc-rh168253-res_vinit-check-allocations.patch
 Patch105: glibc-rh168253-res_vinit_1-getline.patch
 Patch106: glibc-rh168253-tst-inet6_scopeid_pton-getaddrinfo.patch
 Patch107: glibc-rh168253-inet_pton_length.patch
-Patch108: glibc-rh168253-getaddrinfo-inet_pton_length.patch
 Patch109: glibc-rh168253-inet6_scopeid_pton-node-local.patch
 Patch110: glibc-rh168253-__res_initstamp-cleanup.patch
 Patch111: glibc-rh168253-res_libc-gnu-style.patch
 Patch112: glibc-rh168253-inet_pton-leading-zeros.patch
-Patch113: glibc-rh168253-getaddrinfo-merge-ipv6-ipv4-addresses.patch
 Patch114: glibc-rh168253-getaddrinfo-tests-bug21295.patch
 Patch115: glibc-rh168253-_-res_vinit-_res_hconf_init.patch
 Patch116: glibc-rh168253-resolv-tests-timeout.patch
@@ -365,14 +349,6 @@ Patch139: glibc-rh168253-resolv_conf-_res-matching.patch
 Patch140: glibc-rh168253-support_chroot.patch
 Patch141: glibc-rh168253-resolv-tests-no-patching.patch
 Patch142: glibc-rh168253-resolv-tests-nondeterministic.patch
-Patch143: glibc-rh168253-getaddrinfo-gethosts-res-ctx-release.patch
-Patch144: glibc-rh168253-getaddrinfo-gaih_inet-unreachable-return.patch
-Patch145: glibc-rh168253-getaddrinfo-errno.patch
-Patch146: glibc-rh168253-getaddrinfo-h_errno.patch
-Patch147: glibc-rh168253-getaddrinfo-errno-nss-failure.patch
-Patch148: glibc-rh168253-getaddrinfo-h_errno-no-success.patch
-Patch149: glibc-rh168253-getaddrinfo-no_data.patch
-Patch150: glibc-rh168253-getaddrinfo-gethosts-error-handling.patch
 Patch151: glibc-rh168253-tst-res_use_inet6-mapping.patch
 Patch152: glibc-rh168253-nss_dns-dead-code.patch
 Patch153: glibc-rh168253-resolv-oom-memory-leak.patch
@@ -969,6 +945,7 @@ microbenchmark tests on the system.
 %patch0060 -p1
 %patch2036 -p1
 %patch2037 -p1
+%patch2038 -p1
 %patch2110 -p1
 %patch2112 -p1
 %patch61 -p1
@@ -976,33 +953,18 @@ microbenchmark tests on the system.
 %patch63 -p1
 %patch64 -p1
 %patch69 -p1
-%patch70 -p1
-%patch71 -p1
-%patch72 -p1
-%patch73 -p1
-%patch74 -p1
-%patch75 -p1
-%patch76 -p1
 %patch77 -p1
-%patch78 -p1
 %patch79 -p1
 %patch80 -p1
 %patch81 -p1
 %patch82 -p1
 %patch83 -p1
-%patch84 -p1
 %patch85 -p1
 %patch86 -p1
 %patch87 -p1
 %patch88 -p1
 %patch89 -p1
-%patch90 -p1
-%patch91 -p1
-%patch92 -p1
-%patch93 -p1
 %patch94 -p1
-%patch95 -p1
-%patch96 -p1
 %patch97 -p1
 %patch98 -p1
 %patch99 -p1
@@ -1014,12 +976,10 @@ microbenchmark tests on the system.
 %patch105 -p1
 %patch106 -p1
 %patch107 -p1
-%patch108 -p1
 %patch109 -p1
 %patch110 -p1
 %patch111 -p1
 %patch112 -p1
-%patch113 -p1
 %patch114 -p1
 %patch115 -p1
 %patch116 -p1
@@ -1049,14 +1009,6 @@ microbenchmark tests on the system.
 %patch140 -p1
 %patch141 -p1
 %patch142 -p1
-%patch143 -p1
-%patch144 -p1
-%patch145 -p1
-%patch146 -p1
-%patch147 -p1
-%patch148 -p1
-%patch149 -p1
-%patch150 -p1
 %patch151 -p1
 %patch152 -p1
 %patch153 -p1
@@ -2463,6 +2415,23 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jan 17 2018 Florian Weimer <fweimer@redhat.com> - 2.25-13
+- PTHREAD_STACK_MIN is too small on x86-64 (#1527887)
+- CVE-2018-1000001: Make getcwd fail if it cannot obtain an absolute path
+  (#1533837)
+- CVE-2017-16997: Check for empty tokens before dynamic string token
+  expansion in the dynamic linker (#1526866)
+- CVE-2017-15804: glob: Fix overflow in GLOB_TILDE unescaping (swbz#22332)
+- CVE-2017-15670: glob: Fix one-byte overflow (#1504807)
+- CVE-2017-15671: glob: Fix memory leak (#1504807)
+- Auto-sync with upstream branch release/2.25/master,
+  commit edcf13e25c1559558a6f12ff5a71d4136a39235e:
+- nss_files: Avoid large buffers with many host addresses (swbz#22078)
+- nss_files: Use struct scratch_buffer for gethostbyname (swbz#18023)
+- posix: Fix improper assert in Linux posix_spawn (BZ#22273)
+- Don't use IFUNC resolver for longjmp or system in libpthread (swbz#21041)
+- x86-64: Use fxsave/xsave/xsavec in _dl_runtime_resolve (swbz#21265)
+
 * Wed Oct 11 2017 Florian Weimer <fweimer@redhat.com> - 2.25-12
 - Support an arbitrary number of search domains (#168253)
 - Detect and apply /etc/resolv.conf changes in libresolv (#1374239)

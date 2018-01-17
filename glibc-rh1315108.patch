@@ -156,16 +156,6 @@ Date:   Sun Mar 1 19:48:31 2015 +0100
     	* posix/wordexp.c (parse_tilde): Use struct scratch_buffer
     	instead of extend_alloca.
 
-commit 7b4c16db30304b83a5d1e913d1a8f7e90a8c398c
-Author: Florian Weimer <fweimer@redhat.com>
-Date:   Sun Mar 1 19:49:50 2015 +0100
-
-    glob: Rewrite to use struct scratch_buffer instead of extend_alloca
-    
-    	[BZ #18023]
-    	* posix/glob.c (glob): Use struct scratch_buffer instead of
-    	extend_alloca.
-
 commit 683543bbb3e2c1b17554c4096d00c2980f39a802
 Author: Florian Weimer <fweimer@redhat.com>
 Date:   Sun Mar 1 23:22:45 2015 +0100
@@ -249,8 +239,9 @@ Date:   Sun Mar 1 23:22:45 2015 +0100
     	[BZ #18023]
     	* include/alloca.h (stackinfo_alloca_round, extend_alloca,
     	extend_alloca_account): Remove.
-Index: b/elf/dl-deps.c
-===================================================================
+
+diff --git a/elf/dl-deps.c b/elf/dl-deps.c
+index 1b8bac65932a7713..bc59f0ff7b4d7c61 100644
 --- a/elf/dl-deps.c
 +++ b/elf/dl-deps.c
 @@ -27,6 +27,7 @@
@@ -261,7 +252,7 @@ Index: b/elf/dl-deps.c
  
  #include <dl-dst.h>
  
-@@ -184,9 +185,8 @@ _dl_map_object_deps (struct link_map *ma
+@@ -184,9 +185,8 @@ _dl_map_object_deps (struct link_map *map,
    /* Pointer to last unique object.  */
    tail = &known[nlist - 1];
  
@@ -273,7 +264,7 @@ Index: b/elf/dl-deps.c
  
    /* Process each element of the search list, loading each of its
       auxiliary objects and immediate dependencies.  Auxiliary objects
-@@ -217,13 +217,12 @@ _dl_map_object_deps (struct link_map *ma
+@@ -217,13 +217,12 @@ _dl_map_object_deps (struct link_map *map,
        if (l->l_searchlist.r_list == NULL && l->l_initfini == NULL
  	  && l != map && l->l_ldnum > 0)
  	{
@@ -293,7 +284,7 @@ Index: b/elf/dl-deps.c
  	}
  
        if (l->l_info[DT_NEEDED] || l->l_info[AUXTAG] || l->l_info[FILTERTAG])
-@@ -463,8 +462,11 @@ _dl_map_object_deps (struct link_map *ma
+@@ -463,8 +462,11 @@ _dl_map_object_deps (struct link_map *map,
  	  struct link_map **l_initfini = (struct link_map **)
  	    malloc ((2 * nneeded + 1) * sizeof needed[0]);
  	  if (l_initfini == NULL)
@@ -307,7 +298,7 @@ Index: b/elf/dl-deps.c
  	  l_initfini[0] = l;
  	  memcpy (&l_initfini[1], needed, nneeded * sizeof needed[0]);
  	  memcpy (&l_initfini[nneeded + 1], l_initfini,
-@@ -482,6 +484,8 @@ _dl_map_object_deps (struct link_map *ma
+@@ -482,6 +484,8 @@ _dl_map_object_deps (struct link_map *map,
      }
  
   out:
@@ -316,8 +307,8 @@ Index: b/elf/dl-deps.c
    if (errno == 0 && errno_saved != 0)
      __set_errno (errno_saved);
  
-Index: b/include/alloca.h
-===================================================================
+diff --git a/include/alloca.h b/include/alloca.h
+index fd90664f0a17cd6d..c0b83954436ed4c1 100644
 --- a/include/alloca.h
 +++ b/include/alloca.h
 @@ -23,57 +23,17 @@ libc_hidden_proto (__libc_alloca_cutoff)
@@ -378,11 +369,11 @@ Index: b/include/alloca.h
  #endif
  
  # endif /* !_ISOMAC */
-Index: b/nis/nss_compat/compat-initgroups.c
-===================================================================
+diff --git a/nis/nss_compat/compat-initgroups.c b/nis/nss_compat/compat-initgroups.c
+index 1b37e0c295f481df..cc3db7889ba289db 100644
 --- a/nis/nss_compat/compat-initgroups.c
 +++ b/nis/nss_compat/compat-initgroups.c
-@@ -310,7 +310,6 @@ getgrent_next_nss (ent_t *ent, char *buf
+@@ -310,7 +310,6 @@ getgrent_next_nss (ent_t *ent, char *buffer, size_t buflen, const char *user,
  		 overwrite the pointer with one to a bigger buffer.  */
  	      char *tmpbuf = buffer;
  	      size_t tmplen = buflen;
@@ -390,7 +381,7 @@ Index: b/nis/nss_compat/compat-initgroups.c
  
  	      for (int i = 0; i < mystart; i++)
  		{
-@@ -319,29 +318,26 @@ getgrent_next_nss (ent_t *ent, char *buf
+@@ -319,29 +318,26 @@ getgrent_next_nss (ent_t *ent, char *buffer, size_t buflen, const char *user,
  			 == NSS_STATUS_TRYAGAIN
  			 && *errnop == ERANGE)
                      {
@@ -440,7 +431,7 @@ Index: b/nis/nss_compat/compat-initgroups.c
                      }
  
  		  if (__builtin_expect  (status != NSS_STATUS_NOTFOUND, 1))
-@@ -369,7 +365,7 @@ getgrent_next_nss (ent_t *ent, char *buf
+@@ -369,7 +365,7 @@ getgrent_next_nss (ent_t *ent, char *buffer, size_t buflen, const char *user,
  	      status = NSS_STATUS_NOTFOUND;
  
   done:
@@ -449,8 +440,8 @@ Index: b/nis/nss_compat/compat-initgroups.c
  	        free (tmpbuf);
  	    }
  
-Index: b/nis/nss_nis/nis-initgroups.c
-===================================================================
+diff --git a/nis/nss_nis/nis-initgroups.c b/nis/nss_nis/nis-initgroups.c
+index 3784c101f7ee31aa..c872b32e15f55e3d 100644
 --- a/nis/nss_nis/nis-initgroups.c
 +++ b/nis/nss_nis/nis-initgroups.c
 @@ -16,7 +16,6 @@
@@ -469,7 +460,7 @@ Index: b/nis/nss_nis/nis-initgroups.c
  
  #include "nss-nis.h"
  #include <libnsl.h>
-@@ -120,27 +120,30 @@ internal_getgrent_r (struct group *grp,
+@@ -120,27 +120,30 @@ internal_getgrent_r (struct group *grp, char *buffer, size_t buflen,
  static int
  get_uid (const char *user, uid_t *uidp)
  {
@@ -504,7 +495,7 @@ Index: b/nis/nss_nis/nis-initgroups.c
    return 1;
  }
  
-@@ -254,8 +257,6 @@ _nss_nis_initgroups_dyn (const char *use
+@@ -254,8 +257,6 @@ _nss_nis_initgroups_dyn (const char *user, gid_t group, long int *start,
      }
  
    struct group grpbuf, *g;
@@ -513,7 +504,7 @@ Index: b/nis/nss_nis/nis-initgroups.c
    enum nss_status status;
    intern_t intern = { NULL, NULL, 0 };
    gid_t *groups = *groupsp;
-@@ -264,15 +265,21 @@ _nss_nis_initgroups_dyn (const char *use
+@@ -264,15 +265,21 @@ _nss_nis_initgroups_dyn (const char *user, gid_t group, long int *start,
    if (status != NSS_STATUS_SUCCESS)
      return status;
  
@@ -546,8 +537,8 @@ Index: b/nis/nss_nis/nis-initgroups.c
  
    return status;
  }
-Index: b/nscd/aicache.c
-===================================================================
+diff --git a/nscd/aicache.c b/nscd/aicache.c
+index 7bf4131979451040..ea29b1c3d99bb530 100644
 --- a/nscd/aicache.c
 +++ b/nscd/aicache.c
 @@ -27,6 +27,7 @@
@@ -558,7 +549,7 @@ Index: b/nscd/aicache.c
  
  #include "dbg_log.h"
  #include "nscd.h"
-@@ -113,10 +114,13 @@ addhstaiX (struct database_dyn *db, int
+@@ -113,10 +114,13 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
    int old_res_options = _res.options;
    _res.options &= ~DEPRECATED_RES_USE_INET6;
  
@@ -576,7 +567,7 @@ Index: b/nscd/aicache.c
    int32_t ttl = INT32_MAX;
    ssize_t total = 0;
    char *key_copy = NULL;
-@@ -129,6 +133,7 @@ addhstaiX (struct database_dyn *db, int
+@@ -129,6 +133,7 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
        int status[2] = { NSS_STATUS_UNAVAIL, NSS_STATUS_UNAVAIL };
        int naddrs = 0;
        size_t addrslen = 0;
@@ -584,7 +575,7 @@ Index: b/nscd/aicache.c
        char *canon = NULL;
        size_t canonlen;
  
-@@ -143,12 +148,17 @@ addhstaiX (struct database_dyn *db, int
+@@ -143,12 +148,17 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
  	      at = &atmem;
  	      rc6 = 0;
  	      herrno = 0;
@@ -604,7 +595,7 @@ Index: b/nscd/aicache.c
  	    }
  
  	  if (rc6 != 0 && herrno == NETDB_INTERNAL)
-@@ -226,41 +236,38 @@ addhstaiX (struct database_dyn *db, int
+@@ -226,41 +236,38 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
  	  while (1)
  	    {
  	      rc6 = 0;
@@ -662,7 +653,7 @@ Index: b/nscd/aicache.c
  	    }
  
  	  if (rc4 != 0 && herrno == NETDB_INTERNAL)
-@@ -286,13 +293,11 @@ addhstaiX (struct database_dyn *db, int
+@@ -286,13 +293,11 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
  	      cfct = __nss_lookup_function (nip, "getcanonname_r");
  	      if (cfct != NULL)
  		{
@@ -678,7 +669,7 @@ Index: b/nscd/aicache.c
  		      == NSS_STATUS_SUCCESS)
  		    canon = s;
  		  else
-@@ -321,18 +326,20 @@ addhstaiX (struct database_dyn *db, int
+@@ -321,18 +326,20 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
  		      addrfamily = AF_INET6;
  		    }
  
@@ -715,11 +706,11 @@ Index: b/nscd/aicache.c
    return timeout;
  }
  
-Index: b/nscd/connections.c
-===================================================================
+diff --git a/nscd/connections.c b/nscd/connections.c
+index 26d2c0091b8f320d..9615c159285f0044 100644
 --- a/nscd/connections.c
 +++ b/nscd/connections.c
-@@ -1353,64 +1353,83 @@ request from '%s' [%ld] not handled due
+@@ -1353,64 +1353,83 @@ request from '%s' [%ld] not handled due to missing permission"),
      }
  }
  
@@ -739,20 +730,19 @@ Index: b/nscd/connections.c
 -  size_t readlen = 0;
    int fd = open ("/proc/self/cmdline", O_RDONLY);
 -  if (fd == -1)
--    {
--      dbg_log (_("\
--cannot open /proc/self/cmdline: %s; disabling paranoia mode"),
--	       strerror (errno));
--
--      paranoia = 0;
--      return;
 +  if (fd < 0)
 +    return NULL;
 +  size_t current = 0;
 +  size_t limit = 1024;
 +  char *buffer = malloc (limit);
 +  if (buffer == NULL)
-+    {
+     {
+-      dbg_log (_("\
+-cannot open /proc/self/cmdline: %s; disabling paranoia mode"),
+-	       strerror (errno));
+-
+-      paranoia = 0;
+-      return;
 +      close (fd);
 +      errno = ENOMEM;
 +      return NULL;
@@ -842,7 +832,7 @@ Index: b/nscd/connections.c
      {
        argv[argc++] = cp;
        cp = (char *) rawmemchr (cp, '\0') + 1;
-@@ -1427,6 +1446,7 @@ cannot change to old UID: %s; disabling
+@@ -1427,6 +1446,7 @@ cannot change to old UID: %s; disabling paranoia mode"),
  		   strerror (errno));
  
  	  paranoia = 0;
@@ -850,7 +840,7 @@ Index: b/nscd/connections.c
  	  return;
  	}
  
-@@ -1438,6 +1458,7 @@ cannot change to old GID: %s; disabling
+@@ -1438,6 +1458,7 @@ cannot change to old GID: %s; disabling paranoia mode"),
  
  	  ignore_value (setuid (server_uid));
  	  paranoia = 0;
@@ -858,7 +848,7 @@ Index: b/nscd/connections.c
  	  return;
  	}
      }
-@@ -1455,6 +1476,7 @@ cannot change to old working directory:
+@@ -1455,6 +1476,7 @@ cannot change to old working directory: %s; disabling paranoia mode"),
  	  ignore_value (setgid (server_gid));
  	}
        paranoia = 0;
@@ -866,7 +856,7 @@ Index: b/nscd/connections.c
        return;
      }
  
-@@ -1503,6 +1525,7 @@ cannot change to old working directory:
+@@ -1503,6 +1525,7 @@ cannot change to old working directory: %s; disabling paranoia mode"),
      dbg_log (_("cannot change current working directory to \"/\": %s"),
  	     strerror (errno));
    paranoia = 0;
@@ -874,8 +864,8 @@ Index: b/nscd/connections.c
  
    /* Reenable the databases.  */
    time_t now = time (NULL);
-Index: b/nscd/grpcache.c
-===================================================================
+diff --git a/nscd/grpcache.c b/nscd/grpcache.c
+index d2ad53509db97bdf..a71036512048dd81 100644
 --- a/nscd/grpcache.c
 +++ b/nscd/grpcache.c
 @@ -16,7 +16,6 @@
@@ -894,7 +884,7 @@ Index: b/nscd/grpcache.c
  
  #include "nscd.h"
  #include "dbg_log.h"
-@@ -448,12 +448,12 @@ addgrbyX (struct database_dyn *db, int f
+@@ -448,12 +448,12 @@ addgrbyX (struct database_dyn *db, int fd, request_header *req,
       look again in the table whether the dataset is now available.  We
       simply insert it.  It does not matter if it is in there twice.  The
       pruning function only will look at the timestamp.  */
@@ -910,7 +900,7 @@ Index: b/nscd/grpcache.c
  
    if (__glibc_unlikely (debug_level > 0))
      {
-@@ -463,43 +463,24 @@ addgrbyX (struct database_dyn *db, int f
+@@ -463,43 +463,24 @@ addgrbyX (struct database_dyn *db, int fd, request_header *req,
  	dbg_log (_("Reloading \"%s\" in group cache!"), keystr);
      }
  
@@ -969,8 +959,8 @@ Index: b/nscd/grpcache.c
    return timeout;
  }
  
-Index: b/nscd/hstcache.c
-===================================================================
+diff --git a/nscd/hstcache.c b/nscd/hstcache.c
+index 9f6ce979ac333265..d0af99893dd17b9f 100644
 --- a/nscd/hstcache.c
 +++ b/nscd/hstcache.c
 @@ -34,6 +34,7 @@
@@ -981,7 +971,7 @@ Index: b/nscd/hstcache.c
  
  #include "nscd.h"
  #include "dbg_log.h"
-@@ -463,11 +464,8 @@ addhstbyX (struct database_dyn *db, int
+@@ -463,11 +464,8 @@ addhstbyX (struct database_dyn *db, int fd, request_header *req,
       look again in the table whether the dataset is now available.  We
       simply insert it.  It does not matter if it is in there twice.  The
       pruning function only will look at the timestamp.  */
@@ -993,7 +983,7 @@ Index: b/nscd/hstcache.c
    int errval = 0;
    int32_t ttl = INT32_MAX;
  
-@@ -487,46 +485,30 @@ addhstbyX (struct database_dyn *db, int
+@@ -487,46 +485,30 @@ addhstbyX (struct database_dyn *db, int fd, request_header *req,
  	dbg_log (_("Reloading \"%s\" in hosts cache!"), (char *) str);
      }
  
@@ -1059,8 +1049,8 @@ Index: b/nscd/hstcache.c
    return timeout;
  }
  
-Index: b/nscd/pwdcache.c
-===================================================================
+diff --git a/nscd/pwdcache.c b/nscd/pwdcache.c
+index 721f4c617b0bb74a..9349b54df4241ad5 100644
 --- a/nscd/pwdcache.c
 +++ b/nscd/pwdcache.c
 @@ -16,7 +16,6 @@
@@ -1079,7 +1069,7 @@ Index: b/nscd/pwdcache.c
  
  #include "nscd.h"
  #include "dbg_log.h"
-@@ -426,12 +426,11 @@ addpwbyX (struct database_dyn *db, int f
+@@ -426,12 +426,11 @@ addpwbyX (struct database_dyn *db, int fd, request_header *req,
       look again in the table whether the dataset is now available.  We
       simply insert it.  It does not matter if it is in there twice.  The
       pruning function only will look at the timestamp.  */
@@ -1094,7 +1084,7 @@ Index: b/nscd/pwdcache.c
  
    if (__glibc_unlikely (debug_level > 0))
      {
-@@ -441,45 +440,26 @@ addpwbyX (struct database_dyn *db, int f
+@@ -441,45 +440,26 @@ addpwbyX (struct database_dyn *db, int fd, request_header *req,
  	dbg_log (_("Reloading \"%s\" in password cache!"), keystr);
      }
  
@@ -1155,8 +1145,8 @@ Index: b/nscd/pwdcache.c
    return timeout;
  }
  
-Index: b/nscd/servicescache.c
-===================================================================
+diff --git a/nscd/servicescache.c b/nscd/servicescache.c
+index 131ba6ddcc1a5f7a..549e9a446816d760 100644
 --- a/nscd/servicescache.c
 +++ b/nscd/servicescache.c
 @@ -16,7 +16,6 @@
@@ -1175,7 +1165,7 @@ Index: b/nscd/servicescache.c
  
  #include "nscd.h"
  #include "dbg_log.h"
-@@ -374,12 +374,11 @@ addservbyX (struct database_dyn *db, int
+@@ -374,12 +374,11 @@ addservbyX (struct database_dyn *db, int fd, request_header *req,
       look again in the table whether the dataset is now available.  We
       simply insert it.  It does not matter if it is in there twice.  The
       pruning function only will look at the timestamp.  */
@@ -1190,7 +1180,7 @@ Index: b/nscd/servicescache.c
  
    if (__glibc_unlikely (debug_level > 0))
      {
-@@ -389,43 +388,24 @@ addservbyX (struct database_dyn *db, int
+@@ -389,43 +388,24 @@ addservbyX (struct database_dyn *db, int fd, request_header *req,
  	dbg_log (_("Reloading \"%s\" in services cache!"), key);
      }
  
@@ -1249,8 +1239,8 @@ Index: b/nscd/servicescache.c
    return timeout;
  }
  
-Index: b/nss/getent.c
-===================================================================
+diff --git a/nss/getent.c b/nss/getent.c
+index 8f8c3fe80a2cfea6..5654c5f67c4f118c 100644
 --- a/nss/getent.c
 +++ b/nss/getent.c
 @@ -39,6 +39,7 @@
@@ -1303,7 +1293,7 @@ Index: b/nss/getent.c
        printf ("%-21s", key[i]);
        for (int j = 0; j < n; ++j)
  	if (grps[j] != -1)
-@@ -508,6 +513,8 @@ initgroups_keys (int number, char *key[]
+@@ -508,6 +513,8 @@ initgroups_keys (int number, char *key[])
        putchar_unlocked ('\n');
      }
  
@@ -1312,111 +1302,8 @@ Index: b/nss/getent.c
    return 0;
  }
  
-Index: b/nss/nss_files/files-hosts.c
-===================================================================
---- a/nss/nss_files/files-hosts.c
-+++ b/nss/nss_files/files-hosts.c
-@@ -22,7 +22,7 @@
- #include <arpa/nameser.h>
- #include <netdb.h>
- #include <resolv/resolv-internal.h>
--
-+#include <scratch_buffer.h>
- 
- /* Get implementation for some internal functions.  */
- #include "../resolv/mapv4v6addr.h"
-@@ -145,15 +145,12 @@ _nss_files_gethostbyname3_r (const char
- 	  && _res_hconf.flags & HCONF_FLAG_MULTI)
- 	{
- 	  /* We have to get all host entries from the file.  */
--	  size_t tmp_buflen = MIN (buflen, 4096);
--	  char tmp_buffer_stack[tmp_buflen]
--	    __attribute__ ((__aligned__ (__alignof__ (struct hostent_data))));
--	  char *tmp_buffer = tmp_buffer_stack;
- 	  struct hostent tmp_result_buf;
- 	  int naddrs = 1;
- 	  int naliases = 0;
- 	  char *bufferend;
--	  bool tmp_buffer_malloced = false;
-+	  struct scratch_buffer tmpbuf;
-+	  scratch_buffer_init (&tmpbuf);
- 
- 	  while (result->h_aliases[naliases] != NULL)
- 	    ++naliases;
-@@ -161,9 +158,9 @@ _nss_files_gethostbyname3_r (const char
- 	  bufferend = (char *) &result->h_aliases[naliases + 1];
- 
- 	again:
--	  while ((status = internal_getent (stream, &tmp_result_buf, tmp_buffer,
--					    tmp_buflen, errnop, herrnop, af,
--					    flags))
-+	  while ((status = internal_getent (stream, &tmp_result_buf,
-+					    tmpbuf.data, tmpbuf.length,
-+					    errnop, herrnop, af, flags))
- 		 == NSS_STATUS_SUCCESS)
- 	    {
- 	      int matches = 1;
-@@ -287,54 +284,13 @@ _nss_files_gethostbyname3_r (const char
- 		}
- 	    }
- 
--	  if (status == NSS_STATUS_TRYAGAIN)
--	    {
--	      size_t newsize = 2 * tmp_buflen;
--	      if (tmp_buffer_malloced)
--		{
--		  char *newp = realloc (tmp_buffer, newsize);
--		  if (newp != NULL)
--		    {
--		      assert ((((uintptr_t) newp)
--			       & (__alignof__ (struct hostent_data) - 1))
--			      == 0);
--		      tmp_buffer = newp;
--		      tmp_buflen = newsize;
--		      goto again;
--		    }
--		}
--	      else if (!__libc_use_alloca (buflen + newsize))
--		{
--		  tmp_buffer = malloc (newsize);
--		  if (tmp_buffer != NULL)
--		    {
--		      assert ((((uintptr_t) tmp_buffer)
--			       & (__alignof__ (struct hostent_data) - 1))
--			      == 0);
--		      tmp_buffer_malloced = true;
--		      tmp_buflen = newsize;
--		      goto again;
--		    }
--		}
--	      else
--		{
--		  tmp_buffer
--		    = extend_alloca (tmp_buffer, tmp_buflen,
--				     newsize
--				     + __alignof__ (struct hostent_data));
--		  tmp_buffer = (char *) (((uintptr_t) tmp_buffer
--					  + __alignof__ (struct hostent_data)
--					  - 1)
--					 & ~(__alignof__ (struct hostent_data)
--					     - 1));
--		  goto again;
--		}
--	    }
-+	  if (status == NSS_STATUS_TRYAGAIN
-+	      && scratch_buffer_grow (&tmpbuf))
-+	    goto again;
- 	  else
- 	    status = NSS_STATUS_SUCCESS;
- 	out:
--	  if (tmp_buffer_malloced)
--	    free (tmp_buffer);
-+	  scratch_buffer_free (&tmpbuf);
- 	}
- 
-       internal_endent (&stream);
-Index: b/nss/nss_files/files-initgroups.c
-===================================================================
+diff --git a/nss/nss_files/files-initgroups.c b/nss/nss_files/files-initgroups.c
+index 27cd8ece40434f5c..8a88f1b62357d3bd 100644
 --- a/nss/nss_files/files-initgroups.c
 +++ b/nss/nss_files/files-initgroups.c
 @@ -16,7 +16,6 @@
@@ -1435,7 +1322,7 @@ Index: b/nss/nss_files/files-initgroups.c
  
  enum nss_status
  _nss_files_initgroups_dyn (const char *user, gid_t group, long int *start,
-@@ -46,9 +46,8 @@ _nss_files_initgroups_dyn (const char *u
+@@ -46,9 +46,8 @@ _nss_files_initgroups_dyn (const char *user, gid_t group, long int *start,
    enum nss_status status = NSS_STATUS_SUCCESS;
    bool any = false;
  
@@ -1447,7 +1334,7 @@ Index: b/nss/nss_files/files-initgroups.c
  
    gid_t *groups = *groupsp;
  
-@@ -67,26 +66,16 @@ _nss_files_initgroups_dyn (const char *u
+@@ -67,26 +66,16 @@ _nss_files_initgroups_dyn (const char *user, gid_t group, long int *start,
  	}
  
        struct group grp;
@@ -1480,7 +1367,7 @@ Index: b/nss/nss_files/files-initgroups.c
  	  /* Reread current line, the parser has clobbered it.  */
  	  fsetpos (stream, &pos);
  	  continue;
-@@ -132,8 +121,7 @@ _nss_files_initgroups_dyn (const char *u
+@@ -132,8 +121,7 @@ _nss_files_initgroups_dyn (const char *user, gid_t group, long int *start,
  
   out:
    /* Free memory.  */
@@ -1490,241 +1377,8 @@ Index: b/nss/nss_files/files-initgroups.c
    free (line);
  
    fclose (stream);
-Index: b/posix/glob.c
-===================================================================
---- a/posix/glob.c
-+++ b/posix/glob.c
-@@ -27,6 +27,7 @@
- #include <stdbool.h>
- #include <stddef.h>
- #include <stdint.h>
-+#include <scratch_buffer.h>
- 
- /* Outcomment the following line for production quality code.  */
- /* #define NDEBUG 1 */
-@@ -293,7 +294,7 @@ glob (const char *pattern, int flags, in
-   glob_t dirs;
-   int retval = 0;
- #ifdef _LIBC
--  size_t alloca_used = 0;
-+  size_t alloca_used = sizeof (struct scratch_buffer);
- #endif
- 
-   if (pattern == NULL || pglob == NULL || (flags & ~__GLOB_FLAGS) != 0)
-@@ -637,33 +638,13 @@ glob (const char *pattern, int flags, in
- 		{
- 		  struct passwd *p;
- #   if defined HAVE_GETPWNAM_R || defined _LIBC
--		  long int pwbuflen = GETPW_R_SIZE_MAX ();
--		  char *pwtmpbuf;
- 		  struct passwd pwbuf;
--		  int malloc_pwtmpbuf = 0;
- 		  int save = errno;
-+		  struct scratch_buffer pwtmpbuf;
-+		  scratch_buffer_init (&pwtmpbuf);
- 
--#    ifndef _LIBC
--		  if (pwbuflen == -1)
--		    /* `sysconf' does not support _SC_GETPW_R_SIZE_MAX.
--		       Try a moderate value.  */
--		    pwbuflen = 1024;
--#    endif
--		  if (__libc_use_alloca (alloca_used + pwbuflen))
--		    pwtmpbuf = alloca_account (pwbuflen, alloca_used);
--		  else
--		    {
--		      pwtmpbuf = malloc (pwbuflen);
--		      if (pwtmpbuf == NULL)
--			{
--			  retval = GLOB_NOSPACE;
--			  goto out;
--			}
--		      malloc_pwtmpbuf = 1;
--		    }
--
--		  while (getpwnam_r (name, &pwbuf, pwtmpbuf, pwbuflen, &p)
--			 != 0)
-+		  while (getpwnam_r (name, &pwbuf,
-+				     pwtmpbuf.data, pwtmpbuf.length, &p) != 0)
- 		    {
- 		      if (errno != ERANGE)
- 			{
-@@ -671,67 +652,37 @@ glob (const char *pattern, int flags, in
- 			  break;
- 			}
- 
--		      if (!malloc_pwtmpbuf
--			  && __libc_use_alloca (alloca_used
--						+ 2 * pwbuflen))
--			pwtmpbuf = extend_alloca_account (pwtmpbuf, pwbuflen,
--							  2 * pwbuflen,
--							  alloca_used);
--		      else
-+		      if (!scratch_buffer_grow (&pwtmpbuf))
- 			{
--			  char *newp = realloc (malloc_pwtmpbuf
--						? pwtmpbuf : NULL,
--						2 * pwbuflen);
--			  if (newp == NULL)
--			    {
--			      if (__glibc_unlikely (malloc_pwtmpbuf))
--				free (pwtmpbuf);
--			      retval = GLOB_NOSPACE;
--			      goto out;
--			    }
--			  pwtmpbuf = newp;
--			  pwbuflen = 2 * pwbuflen;
--			  malloc_pwtmpbuf = 1;
-+			  retval = GLOB_NOSPACE;
-+			  goto out;
- 			}
- 		      __set_errno (save);
- 		    }
- #   else
--		  p = getpwnam (name);
-+		  p = getpwnam (namebuf.data);
- #   endif
- 		  if (p != NULL)
- 		    {
--		      if (!malloc_pwtmpbuf)
--			home_dir = p->pw_dir;
--		      else
-+		      home_dir = strdup (p->pw_dir);
-+		      malloc_home_dir = 1;
-+		      if (home_dir == NULL)
- 			{
--			  size_t home_dir_len = strlen (p->pw_dir) + 1;
--			  if (__libc_use_alloca (alloca_used + home_dir_len))
--			    home_dir = alloca_account (home_dir_len,
--						       alloca_used);
--			  else
--			    {
--			      home_dir = malloc (home_dir_len);
--			      if (home_dir == NULL)
--				{
--				  free (pwtmpbuf);
--				  retval = GLOB_NOSPACE;
--				  goto out;
--				}
--			      malloc_home_dir = 1;
--			    }
--			  memcpy (home_dir, p->pw_dir, home_dir_len);
--
--			  free (pwtmpbuf);
-+			  scratch_buffer_free (&pwtmpbuf);
-+			  retval = GLOB_NOSPACE;
-+			  goto out;
- 			}
- 		    }
-+		  scratch_buffer_free (&pwtmpbuf);
- 		}
- 	    }
- 	  if (home_dir == NULL || home_dir[0] == '\0')
- 	    {
-+	      if (malloc_home_dir)
-+		free (home_dir);
-+	      malloc_home_dir = 0;
- 	      if (flags & GLOB_TILDE_CHECK)
- 		{
--		  if (__glibc_unlikely (malloc_home_dir))
--		    free (home_dir);
- 		  retval = GLOB_NOMATCH;
- 		  goto out;
- 		}
-@@ -852,57 +803,24 @@ glob (const char *pattern, int flags, in
- 	  {
- 	    struct passwd *p;
- #  if defined HAVE_GETPWNAM_R || defined _LIBC
--	    long int buflen = GETPW_R_SIZE_MAX ();
--	    char *pwtmpbuf;
--	    int malloc_pwtmpbuf = 0;
- 	    struct passwd pwbuf;
- 	    int save = errno;
-+	    struct scratch_buffer pwtmpbuf;
-+	    scratch_buffer_init (&pwtmpbuf);
- 
--#   ifndef _LIBC
--	    if (buflen == -1)
--	      /* `sysconf' does not support _SC_GETPW_R_SIZE_MAX.  Try a
--		 moderate value.  */
--	      buflen = 1024;
--#   endif
--	    if (__libc_use_alloca (alloca_used + buflen))
--	      pwtmpbuf = alloca_account (buflen, alloca_used);
--	    else
--	      {
--		pwtmpbuf = malloc (buflen);
--		if (pwtmpbuf == NULL)
--		  {
--		  nomem_getpw:
--		    if (__glibc_unlikely (malloc_user_name))
--		      free (user_name);
--		    retval = GLOB_NOSPACE;
--		    goto out;
--		  }
--		malloc_pwtmpbuf = 1;
--	      }
--
--	    while (getpwnam_r (user_name, &pwbuf, pwtmpbuf, buflen, &p) != 0)
-+	    while (getpwnam_r (user_name, &pwbuf,
-+			       pwtmpbuf.data, pwtmpbuf.length, &p) != 0)
- 	      {
- 		if (errno != ERANGE)
- 		  {
- 		    p = NULL;
- 		    break;
- 		  }
--		if (!malloc_pwtmpbuf
--		    && __libc_use_alloca (alloca_used + 2 * buflen))
--		  pwtmpbuf = extend_alloca_account (pwtmpbuf, buflen,
--						    2 * buflen, alloca_used);
--		else
-+
-+		if (!scratch_buffer_grow (&pwtmpbuf))
- 		  {
--		    char *newp = realloc (malloc_pwtmpbuf ? pwtmpbuf : NULL,
--					  2 * buflen);
--		    if (newp == NULL)
--		      {
--			if (__glibc_unlikely (malloc_pwtmpbuf))
--			  free (pwtmpbuf);
--			goto nomem_getpw;
--		      }
--		    pwtmpbuf = newp;
--		    malloc_pwtmpbuf = 1;
-+		    retval = GLOB_NOSPACE;
-+		    goto out;
- 		  }
- 		__set_errno (save);
- 	      }
-@@ -931,8 +849,7 @@ glob (const char *pattern, int flags, in
- 		    dirname = malloc (home_len + rest_len + 1);
- 		    if (dirname == NULL)
- 		      {
--			if (__glibc_unlikely (malloc_pwtmpbuf))
--			  free (pwtmpbuf);
-+			scratch_buffer_free (&pwtmpbuf);
- 			retval = GLOB_NOSPACE;
- 			goto out;
- 		      }
-@@ -944,13 +861,11 @@ glob (const char *pattern, int flags, in
- 		dirlen = home_len + rest_len;
- 		dirname_modified = 1;
- 
--		if (__glibc_unlikely (malloc_pwtmpbuf))
--		  free (pwtmpbuf);
-+		scratch_buffer_free (&pwtmpbuf);
- 	      }
- 	    else
- 	      {
--		if (__glibc_unlikely (malloc_pwtmpbuf))
--		  free (pwtmpbuf);
-+		scratch_buffer_free (&pwtmpbuf);
- 
- 		if (flags & GLOB_TILDE_CHECK)
- 		  /* We have to regard it as an error if we cannot find the
-Index: b/posix/wordexp.c
-===================================================================
+diff --git a/posix/wordexp.c b/posix/wordexp.c
+index ba3f3ed4b66a6507..c4a6a209f416a9fb 100644
 --- a/posix/wordexp.c
 +++ b/posix/wordexp.c
 @@ -17,7 +17,6 @@
@@ -1743,7 +1397,7 @@ Index: b/posix/wordexp.c
  
  #include <libc-lock.h>
  #include <_itoa.h>
-@@ -308,12 +308,7 @@ parse_tilde (char **word, size_t *word_l
+@@ -308,12 +308,7 @@ parse_tilde (char **word, size_t *word_length, size_t *max_length,
    if (i == 1 + *offset)
      {
        /* Tilde appears on its own */
@@ -1756,7 +1410,7 @@ Index: b/posix/wordexp.c
  
        /* POSIX.2 says ~ expands to $HOME and if HOME is unset the
  	 results are unspecified.  We do a lookup on the uid if
-@@ -328,25 +323,38 @@ parse_tilde (char **word, size_t *word_l
+@@ -328,25 +323,38 @@ parse_tilde (char **word, size_t *word_length, size_t *max_length,
  	}
        else
  	{
@@ -1802,7 +1456,7 @@ Index: b/posix/wordexp.c
  	}
      }
    else
-@@ -354,13 +362,15 @@ parse_tilde (char **word, size_t *word_l
+@@ -354,13 +362,15 @@ parse_tilde (char **word, size_t *word_length, size_t *max_length,
        /* Look up user name in database to get home directory */
        char *user = strndupa (&words[1 + *offset], i - (1 + *offset));
        struct passwd pwd, *tpwd;
@@ -1822,7 +1476,7 @@ Index: b/posix/wordexp.c
  
        if (result == 0 && tpwd != NULL && pwd.pw_dir)
  	*word = w_addstr (*word, word_length, max_length, pwd.pw_dir);
-@@ -372,6 +382,8 @@ parse_tilde (char **word, size_t *word_l
+@@ -372,6 +382,8 @@ parse_tilde (char **word, size_t *word_length, size_t *max_length,
  	    *word = w_addstr (*word, word_length, max_length, user);
  	}
  
@@ -1831,8 +1485,8 @@ Index: b/posix/wordexp.c
        *offset = i - 1;
      }
    return *word ? 0 : WRDE_NOSPACE;
-Index: b/sysdeps/unix/sysv/linux/gethostid.c
-===================================================================
+diff --git a/sysdeps/unix/sysv/linux/gethostid.c b/sysdeps/unix/sysv/linux/gethostid.c
+index cc108aa2d64b616a..3529cf6fe509cfd1 100644
 --- a/sysdeps/unix/sysv/linux/gethostid.c
 +++ b/sysdeps/unix/sysv/linux/gethostid.c
 @@ -63,13 +63,12 @@ sethostid (long int id)
@@ -1885,8 +1539,8 @@ Index: b/sysdeps/unix/sysv/linux/gethostid.c
    /* For the return value to be not exactly the IP address we do some
       bit fiddling.  */
    return (int32_t) (in.s_addr << 16 | in.s_addr >> 16);
-Index: b/sysdeps/unix/sysv/linux/getlogin_r.c
-===================================================================
+diff --git a/sysdeps/unix/sysv/linux/getlogin_r.c b/sysdeps/unix/sysv/linux/getlogin_r.c
+index 05ac36b49186b29e..37a9255e03657728 100644
 --- a/sysdeps/unix/sysv/linux/getlogin_r.c
 +++ b/sysdeps/unix/sysv/linux/getlogin_r.c
 @@ -18,6 +18,7 @@
@@ -1897,7 +1551,7 @@ Index: b/sysdeps/unix/sysv/linux/getlogin_r.c
  
  #define STATIC static
  static int getlogin_r_fd0 (char *name, size_t namesize);
-@@ -54,28 +55,19 @@ __getlogin_r_loginuid (char *name, size_
+@@ -54,28 +55,19 @@ __getlogin_r_loginuid (char *name, size_t namesize)
  	  endp == uidbuf || *endp != '\0'))
      return -1;
  
@@ -1933,7 +1587,7 @@ Index: b/sysdeps/unix/sysv/linux/getlogin_r.c
        }
  
    if (res != 0 || tpwd == NULL)
-@@ -95,9 +87,7 @@ __getlogin_r_loginuid (char *name, size_
+@@ -95,9 +87,7 @@ __getlogin_r_loginuid (char *name, size_t namesize)
    memcpy (name, pwd.pw_name, needed);
  
   out:

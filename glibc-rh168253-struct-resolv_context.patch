@@ -3,14 +3,14 @@ Author: Florian Weimer <fweimer@redhat.com>
 Date:   Fri Jun 30 21:10:23 2017 +0200
 
     resolv: Introduce struct resolv_context [BZ #21668]
-    
+
     struct resolv_context objects provide a temporary resolver context
     which does not change during a name lookup operation.  Only when the
     outmost context is created, the stub resolver configuration is
     verified to be current (at present, only against previous res_init
     calls).  Subsequent attempts to obtain the context will reuse the
     result of the initial verification operation.
-    
+
     struct resolv_context can also be extended in the future to store
     data which needs to be deallocated during thread cancellation.
 
@@ -419,7 +419,7 @@ index f3e756b68448f6ea..bd3fbcb08250c61c 100644
  				       struct hostent *resbuf, char **buffer,
  				       size_t *buffer_size, size_t buflen,
 diff --git a/resolv/Makefile b/resolv/Makefile
-index 79843d0d7ca92ffd..7f5e07d618297f60 100644
+index aafb1c5efab6d685..499f7692f1534aae 100644
 --- a/resolv/Makefile
 +++ b/resolv/Makefile
 @@ -28,7 +28,8 @@ headers	:= resolv.h \
@@ -2216,7 +2216,7 @@ index 0000000000000000..27c8d56b36104521
 +
 +#endif /* _RESOLV_CONTEXT_H */
 diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
-index 4fb1eaef79bc66a3..efa7118498990073 100644
+index 284311011c84b971..b837939b9a02a1be 100644
 --- a/sysdeps/posix/getaddrinfo.c
 +++ b/sysdeps/posix/getaddrinfo.c
 @@ -60,6 +60,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -2228,19 +2228,19 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
  #include <stdbool.h>
  #include <stdio.h>
  #include <stdio_ext.h>
-@@ -266,7 +268,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
-       if (herrno == NETDB_INTERNAL)					      \
+@@ -252,7 +254,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
+ 	break;								      \
+       if (!scratch_buffer_grow (tmpbuf))				      \
  	{								      \
- 	  __set_h_errno (herrno);					      \
 -	  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;	      \
 +	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);	      \
-+	  __resolv_context_put (res_ctx);				      \
- 	  result = -EAI_SYSTEM;						      \
++	  __resolv_context_put (res_ctx);					      \
+ 	  result = -EAI_MEMORY;						      \
  	  goto free_and_return;						      \
  	}								      \
-@@ -279,7 +282,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
+@@ -262,7 +265,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
      {									      \
-       if (!convert_hostent_to_gaih_addrtuple (req, _family,h, &addrmem))      \
+       if (h_errno == NETDB_INTERNAL)					      \
  	{								      \
 -	  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;	      \
 +	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);	      \
@@ -2248,7 +2248,17 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
  	  result = -EAI_SYSTEM;						      \
  	  goto free_and_return;						      \
  	}								      \
-@@ -582,7 +586,8 @@ gaih_inet (const char *name, const struct gaih_service *service,
+@@ -275,7 +279,8 @@ convert_hostent_to_gaih_addrtuple (const struct addrinfo *req,
+     {									      \
+       if (!convert_hostent_to_gaih_addrtuple (req, _family, &th, &addrmem))   \
+ 	{								      \
+-	  _res.options |= old_res_options & DEPRECATED_RES_USE_INET6;	      \
++	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);	      \
++	  __resolv_context_put (res_ctx);				      \
+ 	  result = -EAI_SYSTEM;						      \
+ 	  goto free_and_return;						      \
+ 	}								      \
+@@ -572,7 +577,8 @@ gaih_inet (const char *name, const struct gaih_service *service,
  	  enum nss_status inet6_status = NSS_STATUS_UNAVAIL;
  	  enum nss_status status = NSS_STATUS_UNAVAIL;
  	  int no_more;
@@ -2258,7 +2268,7 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
  
  	  /* If we do not have to look for IPv6 addresses or the canonical
  	     name, use the simple, old functions, which do not support
-@@ -765,16 +770,14 @@ gaih_inet (const char *name, const struct gaih_service *service,
+@@ -758,16 +764,14 @@ gaih_inet (const char *name, const struct gaih_service *service,
  	    no_more = 0;
  	  nip = __nss_hosts_database;
  
@@ -2281,7 +2291,7 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
  
  	  while (!no_more)
  	    {
-@@ -811,8 +814,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
+@@ -801,8 +805,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
  
  		      if (!scratch_buffer_grow (tmpbuf))
  			{
@@ -2293,7 +2303,7 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
  			  result = -EAI_MEMORY;
  			  goto free_and_return;
  			}
-@@ -911,9 +915,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
+@@ -901,9 +906,9 @@ gaih_inet (const char *name, const struct gaih_service *service,
  			      canonbuf = getcanonname (nip, at, name);
  			      if (canonbuf == NULL)
  				{
@@ -2306,7 +2316,7 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
  				  result = -EAI_MEMORY;
  				  goto free_and_return;
  				}
-@@ -953,7 +957,8 @@ gaih_inet (const char *name, const struct gaih_service *service,
+@@ -947,7 +952,8 @@ gaih_inet (const char *name, const struct gaih_service *service,
  		nip = nip->next;
  	    }
  
@@ -2314,5 +2324,5 @@ index 4fb1eaef79bc66a3..efa7118498990073 100644
 +	  __resolv_context_enable_inet6 (res_ctx, res_enable_inet6);
 +	  __resolv_context_put (res_ctx);
  
- 	  if (h_errno == NETDB_INTERNAL)
- 	    {
+ 	  /* If we have a failure which sets errno, report it using
+ 	     EAI_SYSTEM.  */

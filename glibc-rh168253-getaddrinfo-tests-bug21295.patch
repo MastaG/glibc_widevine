@@ -5,12 +5,12 @@ Date:   Sat Jun 24 16:51:31 2017 +0200
     resolv/tst-resolv-basic: Add test cases for bug 21295
 
 diff --git a/resolv/tst-resolv-basic.c b/resolv/tst-resolv-basic.c
-index 92f912beed35744f..3dfa1657f50ab588 100644
+index 66a0e8a1659219b4..95aea1bcfb266017 100644
 --- a/resolv/tst-resolv-basic.c
 +++ b/resolv/tst-resolv-basic.c
-@@ -398,6 +398,22 @@ do_test (void)
-   check_ai ("t.nxdomain.example", "80", AF_INET6,
-             "error: Name or service not known\n");
+@@ -495,6 +495,22 @@ do_test (void)
+   test_bug_21295 ();
+   test_nodata_nxdomain ();
  
 +  /* Test for bug 21295.  */
 +  check_ai_hints ("www.example", "80",
