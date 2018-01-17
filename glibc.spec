@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26-137-g247c1ddd30
 %define glibcversion 2.26
-%define glibcrelease 24%{?dist}
+%define glibcrelease 25%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2288,6 +2288,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Jan 17 2018 Florian Weimer <fweimer@redhat.com> - 2.26-25
+- Build depend on python3, not python
+
 * Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26-24
 - PTHREAD_STACK_MIN is too small on x86-64 (#1527887)
 - Auto-sync with upstream branch release/2.26/master,
