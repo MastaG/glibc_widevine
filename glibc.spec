@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1125-g860b0240a5
 %define glibcversion 2.26.9000
-%define glibcrelease 41%{?dist}
+%define glibcrelease 42%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -213,8 +213,9 @@ Patch2027: glibc-rh819430.patch
 
 Patch2031: glibc-rh1070416.patch
 
-# extend_alloca removal, BZ 18023
 Patch2037: glibc-rh1315108.patch
+Patch2040: glibc-rh1452750-allocate_once.patch
+Patch2041: glibc-rh1452750-libidn2.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -313,6 +314,9 @@ BuildRequires: libstdc++-static
 # check to pass even if we aren't going to use any of those objects to
 # build the tests.
 BuildRequires: glibc-static
+
+# libidn2 (but not libidn2-devel) is needed for testing AI_IDN/NI_IDN.
+BuildRequires: libidn2
 %endif
 %endif
 
@@ -753,6 +757,8 @@ microbenchmark tests on the system.
 %patch0053 -p1
 %patch0059 -p1
 %patch2037 -p1
+%patch2040 -p1
+%patch2041 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2061,6 +2067,10 @@ fi
 %endif
 
 %changelog
+* Wed Jan 17 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-42
+- CVE-2017-14062, CVE-2016-6261, CVE-2016-6263:
+  Use libidn2 for IDNA support (#1452750)
+
 * Mon Jan 15 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-41
 - CVE-2018-1000001: Make getcwd fail if it cannot obtain an absolute path
   (#1533837)
