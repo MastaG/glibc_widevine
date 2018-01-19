@@ -931,6 +931,9 @@ build()
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
+%ifarch %{ix86} aarch64
+		--enable-static-pie \
+%endif
 		--enable-tunables \
 		--enable-systemtap \
 		${core_with_options} \
