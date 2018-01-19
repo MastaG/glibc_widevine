@@ -92,6 +92,9 @@
 %define buildpower8 0
 %endif
 
+# Only some architectures have static PIE support.
+%define pie_arches aarch64 %{ix86} x86_64
+
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
 # code in userspace is considered a biarch arch.
@@ -930,7 +933,7 @@ build()
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
-%ifarch %{ix86} aarch64
+%ifarch %{pie_arches}
 		--enable-static-pie \
 %endif
 		--enable-tunables \
