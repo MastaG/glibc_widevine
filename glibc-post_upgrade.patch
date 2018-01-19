@@ -32,10 +32,10 @@ index 2a432d8beebcd207..368dcae477fff2ae 100644
  		    -D'SLIBDIR="$(slibdir)"'
 diff --git a/elf/glibc_post_upgrade.c b/elf/glibc_post_upgrade.c
 new file mode 100644
-index 0000000000000000..3c9839ae523d2cc7
+index 0000000000000000..19b59f70e2308032
 --- /dev/null
 +++ b/elf/glibc_post_upgrade.c
-@@ -0,0 +1,322 @@
+@@ -0,0 +1,229 @@
 +#include <sys/types.h>
 +#include <sys/wait.h>
 +#include <stdio.h>
@@ -46,8 +46,6 @@ index 0000000000000000..3c9839ae523d2cc7
 +#include <stddef.h>
 +#include <fcntl.h>
 +#include <string.h>
-+#include <sys/stat.h>
-+#include <elf.h>
 +
 +#define LD_SO_CONF "/etc/ld.so.conf"
 +#define ICONVCONFIG "/usr/sbin/iconvconfig"
@@ -63,12 +61,10 @@ index 0000000000000000..3c9839ae523d2cc7
 +__attribute__((noinline)) static void says (const char *str);
 +__attribute__((noinline)) static void sayn (long num);
 +__attribute__((noinline)) static void message (char *const path[]);
-+__attribute__((noinline)) static int check_elf (const char *name);
 +
 +int
 +main (void)
 +{
-+  struct stat statbuf;
 +  char initpath[256];
 +
 +  char buffer[4096];
@@ -180,50 +176,6 @@ index 0000000000000000..3c9839ae523d2cc7
 +                    (char *) iconv_dir);
 +    }
 +
-+  /* Check if telinit is available and either SysVInit fifo,
-+     or upstart telinit.  */
-+  if (access ("/sbin/telinit", X_OK)
-+      || ((!!access ("/dev/initctl", F_OK))
-+          ^ !access ("/sbin/initctl", X_OK)))
-+    _exit (0);
-+
-+  /* Check if we are not inside of some chroot, because we'd just
-+     timeout and leave /etc/initrunlvl.
-+
-+     On more modern systems this test is not sufficient to detect
-+     if we're in a chroot.  */
-+  if (readlink ("/proc/1/exe", initpath, 256) <= 0 ||
-+      readlink ("/proc/1/root", initpath, 256) <= 0)
-+    _exit (0);
-+
-+  /* Here's another well known way to detect chroot, at least on an
-+     ext and xfs filesystems and assuming nothing mounted on the chroot's
-+     root. */
-+  if (stat ("/", &statbuf) != 0
-+      || (statbuf.st_ino != 2
-+          && statbuf.st_ino != 128))
-+    _exit (0);
-+
-+  if (check_elf ("/proc/1/exe"))
-+    verbose_exec (116,
-+                  (char *) "/sbin/telinit",
-+                  (char *) "/sbin/telinit",
-+                  (char *) "u");
-+
-+  /* Check if we can safely condrestart sshd.  */
-+  if (access ("/sbin/service", X_OK) == 0
-+      && access ("/usr/sbin/sshd", X_OK) == 0
-+      && access ("/etc/rc.d/init.d/sshd", X_OK) == 0
-+      && access ("/bin/bash", X_OK) == 0)
-+    {
-+      if (check_elf ("/usr/sbin/sshd"))
-+        verbose_exec (-121,
-+                      (char *) "/sbin/service",
-+                      (char *) "/sbin/service",
-+                      (char *) "sshd",
-+                      (char *) "condrestart");
-+    }
-+
 +  _exit(0);
 +}
 +
@@ -312,49 +264,4 @@ index 0000000000000000..3c9839ae523d2cc7
 +{
 +  says ("/usr/sbin/glibc_post_upgrade: While trying to execute ");
 +  says (path[0]);
-+}
-+
-+static int
-+check_elf (const char *name)
-+{
-+  /* Play safe, if we can't open or read, assume it might be
-+     ELF for the current arch.  */
-+  int ret = 1;
-+  int fd = open (name, O_RDONLY);
-+  if (fd >= 0)
-+    {
-+      Elf32_Ehdr ehdr;
-+      if (read (fd, &ehdr, offsetof (Elf32_Ehdr, e_version))
-+          == offsetof (Elf32_Ehdr, e_version))
-+        {
-+          ret = 0;
-+          if (ehdr.e_ident[EI_CLASS]
-+              == (sizeof (long) == 8 ? ELFCLASS64 : ELFCLASS32))
-+            {
-+#if defined __i386__
-+              ret = ehdr.e_machine == EM_386;
-+#elif defined __x86_64__
-+              ret = ehdr.e_machine == EM_X86_64;
-+#elif defined __powerpc64__
-+              ret = ehdr.e_machine == EM_PPC64;
-+#elif defined __powerpc__
-+              ret = ehdr.e_machine == EM_PPC;
-+#elif defined __s390__ || defined __s390x__
-+              ret = ehdr.e_machine == EM_S390;
-+#elif defined __x86_64__
-+              ret = ehdr.e_machine == EM_X86_64;
-+#elif defined __sparc__
-+              if (sizeof (long) == 8)
-+                ret = ehdr.e_machine == EM_SPARCV9;
-+              else
-+                ret = (ehdr.e_machine == EM_SPARC
-+                       || ehdr.e_machine == EM_SPARC32PLUS);
-+#else
-+              ret = 1;
-+#endif
-+            }
-+        }
-+      close (fd);
-+    }
-+  return ret;
 +}
