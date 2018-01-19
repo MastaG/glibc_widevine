@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1139-g64f63cb458
+%define glibcsrcdir glibc-2.26.9000-1140-g4612268a0a
 %define glibcversion 2.26.9000
-%define glibcrelease 43%{?dist}
+%define glibcrelease 44%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2035,6 +2035,17 @@ fi
 %endif
 
 %changelog
+* Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-44
+- Correct the list of static PIE architectures
+- glibc_post_upgrade: Remove process restart logic
+- glibc_post_upgrade: Integrate into the build process
+- glibc_post_upgrade: Do not clean up tls subdirectories
+- glibc_post_upgrade: Drop ia64 support
+- Remove architecture-specific symbolic link for iconvconfig
+- Auto-sync with upstream branch master,
+  commit 4612268a0ad8e3409d8ce2314dd2dd8ee0af5269:
+- powerpc: Fix syscalls during early process initialization (swbz#22685)
+
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-43
 - Enable static PIE support
 - Remove add-on support (already gone upstream)
