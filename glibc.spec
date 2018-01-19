@@ -171,7 +171,6 @@ Patch0024: glibc-fedora-locarchive.patch
 Patch0025: glibc-fedora-streams-rh436349.patch
 Patch0028: glibc-fedora-localedata-rh61908.patch
 Patch0031: glibc-fedora-__libc_multiple_libcs.patch
-Patch32: glibc-rpcgen.patch
 
 # Allow applications to call pthread_atfork without libpthread.so.
 Patch0046: glibc-rh1013801.patch
@@ -386,19 +385,6 @@ applications should use libnsl2 instead to gain IPv6 support.
 
 %postun -n libnsl
 /sbin/ldconfig
-
-######################################################################
-# rpcgen subpackage
-######################################################################
-
-%package rpcgen
-Summary: rpcgen compiler for Sun RPC protocol descriptions (glibc variant)
-Provides: rpcgen
-Provides: /usr/bin/rpcgen
-
-%description rpcgen
-This package provides the rpcgen program, for compiled .x protocol
-description files into C source code.
 
 ##############################################################################
 # glibc "devel" sub-package
@@ -752,7 +738,6 @@ microbenchmark tests on the system.
 %patch2027 -p1
 %patch0028 -p1
 %patch0031 -p1
-%patch32 -p1
 %patch0046 -p1
 %patch2031 -p1
 %patch0047 -p1
@@ -1270,8 +1255,6 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 #	- Contains the list of flies for the common subpackage.
 # * utils.filelist
 #	- Contains the list of files for the utils subpackage.
-# * rpcgen.filelist
-#	- Contains the list of files for the rpcgen subpackage.
 # * nscd.filelist
 #	- Contains the list of files for the nscd subpackage.
 # * devel.filelist
@@ -1328,7 +1311,7 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
       -e '\,.*/share/i18n/charmaps/.*,d' \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
       -e '\,/%{_lib}/lib\(pcprofile\|memusage\)\.so,d' \
-      -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\|rpcgen\),d'
+      -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
 } | sort > rpm.filelist
 
 touch common.filelist
@@ -1441,11 +1424,6 @@ cat > utils.filelist <<EOF
 %{_prefix}/bin/mtrace
 %{_prefix}/bin/pcprofiledump
 %{_prefix}/bin/xtrace
-EOF
-
-# rpcgen subpackage file list
-cat > rpcgen.filelist <<EOF
-%{_prefix}/bin/rpcgen
 EOF
 
 # Move the NSS-related files to the NSS subpackages.  Be careful not
@@ -1586,7 +1564,6 @@ find_debuginfo_args='--strict-build-id -g'
 find_debuginfo_args="$find_debuginfo_args \
 	-l common.filelist \
 	-l utils.filelist \
-	-l rpcgen.filelist \
 	-l nscd.filelist \
 	-p '.*/(sbin|libexec)/.*' \
 	-o debuginfocommon.filelist \
@@ -1981,9 +1958,6 @@ fi
 %files -f utils.filelist utils
 %defattr(-,root,root)
 
-%files -f rpcgen.filelist rpcgen
-%defattr(-,root,root)
-
 %files -f nscd.filelist -n nscd
 %defattr(-,root,root)
 %config(noreplace) /etc/nscd.conf
@@ -2037,6 +2011,7 @@ fi
 %changelog
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-45
 - Drop static PIE support on aarch64.  It leads to crashes at run time.
+- Remove glibc-rpcgen subpackage.  See rpcsvc-proto.  (#1531540)
 
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-44
 - Correct the list of static PIE architectures
