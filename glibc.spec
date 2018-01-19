@@ -1742,54 +1742,43 @@ truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
 %check
 %if %{with testsuite}
 
-# Run the glibc tests. If any tests fail to build we exit %check with an error
-# of 1, otherwise we print the test failure list and the failed test output
-# and exit with 0. In the future we want to compare against a baseline and
-# exit with 1 if the results deviate from the baseline.
+# Run the glibc tests. If any tests fail to build we exit %check with
+# an error, otherwise we print the test failure list and the failed
+# test output and continue.  Write to standard error to avoid
+# synchronization issues with make and shell tracing output if
+# standard output and standard error are different pipes.
 run_tests () {
-	truncate -s 0 check.log
-	tail -f check.log &
-	tailpid=$!
-	# Run the make a sub-shell (to avoid %check failing if make fails)
-	# but capture the status for use later. We use the normal sub-shell
-	# trick of printing the status. The actual result of the sub-shell
-	# is the successful execution of the echo.
-	status=$(set +e
-		 make %{?_smp_mflags} -O check > check.log 2>&1
-		 status=$?
-		 echo $status)
-	# Wait for the tail to catch up with the output and then kill it.
-	sleep 10
-	kill $tailpid
-	# Print the header, so we can find it, but skip the error printing
-	# if there aren't any failrues.
-	echo ===================FAILED TESTS=====================
-	if [ $status -ne 0 ]; then
-		# We are not running with `-k`, therefore a test build failure
-		# terminates the test run and that terminates %check with an
-		# error which terminates the build. We want this behaviour to
-		# ensure that all tests build, and all tests run.
-		# If the test result summary is not present it means one of
-		# tests failed to build.
-		if ! grep 'Summary of test results:' check.log; then
-			echo "FAIL: Some glibc tests failed to build."
-			exit 1
-		fi
+  # This hides a test suite build failure, which should be fatal.  We
+  # check "Summary of test results:" below to verify that all tests
+  # were built and run.
+  make %{?_smp_mflags} -O check |& tee rpmbuild.check.log >&2
+  test -n tests.sum
+  if ! grep -q '^Summary of test results:$' rpmbuild.check.log ; then
+    echo "FAIL: test suite build of target: $(basename "$(pwd)")" >& 2
+    exit 1
+  fi
+  set +x
+  grep -v ^PASS: tests.sum > rpmbuild.tests.sum.not-passing || true
+  if test -n rpmbuild.tests.sum.not-passing ; then
+    echo ===================FAILED TESTS===================== >&2
+    echo "Target: $(basename "$(pwd)")" >& 2
+    cat rpmbuild.tests.sum.not-passing >&2
+    while read failed_code failed_test ; do
+      for suffix in out test-result ; do
+        if test -e "$failed_test.$suffix"; then
+	  echo >&2
+          echo "=====$failed_code $failed_test.$suffix=====" >&2
+          cat -- "$failed_test.$suffix" >&2
+	  echo >&2
+        fi
+      done
+    done <rpmbuild.tests.sum.not-passing
+  fi
 
-		# Print out information about all of the failed tests.
-		grep -e ^FAIL -e ^ERROR tests.sum \
-			| awk '{print $2}' \
-			| while read testcase;
-		do
-			echo "$testcase"
-			cat $testcase.out
-			echo -------------------------
-		done
-	fi
-
-	# Unconditonally dump differences in the system call list.
-	echo "* System call consistency checks:"
-	cat misc/tst-syscall-list.out
+  # Unconditonally dump differences in the system call list.
+  echo "* System call consistency checks:" >&2
+  cat misc/tst-syscall-list.out >&2
+  set -x
 }
 
 # Increase timeouts
@@ -1798,7 +1787,7 @@ parent=$$
 echo ====================TESTING=========================
 ##############################################################################
 # - Test the default runtime.
-# 	- Power 620 / 970 ISA for 64-bit POWER BE.
+#	- Power 620 / 970 ISA for 64-bit POWER BE.
 #	- POWER8 for 64-bit POWER LE.
 #	- ??? for 64-bit x86_64
 #	- ??? for 32-bit x86
@@ -1844,12 +1833,6 @@ run_tests
 popd
 %endif
 
-echo ====================TESTING DETAILS=================
-for i in `sed -n 's|^.*\*\*\* \[\([^]]*\.out\)\].*$|\1|p' build-*-linux*/check.log`; do
-  echo =====$i=====
-  cat $i || :
-  echo ============
-done
 echo ====================TESTING END=====================
 PLTCMD='/^Relocation section .*\(\.rela\?\.plt\|\.rela\.IA_64\.pltoff\)/,/^$/p'
 echo ====================PLT RELOCS LD.SO================
