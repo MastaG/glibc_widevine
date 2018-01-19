@@ -154,8 +154,6 @@ Source11: SUPPORTED
 #
 ##############################################################################
 
-# Configuration twiddle, not sure there's a good case to get upstream to
-# change this.
 Patch0001: glibc-fedora-nscd.patch
 
 # All these were from the glibc-fedora.patch mega-patch and need another
