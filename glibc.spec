@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1140-g4612268a0a
 %define glibcversion 2.26.9000
-%define glibcrelease 44%{?dist}
+%define glibcrelease 45%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -93,7 +93,7 @@
 %endif
 
 # Only some architectures have static PIE support.
-%define pie_arches aarch64 %{ix86} x86_64
+%define pie_arches %{ix86} x86_64
 
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
@@ -2035,6 +2035,9 @@ fi
 %endif
 
 %changelog
+* Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-45
+- Drop static PIE support on aarch64.  It leads to crashes at run time.
+
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-44
 - Correct the list of static PIE architectures
 - glibc_post_upgrade: Remove process restart logic
