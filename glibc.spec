@@ -903,14 +903,13 @@ EnableKernel="--enable-kernel=%{enablekernel}"
 # Save the used compiler and options into the file "Gcc" for use later
 # by %%install.
 echo "$GCC" > Gcc
-AddOns=`echo */configure | sed -e 's!/configure!!g;s!\(nptl\|powerpc-cpu\)\( \|$\)!!g;s! \+$!!;s! !,!g;s!^!,!;/^,\*$/d'`
 
 ##############################################################################
 # build()
 #	Build glibc in `build-%{target}$1', passing the rest of the arguments
 #	as CFLAGS to the build (not the same as configure CFLAGS). Several
-#	global values are used to determine build flags, add-ons, kernel
-#	version, system tap support, etc.
+#	global values are used to determine build flags, kernel version,
+#	system tap support, etc.
 ##############################################################################
 build()
 {
@@ -928,7 +927,6 @@ build()
 	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$configure_CFLAGS" \
 		--prefix=%{_prefix} \
-		--enable-add-ons=$AddOns \
 		--with-headers=%{_prefix}/include $EnableKernel \
 		--enable-bind-now \
 		--build=%{target} \
