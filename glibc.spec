@@ -118,7 +118,6 @@ License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+
 URL: http://www.gnu.org/software/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.gz
 Source1: build-locale-archive.c
-Source2: glibc_post_upgrade.c
 Source4: nscd.conf
 Source7: nsswitch.conf
 Source8: power6emul.c
@@ -154,7 +153,8 @@ Source11: SUPPORTED
 #
 ##############################################################################
 
-Patch0001: glibc-fedora-nscd.patch
+Patch1: glibc-post_upgrade.patch
+Patch2: glibc-fedora-nscd.patch
 
 # All these were from the glibc-fedora.patch mega-patch and need another
 # round of reviewing.  Ideally they'll either be submitted upstream or
@@ -734,7 +734,8 @@ microbenchmark tests on the system.
 %setup -q -n %{glibcsrcdir}
 
 # Patch order matters.
-%patch0001 -p1
+%patch1 -p1
+%patch2 -p1
 %patch2007 -p1
 %patch0012 -p1
 %patch2013 -p1
@@ -1000,18 +1001,6 @@ build
 %endif
 
 ##############################################################################
-# Build the glibc post-upgrade program:
-# We only build one of these with the default set of options. This program
-# must be able to run on all hardware for the lowest common denomintor since
-# we only build it once.
-##############################################################################
-pushd build-%{target}
-$GCC -static -L. -Os -g %{SOURCE2} \
-	-o glibc_post_upgrade.%{_target_cpu} \
-	'-DGCONV_MODULES_DIR="%{_libdir}/gconv"'
-popd
-
-##############################################################################
 # Install glibc...
 ##############################################################################
 %install
@@ -1245,7 +1234,7 @@ chmod 644 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
 ##############################################################################
 
 # Install the upgrade program
-install -m 700 build-%{target}/glibc_post_upgrade.%{_target_cpu} \
+install -m 700 build-%{target}/elf/glibc_post_upgrade \
   $RPM_BUILD_ROOT%{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
 
 # Strip all of the installed object files.
@@ -1494,7 +1483,7 @@ rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
 # doesn't seem to be any macro to give us that.  So we do the next best thing,
 # which is to at least keep the timestamp consistent.  The choice of using
 # glibc_post_upgrade.c is arbitrary.
-touch -r %{SOURCE2} $RPM_BUILD_ROOT/etc/ld.so.conf
+touch -r %{SOURCE0} $RPM_BUILD_ROOT/etc/ld.so.conf
 touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
 
 pushd build-%{target}
