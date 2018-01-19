@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1125-g860b0240a5
+%define glibcsrcdir glibc-2.26.9000-1139-g64f63cb458
 %define glibcversion 2.26.9000
-%define glibcrelease 42%{?dist}
+%define glibcrelease 43%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2051,6 +2051,17 @@ fi
 %endif
 
 %changelog
+* Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-43
+- Enable static PIE support
+- Remove add-on support (already gone upstream)
+- Rework test suite status reporting
+- Auto-sync with upstream branch master,
+  commit 64f63cb4583ecc1ba16c7253aacc192b6d088511:
+- malloc: Fix integer overflows in memalign and malloc functions (swbz#22343)
+- x86-64: Properly align La_x86_64_retval to VEC_SIZE (swbz#22715)
+- aarch64: Update bits/hwcap.h for Linux 4.15
+- Add NT_ARM_SVE to elf.h
+
 * Wed Jan 17 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-42
 - CVE-2017-14062, CVE-2016-6261, CVE-2016-6263:
   Use libidn2 for IDNA support (#1452750)
