@@ -1010,8 +1010,7 @@ build
 pushd build-%{target}
 $GCC -static -L. -Os -g %{SOURCE2} \
 	-o glibc_post_upgrade.%{_target_cpu} \
-	'-DGCONV_MODULES_DIR="%{_libdir}/gconv"' \
-	'-DICONVCONFIG="%{_sbindir}/iconvconfig.%{_target_cpu}"'
+	'-DGCONV_MODULES_DIR="%{_libdir}/gconv"'
 popd
 
 ##############################################################################
@@ -1253,9 +1252,6 @@ install -m 700 build-%{target}/glibc_post_upgrade.%{_target_cpu} \
 
 # Strip all of the installed object files.
 strip -g $RPM_BUILD_ROOT%{_libdir}/*.o
-
-# XXX: Ugly hack for buggy rpm. What bug? BZ? Is this fixed?
-ln -f ${RPM_BUILD_ROOT}%{_sbindir}/iconvconfig{,.%{_target_cpu}}
 
 ##############################################################################
 # Install debug copies of unstripped static libraries

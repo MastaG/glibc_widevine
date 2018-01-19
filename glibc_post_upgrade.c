@@ -12,6 +12,7 @@
 #include <elf.h>
 
 #define LD_SO_CONF "/etc/ld.so.conf"
+#define ICONVCONFIG "/usr/sbin/iconvconfig"
 
 #define verbose_exec(failcode, path...) \
   do							\
@@ -128,9 +129,6 @@ main (void)
 
   if (! utimes (GCONV_MODULES_DIR "/gconv-modules.cache", NULL))
     {
-#ifndef ICONVCONFIG
-#define ICONVCONFIG "/usr/sbin/iconvconfig"
-#endif
       char *iconv_cache = GCONV_MODULES_DIR"/gconv-modules.cache";
       char *iconv_dir = GCONV_MODULES_DIR;
       verbose_exec (113, ICONVCONFIG, "/usr/sbin/iconvconfig",
