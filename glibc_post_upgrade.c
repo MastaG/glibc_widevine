@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <elf.h>
 
+#define LD_SO_CONF "/etc/ld.so.conf"
+
 #define verbose_exec(failcode, path...) \
   do							\
     {							\

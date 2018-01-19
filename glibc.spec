@@ -1011,7 +1011,6 @@ pushd build-%{target}
 $GCC -static -L. -Os -g %{SOURCE2} \
 	-o glibc_post_upgrade.%{_target_cpu} \
 	'-DGCONV_MODULES_DIR="%{_libdir}/gconv"' \
-	'-DLD_SO_CONF="/etc/ld.so.conf"' \
 	'-DICONVCONFIG="%{_sbindir}/iconvconfig.%{_target_cpu}"'
 popd
 
