@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1140-g4612268a0a
 %define glibcversion 2.26.9000
-%define glibcrelease 45%{?dist}
+%define glibcrelease 46%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -34,6 +34,8 @@
 %bcond_without docs
 # Default: Always run valgrind tests
 %bcond_without valgrind
+# Default: Do NOT build deprecated libcrypt.
+%bcond_with libcrypt
 
 # Run a valgrind smoke test to ensure that the release is compatible and
 # doesn't any new feature that might cause valgrind to abort.
@@ -217,6 +219,12 @@ Patch2037: glibc-rh1315108.patch
 Patch2040: glibc-rh1452750-allocate_once.patch
 Patch2041: glibc-rh1452750-libidn2.patch
 
+%if %{without libcrypt}
+# https://sourceware.org/ml/libc-alpha/2017-08/msg01257.html
+# https://fedoraproject.org/wiki/Changes/Replace_glibc_libcrypt_with_libxcrypt
+Patch2042: glibc-deprecate_libcrypt.patch
+%endif
+
 ##############################################################################
 # End of glibc patches.
 ##############################################################################
@@ -349,6 +357,7 @@ Linux system will not function.
 # libcrypt subpackage
 ######################################################################
 
+%if %{with libcrypt}
 %package -n libcrypt
 Summary: Password hashing library
 Requires: %{name}%{_isa} = %{version}-%{release}
@@ -364,6 +373,7 @@ hashing.
 
 %postun -n libcrypt
 /sbin/ldconfig
+%endif
 
 ######################################################################
 # libnsl subpackage
@@ -396,7 +406,12 @@ Requires(pre): %{name}-headers
 Requires: %{name}-headers = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
 Requires: libgcc%{_isa}
+%if %{with libcrypt}
 Requires: libcrypt%{_isa}
+%endif
+%if %{without bootstrap} && %{without libcrypt}
+Requires: libxcrypt-devel%{_isa} >= 4.0.0
+%endif
 
 %description devel
 The glibc-devel package contains the object files necessary
@@ -415,6 +430,9 @@ use the standard C libraries.
 %package static
 Summary: C library static libraries for -static linking.
 Requires: %{name}-devel = %{version}-%{release}
+%if %{without bootstrap} && %{without libcrypt}
+Requires: libxcrypt-static%{?_isa} >= 4.0.0
+%endif
 
 %description static
 The glibc-static package contains the C library static libraries
@@ -746,6 +764,9 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2040 -p1
 %patch2041 -p1
+%if %{without libcrypt}
+%patch2042 -p1
+%endif
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1443,10 +1464,12 @@ sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
 # Restore the built-in NSS modules.
 cat nss_files.filelist nss_dns.filelist nss_compat.filelist >> rpm.filelist
 
+%if %{with libcrypt}
 # Prepare the libcrypt-related file lists.
 grep '/libcrypt-[0-9.]*.so$' rpm.filelist > libcrypt.filelist
 test $(wc -l < libcrypt.filelist) -eq 1
 sed -i -e '\,/libcrypt,d' rpm.filelist
+%endif
 
 # Prepare the libnsl-related file lists.
 grep '/libnsl-[0-9.]*.so$' rpm.filelist > libnsl.filelist
@@ -1568,8 +1591,10 @@ find_debuginfo_args="$find_debuginfo_args \
 	-p '.*/(sbin|libexec)/.*' \
 	-o debuginfocommon.filelist \
 	-l nss_db.filelist -l nss_hesiod.filelist \
-	-l libcrypt.filelist -l libnsl.filelist \
-	-l rpm.filelist \
+%if %{with libcrypt}
+	-l libcrypt.filelist \
+%endif
+	-l libnsl.filelist -l rpm.filelist \
 %if %{with benchtests}
 	-l benchtests.filelist
 %endif
@@ -1985,9 +2010,11 @@ fi
 %doc hesiod/README.hesiod
 %files -f nss-devel.filelist nss-devel
 
+%if %{with libcrypt}
 %files -f libcrypt.filelist -n libcrypt
 %doc documentation/README.ufc-crypt
 %ghost /%{_lib}/libcrypt.so.1
+%endif
 
 %files -f libnsl.filelist -n libnsl
 /%{_lib}/libnsl.so.1
@@ -2009,6 +2036,10 @@ fi
 %endif
 
 %changelog
+* Fri Jan 19 2018 Björn Esser <besser82@fedoraproject.org> - 2.26.9000-45
+- Remove deprecated libcrypt, gets replaced by libxcrypt
+- Add applicable Requires on libxcrypt
+
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-45
 - Drop static PIE support on aarch64.  It leads to crashes at run time.
 - Remove glibc-rpcgen subpackage.  See rpcsvc-proto.  (#1531540)
