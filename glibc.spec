@@ -34,8 +34,6 @@
 %bcond_without docs
 # Default: Always run valgrind tests
 %bcond_without valgrind
-# Default: Do NOT build deprecated libcrypt.
-%bcond_with libcrypt
 
 # Run a valgrind smoke test to ensure that the release is compatible and
 # doesn't any new feature that might cause valgrind to abort.
@@ -218,12 +216,7 @@ Patch2031: glibc-rh1070416.patch
 Patch2037: glibc-rh1315108.patch
 Patch2040: glibc-rh1452750-allocate_once.patch
 Patch2041: glibc-rh1452750-libidn2.patch
-
-%if %{without libcrypt}
-# https://sourceware.org/ml/libc-alpha/2017-08/msg01257.html
-# https://fedoraproject.org/wiki/Changes/Replace_glibc_libcrypt_with_libxcrypt
 Patch2042: glibc-deprecate_libcrypt.patch
-%endif
 
 ##############################################################################
 # End of glibc patches.
@@ -354,28 +347,6 @@ library and the standard math library. Without these two libraries, a
 Linux system will not function.
 
 ######################################################################
-# libcrypt subpackage
-######################################################################
-
-%if %{with libcrypt}
-%package -n libcrypt
-Summary: Password hashing library
-Requires: %{name}%{_isa} = %{version}-%{release}
-Provides: libcrypt%{_isa}
-Obsoletes: libcrypt-nss < 2.26.9000-33
-
-%description -n libcrypt
-This package provides the crypt function, which implements password
-hashing.
-
-%post -n libcrypt
-/sbin/ldconfig
-
-%postun -n libcrypt
-/sbin/ldconfig
-%endif
-
-######################################################################
 # libnsl subpackage
 ######################################################################
 
@@ -406,12 +377,7 @@ Requires(pre): %{name}-headers
 Requires: %{name}-headers = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
 Requires: libgcc%{_isa}
-%if %{with libcrypt}
-Requires: libcrypt%{_isa}
-%endif
-%if %{without bootstrap} && %{without libcrypt}
 Requires: libxcrypt-devel%{_isa} >= 4.0.0
-%endif
 
 %description devel
 The glibc-devel package contains the object files necessary
@@ -430,9 +396,7 @@ use the standard C libraries.
 %package static
 Summary: C library static libraries for -static linking.
 Requires: %{name}-devel = %{version}-%{release}
-%if %{without bootstrap} && %{without libcrypt}
 Requires: libxcrypt-static%{?_isa} >= 4.0.0
-%endif
 
 %description static
 The glibc-static package contains the C library static libraries
@@ -764,9 +728,7 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2040 -p1
 %patch2041 -p1
-%if %{without libcrypt}
 %patch2042 -p1
-%endif
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1284,8 +1246,6 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 #	- Contains the list of files for the headers subpackage.
 # * static.filelist
 #	- Contains the list of files for the static subpackage.
-# * libcrypt.filelist
-#       - Contains the list of files for the libcrypt subpackage
 # * libnsl.filelist
 #       - Contains the list of files for the libnsl subpackage
 # * nss_db.filelist, nss_hesiod.filelist
@@ -1464,13 +1424,6 @@ sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
 # Restore the built-in NSS modules.
 cat nss_files.filelist nss_dns.filelist nss_compat.filelist >> rpm.filelist
 
-%if %{with libcrypt}
-# Prepare the libcrypt-related file lists.
-grep '/libcrypt-[0-9.]*.so$' rpm.filelist > libcrypt.filelist
-test $(wc -l < libcrypt.filelist) -eq 1
-sed -i -e '\,/libcrypt,d' rpm.filelist
-%endif
-
 # Prepare the libnsl-related file lists.
 grep '/libnsl-[0-9.]*.so$' rpm.filelist > libnsl.filelist
 test $(wc -l < libnsl.filelist) -eq 1
@@ -1591,9 +1544,6 @@ find_debuginfo_args="$find_debuginfo_args \
 	-p '.*/(sbin|libexec)/.*' \
 	-o debuginfocommon.filelist \
 	-l nss_db.filelist -l nss_hesiod.filelist \
-%if %{with libcrypt}
-	-l libcrypt.filelist \
-%endif
 	-l libnsl.filelist -l rpm.filelist \
 %if %{with benchtests}
 	-l benchtests.filelist
@@ -2009,12 +1959,6 @@ fi
 %files -f nss_hesiod.filelist -n nss_hesiod
 %doc hesiod/README.hesiod
 %files -f nss-devel.filelist nss-devel
-
-%if %{with libcrypt}
-%files -f libcrypt.filelist -n libcrypt
-%doc documentation/README.ufc-crypt
-%ghost /%{_lib}/libcrypt.so.1
-%endif
 
 %files -f libnsl.filelist -n libnsl
 /%{_lib}/libnsl.so.1
