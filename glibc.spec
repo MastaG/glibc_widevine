@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1140-g4612268a0a
 %define glibcversion 2.26.9000
-%define glibcrelease 46%{?dist}
+%define glibcrelease 47%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1983,6 +1983,10 @@ fi
 %endif
 
 %changelog
+* Mon Jan 22 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-47
+- Reenable static PIE on aarch64 after binutils fix (#1247050)
+- Unconditionally build without libcrypt
+
 * Fri Jan 19 2018 Björn Esser <besser82@fedoraproject.org> - 2.26.9000-46
 - Remove deprecated libcrypt, gets replaced by libxcrypt
 - Add applicable Requires on libxcrypt
