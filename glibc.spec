@@ -2036,7 +2036,7 @@ fi
 %endif
 
 %changelog
-* Fri Jan 19 2018 Björn Esser <besser82@fedoraproject.org> - 2.26.9000-45
+* Fri Jan 19 2018 Björn Esser <besser82@fedoraproject.org> - 2.26.9000-46
 - Remove deprecated libcrypt, gets replaced by libxcrypt
 - Add applicable Requires on libxcrypt
 
