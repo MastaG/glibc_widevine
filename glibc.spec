@@ -93,7 +93,7 @@
 %endif
 
 # Only some architectures have static PIE support.
-%define pie_arches aarch64 %{ix86} x86_64
+%define pie_arches %{ix86} x86_64
 
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
@@ -295,9 +295,8 @@ BuildRequires: make >= 4.0
 # The intl subsystem generates a parser using bison.
 BuildRequires: bison >= 2.7
 
-# binutils-2.29.1-13.fc28 is required for static PIE on aarch64 due to
-# rhbz#1536645.
-BuildRequires: binutils >= 2.29.1-13.fc28
+# binutils 2.29 is needed for static PIE support in i386/x86_64.
+BuildRequires: binutils >= 2.29
 
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
@@ -1984,7 +1983,6 @@ fi
 
 %changelog
 * Mon Jan 22 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-47
-- Reenable static PIE on aarch64 after binutils fix (#1247050)
 - Unconditionally build without libcrypt
 
 * Fri Jan 19 2018 Björn Esser <besser82@fedoraproject.org> - 2.26.9000-46
@@ -1996,7 +1994,7 @@ fi
 - Remove glibc-rpcgen subpackage.  See rpcsvc-proto.  (#1531540)
 
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-44
-- Correct the list of static PIE architectures
+- Correct the list of static PIE architectures (#1247050)
 - glibc_post_upgrade: Remove process restart logic
 - glibc_post_upgrade: Integrate into the build process
 - glibc_post_upgrade: Do not clean up tls subdirectories
@@ -2007,7 +2005,7 @@ fi
 - powerpc: Fix syscalls during early process initialization (swbz#22685)
 
 * Fri Jan 19 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-43
-- Enable static PIE support
+- Enable static PIE support on i386, x86_64 (#1247050)
 - Remove add-on support (already gone upstream)
 - Rework test suite status reporting
 - Auto-sync with upstream branch master,
