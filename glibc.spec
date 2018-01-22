@@ -297,7 +297,7 @@ BuildRequires: bison >= 2.7
 
 # binutils-2.29.1-13.fc28 is required for static PIE on aarch64 due to
 # rhbz#1536645.
-BuildRequires: binutils >= binutils-2.29.1-13.fc28
+BuildRequires: binutils >= 2.29.1-13.fc28
 
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
