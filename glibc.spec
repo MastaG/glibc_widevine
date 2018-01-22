@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1140-g4612268a0a
+%define glibcsrcdir glibc-2.26.9000-1145-g21c0696cde
 %define glibcversion 2.26.9000
-%define glibcrelease 47%{?dist}
+%define glibcrelease 48%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1982,6 +1982,12 @@ fi
 %endif
 
 %changelog
+* Mon Jan 22 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-48
+- Auto-sync with upstream branch master,
+  commit 21c0696cdef617517de6e25711958c40455c554f:
+- locale: Implement alternative month names (swbz#10871)
+- locale: Change month names for pl_PL (swbz#10871)
+
 * Mon Jan 22 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-47
 - Unconditionally build without libcrypt
 
