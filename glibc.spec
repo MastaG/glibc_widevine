@@ -93,7 +93,7 @@
 %endif
 
 # Only some architectures have static PIE support.
-%define pie_arches %{ix86} x86_64
+%define pie_arches aarch64 %{ix86} x86_64
 
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
@@ -295,7 +295,10 @@ BuildRequires: make >= 4.0
 # The intl subsystem generates a parser using bison.
 BuildRequires: bison >= 2.7
 
-BuildRequires: binutils >= 2.25
+# binutils-2.29.1-13.fc28 is required for static PIE on aarch64 due to
+# rhbz#1536645.
+BuildRequires: binutils >= binutils-2.29.1-13.fc28
+
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
 
