@@ -1,10 +1,10 @@
-From 40c6efaefc54a6f2759224d9b07831301693b7e5 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Bj=C3=B6rn=20Esser?= <besser82@fedoraproject.org>
-Date: Wed, 10 Jan 2018 13:30:04 +0100
+Background information:
+
+https://sourceware.org/ml/libc-alpha/2017-08/msg01257.html
+https://fedoraproject.org/wiki/Changes/Replace_glibc_libcrypt_with_libxcrypt
+
+From: Zack Weinberg <zackw@panix.com>
 Subject: [PATCH] Deprecate libcrypt and don't build it by default
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
 Back in June, Björn Esser proposed to add OpenBSD-compatible bcrypt
 support to our implementation of crypt(3), and Zack Weinberg replied
@@ -68,35 +68,6 @@ removed from conform/data/{stdlib,unistd}.h-data.
  sysdeps/unix/sysv/linux/arm/Makefile             |  2 ++
  15 files changed, 75 insertions(+), 39 deletions(-)
 
-diff --git a/NEWS b/NEWS
-index 79736dbee8..26d8288bc1 100644
---- a/NEWS
-+++ b/NEWS
-@@ -71,6 +71,24 @@ Major new features:
- 
- Deprecated and removed features, and other changes affecting compatibility:
- 
-+* The password-hashing library is deprecated, and will not be built or
-+  installed by default.  This only affects programs that link with -lcrypt,
-+  include the header <crypt.h>, use the functions 'crypt', 'encrypt', or
-+  'setkey' (which were formerly declared in <unistd.h> and/or <stdlib.h>),
-+  or inspect the feature-test macro _XOPEN_CRYPT.
-+
-+  A drop-in replacement for libcrypt and crypt.h is available from
-+  https://github.com/besser82/libxcrypt.  It also supports newer and more
-+  secure password hashes.
-+
-+  The configure option --enable-obsolete-crypt will cause libcrypt and
-+  crypt.h to be built and installed, but will not restore the declarations
-+  of 'crypt', 'encrypt', and 'setkey' in other headers, nor will it cause
-+  the feature-test macro _XOPEN_CRYPT to be defined.
-+
-+  Note that the configure option --enable-nss-crypt only affects libcrypt,
-+  and therefore will only have an effect when --enable-obsolete-crypt is used.
-+
- * Support for statically linked applications which call dlopen is deprecated
-   and will be removed in a future version of glibc.  Applications which call
-   dlopen need to be linked dynamically instead.
 diff --git a/config.make.in b/config.make.in
 index 9e5e24b2c6..8fe610d04d 100644
 --- a/config.make.in
