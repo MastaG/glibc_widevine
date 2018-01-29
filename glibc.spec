@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1145-g21c0696cde
+%define glibcsrcdir glibc-2.26.9000-1217-gcdd14619a7
 %define glibcversion 2.26.9000
-%define glibcrelease 49%{?dist}
+%define glibcrelease 50%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1992,6 +1992,15 @@ fi
 %endif
 
 %changelog
+* Mon Jan 29 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-50
+- Auto-sync with upstream branch master,
+  commit cdd14619a713ab41e26ba700add4880604324dbb:
+- libnsl: Turn remaining symbols into compat symbols (swbz#22701)
+- be_BY, be_BY@latin, lt_LT, el_CY, el_GR, ru_RU, ru_UA, uk_UA:
+  Add alternative month names (swbz#10871)
+- x86: Revert Intel CET changes to __jmp_buf_tag (swbz#22743)
+- aarch64: Revert the change of the __reserved member of mcontext_t
+
 * Mon Jan 29 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 2.26.9000-49
 - Add file triggers to do ldconfig calls automatically
 
