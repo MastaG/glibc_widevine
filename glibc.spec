@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1145-g21c0696cde
 %define glibcversion 2.26.9000
-%define glibcrelease 48%{?dist}
+%define glibcrelease 49%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -347,6 +347,16 @@ kept in one place and shared between programs. This particular package
 contains the most important sets of shared libraries: the standard C
 library and the standard math library. Without these two libraries, a
 Linux system will not function.
+
+######################################################################
+# File triggers to do ldconfig calls automatically (see rhbz#1380878)
+######################################################################
+
+# File triggers for when libraries are added or removed in standard paths
+%transfiletriggerin -p /sbin/ldconfig -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+
+%transfiletriggerpostun -p /sbin/ldconfig -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+######################################################################
 
 ######################################################################
 # libnsl subpackage
@@ -1982,6 +1992,9 @@ fi
 %endif
 
 %changelog
+* Mon Jan 29 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 2.26.9000-49
+- Add file triggers to do ldconfig calls automatically
+
 * Mon Jan 22 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-48
 - Auto-sync with upstream branch master,
   commit 21c0696cdef617517de6e25711958c40455c554f:
