@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1217-gcdd14619a7
 %define glibcversion 2.26.9000
-%define glibcrelease 50%{?dist}
+%define glibcrelease 51%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -352,10 +352,22 @@ Linux system will not function.
 # File triggers to do ldconfig calls automatically (see rhbz#1380878)
 ######################################################################
 
-# File triggers for when libraries are added or removed in standard paths
-%transfiletriggerin -p /sbin/ldconfig -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+# File triggers for when libraries are added or removed in standard
+# paths.  Use Lua to avoid a dependency on /bin/sh.  Due to an RPM
+# spec file parser deficiency, we cannot move the trigger into a
+# subpackage.
+%transfiletriggerin -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+os.execute("/sbin/ldconfig")
+%end
 
-%transfiletriggerpostun -p /sbin/ldconfig -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+%transfiletriggerpostun -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+os.execute("/sbin/ldconfig")
+%end
+
+# We need to run ldconfig manually because ldconfig cannot handle the
+# relative include path in the /etc/ld.so.conf file we gneerate.
+%undefine __brp_ldconfig
+
 ######################################################################
 
 ######################################################################
@@ -372,12 +384,6 @@ accessing NIS services.
 
 This library is provided for backwards compatibility only;
 applications should use libnsl2 instead to gain IPv6 support.
-
-%post -n libnsl
-/sbin/ldconfig
-
-%postun -n libnsl
-/sbin/ldconfig
 
 ##############################################################################
 # glibc "devel" sub-package
@@ -1122,6 +1128,18 @@ rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss-*.so.1
 # Further, see https://github.com/projectatomic/rpm-ostree/pull/1173#issuecomment-355014583
 rm -f ${RPM_BUILD_ROOT}/{usr/,}sbin/sln
 
+######################################################################
+# Run ldconfig to create all the symbolic links we need
+######################################################################
+
+# Note: This has to happen before creating /etc/ld.so.conf.
+
+mkdir -p $RPM_BUILD_ROOT/var/cache/ldconfig
+truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
+
+# ldconfig is statically linked, so we can use the new version.
+${RPM_BUILD_ROOT}/sbin/ldconfig -N -r ${RPM_BUILD_ROOT}
+
 ##############################################################################
 # Install info files
 ##############################################################################
@@ -1681,9 +1699,6 @@ touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
 truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
 %endif
 
-mkdir -p $RPM_BUILD_ROOT/var/cache/ldconfig
-truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
-
 ##############################################################################
 # Run the glibc testsuite
 ##############################################################################
@@ -1819,8 +1834,6 @@ end
 
 %post -p %{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
 
-%postun -p /sbin/ldconfig
-
 %posttrans all-langpacks -e -p <lua>
 -- If at the end of the transaction we are still installed
 -- (have a template of non-zero size), then we rebuild the
@@ -1859,10 +1872,6 @@ if [ "$1" = 0 ]; then
   /sbin/install-info --delete %{_infodir}/libc.info.gz %{_infodir}/dir > /dev/null 2>&1 || :
 fi
 %endif
-
-%post utils -p /sbin/ldconfig
-
-%postun utils -p /sbin/ldconfig
 
 %pre -n nscd
 getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
@@ -1992,6 +2001,11 @@ fi
 %endif
 
 %changelog
+* Mon Jan 29 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-51
+- Explicitly run ldconfig in the buildroot
+- Do not run ldconfig from scriptlets
+- Put triggers into the glibc-common package, do not pass arguments to ldconfig
+
 * Mon Jan 29 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-50
 - Auto-sync with upstream branch master,
   commit cdd14619a713ab41e26ba700add4880604324dbb:
