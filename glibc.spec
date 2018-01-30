@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26.9000-1217-gcdd14619a7
 %define glibcversion 2.26.9000
-%define glibcrelease 51%{?dist}
+%define glibcrelease 52%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -907,7 +907,7 @@ build()
 	mkdir $builddir
 	pushd $builddir
 	build_CFLAGS="$BuildFlags -g -O2 $*"
-%ifnarch %{arm}
+%ifnarch %{arm} riscv64
 	build_CFLAGS="$build_CFLAGS -fstack-clash-protection"
 %endif
 	# Some configure checks can spuriously fail for some architectures if
@@ -2001,6 +2001,10 @@ fi
 %endif
 
 %changelog
+* Tue Jan 30 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-52
+- Disable -fstack-clash-protection on riscv64:
+  not supported even by GCC 7.3.1 on this architecture.
+
 * Mon Jan 29 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-51
 - Explicitly run ldconfig in the buildroot
 - Do not run ldconfig from scriptlets
