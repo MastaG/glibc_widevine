@@ -2001,7 +2001,7 @@ fi
 %endif
 
 %changelog
-* Tue Jan 30 2018 Florian Weimer <fweimer@redhat.com> - 2.26.9000-52
+* Tue Jan 30 2018 Richard W.M. Jones <rjones@redhat.com> - 2.26.9000-52
 - Disable -fstack-clash-protection on riscv64:
   not supported even by GCC 7.3.1 on this architecture.
 
