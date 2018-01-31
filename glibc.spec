@@ -365,7 +365,7 @@ os.execute("/sbin/ldconfig")
 %end
 
 # We need to run ldconfig manually because ldconfig cannot handle the
-# relative include path in the /etc/ld.so.conf file we gneerate.
+# relative include path in the /etc/ld.so.conf file we generate.
 %undefine __brp_ldconfig
 
 ######################################################################
