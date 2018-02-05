@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26.9000-1217-gcdd14619a7
-%define glibcversion 2.26.9000
-%define glibcrelease 52%{?dist}
+%define glibcsrcdir glibc-2.27
+%define glibcversion 2.27
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2001,6 +2001,11 @@ fi
 %endif
 
 %changelog
+* Mon Feb 05 2018 Carlos O'Donell <carlos@redhat.com> - 2.27-1
+- Update to released glibc 2.27.
+- Auto-sync with upstream branch master,
+  commit 23158b08a0908f381459f273a984c6fd328363cb.
+
 * Tue Jan 30 2018 Richard W.M. Jones <rjones@redhat.com> - 2.26.9000-52
 - Disable -fstack-clash-protection on riscv64:
   not supported even by GCC 7.3.1 on this architecture.
