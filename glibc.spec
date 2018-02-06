@@ -349,28 +349,6 @@ library and the standard math library. Without these two libraries, a
 Linux system will not function.
 
 ######################################################################
-# File triggers to do ldconfig calls automatically (see rhbz#1380878)
-######################################################################
-
-# File triggers for when libraries are added or removed in standard
-# paths.  Use Lua to avoid a dependency on /bin/sh.  Due to an RPM
-# spec file parser deficiency, we cannot move the trigger into a
-# subpackage.
-%transfiletriggerin -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
-os.execute("/sbin/ldconfig")
-%end
-
-%transfiletriggerpostun -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
-os.execute("/sbin/ldconfig")
-%end
-
-# We need to run ldconfig manually because ldconfig cannot handle the
-# relative include path in the /etc/ld.so.conf file we generate.
-%undefine __brp_ldconfig
-
-######################################################################
-
-######################################################################
 # libnsl subpackage
 ######################################################################
 
@@ -460,6 +438,26 @@ Requires: tzdata >= 2003a
 %description common
 The glibc-common package includes common binaries for the GNU libc
 libraries, as well as national language (locale) support.
+
+######################################################################
+# File triggers to do ldconfig calls automatically (see rhbz#1380878)
+######################################################################
+
+# File triggers for when libraries are added or removed in standard
+# paths.  Use Lua to avoid a dependency on /bin/sh.
+%transfiletriggerin common -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+os.execute("/sbin/ldconfig")
+%end
+
+%transfiletriggerpostun common -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+os.execute("/sbin/ldconfig")
+%end
+
+# We need to run ldconfig manually because ldconfig cannot handle the
+# relative include path in the /etc/ld.so.conf file we gneerate.
+%undefine __brp_ldconfig
+
+######################################################################
 
 %package locale-source
 Summary: The sources for the locales
