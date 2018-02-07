@@ -444,13 +444,13 @@ libraries, as well as national language (locale) support.
 ######################################################################
 
 # File triggers for when libraries are added or removed in standard
-# paths.  Use Lua to avoid a dependency on /bin/sh.
-%transfiletriggerin common -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
-os.execute("/sbin/ldconfig")
+# paths.
+%transfiletriggerin common -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+/sbin/ldconfig
 %end
 
-%transfiletriggerpostun common -p <lua> -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
-os.execute("/sbin/ldconfig")
+%transfiletriggerpostun common -P 2000000 -- /lib /usr/lib /lib64 /usr/lib64
+/sbin/ldconfig
 %end
 
 # We need to run ldconfig manually because ldconfig cannot handle the
