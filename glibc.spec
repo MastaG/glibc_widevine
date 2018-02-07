@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27
+%define glibcsrcdir glibc-2.27-5-g56170e064e
 %define glibcversion 2.27
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: %{glibcrelease}.1
+Release: %{glibcrelease}
 # GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
 # Things that are linked directly into dynamically linked programs
 # and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
@@ -2001,6 +2001,11 @@ fi
 %endif
 
 %changelog
+* Wed Feb  7 2018 Florian Weimer <fweimer@redhat.com> - 2.27-2.1
+- Linux: use reserved name __key in pkey_get (#1542643)
+- Auto-sync with upstream branch release/2.27/master,
+  commit 56170e064e2b21ce204f0817733e92f1730541ea.
+
 * Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org>
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
