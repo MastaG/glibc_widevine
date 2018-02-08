@@ -546,7 +546,6 @@ to support the ]]..lang..[[ language in your applications.
 %ifnarch %{auxarches}
 %files -f langpack-]]..lang..[[.filelist langpack-]]..lang..[[
 
-%defattr(-,root,root)
 %endif
 ]]))
 end
@@ -1890,7 +1889,6 @@ fi
 %systemd_postun_with_restart nscd.service
 
 %files -f rpm.filelist
-%defattr(-,root,root)
 %dir %{_prefix}/%{_lib}/audit
 %if %{buildpower6}
 %dir /%{_lib}/power6
@@ -1922,7 +1920,6 @@ fi
 
 %ifnarch %{auxarches}
 %files -f common.filelist common
-%defattr(-,root,root)
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
 %{_prefix}/lib/locale/C.utf8/*
@@ -1934,26 +1931,20 @@ fi
 %attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
 
 %files locale-source
-%defattr(-,root,root)
 %dir %{_prefix}/share/i18n/locales
 %{_prefix}/share/i18n/locales/*
 %dir %{_prefix}/share/i18n/charmaps
 %{_prefix}/share/i18n/charmaps/*
 
 %files -f devel.filelist devel
-%defattr(-,root,root)
 
 %files -f static.filelist static
-%defattr(-,root,root)
 
 %files -f headers.filelist headers
-%defattr(-,root,root)
 
 %files -f utils.filelist utils
-%defattr(-,root,root)
 
 %files -f nscd.filelist -n nscd
-%defattr(-,root,root)
 %config(noreplace) /etc/nscd.conf
 %dir %attr(0755,root,root) /var/run/nscd
 %dir %attr(0755,root,root) /var/db/nscd
@@ -1984,18 +1975,15 @@ fi
 
 %if 0%{?_enable_debug_packages}
 %files debuginfo -f debuginfo.filelist
-%defattr(-,root,root)
 %ifarch %{debuginfocommonarches}
 %ifnarch %{auxarches}
 %files debuginfo-common -f debuginfocommon.filelist
-%defattr(-,root,root)
 %endif
 %endif
 %endif
 
 %if %{with benchtests}
 %files benchtests -f benchtests.filelist
-%defattr(-,root,root)
 %endif
 
 %changelog
