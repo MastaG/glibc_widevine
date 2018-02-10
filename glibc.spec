@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-5-g56170e064e
 %define glibcversion 2.27
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1009,6 +1009,16 @@ chmod 644 sysdeps/gnu/errlist.c
 # Reload compiler and build options that were used during %%build.
 GCC=`cat Gcc`
 
+%ifarch riscv64
+# RISC-V ABI wants to install everything in /lib64/lp64d or /usr/lib64/lp64d.
+# Make these be symlinks to /lib64 or /usr/lib64 respectively.  See:
+# https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/DRHT5YTPK4WWVGL3GIN5BF2IKX2ODHZ3/
+for d in $RPM_BUILD_ROOT%{_libdir} $RPM_BUILD_ROOT/%{_lib}; do
+	mkdir -p $d
+	(cd $d && ln -sf . lp64d)
+done
+%endif
+
 # Build and install.
 make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target}
 
@@ -1990,6 +2000,9 @@ fi
 %endif
 
 %changelog
+* Mon Feb 19 2018 Richard W.M. Jones <rjones@redhat.com> - 2.27-4
+- riscv64: Add symlink from /usr/lib64/lp64d -> /usr/lib64 for ABI compat.
+
 * Wed Feb 14 2018 Florian Weimer <fweimer@redhat.com> - 2.27-3
 - Spec file cleanups:
   - Remove %%defattr(-,root,root)
