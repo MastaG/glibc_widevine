@@ -38,8 +38,8 @@
 # Run a valgrind smoke test to ensure that the release is compatible and
 # doesn't any new feature that might cause valgrind to abort.
 %if %{with valgrind}
-%ifarch s390 ppc64 ppc64p7 %{mips}
-# There is no valgrind support for 31-bit s390, nor for MIPS.
+%ifarch s390 ppc64 ppc64p7 %{mips} riscv64
+# There is no valgrind support for 31-bit s390, nor for MIPS, nor RISC-V.
 # The valgrind test does not work on ppc64, ppc64p7 (bug 1273103).
 %undefine with_valgrind
 %endif
@@ -2002,6 +2002,7 @@ fi
 %changelog
 * Mon Feb 19 2018 Richard W.M. Jones <rjones@redhat.com> - 2.27-4
 - riscv64: Add symlink from /usr/lib64/lp64d -> /usr/lib64 for ABI compat.
+- riscv64: Disable valgrind smoke test on this architecture.
 
 * Wed Feb 14 2018 Florian Weimer <fweimer@redhat.com> - 2.27-3
 - Spec file cleanups:
