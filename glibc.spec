@@ -12,7 +12,7 @@
 %{lua: if string.match(rpm.expand("%glibcsrcdir"), "^glibc%-[0-9.]+$") then
   rpm.define("glibc_release_url https://ftp.gnu.org/gnu/glibc/") end}
 ##############################################################################
-# We support hte following options:
+# We support the following options:
 # --with/--without,
 # * testsuite - Running the testsuite.
 # * benchtests - Running and building benchmark subpackage.
