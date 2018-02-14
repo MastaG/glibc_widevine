@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-5-g56170e064e
 %define glibcversion 2.27
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1990,6 +1990,14 @@ fi
 %endif
 
 %changelog
+* Wed Feb 14 2018 Florian Weimer <fweimer@redhat.com> - 2.27-3
+- Spec file cleanups:
+  - Remove %%defattr(-,root,root)
+  - Use shell to run ldconfig %%transfiletrigger
+  - Move %%transfiletrigger* to the glibc-common subpackage
+  - Trim changelog
+  - Include ChangeLog.old in the source RPM
+
 * Wed Feb  7 2018 Florian Weimer <fweimer@redhat.com> - 2.27-2.1
 - Linux: use reserved name __key in pkey_get (#1542643)
 - Auto-sync with upstream branch release/2.27/master,
