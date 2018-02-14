@@ -131,6 +131,9 @@ Source10: glibc-bench-compare
 # packages, using a Lua snippet.
 Source11: SUPPORTED
 
+# Include in the source RPM for reference.
+Source12: ChangeLog.old
+
 ##############################################################################
 # Start of glibc patches
 ##############################################################################
