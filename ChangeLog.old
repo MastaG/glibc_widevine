@@ -1,3 +1,267 @@
+* Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.25.90-30.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
+
+* Sat Jul 29 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-30
+- Auto-sync with upstream master,
+  commit 5920a4a624b1f4db310d1c44997b640e2a4653e5:
+- mutex: Fix robust mutex lock acquire (swbz#21778)
+
+* Fri Jul 28 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-29
+- Auto-sync with upstream master,
+  commit d95fcb2df478efbf4f8537ba898374043ac4561f:
+- rwlock: Fix explicit hand-over (swbz#21298)
+- tunables: Use direct syscall for access (swbz#21744)
+- Avoid accessing corrupted stack from __stack_chk_fail (swbz#21752)
+- Remove extra semicolons in struct pthread_mutex (swbz#21804)
+- grp: Fix cast-after-dereference (another big-endian group merge issue)
+- S390: fix sys/ptrace.h to make it includible again after asm/ptrace.h
+- Don't add stack_chk_fail_local.o to libc.a (swbz#21740)
+- i386: Test memmove_chk and memset_chk only in libc.so (swbz#21741)
+- Add new locales az_IR, mai_NP (swbz#14172)
+- Various locale improvements
+
+* Thu Jul 27 2017 Carlos O'Donell <codonell@redhat.com> - 2.25.90-28
+- Adjust to new rpm debuginfo generation (#1475009).
+
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.25.90-27.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
+* Wed Jul 19 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-27
+- Auto-sync with upstream master,
+  commit 00d7a3777369bac3d8d44152dde2bb7381984ef6:
+- aarch64: Fix out of bound array access in _dl_hwcap_string
+
+* Mon Jul 17 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-26
+- Drop glibc-rh1467518.patch in favor of upstream patch (#1467518)
+- Auto-sync with upstream master,
+  commit 91ac3a7d8474480685632cd25f844d3154c69fdf:
+- Fix pointer alignment in NSS group merge result construction (#1471985)
+- Various locale fixes
+
+* Fri Jul 14 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.25.90-25
+- armv7hl: Drop 32-bit ARM build fix, already in upstream master.
+- s390x: Apply glibc fix again, removing PTRACE_GETREGS etc. (#1469536).
+- Auto-sync with upstream master,
+  commit de895ddcd7fc45caeeeb0ae312311b8bd31d82c5:
+- Added Fiji Hindi language locale for Fiji (swbz#21694).
+- Added yesstr/nostr for nds_DE and nds_NL (swbz#21756).
+- Added yesstr and nostr for Tigrinya (swbz#21759).
+- Fix LC_MESSAGES and LC_ADDRESS for anp_IN (swbz#21760).
+- Added yesstr/nostr and fix yesexpr for pap_AW and pap_CW (swbz#21757).
+- Added Tongan language locale for Tonga (swbz#21728).
+- [ARM] Fix ld.so crash when built using Binutils 2.29.
+- Added yesstr and nostr for aa_ET (swbz#21768).
+- New locale for bi_VU (swbz#21767).
+- Disable single thread optimization for open_memstream
+
+* Wed Jul 12 2017 Carlos O'Donell <carlos@redhat.com> - 2.25.90-24
+- Fix IFUNC crash in early startup for ppc64le static binaries (#1467518).
+- Enable building with BIND_NOW on ppc64le (#1467518).
+- Fix 32-bit ARM builds in presence of new binutils.
+
+* Wed Jul 12 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-23
+- malloc: Tell GCC optimizers about MAX_FAST_SIZE in _int_malloc (#1470060)
+- Auto-sync with upstream master,
+  commit 30200427a99e5ddac9bad08599418d44d54aa9aa:
+- Add per-thread cache to malloc
+- Add Samoan language locale for Samoa
+- Add Awajún / Aguaruna locale for Peru
+- CVE-2010-3192: Avoid backtrace from __stack_chk_fail (swbz#12189)
+- Add preadv2, writev2 RWF_NOWAIT flag (swbz#21738)
+- Fix abday strings for ar_JO/ar_LB/ar_SY locales (swbz#21749)
+- Fix abday strings for ar_SA locale (swbz#21748, swbz#19066)
+- Set data_fmt for da_DK locale (swbz#17297)
+- Add yesstr and nostr for the zh_HK locale (swbz#21733)
+- Fix abday strings for the ksIN@devanagari locale (swbz#21743)
+- Do not include _dl_resolv_conflicts in libc.a (swbz#21742)
+- Test __memmove_chk, __memset_chk only in libc.so (swbz#21741)
+- Add iI and eE to  yesexpr and noexpr respectively for ts_ZA locale
+- Add yesstr/nostr for kw_GB locale (swbz#21734)
+- Add yesstr and nostr for the ts_ZA locale (swbz#21727)
+- Fix LC_NAME for hi_IN locale (swbz#21729)
+- Add yesstr and nostr for the xh_ZA locale (swbz#21724)
+- Add yesstr and nostr for the zh_CN locale (swbz#21723)
+- Fix full weekday names for the ks_IN@devanagari locale (swbz#21721)
+- Various fixes to Arabic locales after CLDR import 
+
+* Tue Jul 11 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-22
+- Reinstantiate stack_t cleanup (#1468904)
+- s390x: Restore PTRACE_GETREGS etc. to get GCC to build (#1469536)
+
+* Sun Jul  9 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-21
+- Back out stack_t cleanup (#1468904)
+
+* Thu Jul 06 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-20
+- Auto-sync with upstream master,
+  commit 031e519c95c069abe4e4c7c59e2b4b67efccdee5:
+- x86-64: Align the stack in __tls_get_addr (#1440287)
+- Add Tok-Pisin (tpi_PG) locale.
+- Add missing yesstr/nostr for Pashto locale (swbz#21711)
+- Add missing yesstr/nostr for Breton locale (swbz#21706)
+- Single threaded stdio optimization
+- sysconf: Use conservative default for _SC_NPROCESSORS_ONLN (swbz#21542)
+
+* Tue Jul 04 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-19
+- Auto-sync with upstream master,
+  commit 4446a885f3aeb3a33b95c72bae1f115bed77f0cb.
+
+* Tue Jul 04 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-18
+- Auto-sync with upstream master,
+  commit 89f6307c5d270ed4f11cee373031fa9f2222f2b9.
+
+* Tue Jul  4 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-17
+- Disable building with BIND_NOW on ppc64le (#1467518)
+
+* Mon Jul 03 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-16
+- Auto-sync with upstream master,
+  commit e237357a5a0559dee92261f1914d1fa2cd43a1a8:
+- Support an arbitrary number of search domains in the stub resolver (#168253)
+- Detect and apply /etc/resolv.conf changes in libresolv (#1374239)
+- Increase malloc alignment on i386 to 16 (swbz#21120)
+- Make RES_ROTATE start with a random name server (swbz#19570)
+- Fix tgmath.h totalorder, totalordermag return type (swbz#21687)
+- Miscellaneous sys/ucontext.h namespace fixes (swbz#21457)
+- Rename struct ucontext tag (swbz#21457)
+- Call exit system call directly in clone (swbz#21512)
+- powerpc64le: Enable float128
+- getaddrinfo: Merge IPv6 addresses and IPv4 addresses (swbz#21295)
+- Avoid .symver on common symbols (swbz#21666)
+- inet_pton: Reject IPv6 addresses with many leading zeros (swbz#16637)
+
+* Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-15
+- Auto-sync with upstream master,
+  commit 3ec7c02cc3e922b9364dc8cfd1d4546671b91003, fixing:
+- memcmp-avx2-movbe.S incorrect results for lengths 2/3 (#1464403)
+
+* Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-14
+- Auto-sync with upstream master,
+  commit 12f50337ae80672c393c2317d471d097ad92c492, changing:
+- localedata: fur_IT: Fix spelling of Wednesday (Miercus)
+- Update to Unicode 10.0.0
+- inet: __inet6_scopeid_pton should accept node-local addresses (swbz#21657)
+
+* Fri Jun 23 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-13
+- Reenable valgrind on aarch64
+
+* Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-12
+- Log auxiliary vector during build
+
+* Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-11
+- Auto-sync with upstream master,
+  commit 0a47d031e44f15236bcef8aeba80e737bd013c6f.
+
+* Thu Jun 22 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-10
+- Disable valgrind on aarch64
+
+* Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-9
+- Drop historic aarch64 TLS patches
+- Drop workaround for GCC PR69537
+- Auto-sync with upstream master,
+  commit 9649350d2ee47fae00794d57e2526aa5d67d900e.
+
+* Wed Jun 21 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-8
+- Adjust build requirements for gcc, binutils, kernel-headers.
+- Auto-sync with upstream master,
+  commit 43e0ac24c836eed627a75ca932eb7e64698407c6, changing:
+- Remove <xlocale.h>
+
+* Mon Jun 19 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-7
+- Drop glibc-Disable-buf-NULL-in-login-tst-ptsname.c, applied upstream.
+- Auto-sync with upstream master,
+  commit 37e9dc814636915afb88d0779e5e897e90e7b8c0, fixing:
+- CVE-2017-1000366: Avoid large allocas in the dynamic linker (#1462820)
+- wait3 namespace (swbz#21625)
+- S390: Sync ptrace.h with kernel (swbz#21539)
+- Another x86 sys/ucontext.h namespace issue (swbz#21457)
+- siginterrupt namespace (swbz#21597)
+- Signal stack namespace (swbz#21584)
+- Define struct rusage in sys/wait.h when required (swbz#21575)
+- S390: Fix build with gcc configured with --enable-default-pie (swbz#21537)
+- Update timezone code from tzcode 2017b
+- nptl: Invert the mmap/mprotect logic on allocated stacks (swbz#18988)
+- PowerPC64 ELFv2 PPC64_OPT_LOCALENTRY
+- Make copy of <bits/std_abs.h> from GCC (swbz#21573)
+- localedata: ce_RU: update weekdays from CLDR (swbz#21207)
+- localedata: Remove trailing spaces (swbz#20275)
+- XPG4 bsd_signal namespace (swbz#21552)
+- Correct collation rules for Malayalam (swbz#19922, swbz#19919)
+- waitid namespace (swbz#21561)
+- Condition signal.h inclusion in sys/wait.h (swbz#21560)
+- ld.so: Consolidate 2 strtouls into _dl_strtoul (swbz#21528)
+- tst-timezone race (swbz#14096)
+- Define SIG_HOLD for XPG4 (swbz#21538)
+- struct sigaltstack namespace (swbz#21517)
+- sigevent namespace (swbz#21543)
+- Add shim header for bits/syscall.h (swbz#21514)
+- namespace issues in sys/ucontext.h (swbz#21457)
+- posix: Implement preadv2 and pwritev2
+- Various float128 and tunables improvements
+
+* Tue Jun 06 2017 Stephen Gallagher <sgallagh@redhat.com> - 2.25.90-6
+- Reduce libcrypt-nss dependency to 'Suggests:'
+
+* Wed May 31 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-5
+- Auto-sync with upstream master,
+  commit cfa9bb61cd09c40def96f042a3123ec0093c4ad0.
+- Fix sys/ucontext.h namespace from signal.h etc. inclusion (swbz#21457)
+- Fix sigstack namespace (swbz#21511)
+
+* Wed May 31 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-4
+- Disable the NULL buffer test in login/tst-ptsname.c. It leads to a build
+  failure during 'make check'. A permanent solution is being discussed
+  upstream.
+
+* Tue May 23 2017 Arjun Shankar <arjun.is@lostca.se> - 2.25.90-3
+- Auto-sync with upstream master,
+  commit 231a59ce2c5719d2d77752c21092960e28837b4a.
+- Add el_GR@euro support (swbz#20686)
+- Set dl_platform and dl_hwcap from CPU features (swbz#21391)
+- Use __glibc_reserved convention in mcontext, sigcontext (swbz#21457)
+- Fix signal.h bsd_signal namespace (swbz#21445)
+- Fix network headers stdint.h namespace (swbz#21455)
+- resolv: Use RES_DFLRETRY consistently (swbz#21474)
+- Condition some sys/ucontext.h contents on __USE_MISC (swbz#21457)
+- Consolidate Linux read syscall (swbz#21428)
+- fork: Remove bogus parent PID assertions (swbz#21386)
+- Reduce value of LD_HWCAP_MASK for tst-env-setuid test case (swbz#21502)
+- libio: Avoid dup already opened file descriptor (swbz#21393)
+
+* Mon May 01 2017 Carlos O'Donell <carlos@systemhalted.org> - 2.25.90-2
+- Auto-sync with upstream master,
+  commit 25e39b4229fb365a605dc4c8f5d6426a77bc08a6.
+- logbl for POWER7 return incorrect results (swbz#21280)
+- sys/socket.h uio.h namespace (swbz#21426)
+- Support POSIX_SPAWN_SETSID (swbz#21340)
+- Document how to provide a malloc replacement (swbz#20424)
+- Verify that all internal sockets opened with SOCK_CLOEXEC (swbz#15722)
+- Use AVX2 memcpy/memset on Skylake server (swbz#21396)
+- unwind-dw2-fde deadlock when using AddressSanitizer (swbz#21357)
+- resolv: Reduce advertised EDNS0 buffer size to guard against
+  fragmentation attacks (swbz#21361)
+- mmap64 silently truncates large offset values (swbz#21270)
+- _dl_map_segments does not test for __mprotect failures consistently
+  (swbz#20831)
+
+* Thu Mar 02 2017 Florian Weimer <fweimer@redhat.com> - 2.25.90-1
+- Switch back to upstream master branch.
+- Drop Unicode 9 patch, merged upstream.
+- Auto-sync with upstream master,
+  commit a10e9c4e53fc652b79abf838f7f837589d2c84db, fixing:
+- Build all DSOs with BIND_NOW (#1406731)
+
+* Wed Mar  1 2017 Jakub Hrozek <jhrozek@redhat.com> - 2.25-3
+- NSS: Prefer sss service for passwd, group databases (#1427646)
+
+* Tue Feb 28 2017 Florian Weimer <fweimer@redhat.com> - 2.25-2
+- Auto-sync with upstream release/2.25/master,
+  commit 93cf93e06ce123439e41d3d62790601c313134cb, fixing:
+- sunrpc: Improvements for UDP client timeout handling (#1346406)
+- sunrpc: Avoid use-after-free read access in clntudp_call (swbz#21115)
+- Fix getting tunable values on big-endian (swbz#21109)
+
+* Wed Feb 08 2017 Carlos O'Donell <carlos@redhat.com> - 2.25-1
+- Update to final released glibc 2.25.
+
 * Wed Feb 08 2017 Carlos O'Donell <carlos@redhat.com> - 2.24.90-31
 - Fix builds with GCC 7.0.
 
