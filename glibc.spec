@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-5-g56170e064e
 %define glibcversion 2.27
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1933,6 +1933,9 @@ fi
 %endif
 
 %changelog
+* Wed Feb 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27-5
+- Inherit as many flags as possible from redhat-rpm-config
+
 * Mon Feb 19 2018 Richard W.M. Jones <rjones@redhat.com> - 2.27-4
 - riscv64: Add symlink from /usr/lib64/lp64d -> /usr/lib64 for ABI compat.
 - riscv64: Disable valgrind smoke test on this architecture.
