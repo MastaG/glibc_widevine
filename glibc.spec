@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26-146-gd300041c53
 %define glibcversion 2.26
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -920,93 +920,38 @@ df
 GCC=gcc
 GXX=g++
 
-##############################################################################
-# %%build - x86 options.
-##############################################################################
-# On x86 we build for the specific target cpu rpm is using.
-%ifarch %{ix86}
-BuildFlags="-march=%{_target_cpu} -mtune=generic"
-%endif
-# We don't support building for i386. The generic i386 architecture lacks the
-# atomic primitives required for NPTL support. However, when a user asks to
-# build for i386 we interpret that as "for whatever works on x86" and we
-# select i686. Thus we treat i386 as an alias for i686.
-%ifarch i386 i686
-BuildFlags="-march=i686 -mtune=generic"
-%endif
-%ifarch i486 i586
-BuildFlags="$BuildFlags -mno-tls-direct-seg-refs"
-%endif
-%ifarch x86_64
-BuildFlags="-mtune=generic"
-%endif
+# True if the compiler flag in the first argument is listed in
+# redhat-rpm-config.
+rpm_has_compiler_flag ()
+{
+	echo " $RPM_OPT_FLAGS $RPM_LD_FLAGS " | grep -q -F " $1 "
+}
 
-##############################################################################
-# %%build - s390 options.
-##############################################################################
-%ifarch s390 s390x
-# The default is to turne for z13 (newer hardware), but build for zEC12.
-BuildFlags="-march=zEC12 -mtune=z13"
-%endif
+# Propagates the listed flags to BuildFlags if supplied by redhat-rpm-config.
+BuildFlags="-O2 -g"
+rpm_inherit_flags ()
+{
+	local flag
+	for flag in "$@" ; do
+		if rpm_has_compiler_flag "$flag" ; then
+			BuildFlags="$BuildFlags $flag"
+		fi
+	done
+}
 
-##############################################################################
-# %%build - SPARC options.
-##############################################################################
-%ifarch sparc
-BuildFlags="-fcall-used-g6"
-GCC="$GCC -m32"
-GXX="$GXX -m32"
-%endif
-%ifarch sparcv9
-BuildFlags="-mcpu=ultrasparc -fcall-used-g6"
-GCC="$GCC -m32"
-GXX="$GXX -m32"
-%endif
-%ifarch sparcv9v
-BuildFlags="-mcpu=niagara -fcall-used-g6"
-GCC="$GCC -m32"
-GXX="$GXX -m32"
-%endif
-%ifarch sparc64
-BuildFlags="-mcpu=ultrasparc -mvis -fcall-used-g6"
-GCC="$GCC -m64"
-GXX="$GXX -m64"
-%endif
-%ifarch sparc64v
-BuildFlags="-mcpu=niagara -mvis -fcall-used-g6"
-GCC="$GCC -m64"
-GXX="$GXX -m64"
-%endif
+# Propgate select compiler flags from redhat-rpm-config.  These flags
+# are target-dependent, so we use only those which are specified in
+# redhat-rpm-config.  We do not replicate the -march=/-mtune=
+# selection here because these match the defaults compiled into GCC.
+# We keep the -m32/-m32/-m64 flags to support multilib builds.
 
-##############################################################################
-# %%build - POWER options.
-##############################################################################
-%ifarch %{power64}
-BuildFlags=""
-GCC="$GCC -m64"
-GXX="$GXX -m64"
-%ifarch ppc64p7
-GCC="$GCC -mcpu=power7 -mtune=power7"
-GXX="$GXX -mcpu=power7 -mtune=power7"
-core_with_options="--with-cpu=power7"
-%endif
-%ifarch ppc64le
-GCC="$GCC -mcpu=power8 -mtune=power8"
-GXX="$GXX -mcpu=power8 -mtune=power8"
-core_with_options="--with-cpu=power8"
-%endif
-%endif
-
-##############################################################################
-# %%build - MIPS options.
-##############################################################################
-%ifarch mips mipsel
-BuildFlags="-march=mips32r2 -mfpxx"
-%endif
-%ifarch mips64 mips64el
-# Without -mrelax-pic-calls ld.so segfaults when built with -O3
-BuildFlags="-march=mips64r2 -mabi=64 -mrelax-pic-calls"
-%endif
+rpm_inherit_flags \
+	"-fasynchronous-unwind-tables" \
+	"-fstack-clash-protection" \
+	"-funwind-tables" \
+	"-m31" \
+	"-m32" \
+	"-m64" \
 
 ##############################################################################
 # %%build - Generic options.
@@ -1026,16 +971,12 @@ AddOns=`echo */configure | sed -e 's!/configure!!g;s!\(nptl\|powerpc-cpu\)\( \|$
 ##############################################################################
 build()
 {
-	builddir=build-%{target}${1:+-$1}
+	local builddir=build-%{target}${1:+-$1}
 	${1+shift}
 	rm -rf $builddir
 	mkdir $builddir
 	pushd $builddir
-	build_CFLAGS="$BuildFlags -g -O3 $*"
-	# Some configure checks can spuriously fail for some architectures if
-	# unwind info is present
-	configure_CFLAGS="$build_CFLAGS -fno-asynchronous-unwind-tables"
-	../configure CC="$GCC" CXX="$GXX" CFLAGS="$configure_CFLAGS" \
+	../configure CC="$GCC" CXX="$GXX" CFLAGS="$BuildFlags $*" \
 		--prefix=%{_prefix} \
 		--enable-add-ons=$AddOns \
 		--with-headers=%{_prefix}/include $EnableKernel \
@@ -1063,7 +1004,7 @@ build()
 %endif
 		{ cat config.log; false; }
 
-	make %{?_smp_mflags} -r CFLAGS="$build_CFLAGS" %{silentrules}
+	make %{?_smp_mflags} -O -r
 	popd
 }
 
@@ -2288,6 +2229,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri Mar  2 2018 Florian Weimer <fweimer@redhat.com> - 2.26-27
+- Restore unwind tables on POWER (#1550914)
+
 * Thu Mar 01 2018 Florian Weimer <fweimer@redhat.com> - 2.26-26
 - Auto-sync with upstream branch release/2.26/master,
   commit d300041c533a3d837c9f37a099bcc95466860e98:
