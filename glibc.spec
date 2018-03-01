@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-143-gbd60ce8652
+%define glibcsrcdir glibc-2.27.9000-144-g1a2f44a848
 %define glibcversion 2.27.9000
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1929,6 +1929,11 @@ fi
 %endif
 
 %changelog
+* Thu Mar 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-7
+- Auto-sync with upstream branch master,
+  commit 1a2f44a848663036c8a14671fe0faa3fed0b2a25:
+- Remove spurios reference to libpthread_nonshared.a
+
 * Thu Mar 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-6
 - Switch back to upstream master branch
 - Drop glibc-rh1013801.patch, applied upstream.
