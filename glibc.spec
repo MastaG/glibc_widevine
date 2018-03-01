@@ -166,7 +166,6 @@ Patch2: glibc-fedora-nscd.patch
 # round of reviewing.  Ideally they'll either be submitted upstream or
 # dropped.
 Patch0012: glibc-fedora-linux-tcsetattr.patch
-Patch0014: glibc-fedora-nptl-linklibc.patch
 Patch0015: glibc-fedora-localedef.patch
 Patch0019: glibc-fedora-nis-rh188246.patch
 Patch0020: glibc-fedora-manual-dircategory.patch
@@ -728,7 +727,6 @@ microbenchmark tests on the system.
 %patch2007 -p1
 %patch0012 -p1
 %patch2013 -p1
-%patch0014 -p1
 %patch0015 -p1
 %patch0019 -p1
 %patch0020 -p1
