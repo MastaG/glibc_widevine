@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-137-g247c1ddd30
+%define glibcsrcdir glibc-2.26-146-gd300041c53
 %define glibcversion 2.26
-%define glibcrelease 25%{?dist}
+%define glibcrelease 26%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2288,6 +2288,16 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Thu Mar 01 2018 Florian Weimer <fweimer@redhat.com> - 2.26-26
+- Auto-sync with upstream branch release/2.26/master,
+  commit d300041c533a3d837c9f37a099bcc95466860e98:
+- CVE-2018-6485, CVE-2018-6551: Fix integer overflows in internal
+  memalign and malloc (#1542102, #1542119)
+- powerpc: Fix syscalls during early process initialization (swbz#22685)
+- math: Provide a C++ version of iseqsig (swbz#22377)
+- aarch: Rewrite elf_machine_load_address using _DYNAMIC symbol
+- x86-64: Properly align La_x86_64_retval to VEC_SIZE (swbz#22715)
+
 * Wed Jan 17 2018 Florian Weimer <fweimer@redhat.com> - 2.26-25
 - Build depend on python3, not python
 
