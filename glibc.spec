@@ -1065,16 +1065,9 @@ truncate -s 0 $RPM_BUILD_ROOT/etc/gai.conf
 truncate -s 0 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
 chmod 644 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
 
-##############################################################################
-# Misc...
-##############################################################################
-
 # Install the upgrade program
 install -m 700 build-%{target}/elf/glibc_post_upgrade \
   $RPM_BUILD_ROOT%{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
-
-# Strip all of the installed object files.
-strip -g $RPM_BUILD_ROOT%{_libdir}/*.o
 
 ##############################################################################
 # Install debug copies of unstripped static libraries
@@ -1090,6 +1083,116 @@ cp -a $RPM_BUILD_ROOT%{_libdir}/*.a \
 	$RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/
 rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
 %endif
+
+# Remove the zoneinfo files
+rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
+
+# Make sure %config files have the same timestamp across multilib packages.
+#
+# XXX: Ideally ld.so.conf should have the timestamp of the spec file, but there
+# doesn't seem to be any macro to give us that.  So we do the next best thing,
+# which is to at least keep the timestamp consistent.  The choice of using
+# glibc_post_upgrade.c is arbitrary.
+touch -r %{SOURCE0} $RPM_BUILD_ROOT/etc/ld.so.conf
+touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
+
+pushd build-%{target}
+$GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
+	../build-%{target}/locale/locarchive.o \
+	../build-%{target}/locale/md5.o \
+	../build-%{target}/locale/record-status.o \
+	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
+	-L../build-%{target} \
+	-B../build-%{target}/csu/ -lc -lc_nonshared
+install -m 700 build-locale-archive $RPM_BUILD_ROOT%{_prefix}/sbin/build-locale-archive
+popd
+
+# Lastly copy some additional documentation for the packages.
+rm -rf documentation
+mkdir documentation
+cp timezone/README documentation/README.timezone
+cp posix/gai.conf documentation/
+
+%ifarch s390x
+# Compatibility symlink
+mkdir -p $RPM_BUILD_ROOT/lib
+ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
+%endif
+
+%if %{with benchtests}
+# Build benchmark binaries.  Ignore the output of the benchmark runs.
+pushd build-%{target}
+make BENCH_DURATION=1 bench-build
+popd
+
+# Copy over benchmark binaries.
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests
+cp $(find build-%{target}/benchtests -type f -executable) $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+# ... and the makefile.
+for b in %{SOURCE9} %{SOURCE10}; do
+	cp $b $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+done
+# .. and finally, the comparison scripts.
+cp benchtests/scripts/benchout.schema.json $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/compare_bench.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/import_bench.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/validate_benchout.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+
+%if 0%{?_enable_debug_packages}
+# The #line directives gperf generates do not give the proper
+# file name relative to the build directory.
+pushd locale
+ln -s programs/*.gperf .
+popd
+pushd iconv
+ln -s ../locale/programs/charmap-kw.gperf .
+popd
+
+%if %{with docs}
+# Remove the `dir' info-heirarchy file which will be maintained
+# by the system as it adds info files to the install.
+rm -f $RPM_BUILD_ROOT%{_infodir}/dir
+%endif
+
+%ifnarch %{auxarches}
+truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
+mkdir -p $RPM_BUILD_ROOT/var/{db,run}/nscd
+touch $RPM_BUILD_ROOT/var/{db,run}/nscd/{passwd,group,hosts,services}
+touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
+%endif
+
+# Move libpcprofile.so and libmemusage.so into the proper library directory.
+# They can be moved without any real consequences because users would not use
+# them directly.
+mkdir -p $RPM_BUILD_ROOT%{_libdir}
+mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so \
+	$RPM_BUILD_ROOT%{_libdir}
+
+# Strip all of the installed object files.
+strip -g $RPM_BUILD_ROOT%{_libdir}/*.o
+
+###############################################################################
+# Rebuild libpthread.a using --whole-archive to ensure all of libpthread
+# is included in a static link. This prevents any problems when linking
+# statically, using parts of libpthread, and other necessary parts not
+# being included. Upstream has decided that this is the wrong approach to
+# this problem and that the full set of dependencies should be resolved
+# such that static linking works and produces the most minimally sized
+# static application possible.
+###############################################################################
+pushd $RPM_BUILD_ROOT%{_prefix}/%{_lib}/
+$GCC -r -nostdlib -o libpthread.o -Wl,--whole-archive ./libpthread.a
+rm libpthread.a
+ar rcs libpthread.a libpthread.o
+rm libpthread.o
+popd
+
+##############################################################################
+# Beyond this point in the install process we no longer modify the set of
+# installed files, with one exception, for auxarches we cleanup the file list
+# at the end and remove files which we don't intend to ship. We need the file
+# list to effect a proper cleanup, and so it happens last.
+##############################################################################
 
 ##############################################################################
 # Build the file lists used for describing the package and subpackages.
@@ -1156,14 +1259,11 @@ rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
       -e '\,.*/share/i18n/locales/.*,d' \
       -e '\,.*/share/i18n/charmaps/.*,d' \
       -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
-      -e '\,/%{_lib}/lib\(pcprofile\|memusage\)\.so,d' \
+      -e '\,/%{_libdir}/lib\(pcprofile\|memusage\)\.so,d' \
       -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
 } | sort > rpm.filelist
 
 touch common.filelist
-
-mkdir -p $RPM_BUILD_ROOT%{_libdir}
-mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so $RPM_BUILD_ROOT%{_libdir}
 
 # The xtrace and memusage scripts have hard-coded paths that need to be
 # translated to a correct set of paths using the $LIB token which is
@@ -1217,6 +1317,9 @@ grep '%{_libdir}/lib.*\.a' < rpm.filelist \
 # devel package.
 grep '%{_libdir}/.*\.o' < rpm.filelist >> devel.filelist
 grep '%{_libdir}/lib.*\.so' < rpm.filelist >> devel.filelist
+# The exception is that libmemusage.so and libpcprofile.so are in glibc
+# because they are used by the utils.
+sed -i -e '\,libmemusage.so,d' -e '\,libpcprofile.so,d' devel.filelist
 
 # Remove all of the static, object, unversioned DSOs, and nscd from the core
 # glibc package.
@@ -1294,110 +1397,25 @@ grep '/libnsl-[0-9.]*.so$' rpm.filelist > libnsl.filelist
 test $(wc -l < libnsl.filelist) -eq 1
 sed -i -e '\,/libnsl,d' rpm.filelist
 
-# Remove the zoneinfo files
-# XXX: Why isn't this don't earlier when we are removing files?
-#      Won't this impact what is shipped?
-rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
-
-# Make sure %config files have the same timestamp across multilib packages.
-#
-# XXX: Ideally ld.so.conf should have the timestamp of the spec file, but there
-# doesn't seem to be any macro to give us that.  So we do the next best thing,
-# which is to at least keep the timestamp consistent.  The choice of using
-# glibc_post_upgrade.c is arbitrary.
-touch -r %{SOURCE0} $RPM_BUILD_ROOT/etc/ld.so.conf
-touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
-
-pushd build-%{target}
-$GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
-	../build-%{target}/locale/locarchive.o \
-	../build-%{target}/locale/md5.o \
-	../build-%{target}/locale/record-status.o \
-	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
-	-L../build-%{target} \
-	-B../build-%{target}/csu/ -lc -lc_nonshared
-install -m 700 build-locale-archive $RPM_BUILD_ROOT%{_prefix}/sbin/build-locale-archive
-popd
-
-# Lastly copy some additional documentation for the packages.
-rm -rf documentation
-mkdir documentation
-cp timezone/README documentation/README.timezone
-cp posix/gai.conf documentation/
-
-%ifarch s390x
-# Compatibility symlink
-mkdir -p $RPM_BUILD_ROOT/lib
-ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
-%endif
-
-%if %{with benchtests}
-# Build benchmark binaries.  Ignore the output of the benchmark runs.
-pushd build-%{target}
-make BENCH_DURATION=1 bench-build
-popd
-
-# Copy over benchmark binaries.
-mkdir -p $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests
-cp $(find build-%{target}/benchtests -type f -executable) $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-
+# List of benchmarks.
 find build-%{target}/benchtests -type f -executable | while read b; do
 	echo "%{_prefix}/libexec/glibc-benchtests/$(basename $b)"
 done >> benchtests.filelist
-
 # ... and the makefile.
 for b in %{SOURCE9} %{SOURCE10}; do
-	cp $b $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
 	echo "%{_prefix}/libexec/glibc-benchtests/$(basename $b)" >> benchtests.filelist
 done
-
-# .. and finally, the comparison scripts.
-cp benchtests/scripts/benchout.schema.json $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-cp benchtests/scripts/compare_bench.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-cp benchtests/scripts/import_bench.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-cp benchtests/scripts/validate_benchout.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-
+# ... and finally, the comparison scripts.
 echo "%{_prefix}/libexec/glibc-benchtests/benchout.schema.json" >> benchtests.filelist
 echo "%{_prefix}/libexec/glibc-benchtests/compare_bench.py*" >> benchtests.filelist
 echo "%{_prefix}/libexec/glibc-benchtests/import_bench.py*" >> benchtests.filelist
 echo "%{_prefix}/libexec/glibc-benchtests/validate_benchout.py*" >> benchtests.filelist
 %endif
+sed -i -e '\,glibc-benchtests,d' rpm.filelist
 
 ###############################################################################
-# Rebuild libpthread.a using --whole-archive to ensure all of libpthread
-# is included in a static link. This prevents any problems when linking
-# statically, using parts of libpthread, and other necessary parts not
-# being included. Upstream has decided that this is the wrong approach to
-# this problem and that the full set of dependencies should be resolved
-# such that static linking works and produces the most minimally sized
-# static application possible.
+# Process debug information.
 ###############################################################################
-pushd $RPM_BUILD_ROOT%{_prefix}/%{_lib}/
-$GCC -r -nostdlib -o libpthread.o -Wl,--whole-archive ./libpthread.a
-rm libpthread.a
-ar rcs libpthread.a libpthread.o
-rm libpthread.o
-popd
-###############################################################################
-
-%if 0%{?_enable_debug_packages}
-
-# The #line directives gperf generates do not give the proper
-# file name relative to the build directory.
-pushd locale
-ln -s programs/*.gperf .
-popd
-pushd iconv
-ln -s ../locale/programs/charmap-kw.gperf .
-popd
-
-# Print some diagnostic information in the builds about the
-# getconf binaries.
-# XXX: Why do we do this?
-ls -l $RPM_BUILD_ROOT%{_prefix}/bin/getconf
-ls -l $RPM_BUILD_ROOT%{_prefix}/libexec/getconf
-eu-readelf -hS $RPM_BUILD_ROOT%{_prefix}/bin/getconf \
-	$RPM_BUILD_ROOT%{_prefix}/libexec/getconf/*
 
 find_debuginfo_args='--strict-build-id -g'
 %ifarch %{debuginfocommonarches}
@@ -1503,15 +1521,13 @@ exclude_common_dirs debuginfo.filelist
 
 %endif # 0%{?_enable_debug_packages}
 
-%if %{with docs}
-# Remove the `dir' info-heirarchy file which will be maintained
-# by the system as it adds info files to the install.
-rm -f $RPM_BUILD_ROOT%{_infodir}/dir
-%endif
-
 %ifarch %{auxarches}
-
+##############################################################################
 # Delete files that we do not intended to ship with the auxarch.
+# This is the only place where we touch the installed files after generating
+# the file lists.
+##############################################################################
+
 echo Cutting down the list of unpackaged files
 sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
 	common.filelist devel.filelist static.filelist headers.filelist \
@@ -1520,18 +1536,7 @@ sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
 	debuginfocommon.filelist \
 %endif
 	| (cd $RPM_BUILD_ROOT; xargs --no-run-if-empty rm -f 2> /dev/null || :)
-
-%else
-
-mkdir -p $RPM_BUILD_ROOT/var/{db,run}/nscd
-touch $RPM_BUILD_ROOT/var/{db,run}/nscd/{passwd,group,hosts,services}
-touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
-
 %endif # %{auxarches}
-
-%ifnarch %{auxarches}
-truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
-%endif
 
 ##############################################################################
 # Run the glibc testsuite
