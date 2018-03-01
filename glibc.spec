@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-5-g56170e064e
-%define glibcversion 2.27
-%define glibcrelease 5%{?dist}
+%define glibcsrcdir glibc-2.27.9000-143-gbd60ce8652
+%define glibcversion 2.27.9000
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -175,7 +175,6 @@ Patch0028: glibc-fedora-localedata-rh61908.patch
 Patch0031: glibc-fedora-__libc_multiple_libcs.patch
 
 # Allow applications to call pthread_atfork without libpthread.so.
-Patch0046: glibc-rh1013801.patch
 
 Patch0047: glibc-nscd-sysconfig.patch
 
@@ -736,7 +735,6 @@ microbenchmark tests on the system.
 %patch2027 -p1
 %patch0028 -p1
 %patch0031 -p1
-%patch0046 -p1
 %patch2031 -p1
 %patch0047 -p1
 %patch0053 -p1
@@ -1931,6 +1929,13 @@ fi
 %endif
 
 %changelog
+* Thu Mar 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-6
+- Switch back to upstream master branch
+- Drop glibc-rh1013801.patch, applied upstream.
+- Drop glibc-fedora-nptl-linklibc.patch, no longer needed.
+- Auto-sync with upstream branch master,
+  commit bd60ce86520b781ca24b99b2555e2ad389bbfeaa.
+
 * Wed Feb 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27-5
 - Inherit as many flags as possible from redhat-rpm-config
 
