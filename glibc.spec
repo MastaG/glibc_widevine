@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-5-g56170e064e
 %define glibcversion 2.27
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -220,6 +220,21 @@ Patch2037: glibc-rh1315108.patch
 Patch2040: glibc-rh1452750-allocate_once.patch
 Patch2041: glibc-rh1452750-libidn2.patch
 Patch2042: glibc-deprecate_libcrypt.patch
+Patch2043: glibc-collation-cldr-1.patch
+Patch2044: glibc-collation-cldr-2.patch
+Patch2045: glibc-collation-cldr-3.patch
+Patch2046: glibc-collation-cldr-4.patch
+Patch2047: glibc-collation-cldr-5.patch
+Patch2048: glibc-collation-cldr-6.patch
+Patch2049: glibc-collation-cldr-7.patch
+Patch2050: glibc-collation-cldr-8.patch
+Patch2051: glibc-collation-cldr-9.patch
+Patch2052: glibc-collation-cldr-10.patch
+Patch2053: glibc-collation-cldr-11.patch
+Patch2054: glibc-collation-cldr-12.patch
+Patch2055: glibc-collation-cldr-13.patch
+Patch2056: glibc-collation-cldr-14.patch
+Patch2057: glibc-collation-cldr-15.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -747,6 +762,21 @@ microbenchmark tests on the system.
 %patch2040 -p1
 %patch2041 -p1
 %patch2042 -p1
+%patch2043 -p1
+%patch2044 -p1
+%patch2045 -p1
+%patch2046 -p1
+%patch2047 -p1
+%patch2048 -p1
+%patch2049 -p1
+%patch2050 -p1
+%patch2051 -p1
+%patch2052 -p1
+%patch2053 -p1
+%patch2054 -p1
+%patch2055 -p1
+%patch2056 -p1
+%patch2057 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1933,6 +1963,9 @@ fi
 %endif
 
 %changelog
+* Fri Mar  2 2018 Florian Weimer <fweimer@redhat.com> - 2.27-6
+- Collation update and sync with CLDR (#1551009)
+
 * Wed Feb 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27-5
 - Inherit as many flags as possible from redhat-rpm-config (#1550914)
 

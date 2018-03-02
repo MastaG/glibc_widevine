@@ -1,0 +1,131 @@
+commit 61e613fb97aa619ae4fabac3f106d5fffe15eacb
+Author: Mike FABIAN <mfabian@redhat.com>
+Date:   Wed Dec 13 14:39:54 2017 +0100
+
+    Collation order of @-. and space has changed in new iso14651_t1_common file, adapt test files
+    
+            * localedata/da_DK.ISO-8859-1.in: In the new iso14651_t1_common file
+            downloaded from ISO, the collation order of @-. and space has changed.
+            Therefore, this test file needed to be adapted.
+            * localedata/fr_CA.UTF-8.in: Likewise.
+            * localedata/fr_FR.UTF-8.in: Likewise.
+            * localedata/uk_UA.UTF-8.in: Likewise.
+
+diff --git a/localedata/da_DK.ISO-8859-1.in b/localedata/da_DK.ISO-8859-1.in
+index e9d2620d5da8a013..9a0e7bc04d49dad2 100644
+--- a/localedata/da_DK.ISO-8859-1.in
++++ b/localedata/da_DK.ISO-8859-1.in
+@@ -2,8 +2,8 @@ A
+ ANDRE
+ ANDR�
+ ANDREAS
+-AS
+ A/S
++AS
+ CA
+ �A
+ CB
+@@ -12,8 +12,8 @@ DA
+ �A
+ DB
+ �C
+-DSB
+ D.S.B.
++DSB
+ DSC
+ EKSTRA-ARBEJDE
+ EKSTRABUD
+diff --git a/localedata/fr_CA.UTF-8.in b/localedata/fr_CA.UTF-8.in
+index 1c05d69f5a4e0068..c98a8e7fb8eda079 100644
+--- a/localedata/fr_CA.UTF-8.in
++++ b/localedata/fr_CA.UTF-8.in
+@@ -4,8 +4,8 @@
+ Aalborg
+ aide
+ aïeul
+-air
+ @@@air
++air
+ air@@@
+ Ålborg
+ août
+@@ -22,10 +22,10 @@ casanier
+ cølibat
+ colon
+ côlon
+-COOP
+ CO-OP
+-coop
++COOP
+ co-op
++coop
+ Copenhagen
+ COTE
+ cote
+@@ -58,8 +58,9 @@ lésé
+ L'Haÿ-les-Roses
+ MÂCON
+ maçon
+-McArthur
+ Mc Arthur
++McArthur
++Mc Arthurb
+ Mc Mahon
+ MODÈLE
+ modelé
+diff --git a/localedata/fr_FR.UTF-8.in b/localedata/fr_FR.UTF-8.in
+index 070eb4dc0dce815c..f719dc2210052c28 100644
+--- a/localedata/fr_FR.UTF-8.in
++++ b/localedata/fr_FR.UTF-8.in
+@@ -4,8 +4,8 @@
+ Aalborg
+ aide
+ aïeul
+-air
+ @@@air
++air
+ air@@@
+ Ålborg
+ août
+@@ -22,10 +22,10 @@ casanier
+ cølibat
+ colon
+ côlon
+-coop
+ co-op
+-COOP
++coop
+ CO-OP
++COOP
+ Copenhagen
+ cote
+ COTE
+@@ -58,8 +58,9 @@ lèse
+ L'Haÿ-les-Roses
+ maçon
+ MÂCON
+-McArthur
+ Mc Arthur
++McArthur
++Mc Arthurb
+ Mc Mahon
+ modelé
+ MODÈLE
+diff --git a/localedata/uk_UA.UTF-8.in b/localedata/uk_UA.UTF-8.in
+index ff4d284d61bfd139..14ee847d9c3c3e5a 100644
+--- a/localedata/uk_UA.UTF-8.in
++++ b/localedata/uk_UA.UTF-8.in
+@@ -10,11 +10,11 @@
+ ґрати
+ ебонітовий
+ експорт
+-експосол
+ екс-посол
++експосол
+ експоцентр
+-експрацівник
+ екс-працівник
++експрацівник
+ еластичність
+ електрика
+ ельбор

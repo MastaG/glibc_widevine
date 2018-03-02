@@ -1,0 +1,43 @@
+commit ffa8106c727607fb365f2b93649fe3ea182dffe4
+Author: Mike FABIAN <mfabian@redhat.com>
+Date:   Fri Dec 15 07:19:45 2017 +0100
+
+    Fix posix/bug-regex5.c test case, adapt to iso14651_t1_common upate
+    
+    This test case tests how many collating elements are defined in
+    da_DK.ISO-8859-1 locale. The da_DK locale source defines 4:
+    
+    collating-element <A-A> from "<U0041><U0041>"
+    collating-element <A-a> from "<U0041><U0061>"
+    collating-element <a-A> from "<U0061><U0041>"
+    collating-element <a-a> from "<U0061><U0061>"
+    
+    The new iso14651_t1_common file defines more collating elements, two
+    of them are in the ISO-8859-1 range:
+    
+    collating-element <U004C_00B7> from "<U004C><U00B7>" % decomposition of LATIN CAPITAL LETTER L WITH MIDDLE DOT
+    collating-element <U006C_00B7> from "<U006C><U00B7>" % decomposition of LATIN SMALL LETTER L WITH MIDDLE DOT
+    
+    So the total count is now 6 instead of 4.
+    
+            * posix/bug-regex5.c: Fix test case because with the new
+            iso14651_t1_common file, the da_DK locale now has 6 collating elements
+            in the ISO-8859-1 range instead of 4 with the old iso14651_t1_common
+            file.
+
+diff --git a/posix/bug-regex5.c b/posix/bug-regex5.c
+index fd18b19df4e75ee1..573da231e3a4de36 100644
+--- a/posix/bug-regex5.c
++++ b/posix/bug-regex5.c
+@@ -53,9 +53,9 @@ main (void)
+       printf ("No collating element!\n");
+       return 1;
+     }
+-  else if (found != 4)
++  else if (found != 6)
+     {
+-      printf ("expected 4 collating elements, found %d\n", found);
++      printf ("expected 6 collating elements, found %d\n", found);
+       return 1;
+     }
+ 

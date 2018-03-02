@@ -1,0 +1,24 @@
+commit 16e349c550942d274d3193ccedaa88855e3ac690
+Author: Mike FABIAN <mfabian@redhat.com>
+Date:   Fri Mar 2 11:29:24 2018 +0100
+
+    Remove --quiet argument when installing locales
+    
+    Using this argument hides problems. I would like to see when something fails.
+    
+            * localedata/Makefile: Remove --quiet argument when
+            installing locales
+
+diff --git a/localedata/Makefile b/localedata/Makefile
+index c9a973ee0704501b..32e0fd337612862b 100644
+--- a/localedata/Makefile
++++ b/localedata/Makefile
+@@ -212,7 +212,7 @@ $(INSTALL-SUPPORTED-LOCALES): install-locales-dir
+ 	@locale=`echo $@ | sed -e 's/^install-//'`; \
+ 	charset=`echo $$locale | sed -e 's,.*/,,'`; \
+ 	locale=`echo $$locale | sed -e 's,/[^/]*,,'`; \
+-	flags="--quiet -c"; \
++	flags="-c"; \
+ 	if [ "$$charset" = 'SHIFT_JIS' ] \
+ 	   || [ "$$charset" = 'SHIFT_JISX0213' ]; then \
+ 	   flags="$$flags --no-warnings=ascii"; \

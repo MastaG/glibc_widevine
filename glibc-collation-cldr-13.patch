@@ -1,0 +1,48 @@
+commit 242596394db9dad6147bb2b7bcb53d8a7610e1d0
+Author: Mike FABIAN <mfabian@redhat.com>
+Date:   Mon Jan 1 15:33:50 2018 +0100
+
+    Improve gen-locales.mk and gen-locale.sh to make test files with @ options work
+    
+    With out this, adding collation test files like localedata/gez_ER.UTF-8@abegede.in
+    does not work for locales which contain @ modifiers.
+    
+            * gen-locales.mk: Make test files which contain @ modifiers in their
+            name work.
+            * localedata/gen-locale.sh: Likewise.
+
+diff --git a/gen-locales.mk b/gen-locales.mk
+index fd88b5bef16c0fa5..9c523d2a0585216c 100644
+--- a/gen-locales.mk
++++ b/gen-locales.mk
+@@ -1,8 +1,8 @@
+ # defines target $(gen-locales) that generates the locales given in $(LOCALES)
+ 
+-LOCALE_SRCS := $(shell echo "$(LOCALES)"|sed 's/\([^ .]*\)[^ ]*/\1/g')
++LOCALE_SRCS := $(shell echo "$(LOCALES)"|sed 's/\([^ .]*\)[^@ ]*\(@[^ ]*\)\?/\1\2/g')
+ CHARMAPS := $(shell echo "$(LOCALES)" | \
+-		    sed -e 's/[^ .]*[.]\([^ ]*\)/\1/g' -e s/SJIS/SHIFT_JIS/g)
++		    sed -e 's/[^ .]*[.]\([^@ ]*\)\(@[^@ ]*\)*/\1/g' -e s/SJIS/SHIFT_JIS/g)
+ CTYPE_FILES = $(addsuffix /LC_CTYPE,$(LOCALES))
+ gen-locales := $(addprefix $(common-objpfx)localedata/,$(CTYPE_FILES))
+ 
+diff --git a/localedata/gen-locale.sh b/localedata/gen-locale.sh
+index 1bba5fee92457647..b91e42af13cda1f6 100644
+--- a/localedata/gen-locale.sh
++++ b/localedata/gen-locale.sh
+@@ -49,7 +49,8 @@ generate_locale ()
+ 
+ locfile=`echo $locfile|sed 's|.*/\([^/]*/LC_CTYPE\)|\1|'`
+ locale=`echo $locfile|sed 's|\([^.]*\)[.].*/LC_CTYPE|\1|'`
+-charmap=`echo $locfile|sed 's|[^.]*[.]\(.*\)/LC_CTYPE|\1|'`
++charmap=`echo $locfile|sed 's|[^.]*[.]\([^@ ]*\)\(@[^ ]*\)\?/LC_CTYPE|\1|'`
++modifier=`echo $locfile|sed 's|[^.]*[.]\([^@ ]*\)\(@[^ ]*\)\?/LC_CTYPE|\2|'`
+ 
+ echo "Generating locale $locale.$charmap: this might take a while..."
+ 
+@@ -73,4 +74,4 @@ if [ "$charmap_real" = 'SHIFT_JIS' ] \
+   flags="$flags --no-warnings=ascii"
+ fi
+ 
+-generate_locale $charmap_real $locale $locale.$charmap "$flags"
++generate_locale $charmap_real $locale$modifier $locale.$charmap$modifier "$flags"

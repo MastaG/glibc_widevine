@@ -1,0 +1,54 @@
+commit 059454de60bdb1be9979ee09596c1e9a7e9e6c8b
+Author: Mike FABIAN <mfabian@redhat.com>
+Date:   Tue Dec 12 14:39:34 2017 +0100
+
+    Collation order of ȥ has changed in new iso14651_t1_common file, adapt test files
+    
+            * localedata/cs_CZ.UTF-8.in: adapt this test file to the collation
+            order of ȥ in the new iso14651_t1_common file.
+            * localedata/pl_PL.UTF-8.in: Likewise.
+
+diff --git a/localedata/cs_CZ.UTF-8.in b/localedata/cs_CZ.UTF-8.in
+index 71d19a76fa2c1a71..b0dcf842053536ad 100644
+--- a/localedata/cs_CZ.UTF-8.in
++++ b/localedata/cs_CZ.UTF-8.in
+@@ -184,8 +184,6 @@ z
+ Z
+ ź
+ Ź
+-ȥ
+-Ȥ
+ za
+ Za
+ źa
+@@ -198,6 +196,8 @@ Zbyněk
+ zeleň
+ ZZ
+ Z-2
++ȥ
++Ȥ
+ ž
+ Ž
+ Ž
+diff --git a/localedata/pl_PL.UTF-8.in b/localedata/pl_PL.UTF-8.in
+index 5f7e9b7d6009e72d..1b4f3ef3c1233a20 100644
+--- a/localedata/pl_PL.UTF-8.in
++++ b/localedata/pl_PL.UTF-8.in
+@@ -132,8 +132,6 @@ z
+ Z
+ ž
+ Ž
+-ȥ
+-Ȥ
+ za
+ Za
+ ža
+@@ -142,6 +140,8 @@ zb
+ Zb
+ žb
+ Žb
++ȥ
++Ȥ
+ ź
+ Ź
+ źa
