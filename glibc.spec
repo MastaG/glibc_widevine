@@ -1934,7 +1934,7 @@ fi
 
 %changelog
 * Wed Feb 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27-5
-- Inherit as many flags as possible from redhat-rpm-config
+- Inherit as many flags as possible from redhat-rpm-config (#1550914)
 
 * Mon Feb 19 2018 Richard W.M. Jones <rjones@redhat.com> - 2.27-4
 - riscv64: Add symlink from /usr/lib64/lp64d -> /usr/lib64 for ABI compat.
