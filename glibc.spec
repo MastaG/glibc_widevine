@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-144-g1a2f44a848
 %define glibcversion 2.27.9000
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -819,6 +819,7 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 
 ##############################################################################
 # %%build - Generic options.
@@ -1929,6 +1930,9 @@ fi
 %endif
 
 %changelog
+* Tue Mar  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-8
+- Enable annobin annotations (#1548438)
+
 * Thu Mar 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-7
 - Auto-sync with upstream branch master,
   commit 1a2f44a848663036c8a14671fe0faa3fed0b2a25:
