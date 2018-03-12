@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-144-g1a2f44a848
+%define glibcsrcdir glibc-2.27.9000-188-gda6d4404ec
 %define glibcversion 2.27.9000
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1930,6 +1930,10 @@ fi
 %endif
 
 %changelog
+* Mon Mar 12 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-9
+- Auto-sync with upstream branch master,
+  commit da6d4404ecfd7eacba8c096b0761a5758a59da4b.
+
 * Tue Mar  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-8
 - Enable annobin annotations (#1548438)
 

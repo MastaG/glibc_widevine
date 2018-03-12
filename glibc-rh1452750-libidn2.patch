@@ -19476,16 +19476,19 @@ index 0da6dcbb596f7608..2be9122469bd91c8 100644
  @item
  Geoffrey Keating for the port to Linux on PowerPC
 diff --git a/nscd/gai.c b/nscd/gai.c
-index d0817477976c0bdf..3825f929ca5529d5 100644
+index 576fd0045b4abf36..24bdfee1db3791e2 100644
 --- a/nscd/gai.c
 +++ b/nscd/gai.c
-@@ -42,6 +42,3 @@
+@@ -42,9 +42,6 @@
  /* Support code.  */
  #include <check_pf.c>
  #include <check_native.c>
 -#ifdef HAVE_LIBIDN
 -# include <libidn/idn-stub.c>
 -#endif
+ 
+ /* Some variables normally defined in libc.  */
+ service_user *__nss_hosts_database attribute_hidden;
 diff --git a/resolv/Makefile b/resolv/Makefile
 index 6e70ae9f6b4a29a9..ea395ac3eb4332e1 100644
 --- a/resolv/Makefile
