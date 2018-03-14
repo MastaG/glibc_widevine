@@ -540,7 +540,7 @@ The nscd daemon caches name service lookups and can improve
 performance with LDAP, and may help with DNS as well.
 
 ##############################################################################
-# Subpackages for NSS modules except nss_files, nss_dns
+# Subpackages for NSS modules except nss_files, nss_compat, nss_dns
 ##############################################################################
 
 # This should remain it's own subpackage or "Provides: nss_db" to allow easy
@@ -853,6 +853,12 @@ build
 ##############################################################################
 %install
 
+# The built glibc is installed into a subdirectory of $RPM_BUILD_ROOT.
+# For a system glibc that subdirectory is "/" (the root of the filesystem).
+# This is called a sysroot (system root) and can be changed if we have a
+# distribution that supports multiple installed glibc versions.
+%define glibc_sysroot $RPM_BUILD_ROOT
+
 # Remove existing file lists.
 find . -type f -name '*.filelist' -exec rm -rf {} \;
 
@@ -872,20 +878,20 @@ GCC=`cat Gcc`
 # RISC-V ABI wants to install everything in /lib64/lp64d or /usr/lib64/lp64d.
 # Make these be symlinks to /lib64 or /usr/lib64 respectively.  See:
 # https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/DRHT5YTPK4WWVGL3GIN5BF2IKX2ODHZ3/
-for d in $RPM_BUILD_ROOT%{_libdir} $RPM_BUILD_ROOT/%{_lib}; do
+for d in %{glibc_sysroot}%{_libdir} %{glibc_sysroot}/%{_lib}; do
 	mkdir -p $d
 	(cd $d && ln -sf . lp64d)
 done
 %endif
 
-# Build and install.
-make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target}
+# Build and install:
+make -j1 install_root=%{glibc_sysroot} install -C build-%{target}
 
 # If we are not building an auxiliary arch then install all of the supported
 # locales.
 %ifnarch %{auxarches}
 pushd build-%{target}
-make %{?_smp_mflags} -O install_root=$RPM_BUILD_ROOT \
+make %{?_smp_mflags} -O install_root=%{glibc_sysroot} \
 	install-locales -C ../localedata objdir=`pwd`
 popd
 %endif
@@ -925,14 +931,14 @@ install_different()
 		libbase=${lib#*/}
 		# Take care that `libbaseso' has a * that needs expanding so
 		# take care with quoting.
-		libbaseso=$(basename $RPM_BUILD_ROOT/%{_lib}/${libbase}-*.so)
+		libbaseso=$(basename %{glibc_sysroot}/%{_lib}/${libbase}-*.so)
 		# Only install if different from default build library.
 		if cmp -s ${lib}.so ../build-%{target}/${lib}.so; then
 			ln -sf "$subdir_up"/$libbaseso $libdestdir/$libbaseso
 		else
 			cp -a ${lib}.so $libdestdir/$libbaseso
 		fi
-		dlib=$libdestdir/$(basename $RPM_BUILD_ROOT/%{_lib}/${libbase}.so.*)
+		dlib=$libdestdir/$(basename %{glibc_sysroot}/%{_lib}/${libbase}.so.*)
 		ln -sf $libbaseso $dlib
 	done
 }
@@ -950,18 +956,18 @@ popd
 # Remove the libNoVersion files.
 # XXX: This looks like a bug in glibc that accidentally installed these
 #      wrong files. We probably don't need this today.
-rm -f $RPM_BUILD_ROOT%{_libdir}/libNoVersion*
-rm -f $RPM_BUILD_ROOT/%{_lib}/libNoVersion*
+rm -f %{glibc_sysroot}/%{_libdir}/libNoVersion*
+rm -f %{glibc_sysroot}/%{_lib}/libNoVersion*
 
 # Remove the old nss modules.
-rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss1-*
-rm -f ${RPM_BUILD_ROOT}/%{_lib}/libnss-*.so.1
+rm -f %{glibc_sysroot}/%{_lib}/libnss1-*
+rm -f %{glibc_sysroot}/%{_lib}/libnss-*.so.1
 
 # This statically linked binary is no longer necessary in a world where
 # the default Fedora install uses an initramfs, and further we have rpm-ostree
 # which captures the whole userspace FS tree.
 # Further, see https://github.com/projectatomic/rpm-ostree/pull/1173#issuecomment-355014583
-rm -f ${RPM_BUILD_ROOT}/{usr/,}sbin/sln
+rm -f %{glibc_sysroot}/{usr/,}sbin/sln
 
 ######################################################################
 # Run ldconfig to create all the symbolic links we need
@@ -969,11 +975,11 @@ rm -f ${RPM_BUILD_ROOT}/{usr/,}sbin/sln
 
 # Note: This has to happen before creating /etc/ld.so.conf.
 
-mkdir -p $RPM_BUILD_ROOT/var/cache/ldconfig
-truncate -s 0 $RPM_BUILD_ROOT/var/cache/ldconfig/aux-cache
+mkdir -p %{glibc_sysroot}/var/cache/ldconfig
+truncate -s 0 %{glibc_sysroot}/var/cache/ldconfig/aux-cache
 
 # ldconfig is statically linked, so we can use the new version.
-${RPM_BUILD_ROOT}/sbin/ldconfig -N -r ${RPM_BUILD_ROOT}
+%{glibc_sysroot}/sbin/ldconfig -N -r %{glibc_sysroot}
 
 ##############################################################################
 # Install info files
@@ -981,18 +987,18 @@ ${RPM_BUILD_ROOT}/sbin/ldconfig -N -r ${RPM_BUILD_ROOT}
 
 %if %{with docs}
 # Move the info files if glibc installed them into the wrong location.
-if [ -d $RPM_BUILD_ROOT%{_prefix}/info -a "%{_infodir}" != "%{_prefix}/info" ]; then
-  mkdir -p $RPM_BUILD_ROOT%{_infodir}
-  mv -f $RPM_BUILD_ROOT%{_prefix}/info/* $RPM_BUILD_ROOT%{_infodir}
-  rm -rf $RPM_BUILD_ROOT%{_prefix}/info
+if [ -d %{glibc_sysroot}%{_prefix}/info -a "%{_infodir}" != "%{_prefix}/info" ]; then
+  mkdir -p %{glibc_sysroot}%{_infodir}
+  mv -f %{glibc_sysroot}%{_prefix}/info/* %{glibc_sysroot}%{_infodir}
+  rm -rf %{glibc_sysroot}%{_prefix}/info
 fi
 
 # Compress all of the info files.
-gzip -9nvf $RPM_BUILD_ROOT%{_infodir}/libc*
+gzip -9nvf %{glibc_sysroot}%{_infodir}/libc*
 
 %else
-rm -f $RPM_BUILD_ROOT%{_infodir}/dir
-rm -f $RPM_BUILD_ROOT%{_infodir}/libc.info*
+rm -f %{glibc_sysroot}%{_infodir}/dir
+rm -f %{glibc_sysroot}%{_infodir}/libc.info*
 %endif
 
 ##############################################################################
@@ -1001,14 +1007,14 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/libc.info*
 
 %ifnarch %{auxarches}
 olddir=`pwd`
-pushd ${RPM_BUILD_ROOT}%{_prefix}/lib/locale
+pushd %{glibc_sysroot}%{_prefix}/lib/locale
 rm -f locale-archive
 # Intentionally we do not pass --alias-file=, aliases will be added
 # by build-locale-archive.
 $olddir/build-%{target}/elf/ld.so \
         --library-path $olddir/build-%{target}/ \
         $olddir/build-%{target}/locale/localedef \
-        --prefix ${RPM_BUILD_ROOT} --add-to-archive \
+        --prefix %{glibc_sysroot} --add-to-archive \
         *_*
 # Setup the locale-archive template for use by glibc-all-langpacks.
 mv locale-archive{,.tmpl}
@@ -1023,51 +1029,51 @@ do
     echo "%{_prefix}/lib/locale/$i/*" >> langpack-${lang}.filelist
 done
 popd
-pushd ${RPM_BUILD_ROOT}%{_prefix}/share/locale
+pushd %{glibc_sysroot}%{_prefix}/share/locale
 for i in */LC_MESSAGES/libc.mo
 do
     locale=${i%%%%/*}
     lang=${locale%%%%_*}
     echo "%lang($lang) %{_prefix}/share/locale/${i}" \
-         >> ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/langpack-${lang}.filelist
+         >> %{glibc_sysroot}%{_prefix}/lib/locale/langpack-${lang}.filelist
 done
 popd
-mv  ${RPM_BUILD_ROOT}%{_prefix}/lib/locale/*.filelist .
+mv  %{glibc_sysroot}%{_prefix}/lib/locale/*.filelist .
 %endif
 
 ##############################################################################
 # Install configuration files for services
 ##############################################################################
 
-install -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/etc/nsswitch.conf
+install -p -m 644 %{SOURCE7} %{glibc_sysroot}/etc/nsswitch.conf
 
 %ifnarch %{auxarches}
 # This is for ncsd - in glibc 2.2
-install -m 644 nscd/nscd.conf $RPM_BUILD_ROOT/etc
-mkdir -p $RPM_BUILD_ROOT%{_tmpfilesdir}
+install -m 644 nscd/nscd.conf %{glibc_sysroot}/etc
+mkdir -p %{glibc_sysroot}%{_tmpfilesdir}
 install -m 644 %{SOURCE4} %{buildroot}%{_tmpfilesdir}
-mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
-install -m 644 nscd/nscd.service nscd/nscd.socket $RPM_BUILD_ROOT/lib/systemd/system
+mkdir -p %{glibc_sysroot}/lib/systemd/system
+install -m 644 nscd/nscd.service nscd/nscd.socket %{glibc_sysroot}/lib/systemd/system
 %endif
 
 # Include ld.so.conf
-echo 'include ld.so.conf.d/*.conf' > $RPM_BUILD_ROOT/etc/ld.so.conf
-truncate -s 0 $RPM_BUILD_ROOT/etc/ld.so.cache
-chmod 644 $RPM_BUILD_ROOT/etc/ld.so.conf
-mkdir -p $RPM_BUILD_ROOT/etc/ld.so.conf.d
+echo 'include ld.so.conf.d/*.conf' > %{glibc_sysroot}/etc/ld.so.conf
+truncate -s 0 %{glibc_sysroot}/etc/ld.so.cache
+chmod 644 %{glibc_sysroot}/etc/ld.so.conf
+mkdir -p %{glibc_sysroot}/etc/ld.so.conf.d
 %ifnarch %{auxarches}
-mkdir -p $RPM_BUILD_ROOT/etc/sysconfig
-truncate -s 0 $RPM_BUILD_ROOT/etc/sysconfig/nscd
-truncate -s 0 $RPM_BUILD_ROOT/etc/gai.conf
+mkdir -p %{glibc_sysroot}/etc/sysconfig
+truncate -s 0 %{glibc_sysroot}/etc/sysconfig/nscd
+truncate -s 0 %{glibc_sysroot}/etc/gai.conf
 %endif
 
 # Include %{_libdir}/gconv/gconv-modules.cache
-truncate -s 0 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
-chmod 644 $RPM_BUILD_ROOT%{_libdir}/gconv/gconv-modules.cache
+truncate -s 0 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
+chmod 644 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
 
 # Install the upgrade program
 install -m 700 build-%{target}/elf/glibc_post_upgrade \
-  $RPM_BUILD_ROOT%{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
+  %{glibc_sysroot}%{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
 
 ##############################################################################
 # Install debug copies of unstripped static libraries
@@ -1078,14 +1084,14 @@ install -m 700 build-%{target}/elf/glibc_post_upgrade \
 # If we are building a debug package then copy all of the static archives
 # into the debug directory to keep them as unstripped copies.
 %if 0%{?_enable_debug_packages}
-mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}
-cp -a $RPM_BUILD_ROOT%{_libdir}/*.a \
-	$RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/
-rm -f $RPM_BUILD_ROOT%{_prefix}/lib/debug%{_libdir}/*_p.a
+mkdir -p %{glibc_sysroot}%{_prefix}/lib/debug%{_libdir}
+cp -a %{glibc_sysroot}%{_libdir}/*.a \
+	%{glibc_sysroot}%{_prefix}/lib/debug%{_libdir}/
+rm -f %{glibc_sysroot}%{_prefix}/lib/debug%{_libdir}/*_p.a
 %endif
 
-# Remove the zoneinfo files
-rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
+# Remove any zoneinfo files; they are maintained by tzdata.
+rm -rf %{glibc_sysroot}%{_prefix}/share/zoneinfo
 
 # Make sure %config files have the same timestamp across multilib packages.
 #
@@ -1093,8 +1099,8 @@ rm -rf $RPM_BUILD_ROOT%{_prefix}/share/zoneinfo
 # doesn't seem to be any macro to give us that.  So we do the next best thing,
 # which is to at least keep the timestamp consistent.  The choice of using
 # glibc_post_upgrade.c is arbitrary.
-touch -r %{SOURCE0} $RPM_BUILD_ROOT/etc/ld.so.conf
-touch -r sunrpc/etc.rpc $RPM_BUILD_ROOT/etc/rpc
+touch -r %{SOURCE0} %{glibc_sysroot}/etc/ld.so.conf
+touch -r sunrpc/etc.rpc %{glibc_sysroot}/etc/rpc
 
 pushd build-%{target}
 $GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
@@ -1104,7 +1110,7 @@ $GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
 	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
 	-L../build-%{target} \
 	-B../build-%{target}/csu/ -lc -lc_nonshared
-install -m 700 build-locale-archive $RPM_BUILD_ROOT%{_prefix}/sbin/build-locale-archive
+install -m 700 build-locale-archive %{glibc_sysroot}%{_prefix}/sbin/build-locale-archive
 popd
 
 # Lastly copy some additional documentation for the packages.
@@ -1115,8 +1121,8 @@ cp posix/gai.conf documentation/
 
 %ifarch s390x
 # Compatibility symlink
-mkdir -p $RPM_BUILD_ROOT/lib
-ln -sf /%{_lib}/ld64.so.1 $RPM_BUILD_ROOT/lib/ld64.so.1
+mkdir -p %{glibc_sysroot}/lib
+ln -sf /%{_lib}/ld64.so.1 %{glibc_sysroot}/lib/ld64.so.1
 %endif
 
 %if %{with benchtests}
@@ -1126,17 +1132,17 @@ make BENCH_DURATION=1 bench-build
 popd
 
 # Copy over benchmark binaries.
-mkdir -p $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests
-cp $(find build-%{target}/benchtests -type f -executable) $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+mkdir -p %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests
+cp $(find build-%{target}/benchtests -type f -executable) %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 # ... and the makefile.
 for b in %{SOURCE9} %{SOURCE10}; do
-	cp $b $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+	cp $b %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 done
 # .. and finally, the comparison scripts.
-cp benchtests/scripts/benchout.schema.json $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-cp benchtests/scripts/compare_bench.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-cp benchtests/scripts/import_bench.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
-cp benchtests/scripts/validate_benchout.py $RPM_BUILD_ROOT%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/benchout.schema.json %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/compare_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/import_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
+cp benchtests/scripts/validate_benchout.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 
 %if 0%{?_enable_debug_packages}
 # The #line directives gperf generates do not give the proper
@@ -1151,25 +1157,25 @@ popd
 %if %{with docs}
 # Remove the `dir' info-heirarchy file which will be maintained
 # by the system as it adds info files to the install.
-rm -f $RPM_BUILD_ROOT%{_infodir}/dir
+rm -f %{glibc_sysroot}%{_infodir}/dir
 %endif
 
 %ifnarch %{auxarches}
-truncate -s 0 $RPM_BUILD_ROOT/%{_prefix}/lib/locale/locale-archive
-mkdir -p $RPM_BUILD_ROOT/var/{db,run}/nscd
-touch $RPM_BUILD_ROOT/var/{db,run}/nscd/{passwd,group,hosts,services}
-touch $RPM_BUILD_ROOT/var/run/nscd/{socket,nscd.pid}
+truncate -s 0 %{glibc_sysroot}/%{_prefix}/lib/locale/locale-archive
+mkdir -p %{glibc_sysroot}/var/{db,run}/nscd
+touch %{glibc_sysroot}/var/{db,run}/nscd/{passwd,group,hosts,services}
+touch %{glibc_sysroot}/var/run/nscd/{socket,nscd.pid}
 %endif
 
 # Move libpcprofile.so and libmemusage.so into the proper library directory.
 # They can be moved without any real consequences because users would not use
 # them directly.
-mkdir -p $RPM_BUILD_ROOT%{_libdir}
-mv -f $RPM_BUILD_ROOT/%{_lib}/lib{pcprofile,memusage}.so \
-	$RPM_BUILD_ROOT%{_libdir}
+mkdir -p %{glibc_sysroot}%{_libdir}
+mv -f %{glibc_sysroot}/%{_lib}/lib{pcprofile,memusage}.so \
+	%{glibc_sysroot}%{_libdir}
 
 # Strip all of the installed object files.
-strip -g $RPM_BUILD_ROOT%{_libdir}/*.o
+strip -g %{glibc_sysroot}%{_libdir}/*.o
 
 ###############################################################################
 # Rebuild libpthread.a using --whole-archive to ensure all of libpthread
@@ -1180,12 +1186,26 @@ strip -g $RPM_BUILD_ROOT%{_libdir}/*.o
 # such that static linking works and produces the most minimally sized
 # static application possible.
 ###############################################################################
-pushd $RPM_BUILD_ROOT%{_prefix}/%{_lib}/
+pushd %{glibc_sysroot}%{_prefix}/%{_lib}/
 $GCC -r -nostdlib -o libpthread.o -Wl,--whole-archive ./libpthread.a
 rm libpthread.a
 ar rcs libpthread.a libpthread.o
 rm libpthread.o
 popd
+
+# The xtrace and memusage scripts have hard-coded paths that need to be
+# translated to a correct set of paths using the $LIB token which is
+# dynamically translated by ld.so as the default lib directory.
+for i in %{glibc_sysroot}%{_prefix}/bin/{xtrace,memusage}; do
+%if %{with bootstrap}
+  test -w $i || continue
+%endif
+  sed -e 's~=/%{_lib}/libpcprofile.so~=%{_libdir}/libpcprofile.so~' \
+      -e 's~=/%{_lib}/libmemusage.so~=%{_libdir}/libmemusage.so~' \
+      -e 's~='\''/\\\$LIB/libpcprofile.so~='\''%{_prefix}/\\$LIB/libpcprofile.so~' \
+      -e 's~='\''/\\\$LIB/libmemusage.so~='\''%{_prefix}/\\$LIB/libmemusage.so~' \
+      -i $i
+done
 
 ##############################################################################
 # Beyond this point in the install process we no longer modify the set of
@@ -1199,35 +1219,61 @@ popd
 ##############################################################################
 # There are several main file lists (and many more for
 # the langpack sub-packages (langpack-${lang}.filelist)):
-# * rpm.fileslist
-#	- Master file list. Eventually, after removing files from this list
-#	  we are left with the list of files for the glibc package.
+# * rpm.filelist
+#	- Master file list from which all other lists are built.
+# * glibc.filelist
+#	- Files for the glibc packages.
 # * common.filelist
-#	- Contains the list of flies for the common subpackage.
+#	- Flies for the common subpackage.
 # * utils.filelist
-#	- Contains the list of files for the utils subpackage.
+#	- Files for the utils subpackage.
 # * nscd.filelist
-#	- Contains the list of files for the nscd subpackage.
+#	- Files for the nscd subpackage.
 # * devel.filelist
-#	- Contains the list of files for the devel subpackage.
+#	- Files for the devel subpackage.
 # * headers.filelist
-#	- Contains the list of files for the headers subpackage.
+#	- Files for the headers subpackage.
 # * static.filelist
-#	- Contains the list of files for the static subpackage.
+#	- Files for the static subpackage.
 # * libnsl.filelist
-#       - Contains the list of files for the libnsl subpackage
-# * nss_db.filelist, nss_hesiod.filelist
+#       - Files for the libnsl subpackage
+# * nss_db.filelist
+# * nss_hesiod.filelist
 #       - File lists for nss_* NSS module subpackages.
 # * nss-devel.filelist
 #       - File list with the .so symbolic links for NSS packages.
 # * debuginfo.filelist
-#	- Contains the list of files for the glibc debuginfo package.
+#	- Files for the glibc debuginfo package.
 # * debuginfocommon.filelist
-#	- Contains the list of files for the glibc common debuginfo package.
+#	- Files for the glibc common debuginfo package.
 #
 
+# Create the main file lists. This way we can append to any one of them later
+# wihtout having to create it. Note these are removed at the start of the
+# install phase.
+touch rpm.filelist
+touch glibc.filelist
+touch common.filelist
+touch utils.filelist
+touch nscd.filelist
+touch devel.filelist
+touch headers.filelist
+touch static.filelist
+touch libnsl.filelist
+touch nss_db.filelist
+touch nss_hesiod.filelist
+touch nss-devel.filelist
+touch debuginfo.filelist
+touch debuginfocommon.filelist
+
+###############################################################################
+# Master file list, excluding a few things.
+###############################################################################
 {
-  find $RPM_BUILD_ROOT \( -type f -o -type l \) \
+  # List all files or links that we have created during install.
+  # Files with 'etc' are configuration files, likewise 'gconv-modules'
+  # and 'gconv-modules.cache' are caches, and we exclude them.
+  find %{glibc_sysroot} \( -type f -o -type l \) \
        \( \
 	 -name etc -printf "%%%%config " -o \
 	 -name gconv-modules \
@@ -1236,9 +1282,9 @@ popd
 	 -printf "%%%%verify(not md5 size mtime) " \
 	 , \
 	 ! -path "*/lib/debug/*" -printf "/%%P\n" \)
-  # Print all directories with a %%dir prefix.  We omit the info directory and
+  # List all directories with a %%dir prefix.  We omit the info directory and
   # all directories in (and including) /usr/share/locale.
-  find $RPM_BUILD_ROOT -type d \
+  find %{glibc_sysroot} -type d \
        \( -path '*%{_prefix}/share/locale' -prune -o \
        \( -path '*%{_prefix}/share/*' \
 %if %{with docs}
@@ -1247,9 +1293,6 @@ popd
 	  -path "*%{_prefix}/include/*" \
        \) -printf "%%%%dir /%%P\n" \)
 } | {
-
-  # primary filelist
-
   # Also remove the *.mo entries.  We will add them to the
   # language specific sub-packages.
   # libnss_ files go into subpackages related to NSS modules.
@@ -1258,31 +1301,92 @@ popd
   sed -e '\,.*/share/locale/\([^/_]\+\).*/LC_MESSAGES/.*\.mo,d' \
       -e '\,.*/share/i18n/locales/.*,d' \
       -e '\,.*/share/i18n/charmaps/.*,d' \
-      -e '\,/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
-      -e '\,/%{_libdir}/lib\(pcprofile\|memusage\)\.so,d' \
-      -e '\,bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
+      -e '\,.*/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
+      -e '\,.*/%{_libdir}/lib\(pcprofile\|memusage\)\.so,d' \
+      -e '\,.*/bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
 } | sort > rpm.filelist
 
-touch common.filelist
+# The master file list is now used by each subpackage to list their own
+# files. We go through each package and subpackage now and create their lists.
+# Each subpackage picks the files from the master list that they need.
+# The order of the subpackage list generation does not matter.
 
-# The xtrace and memusage scripts have hard-coded paths that need to be
-# translated to a correct set of paths using the $LIB token which is
-# dynamically translated by ld.so as the default lib directory.
-for i in $RPM_BUILD_ROOT%{_prefix}/bin/{xtrace,memusage}; do
-%if %{with bootstrap}
-  test -w $i || continue
-%endif
-  sed -e 's~=/%{_lib}/libpcprofile.so~=%{_libdir}/libpcprofile.so~' \
-      -e 's~=/%{_lib}/libmemusage.so~=%{_libdir}/libmemusage.so~' \
-      -e 's~='\''/\\\$LIB/libpcprofile.so~='\''%{_prefix}/\\$LIB/libpcprofile.so~' \
-      -e 's~='\''/\\\$LIB/libmemusage.so~='\''%{_prefix}/\\$LIB/libmemusage.so~' \
-      -i $i
+###############################################################################
+# glibc
+###############################################################################
+
+# Add all files with the following exceptions:
+# - The info files '%{_infodir}/dir'
+# - The partial (lib*_p.a) static libraries, include files.
+# - The static files, objects, unversioned DSOs, and nscd.
+# - The bin, locale, some sbin, and share.
+#   - The use of [^gi] is meant to exclude all files except glibc_post_upgrade,
+#     and iconvconfig, which we want in the main packages.
+# - All the libnss files (we add back the ones we want later).
+# - All bench test binaries.
+# - The aux-cache, since it's handled specially in the files section.
+# - The build-locale-archive binary since it's in the common package.
+cat rpm.filelist \
+	| grep -v \
+	-e '%{_infodir}' \
+	-e '%{_libdir}/lib.*_p.a' \
+	-e '%{_prefix}/include' \
+	-e '%{_libdir}/lib.*\.a' \
+        -e '%{_libdir}/.*\.o' \
+	-e '%{_libdir}/lib.*\.so' \
+	-e 'nscd' \
+	-e '%{_prefix}/bin' \
+	-e '%{_prefix}/lib/locale' \
+	-e '%{_prefix}/sbin/[^gi]' \
+	-e '%{_prefix}/share' \
+	-e '/var/db/Makefile' \
+	-e '/libnss_.*\.so[0-9.]*$' \
+	-e '/libnsl' \
+	-e 'glibc-benchtests' \
+	-e 'aux-cache' \
+	-e 'build-locale-archive' \
+	> glibc.filelist
+
+# Add specific files:
+# - The nss_files, nss_compat, and nss_db files.
+# - The libmemusage.so and libpcprofile.so used by utils.
+for module in compat files dns; do
+    cat rpm.filelist \
+	| grep -E \
+	-e "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
+	>> glibc.filelist
 done
+grep -e "libmemusage.so" -e "libpcprofile.so" rpm.filelist >> glibc.filelist
+
+###############################################################################
+# glibc-devel
+###############################################################################
 
 %if %{with docs}
-# Put the info files into the devel file list.
-grep '%{_infodir}' < rpm.filelist | grep -v '%{_infodir}/dir' > devel.filelist
+# Put the info files into the devel file list, but exclude the generated dir.
+grep '%{_infodir}' rpm.filelist | grep -v '%{_infodir}/dir' > devel.filelist
 %endif
+
+# Put some static files into the devel package.
+grep '%{_libdir}/lib.*\.a' rpm.filelist \
+  | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
+  >> devel.filelist
+
+# Put all of the object files and *.so (not the versioned ones) into the
+# devel package.
+grep '%{_libdir}/.*\.o' < rpm.filelist >> devel.filelist
+grep '%{_libdir}/lib.*\.so' < rpm.filelist >> devel.filelist
+# The exceptions are:
+# - libmemusage.so and libpcprofile.so in glibc used by utils.
+# - libnss_*.so which are in nss-devel.
+sed -i -e '\,libmemusage.so,d' \
+	-e '\,libpcprofile.so,d' \
+	-e '\,/libnss_[a-z]*\.so$,d' \
+	devel.filelist
+
+###############################################################################
+# glibc-headers
+###############################################################################
 
 # The glibc-headers package includes only common files which are identical
 # across all multilib packages. We must keep gnu/stubs.h and gnu/lib-names.h
@@ -1296,73 +1400,50 @@ grep '%{_prefix}/include' < rpm.filelist \
   | egrep -v '%{_prefix}/include/gnu/lib-names-.*\.h$' \
   > headers.filelist
 
-# Remove partial (lib*_p.a) static libraries, include files, and info files from
-# the core glibc package.
-sed -i -e '\|%{_libdir}/lib.*_p.a|d' \
-       -e '\|%{_prefix}/include|d' \
-       -e '\|%{_infodir}|d' \
-	rpm.filelist
-
-# Put some static files into the devel package.
-grep '%{_libdir}/lib.*\.a' < rpm.filelist \
-  | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
-  >> devel.filelist
+###############################################################################
+# glibc-static
+###############################################################################
 
 # Put the rest of the static files into the static package.
 grep '%{_libdir}/lib.*\.a' < rpm.filelist \
   | grep -v '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
   > static.filelist
 
-# Put all of the object files and *.so (not the versioned ones) into the
-# devel package.
-grep '%{_libdir}/.*\.o' < rpm.filelist >> devel.filelist
-grep '%{_libdir}/lib.*\.so' < rpm.filelist >> devel.filelist
-# The exception is that libmemusage.so and libpcprofile.so are in glibc
-# because they are used by the utils.
-sed -i -e '\,libmemusage.so,d' -e '\,libpcprofile.so,d' devel.filelist
+###############################################################################
+# glibc-common
+###############################################################################
 
-# Remove all of the static, object, unversioned DSOs, and nscd from the core
-# glibc package.
-sed -i -e '\|%{_libdir}/lib.*\.a|d' \
-       -e '\|%{_libdir}/.*\.o|d' \
-       -e '\|%{_libdir}/lib.*\.so|d' \
-       -e '\|nscd|d' rpm.filelist
-
-# All of the bin and certain sbin files go into the common package.
-# We explicitly exclude certain sbin files that need to go into
-# the core glibc package for use during upgrades.
-grep '%{_prefix}/bin' < rpm.filelist >> common.filelist
-grep '%{_prefix}/sbin/[^gi]' < rpm.filelist >> common.filelist
-# All of the files under share go into the common package since
-# they should be multilib-independent.
-grep '%{_prefix}/share' < rpm.filelist | \
-  grep -v -e '%{_prefix}/share/zoneinfo' -e '%%dir %{prefix}/share' \
-       >> common.filelist
-
-# Remove the bin, locale, some sbin, and share from the
-# core glibc package. We cheat a bit and use the slightly dangerous
-# /usr/sbin/[^gi] to match the inverse of the search that put the
-# files into common.filelist. It's dangerous in that additional files
-# that start with g, or i would get put into common.filelist and
-# rpm.filelist.
-sed -i -e '\|%{_prefix}/bin|d' \
-       -e '\|%{_prefix}/lib/locale|d' \
-       -e '\|%{_prefix}/sbin/[^gi]|d' \
-       -e '\|%{_prefix}/share|d' rpm.filelist
+# All of the bin and certain sbin files go into the common package except
+# glibc_post_upgrade.* and iconvconfig which need to go in glibc. Likewise
+# nscd is excluded because it goes in nscd.
+grep '%{_prefix}/bin' rpm.filelist >> common.filelist
+grep '%{_prefix}/sbin/[^gi]' rpm.filelist \
+	| grep -v 'nscd' >> common.filelist
+# All of the files under share go into the common package since they should be
+# multilib-independent.
+# Exceptions:
+# - The actual share directory, not owned by us.
+# - The info files which go in devel, and the info directory.
+grep '%{_prefix}/share' rpm.filelist \
+	| grep -v \
+	-e '%{_prefix}/share/info/libc.info.*' \
+	-e '%%dir %{prefix}/share/info' \
+	-e '%%dir %{prefix}/share' \
+	>> common.filelist
 
 # Add the binary to build locales to the common subpackage.
 echo '%{_prefix}/sbin/build-locale-archive' >> common.filelist
 
+###############################################################################
+# nscd
+###############################################################################
+
 # The nscd binary must go into the nscd subpackage.
 echo '%{_prefix}/sbin/nscd' > nscd.filelist
 
-# The memusage and pcprofile libraries are put back into the core
-# glibc package even though they are only used by utils package
-# scripts..
-cat >> rpm.filelist <<EOF
-%{_libdir}/libmemusage.so
-%{_libdir}/libpcprofile.so
-EOF
+###############################################################################
+# glibc-utils
+###############################################################################
 
 # Add the utils scripts and programs to the utils subpackage.
 cat > utils.filelist <<EOF
@@ -1375,27 +1456,36 @@ cat > utils.filelist <<EOF
 %{_prefix}/bin/xtrace
 EOF
 
+###############################################################################
+# nss_db, nss_hesiod
+###############################################################################
+
 # Move the NSS-related files to the NSS subpackages.  Be careful not
 # to pick up .debug files, and the -devel symbolic links.
-for module in db compat hesiod files dns; do
+for module in db hesiod; do
   grep -E "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
     rpm.filelist > nss_$module.filelist
 done
+
+###############################################################################
+# nss-devel
+###############################################################################
+
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
-grep '/libnss_[a-z]*\.so$' devel.filelist > nss-devel.filelist
-# /var/db/Makefile goes into nss_db, remove the other files from
-# the main and devel file list.
-sed -i -e '\,/libnss_.*\.so[0-9.]*$,d' \
-    -e '\,/var/db/Makefile,d' \
-    rpm.filelist devel.filelist
-# Restore the built-in NSS modules.
-cat nss_files.filelist nss_dns.filelist nss_compat.filelist >> rpm.filelist
+grep '/libnss_[a-z]*\.so$' rpm.filelist > nss-devel.filelist
+
+###############################################################################
+# libnsl
+###############################################################################
 
 # Prepare the libnsl-related file lists.
 grep '/libnsl-[0-9.]*.so$' rpm.filelist > libnsl.filelist
 test $(wc -l < libnsl.filelist) -eq 1
-sed -i -e '\,/libnsl,d' rpm.filelist
+
+###############################################################################
+# glibc-benchtests
+###############################################################################
 
 # List of benchmarks.
 find build-%{target}/benchtests -type f -executable | while read b; do
@@ -1414,7 +1504,7 @@ echo "%{_prefix}/libexec/glibc-benchtests/validate_benchout.py*" >> benchtests.f
 sed -i -e '\,glibc-benchtests,d' rpm.filelist
 
 ###############################################################################
-# Process debug information.
+# glibc-debuginfocommon, and glibc-debuginfo
 ###############################################################################
 
 find_debuginfo_args='--strict-build-id -g'
@@ -1426,28 +1516,29 @@ find_debuginfo_args="$find_debuginfo_args \
 	-p '.*/(sbin|libexec)/.*' \
 	-o debuginfocommon.filelist \
 	-l nss_db.filelist -l nss_hesiod.filelist \
-	-l libnsl.filelist -l rpm.filelist \
+	-l libnsl.filelist -l glibc.filelist \
 %if %{with benchtests}
 	-l benchtests.filelist
 %endif
 	"
 %endif
+
 /usr/lib/rpm/find-debuginfo.sh $find_debuginfo_args -o debuginfo.filelist
 
 # List all of the *.a archives in the debug directory.
 list_debug_archives()
 {
 	local dir=%{_prefix}/lib/debug%{_libdir}
-	find $RPM_BUILD_ROOT$dir -name "*.a" -printf "$dir/%%P\n"
+	find %{glibc_sysroot}$dir -name "*.a" -printf "$dir/%%P\n"
 }
 
 %ifarch %{debuginfocommonarches}
 
 # Remove the source files from the common package debuginfo.
-sed -i '\#^%{_prefix}/src/debug/#d' debuginfocommon.filelist
+sed -i '\#^%{glibc_sysroot}%{_prefix}/src/debug/#d' debuginfocommon.filelist
 
 # Create a list of all of the source files we copied to the debug directory.
-find $RPM_BUILD_ROOT%{_prefix}/src/debug \
+find %{glibc_sysroot}%{_prefix}/src/debug \
      \( -type d -printf '%%%%dir ' \) , \
      -printf '%{_prefix}/src/debug/%%P\n' > debuginfocommon.sources
 
@@ -1482,24 +1573,7 @@ egrep -v "$auxarches_debugsources" \
 # the common debuginfo package.
 list_debug_archives >> debuginfocommon.filelist
 
-# It happens that find-debuginfo.sh produces duplicate entries even
-# though the inputs are unique. Therefore we sort and unique the
-# entries in the debug file lists. This avoids the following warnings:
-# ~~~
-# Processing files: glibc-debuginfo-common-2.17.90-10.fc20.x86_64
-# warning: File listed twice: /usr/lib/debug/usr/sbin/build-locale-archive.debug
-# warning: File listed twice: /usr/lib/debug/usr/sbin/nscd.debug
-# warning: File listed twice: /usr/lib/debug/usr/sbin/zdump.debug
-# warning: File listed twice: /usr/lib/debug/usr/sbin/zic.debug
-# ~~~
-sort -u debuginfocommon.filelist > debuginfocommon2.filelist
-mv debuginfocommon2.filelist debuginfocommon.filelist
-
 %endif # %{debuginfocommonarches}
-
-# Remove any duplicates output by a buggy find-debuginfo.sh.
-sort -u debuginfo.filelist > debuginfo2.filelist
-mv debuginfo2.filelist debuginfo.filelist
 
 # Remove some common directories from the common package debuginfo so that we
 # don't end up owning them.
@@ -1521,13 +1595,12 @@ exclude_common_dirs debuginfo.filelist
 
 %endif # 0%{?_enable_debug_packages}
 
-%ifarch %{auxarches}
 ##############################################################################
 # Delete files that we do not intended to ship with the auxarch.
 # This is the only place where we touch the installed files after generating
 # the file lists.
 ##############################################################################
-
+%ifarch %{auxarches}
 echo Cutting down the list of unpackaged files
 sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
 	common.filelist devel.filelist static.filelist headers.filelist \
@@ -1535,7 +1608,7 @@ sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
 %ifarch %{debuginfocommonarches}
 	debuginfocommon.filelist \
 %endif
-	| (cd $RPM_BUILD_ROOT; xargs --no-run-if-empty rm -f 2> /dev/null || :)
+	| (cd %{glibc_sysroot}; xargs --no-run-if-empty rm -f 2> /dev/null || :)
 %endif # %{auxarches}
 
 ##############################################################################
@@ -1605,9 +1678,9 @@ popd
 echo ====================TESTING END=====================
 PLTCMD='/^Relocation section .*\(\.rela\?\.plt\|\.rela\.IA_64\.pltoff\)/,/^$/p'
 echo ====================PLT RELOCS LD.SO================
-readelf -Wr $RPM_BUILD_ROOT/%{_lib}/ld-*.so | sed -n -e "$PLTCMD"
+readelf -Wr %{glibc_sysroot}/%{_lib}/ld-*.so | sed -n -e "$PLTCMD"
 echo ====================PLT RELOCS LIBC.SO==============
-readelf -Wr $RPM_BUILD_ROOT/%{_lib}/libc-*.so | sed -n -e "$PLTCMD"
+readelf -Wr %{glibc_sysroot}/%{_lib}/libc-*.so | sed -n -e "$PLTCMD"
 echo ====================PLT RELOCS END==================
 
 # Finally, check if valgrind runs with the new glibc.
