@@ -853,6 +853,9 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+%if 0%{?rhel} > 0
+	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
+%endif
 
 ##############################################################################
 # %%build - Generic options.
@@ -1964,6 +1967,7 @@ fi
 
 %changelog
 * Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-7
+- Enable annobin on Red Hat Enterprise Linux
 - Auto-sync with upstream branch release/2.27/master,
   commit 55ad82e45c313454de657931898e974a7a036cad:
 - i386: Fix memmove issue (swbz#22644)
