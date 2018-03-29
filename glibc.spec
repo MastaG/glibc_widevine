@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-5-g56170e064e
+%define glibcsrcdir glibc-2.27-36-g55ad82e45c
 %define glibcversion 2.27
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1963,6 +1963,25 @@ fi
 %endif
 
 %changelog
+* Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-7
+- Auto-sync with upstream branch release/2.27/master,
+  commit 55ad82e45c313454de657931898e974a7a036cad:
+- i386: Fix memmove issue (swbz#22644)
+- RISC-V: fmax/fmin: Handle signalling NaNs correctly (swbz#22884)
+- RISC-V: Do not initialize $gp in TLS macros
+- cs_CZ locale: Add alternative month names (swbz#22963)
+- Greek (el_CY, el_GR) locales: Introduce ab_alt_mon (swbz#22937)
+- lt_LT locale: Update abbreviated month names (swbz#22932)
+- ca_ES locale: Update LC_TIME (swbz#22848)
+- i386: Fix i386 sigaction sa_restorer initialization (swbz#21269)
+- Fix multiple definitions of __nss_*_database (swbz#22918)
+- Fix netgroup cache keys (swbz#22342)
+- linux/powerpc: sync sys/ptrace.h with Linux 4.15 (swbz#22433, swbz#22807)
+- powerpc: Undefine Linux ptrace macros that conflict with __ptrace_request
+- Add missing “reorder-end” in LC_COLLATE of et_EE (swbz#22517)
+- linux/aarch64: sync sys/ptrace.h with Linux 4.15 (swbz#22433)
+- [RISC-V] Fix parsing flags in ELF64 files (swbz#22827)
+
 * Fri Mar  2 2018 Florian Weimer <fweimer@redhat.com> - 2.27-6
 - Collation update and sync with CLDR (#1551009)
 

@@ -88,10 +88,10 @@ index 80f7f1487947f578..b29efe01084af28c 100644
  
  Copyright (C) 1998 WIDE Project.
 diff --git a/config.h.in b/config.h.in
-index d928e7dd867c68ce..d55a3c3834f91a0d 100644
+index b0b7cf26cb4b3aa0..141db213a9046eb4 100644
 --- a/config.h.in
 +++ b/config.h.in
-@@ -119,9 +119,6 @@
+@@ -124,9 +124,6 @@
  /* Mach/i386 specific: define if the `i386_set_gdt' RPC is available.  */
  #undef	HAVE_I386_SET_GDT
  
@@ -19463,10 +19463,10 @@ index c7e67ca563f87627..0000000000000000
 -  return stringprep_convert (str, stringprep_locale_charset (), "UTF-8");
 -}
 diff --git a/manual/contrib.texi b/manual/contrib.texi
-index fbf42db31df08e3b..f2a38459856a67ae 100644
+index 0da6dcbb596f7608..2be9122469bd91c8 100644
 --- a/manual/contrib.texi
 +++ b/manual/contrib.texi
-@@ -176,7 +176,7 @@ software floating-point support and for
+@@ -178,7 +178,7 @@ software floating-point support and for
  his direction as part of @theglibc{} steering committee.
  
  @item
@@ -19476,16 +19476,19 @@ index fbf42db31df08e3b..f2a38459856a67ae 100644
  @item
  Geoffrey Keating for the port to Linux on PowerPC
 diff --git a/nscd/gai.c b/nscd/gai.c
-index d00a184c46cc0dd7..eb53bd7889ca3fea 100644
+index 576fd0045b4abf36..24bdfee1db3791e2 100644
 --- a/nscd/gai.c
 +++ b/nscd/gai.c
-@@ -40,6 +40,3 @@
+@@ -42,9 +42,6 @@
  /* Support code.  */
  #include <check_pf.c>
  #include <check_native.c>
 -#ifdef HAVE_LIBIDN
 -# include <libidn/idn-stub.c>
 -#endif
+ 
+ /* Some variables normally defined in libc.  */
+ service_user *__nss_hosts_database attribute_hidden;
 diff --git a/resolv/Makefile b/resolv/Makefile
 index 6e70ae9f6b4a29a9..ea395ac3eb4332e1 100644
 --- a/resolv/Makefile

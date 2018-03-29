@@ -80978,7 +80978,7 @@ index 03732a01d3f431ff..5ea04787b2f48e3b 100644
  
  LC_MESSAGES
 diff --git a/localedata/locales/ca_ES b/localedata/locales/ca_ES
-index 914c066dabff526b..c20d393c2a334286 100644
+index f0d744d53729faf7..5d8297823e530d3b 100644
 --- a/localedata/locales/ca_ES
 +++ b/localedata/locales/ca_ES
 @@ -49,21 +49,7 @@ category "i18n:2012";LC_MEASUREMENT
@@ -81158,7 +81158,7 @@ index c27d54ccfd38b621..b2ac8c66d78521b0 100644
  reorder-end
  
 diff --git a/localedata/locales/cs_CZ b/localedata/locales/cs_CZ
-index f80d3e1b37f72a5b..16a2b02972fd4e80 100644
+index 8f4c69e4934e262f..41fbd2be934604bd 100644
 --- a/localedata/locales/cs_CZ
 +++ b/localedata/locales/cs_CZ
 @@ -142,6 +142,17 @@ LC_COLLATE
@@ -84624,7 +84624,7 @@ index c66d574b5297d42e..42f67670d02d3763 100644
  
  LC_CTYPE
 diff --git a/localedata/locales/et_EE b/localedata/locales/et_EE
-index 9cb55b568f343975..f5c47149a6288beb 100644
+index bab7493c98722c38..f5c47149a6288beb 100644
 --- a/localedata/locales/et_EE
 +++ b/localedata/locales/et_EE
 @@ -63,6 +63,7 @@ copy "iso14651_t1"
@@ -84635,7 +84635,7 @@ index 9cb55b568f343975..f5c47149a6288beb 100644
  collating-symbol <z-caron>
  collating-symbol <o-tilde>
  collating-symbol <a-diaresis>
-@@ -80,28 +81,30 @@ reorder-after <RES-1>
+@@ -80,28 +81,28 @@ reorder-after <RES-1>
  <CAP>
  <MIN>
  
@@ -84676,10 +84676,8 @@ index 9cb55b568f343975..f5c47149a6288beb 100644
 +<U00D6> <o-diaresis>;<BASE>;<CAP>;IGNORE % Ö
 +<U00FC> <u-diaresis>;<BASE>;<MIN>;IGNORE % ü
 +<U00DC> <u-diaresis>;<BASE>;<CAP>;IGNORE % Ü
-+
-+reorder-end
  
- END LC_COLLATE
+ reorder-end
  
 diff --git a/localedata/locales/fa_IR b/localedata/locales/fa_IR
 index 06270c0548c30c4d..3714a30932189ab4 100644
@@ -87590,7 +87588,7 @@ index 00fff2ddca8bfaa5..ed6404a1e5ea1a6e 100644
  reorder-end
  END LC_COLLATE
 diff --git a/localedata/locales/lt_LT b/localedata/locales/lt_LT
-index c935fcf75e0fcfaf..6497ad739fcbcc01 100644
+index bec67726e9b3d213..e9834bd2003123da 100644
 --- a/localedata/locales/lt_LT
 +++ b/localedata/locales/lt_LT
 @@ -117,42 +117,42 @@ collating-symbol <u-ogonek>
