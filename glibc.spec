@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-36-g55ad82e45c
+%define glibcsrcdir glibc-2.27-37-g39071a5539
 %define glibcversion 2.27
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1966,6 +1966,10 @@ fi
 %endif
 
 %changelog
+* Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-8
+- Auto-sync with upstream branch release/2.27/master,
+  commit 39071a55392d2d2e0b75fb19f2b48d661c4cc682.
+
 * Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-7
 - Enable annobin on Red Hat Enterprise Linux
 - Auto-sync with upstream branch release/2.27/master,
