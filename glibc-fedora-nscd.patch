@@ -1,3 +1,8 @@
+Short description: NSCD must use nscd user.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Upstream status: not-needed
+
 Fedora-specific configuration adjustment to introduce the nscd user.
 (Upstream does not assume this user exists.)
 

@@ -135,93 +135,32 @@ Source11: SUPPORTED
 Source12: ChangeLog.old
 
 ##############################################################################
-# Start of glibc patches
+# Patches:
+# - See each individual patch file for origin and upstream status.
+# - For new patches follow template.patch format.
 ##############################################################################
-# 0000-0999 for patches which are unlikely to ever go upstream or which
-# have not been analyzed to see if they ought to go upstream yet.
-#
-# 1000-2000 for patches that are already upstream.
-#
-# 2000-3000 for patches that are awaiting upstream approval
-#
-# Yes, I realize this means some gratutious changes as patches to from
-# one bucket to another, but I find this scheme makes it easier to track
-# the upstream divergence and patches needing approval.
-#
-# Note that we can still apply the patches in any order we see fit, so
-# the changes from one bucket to another won't necessarily result in needing
-# to twiddle the patch because of dependencies on prior patches and the like.
-
-
-##############################################################################
-#
-# Patches that are unlikely to go upstream or not yet analyzed.
-#
-##############################################################################
-
-Patch1: glibc-post_upgrade.patch
-Patch2: glibc-fedora-nscd.patch
-
-# All these were from the glibc-fedora.patch mega-patch and need another
-# round of reviewing.  Ideally they'll either be submitted upstream or
-# dropped.
-Patch0012: glibc-fedora-linux-tcsetattr.patch
-Patch0015: glibc-fedora-localedef.patch
-Patch0019: glibc-fedora-nis-rh188246.patch
-Patch0020: glibc-fedora-manual-dircategory.patch
-Patch0024: glibc-fedora-locarchive.patch
-Patch0025: glibc-fedora-streams-rh436349.patch
-Patch0028: glibc-fedora-localedata-rh61908.patch
-Patch0031: glibc-fedora-__libc_multiple_libcs.patch
-
-# Allow applications to call pthread_atfork without libpthread.so.
-
-Patch0047: glibc-nscd-sysconfig.patch
-
-# confstr _CS_PATH should only return /usr/bin on Fedora since /bin is just a
-# symlink to it.
-Patch0053: glibc-cs-path.patch
-
-# Add C.UTF-8 locale into /usr/lib/locale/
-Patch0059: glibc-c-utf8-locale.patch
-
-##############################################################################
-#
-# Patches from upstream
-#
-##############################################################################
-
-##############################################################################
-#
-# Patches submitted, but not yet approved upstream.
-#
-##############################################################################
-#
-# Each should be associated with a BZ.
-# Obviously we're not there right now, but that's the goal
-#
-
-# http://sourceware.org/ml/libc-alpha/2012-12/msg00103.html
-Patch2007: glibc-rh697421.patch
-
-Patch2013: glibc-rh741105.patch
-
-# Upstream BZ 14247
-Patch2023: glibc-rh827510.patch
-
-# Upstream BZ 14185
-Patch2027: glibc-rh819430.patch
-
-Patch2031: glibc-rh1070416.patch
-
-Patch2037: glibc-rh1315108.patch
-Patch2040: glibc-rh1452750-allocate_once.patch
-Patch2041: glibc-rh1452750-libidn2.patch
-Patch2042: glibc-deprecate_libcrypt.patch
-
-##############################################################################
-# End of glibc patches.
-##############################################################################
+Patch0001: glibc-post_upgrade.patch
+Patch0002: glibc-fedora-nscd.patch
+Patch0003: glibc-rh697421.patch
+Patch0004: glibc-fedora-linux-tcsetattr.patch
+Patch0005: glibc-rh741105.patch
+Patch0006: glibc-fedora-localedef.patch
+Patch0007: glibc-fedora-nis-rh188246.patch
+Patch0008: glibc-fedora-manual-dircategory.patch
+Patch0009: glibc-rh827510.patch
+Patch0010: glibc-fedora-locarchive.patch
+Patch0011: glibc-fedora-streams-rh436349.patch
+Patch0012: glibc-rh819430.patch
+Patch0013: glibc-fedora-localedata-rh61908.patch
+Patch0014: glibc-fedora-__libc_multiple_libcs.patch
+Patch0015: glibc-rh1070416.patch
+Patch0016: glibc-nscd-sysconfig.patch
+Patch0017: glibc-cs-path.patch
+Patch0018: glibc-c-utf8-locale.patch
+Patch0019: glibc-rh1315108.patch
+Patch0020: glibc-rh1452750-allocate_once.patch
+Patch0021: glibc-rh1452750-libidn2.patch
+Patch0022: glibc-deprecate_libcrypt.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -721,28 +660,28 @@ microbenchmark tests on the system.
 %setup -q -n %{glibcsrcdir}
 
 # Patch order matters.
-%patch1 -p1
-%patch2 -p1
-%patch2007 -p1
+%patch0001 -p1
+%patch0002 -p1
+%patch0003 -p1
+%patch0004 -p1
+%patch0005 -p1
+%patch0006 -p1
+%patch0007 -p1
+%patch0008 -p1
+%patch0009 -p1
+%patch0010 -p1
+%patch0011 -p1
 %patch0012 -p1
-%patch2013 -p1
+%patch0013 -p1
+%patch0014 -p1
 %patch0015 -p1
+%patch0016 -p1
+%patch0017 -p1
+%patch0018 -p1
 %patch0019 -p1
 %patch0020 -p1
-%patch2023 -p1
-%patch0024 -p1
-%patch0025 -p1
-%patch2027 -p1
-%patch0028 -p1
-%patch0031 -p1
-%patch2031 -p1
-%patch0047 -p1
-%patch0053 -p1
-%patch0059 -p1
-%patch2037 -p1
-%patch2040 -p1
-%patch2041 -p1
-%patch2042 -p1
+%patch0021 -p1
+%patch0022 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...

@@ -1,3 +1,8 @@
+Short description: RPM Post-upgrade cleanup program.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Upstream status: not-needed
+
 A helper program is needed to clean up the system configuration
 early during RPM package installation, so that other scriptlets
 can run successfully.

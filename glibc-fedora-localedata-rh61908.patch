@@ -1,3 +1,14 @@
+Short description: Add 4 ISO-8859-15 locales to SUPPORTED for Euro symbol.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Bug-RHEL: #61908
+Upstream status: not-needed
+
+Very early RHL 7.3 requirement to add these locales so users can
+get access to Euro symbol. We should review this bug and decide if
+the UTF-8 locales are now serving the same purpose and drop the
+additional locales.
+
 * Tue Mar 26 2002 Jakub Jelinek <jakub@redhat.com> 2.2.5-28
 - add a couple of .ISO-8859-15 locales (#61908)
 

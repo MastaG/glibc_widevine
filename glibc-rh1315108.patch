@@ -1,3 +1,14 @@
+Short description: Remove extend_alloca.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: git://sourceware.org/git/glibc.git/fw/extend_alloca
+Bug-Fedora: #1315108
+Bug-Upstream: #18023
+Upstream status: https://sourceware.org/ml/libc-alpha/2015-03/msg00056.html
+
+Need to review these patches and get them upstream, the last
+status was submission in 2015, followed by some of the patches
+going into upstream.
+
 From the upstream branch fw/extend_alloca.
 
 commit dc79f9aa56933dc8b475209f9a4059965b50ea26

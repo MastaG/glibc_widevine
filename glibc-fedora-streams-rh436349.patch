@@ -1,3 +1,13 @@
+Short description: Do not define _XOPEN_STREAMS.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Bug-Fedora: #436349
+Upstream status: not-submitted
+
+This patch should go upstream. Not defining _XOPEN_STREAMS is the
+same as setting it to -1 for POSIX conformance. The headers setting
+needs to be reviewed indepedently.
+
 This is part of commit glibc-2.3.3-1564-gd0b6ac6
 
 * Fri Mar 14 2008 Jakub Jelinek <jakub@redhat.com> 2.7.90-11

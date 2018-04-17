@@ -1,3 +1,14 @@
+Short description: Fedora-specific workaround for kernel pty bug.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Upstream status: not-submitted
+
+This is a Fedora-specific workaround for a kernel bug where calling
+ioctl on a pty will silently ignore the invalid c_cflag. The
+workaround is to use TCGETS to verify the setting matches. This is
+not upstream and needs to either be removed or submitted upstream
+after analysis.
+
 Index: b/sysdeps/unix/sysv/linux/tcsetattr.c
 ===================================================================
 --- a/sysdeps/unix/sysv/linux/tcsetattr.c

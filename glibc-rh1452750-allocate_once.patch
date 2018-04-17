@@ -1,3 +1,11 @@
+Short description: Implement allocate_once for internal use.
+Author(s): Istvan Kurucsai <pistukem@gmail.com>
+Origin: PATCH
+Bug-Fedora: #1452750
+Upstream status: https://patchwork.sourceware.org/patch/25361/
+
+Internal allocate_once() function should get pushed upstream.
+
 commit a829b747cf2ce18ba869ea60f67975c484bf2769
 Author: Istvan Kurucsai <pistukem@gmail.com>
 Date:   Fri Jan 12 15:34:13 2018 +0100

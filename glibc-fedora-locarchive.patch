@@ -1,3 +1,8 @@
+Short description: Allow access to internal locale archive functions.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Upstream status: not-needed
+
 This is a part of commit glibc-2.3.3-1492-ga891c7b,
 needed for fedora/build-locale-archive.c only.
 

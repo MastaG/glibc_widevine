@@ -1,3 +1,10 @@
+Short description: Provide options to nscd startup.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Upstream status: not-needed
+
+Fedora-specific nscd startup configuration file.
+
 diff --git a/nscd/nscd.service b/nscd/nscd.service
 index b7428a3..19ba185 100644
 --- a/nscd/nscd.service

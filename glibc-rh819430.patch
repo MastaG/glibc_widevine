@@ -1,3 +1,16 @@
+Short description: fnmatch() fails with MBCS.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Bug-RHEL: #819430, #826149, #826151
+Bug-Upstream: #14185
+Upstream status: not-submitted
+
+fnmatch() fails when '*' wildcard is applied on the file name
+containing multi-byte character(s)
+
+This needs to be reviewed thoroughly and go upstream with a
+new test case.
+
 diff -Nrup a/posix/fnmatch.c b/posix/fnmatch.c
 --- a/posix/fnmatch.c	2012-01-01 07:16:32.000000000 -0500
 +++ b/posix/fnmatch.c	2012-05-23 14:14:29.099461189 -0400

@@ -1,3 +1,13 @@
+Short description: Deprecate libcrypt.
+Author(s): Zack Weinberg <zackw@panix.com>
+Origin: https://sourceware.org/ml/libc-alpha/2017-08/msg01257.html
+Bug-Fedora: #1566464
+Upsteram status: https://patchwork.sourceware.org/patch/22401/
+
+Additionally we need to review:
+https://patchwork.sourceware.org/patch/26750/
+and revisit the issues around bug rhbz1566464.
+
 Background information:
 
 https://sourceware.org/ml/libc-alpha/2017-08/msg01257.html

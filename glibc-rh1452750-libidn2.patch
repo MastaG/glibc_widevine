@@ -1,3 +1,10 @@
+Short description: Use libidn2 for IDNA support.
+Author(s): Florian Weimer <fweimer@redhat.com>
+Origin: PATCH
+Bug-Fedora: #1452750
+Bug-Upstream: #19728, #19729, #22247
+Upstream status: https://patchwork.sourceware.org/patch/25764/
+
 commit 0e0929705f095c7eb2e11e82aee3bf9e9edd365e
 Author: Florian Weimer <fweimer@redhat.com>
 Date:   Wed Jan 10 20:03:03 2018 +0100

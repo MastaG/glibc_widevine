@@ -1,3 +1,14 @@
+Short description: Work ld.so --verify crash on debuginfo files.
+Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
+Origin: PATCH
+Bug-RHEL: #741105, #767146
+Upstream status: not-needed
+
+This change is designed to work around running ld.so on a debuginfo
+file. This is the wrong fix for this problem and should be dropped.
+The correct solution is to mark debuginfo files as new types of
+ELF files.
+
 Index: glibc-2.22-386-g95e8397/elf/dl-load.c
 ===================================================================
 --- glibc-2.22-386-g95e8397.orig/elf/dl-load.c
