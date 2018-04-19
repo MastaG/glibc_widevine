@@ -657,31 +657,7 @@ microbenchmark tests on the system.
 # Prepare for the build.
 ##############################################################################
 %prep
-%setup -q -n %{glibcsrcdir}
-
-# Patch order matters.
-%patch0001 -p1
-%patch0002 -p1
-%patch0003 -p1
-%patch0004 -p1
-%patch0005 -p1
-%patch0006 -p1
-%patch0007 -p1
-%patch0008 -p1
-%patch0009 -p1
-%patch0010 -p1
-%patch0011 -p1
-%patch0012 -p1
-%patch0013 -p1
-%patch0014 -p1
-%patch0015 -p1
-%patch0016 -p1
-%patch0017 -p1
-%patch0018 -p1
-%patch0019 -p1
-%patch0020 -p1
-%patch0021 -p1
-%patch0022 -p1
+%autosetup -n %{glibcsrcdir} -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
