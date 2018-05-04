@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-37-g39071a5539
 %define glibcversion 2.27
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -855,6 +855,12 @@ rpm_inherit_flags \
 	"-m64" \
 %if 0%{?rhel} > 0
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
+%endif
+
+%if 0%{?rhel} > 0
+# Special flag to enable annobin annotations for statically linked
+# assembler code.
+BuildFlags="$BuildFlags -Wa,--generate-missing-build-notes=yes"
 %endif
 
 ##############################################################################
@@ -1966,6 +1972,9 @@ fi
 %endif
 
 %changelog
+* Fri May  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-9
+- Add annobin annotations to assembler code (downstream only)
+
 * Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-8
 - Auto-sync with upstream branch release/2.27/master,
   commit 39071a55392d2d2e0b75fb19f2b48d661c4cc682.
