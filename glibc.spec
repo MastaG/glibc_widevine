@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-326-g0085be1415
 %define glibcversion 2.27.9000
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -235,8 +235,8 @@ BuildRequires: make >= 4.0
 # The intl subsystem generates a parser using bison.
 BuildRequires: bison >= 2.7
 
-# binutils 2.29 is needed for static PIE support in i386/x86_64.
-BuildRequires: binutils >= 2.29
+# binutils 2.30-17 is needed for --generate-missing-build-notes.
+BuildRequires: binutils >= 2.30-17
 
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
@@ -735,6 +735,11 @@ rpm_inherit_flags \
 	"-m32" \
 	"-m64" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
+
+
+# Special flag to enable annobin annotations for statically linked
+# assembler code.
+BuildFlags="$BuildFlags -Wa,--generate-missing-build-notes=yes"
 
 ##############################################################################
 # %%build - Generic options.
@@ -1845,6 +1850,9 @@ fi
 %endif
 
 %changelog
+* Fri May  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-16
+- Add annobin annotations to assembler code (#1548438)
+
 * Thu Apr 19 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-15
 - Auto-sync with upstream branch master,
   commit 0085be1415a38b40a5a1a12e49368498f1687380.
