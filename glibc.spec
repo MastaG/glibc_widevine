@@ -920,20 +920,14 @@ df
 GCC=gcc
 GXX=g++
 
-# True if the compiler flag in the first argument is listed in
-# redhat-rpm-config.
-rpm_has_compiler_flag ()
-{
-	echo " $RPM_OPT_FLAGS $RPM_LD_FLAGS " | grep -q -F " $1 "
-}
-
 # Propagates the listed flags to BuildFlags if supplied by redhat-rpm-config.
 BuildFlags="-O2 -g"
 rpm_inherit_flags ()
 {
+	local reference=" $* "
 	local flag
-	for flag in "$@" ; do
-		if rpm_has_compiler_flag "$flag" ; then
+	for flag in $RPM_OPT_FLAGS $RPM_LD_FLAGS ; do
+		if echo "$reference" | grep -q -F " $flag " ; then
 			BuildFlags="$BuildFlags $flag"
 		fi
 	done
