@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-37-g39071a5539
 %define glibcversion 2.27
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -852,6 +852,12 @@ rpm_inherit_flags \
 	"-mstackrealign" \
 %if 0%{?rhel} > 0
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
+%endif
+
+%if 0%{?rhel} > 0
+%ifarch i686
+BuildFlags="$BuildFlags -mstackrealign"
+%endif
 %endif
 
 ##############################################################################
@@ -1963,6 +1969,9 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-12
+- Unconditionally build downstream with -mstackrealign for now
+
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-11
 - Inherit compiler flags in the original order
 
