@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-326-g0085be1415
 %define glibcversion 2.27.9000
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -161,6 +161,7 @@ Patch0019: glibc-rh1315108.patch
 Patch0020: glibc-rh1452750-allocate_once.patch
 Patch0021: glibc-rh1452750-libidn2.patch
 Patch0022: glibc-deprecate_libcrypt.patch
+Patch23: glibc-python3.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1845,6 +1846,9 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-16
+- Use /usr/bin/python3 for benchmarks scripts (#1577223)
+
 * Thu Apr 19 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-15
 - Auto-sync with upstream branch master,
   commit 0085be1415a38b40a5a1a12e49368498f1687380.
