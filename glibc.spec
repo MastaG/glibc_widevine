@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-326-g0085be1415
+%define glibcsrcdir glibc-2.27.9000-384-g89aacb513e
 %define glibcversion 2.27.9000
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1846,6 +1846,11 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-17
+- Avoid exporting some Sun RPC symbols with default versions (#1577210)
+- Auto-sync with upstream branch master,
+  commit 89aacb513eb77549a29df2638913a0f8178cf3f5.
+
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-16
 - Use /usr/bin/python3 for benchmarks scripts (#1577223)
 
