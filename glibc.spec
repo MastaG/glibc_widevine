@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-37-g39071a5539
 %define glibcversion 2.27
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -823,20 +823,14 @@ df
 GCC=gcc
 GXX=g++
 
-# True if the compiler flag in the first argument is listed in
-# redhat-rpm-config.
-rpm_has_compiler_flag ()
-{
-	echo " $RPM_OPT_FLAGS $RPM_LD_FLAGS " | grep -q -F " $1 "
-}
-
 # Propagates the listed flags to BuildFlags if supplied by redhat-rpm-config.
 BuildFlags="-O2 -g"
 rpm_inherit_flags ()
 {
+	local reference=" $* "
 	local flag
-	for flag in "$@" ; do
-		if rpm_has_compiler_flag "$flag" ; then
+	for flag in $RPM_OPT_FLAGS $RPM_LD_FLAGS ; do
+		if echo "$reference" | grep -q -F " $flag " ; then
 			BuildFlags="$BuildFlags $flag"
 		fi
 	done
@@ -1969,6 +1963,9 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-11
+- Inherit compiler flags in the original order
+
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-10
 - Inherit the -mstackrealign flag if it is set
 
