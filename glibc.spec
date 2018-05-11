@@ -735,6 +735,7 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+	"-mstackrealign" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 
 ##############################################################################
@@ -1848,6 +1849,7 @@ fi
 %changelog
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-17
 - Avoid exporting some Sun RPC symbols with default versions (#1577210)
+- Inherit the -mstackrealign flag if it is set
 - Auto-sync with upstream branch master,
   commit 89aacb513eb77549a29df2638913a0f8178cf3f5.
 
