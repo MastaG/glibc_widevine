@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-37-g39071a5539
 %define glibcversion 2.27
-%define glibcrelease 9%{?dist}
+%define glibcrelease 10%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -855,6 +855,7 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+	"-mstackrealign" \
 %if 0%{?rhel} > 0
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 %endif
@@ -1968,6 +1969,9 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-10
+- Inherit the -mstackrealign flag if it is set
+
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-9
 - Use /usr/bin/python3 for benchmarks scripts (#1577223)
 
