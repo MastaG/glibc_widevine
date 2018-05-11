@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-37-g39071a5539
 %define glibcversion 2.27
-%define glibcrelease 8%{?dist}
+%define glibcrelease 9%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -235,6 +235,7 @@ Patch2054: glibc-collation-cldr-12.patch
 Patch2055: glibc-collation-cldr-13.patch
 Patch2056: glibc-collation-cldr-14.patch
 Patch2057: glibc-collation-cldr-15.patch
+Patch2058: glibc-python3.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -777,6 +778,7 @@ microbenchmark tests on the system.
 %patch2055 -p1
 %patch2056 -p1
 %patch2057 -p1
+%patch2058 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1966,6 +1968,9 @@ fi
 %endif
 
 %changelog
+* Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-9
+- Use /usr/bin/python3 for benchmarks scripts (#1577223)
+
 * Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-8
 - Auto-sync with upstream branch release/2.27/master,
   commit 39071a55392d2d2e0b75fb19f2b48d661c4cc682.
