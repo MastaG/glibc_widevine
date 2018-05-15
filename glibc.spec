@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-37-g39071a5539
+%define glibcsrcdir glibc-2.27-53-g0cd4a5e87f
 %define glibcversion 2.27
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1969,6 +1969,20 @@ fi
 %endif
 
 %changelog
+* Tue May 15 2018 Florian Weimer <fweimer@redhat.com> - 2.27-13
+- Auto-sync with upstream branch release/2.27/master,
+  commit 0cd4a5e87f6885a2f15fe8e7eb7378d010cdb606:
+- sunrpc: Remove stray exports (#1577210)
+- gd_GB: Fix typo in abbreviated "May" (swbz#23152)
+- realpath: Fix path length overflow (swbz#22786)
+- elf: Fix stack overflow with huge PT_NOTE segment (swbz#20419)
+- resolv: Fully initialize struct mmsghdr in send_dg (swbz#23037)
+- manual: Various fixes to the mbstouwcs example, and mbrtowc update
+- getlogin_r: return early when linux sentinel value is set
+- resolv: Fix crash in resolver on memory allocation failure (swbz#23005)
+- Fix signed integer overflow in random_r (swbz#17343)
+- RISC-V: fix struct kernel_sigaction to match the kernel version (swbz#23069)
+
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-12
 - Unconditionally build downstream with -mstackrealign for now
 

@@ -241,7 +241,7 @@ Date:   Sun Mar 1 23:22:45 2015 +0100
     	extend_alloca_account): Remove.
 
 diff --git a/elf/dl-deps.c b/elf/dl-deps.c
-index 35cad364b7dfdf0d..0fae87a0bb976335 100644
+index c975fcffd7735f9e..df7fc442ae1a80aa 100644
 --- a/elf/dl-deps.c
 +++ b/elf/dl-deps.c
 @@ -27,6 +27,7 @@
@@ -370,7 +370,7 @@ index fd90664f0a17cd6d..c0b83954436ed4c1 100644
  
  # endif /* !_ISOMAC */
 diff --git a/nis/nss_nis/nis-initgroups.c b/nis/nss_nis/nis-initgroups.c
-index 3784c101f7ee31aa..c872b32e15f55e3d 100644
+index a47b4d7ada0fe37b..d6ab289b291861c5 100644
 --- a/nis/nss_nis/nis-initgroups.c
 +++ b/nis/nss_nis/nis-initgroups.c
 @@ -16,7 +16,6 @@
@@ -467,7 +467,7 @@ index 3784c101f7ee31aa..c872b32e15f55e3d 100644
    return status;
  }
 diff --git a/nscd/aicache.c b/nscd/aicache.c
-index a3de792cc429b546..7064d12a15b3e19d 100644
+index 6f7b038021746e22..c2ac71f2b9647caa 100644
 --- a/nscd/aicache.c
 +++ b/nscd/aicache.c
 @@ -28,6 +28,7 @@
@@ -636,10 +636,10 @@ index a3de792cc429b546..7064d12a15b3e19d 100644
  }
  
 diff --git a/nscd/connections.c b/nscd/connections.c
-index cc1ed72077640a8b..2f69800ee5ca83b4 100644
+index a2dee8ab0cf903a4..700576e7bcc4fab1 100644
 --- a/nscd/connections.c
 +++ b/nscd/connections.c
-@@ -1324,64 +1324,83 @@ request from '%s' [%ld] not handled due to missing permission"),
+@@ -1325,64 +1325,83 @@ request from '%s' [%ld] not handled due to missing permission"),
      }
  }
  
@@ -761,7 +761,7 @@ index cc1ed72077640a8b..2f69800ee5ca83b4 100644
      {
        argv[argc++] = cp;
        cp = (char *) rawmemchr (cp, '\0') + 1;
-@@ -1398,6 +1417,7 @@ cannot change to old UID: %s; disabling paranoia mode"),
+@@ -1399,6 +1418,7 @@ cannot change to old UID: %s; disabling paranoia mode"),
  		   strerror (errno));
  
  	  paranoia = 0;
@@ -769,7 +769,7 @@ index cc1ed72077640a8b..2f69800ee5ca83b4 100644
  	  return;
  	}
  
-@@ -1409,6 +1429,7 @@ cannot change to old GID: %s; disabling paranoia mode"),
+@@ -1410,6 +1430,7 @@ cannot change to old GID: %s; disabling paranoia mode"),
  
  	  ignore_value (setuid (server_uid));
  	  paranoia = 0;
@@ -777,7 +777,7 @@ index cc1ed72077640a8b..2f69800ee5ca83b4 100644
  	  return;
  	}
      }
-@@ -1426,6 +1447,7 @@ cannot change to old working directory: %s; disabling paranoia mode"),
+@@ -1427,6 +1448,7 @@ cannot change to old working directory: %s; disabling paranoia mode"),
  	  ignore_value (setgid (server_gid));
  	}
        paranoia = 0;
@@ -785,7 +785,7 @@ index cc1ed72077640a8b..2f69800ee5ca83b4 100644
        return;
      }
  
-@@ -1474,6 +1496,7 @@ cannot change to old working directory: %s; disabling paranoia mode"),
+@@ -1475,6 +1497,7 @@ cannot change to old working directory: %s; disabling paranoia mode"),
      dbg_log (_("cannot change current working directory to \"/\": %s"),
  	     strerror (errno));
    paranoia = 0;
@@ -794,7 +794,7 @@ index cc1ed72077640a8b..2f69800ee5ca83b4 100644
    /* Reenable the databases.  */
    time_t now = time (NULL);
 diff --git a/nscd/grpcache.c b/nscd/grpcache.c
-index d2ad53509db97bdf..a71036512048dd81 100644
+index 0ed8e656b2ae8ff9..3515971ea02d4192 100644
 --- a/nscd/grpcache.c
 +++ b/nscd/grpcache.c
 @@ -16,7 +16,6 @@
@@ -889,7 +889,7 @@ index d2ad53509db97bdf..a71036512048dd81 100644
  }
  
 diff --git a/nscd/hstcache.c b/nscd/hstcache.c
-index 9f6ce979ac333265..d0af99893dd17b9f 100644
+index 344a2b3052cc6ee0..95bff9b390495920 100644
 --- a/nscd/hstcache.c
 +++ b/nscd/hstcache.c
 @@ -34,6 +34,7 @@
@@ -979,7 +979,7 @@ index 9f6ce979ac333265..d0af99893dd17b9f 100644
  }
  
 diff --git a/nscd/pwdcache.c b/nscd/pwdcache.c
-index 721f4c617b0bb74a..9349b54df4241ad5 100644
+index 4c3ab660211f2b28..3f816ee0b06ae385 100644
 --- a/nscd/pwdcache.c
 +++ b/nscd/pwdcache.c
 @@ -16,7 +16,6 @@
@@ -1075,7 +1075,7 @@ index 721f4c617b0bb74a..9349b54df4241ad5 100644
  }
  
 diff --git a/nscd/servicescache.c b/nscd/servicescache.c
-index 131ba6ddcc1a5f7a..549e9a446816d760 100644
+index 49d9d0dece186c1b..53868c97b56af367 100644
 --- a/nscd/servicescache.c
 +++ b/nscd/servicescache.c
 @@ -16,7 +16,6 @@
@@ -1169,7 +1169,7 @@ index 131ba6ddcc1a5f7a..549e9a446816d760 100644
  }
  
 diff --git a/nss/getent.c b/nss/getent.c
-index 8f8c3fe80a2cfea6..5654c5f67c4f118c 100644
+index e609e5f9bb62a70f..f8cee703e337c4b2 100644
 --- a/nss/getent.c
 +++ b/nss/getent.c
 @@ -39,6 +39,7 @@
@@ -1232,7 +1232,7 @@ index 8f8c3fe80a2cfea6..5654c5f67c4f118c 100644
  }
  
 diff --git a/nss/nss_compat/compat-initgroups.c b/nss/nss_compat/compat-initgroups.c
-index c1a9301a3b0c3ee0..bae8765afbd109e9 100644
+index 74414f4622880b31..540eee863c85dea3 100644
 --- a/nss/nss_compat/compat-initgroups.c
 +++ b/nss/nss_compat/compat-initgroups.c
 @@ -261,7 +261,6 @@ getgrent_next_nss (ent_t *ent, char *buffer, size_t buflen, const char *user,
@@ -1303,7 +1303,7 @@ index c1a9301a3b0c3ee0..bae8765afbd109e9 100644
  	    }
  
 diff --git a/nss/nss_files/files-initgroups.c b/nss/nss_files/files-initgroups.c
-index 27cd8ece40434f5c..8a88f1b62357d3bd 100644
+index 8af0d4d36a400f0e..b441d8345f8a7a24 100644
 --- a/nss/nss_files/files-initgroups.c
 +++ b/nss/nss_files/files-initgroups.c
 @@ -16,7 +16,6 @@
@@ -1378,7 +1378,7 @@ index 27cd8ece40434f5c..8a88f1b62357d3bd 100644
  
    fclose (stream);
 diff --git a/posix/wordexp.c b/posix/wordexp.c
-index e4cfce946013dc78..a751fb32b286aec2 100644
+index 8e33ad95b03db16d..ffe4365d6b363e94 100644
 --- a/posix/wordexp.c
 +++ b/posix/wordexp.c
 @@ -17,7 +17,6 @@
@@ -1486,7 +1486,7 @@ index e4cfce946013dc78..a751fb32b286aec2 100644
      }
    return *word ? 0 : WRDE_NOSPACE;
 diff --git a/sysdeps/unix/sysv/linux/gethostid.c b/sysdeps/unix/sysv/linux/gethostid.c
-index ca0387723873aa8c..9a9346c2189acf7a 100644
+index 73c56e57e5aa4422..ec1c8c5bfcd57077 100644
 --- a/sysdeps/unix/sysv/linux/gethostid.c
 +++ b/sysdeps/unix/sysv/linux/gethostid.c
 @@ -63,13 +63,12 @@ sethostid (long int id)
@@ -1540,7 +1540,7 @@ index ca0387723873aa8c..9a9346c2189acf7a 100644
       bit fiddling.  */
    return (int32_t) (in.s_addr << 16 | in.s_addr >> 16);
 diff --git a/sysdeps/unix/sysv/linux/getlogin_r.c b/sysdeps/unix/sysv/linux/getlogin_r.c
-index 45c468f5a13529d8..fea3e18b1bc30ee7 100644
+index 7a814ea92f1481bf..6c945afab62442c2 100644
 --- a/sysdeps/unix/sysv/linux/getlogin_r.c
 +++ b/sysdeps/unix/sysv/linux/getlogin_r.c
 @@ -18,6 +18,7 @@
@@ -1551,9 +1551,9 @@ index 45c468f5a13529d8..fea3e18b1bc30ee7 100644
  
  #define STATIC static
  static int getlogin_r_fd0 (char *name, size_t namesize);
-@@ -54,28 +55,19 @@ __getlogin_r_loginuid (char *name, size_t namesize)
- 	  endp == uidbuf || *endp != '\0'))
-     return -1;
+@@ -63,28 +64,19 @@ __getlogin_r_loginuid (char *name, size_t namesize)
+       return ENXIO;
+     }
  
 -  size_t buflen = 1024;
 -  char *buf = alloca (buflen);
@@ -1587,7 +1587,7 @@ index 45c468f5a13529d8..fea3e18b1bc30ee7 100644
        }
  
    if (res != 0 || tpwd == NULL)
-@@ -95,9 +87,7 @@ __getlogin_r_loginuid (char *name, size_t namesize)
+@@ -104,9 +96,7 @@ __getlogin_r_loginuid (char *name, size_t namesize)
    memcpy (name, pwd.pw_name, needed);
  
   out:
