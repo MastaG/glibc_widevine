@@ -163,16 +163,6 @@ main (void)
   if (check_elf ("/proc/1/exe"))
     verbose_exec (116, "/sbin/telinit", "/sbin/telinit", "u");
 
-  /* Check if we can safely condrestart sshd.  */
-  if (access ("/sbin/service", X_OK) == 0
-      && access ("/usr/sbin/sshd", X_OK) == 0
-      && access ("/etc/rc.d/init.d/sshd", X_OK) == 0
-      && access ("/bin/bash", X_OK) == 0)
-    {
-      if (check_elf ("/usr/sbin/sshd"))
-	verbose_exec (-121, "/sbin/service", "/sbin/service", "sshd", "condrestart");
-    }
-
   _exit(0);
 }
 
