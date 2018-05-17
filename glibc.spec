@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-384-g89aacb513e
+%define glibcsrcdir glibc-2.27.9000-398-g632a6cbe44
 %define glibcversion 2.27.9000
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1841,6 +1841,11 @@ fi
 %endif
 
 %changelog
+* Thu May 17 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-18
+- Do not run telinit u on upgrades (#1579225)
+- Auto-sync with upstream branch master,
+  commit 632a6cbe44cdd41dba7242887992cdca7b42922a.
+
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-17
 - Avoid exporting some Sun RPC symbols with default versions (#1577210)
 - Inherit the -mstackrealign flag if it is set
