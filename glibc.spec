@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-53-g0cd4a5e87f
 %define glibcversion 2.27
-%define glibcrelease 13%{?dist}
+%define glibcrelease 14%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1969,6 +1969,9 @@ fi
 %endif
 
 %changelog
+* Thu May 17 2018 Florian Weimer <fweimer@redhat.com> - 2.27-14
+- Do not run telinit u on upgrades (#1579225)
+
 * Tue May 15 2018 Florian Weimer <fweimer@redhat.com> - 2.27-13
 - Auto-sync with upstream branch release/2.27/master,
   commit 0cd4a5e87f6885a2f15fe8e7eb7378d010cdb606:
