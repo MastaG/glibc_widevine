@@ -1540,7 +1540,7 @@ index cc108aa2d64b616a..3529cf6fe509cfd1 100644
       bit fiddling.  */
    return (int32_t) (in.s_addr << 16 | in.s_addr >> 16);
 diff --git a/sysdeps/unix/sysv/linux/getlogin_r.c b/sysdeps/unix/sysv/linux/getlogin_r.c
-index 05ac36b49186b29e..37a9255e03657728 100644
+index fe81fd196ab3be73..0eff10da7501fd30 100644
 --- a/sysdeps/unix/sysv/linux/getlogin_r.c
 +++ b/sysdeps/unix/sysv/linux/getlogin_r.c
 @@ -18,6 +18,7 @@
@@ -1551,9 +1551,9 @@ index 05ac36b49186b29e..37a9255e03657728 100644
  
  #define STATIC static
  static int getlogin_r_fd0 (char *name, size_t namesize);
-@@ -54,28 +55,19 @@ __getlogin_r_loginuid (char *name, size_t namesize)
- 	  endp == uidbuf || *endp != '\0'))
-     return -1;
+@@ -63,28 +64,19 @@ __getlogin_r_loginuid (char *name, size_t namesize)
+       return ENXIO;
+     }
  
 -  size_t buflen = 1024;
 -  char *buf = alloca (buflen);
@@ -1587,7 +1587,7 @@ index 05ac36b49186b29e..37a9255e03657728 100644
        }
  
    if (res != 0 || tpwd == NULL)
-@@ -95,9 +87,7 @@ __getlogin_r_loginuid (char *name, size_t namesize)
+@@ -104,9 +96,7 @@ __getlogin_r_loginuid (char *name, size_t namesize)
    memcpy (name, pwd.pw_name, needed);
  
   out:

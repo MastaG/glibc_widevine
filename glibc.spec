@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-146-gd300041c53
+%define glibcsrcdir glibc-2.26-156-gaf7519f7b3
 %define glibcversion 2.26
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2223,6 +2223,20 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Fri May 18 2018 Florian Weimer <fweimer@redhat.com> - 2.26-28
+- Do not run telinit u on upgrades (#1579225)
+- Auto-sync with upstream branch release/2.26/master,
+  commit af7519f7b35024224c163e32a89fb247b0c446fc:
+- Fix path length overflow in realpath (swbz#22786)
+- Fix stack overflow with huge PT_NOTE segment (swbz#20419)
+- Fix signed integer overflow in random_r (swbz#17343)
+- i386: Fix i386 sigaction sa_restorer initialization (swbz#21269)
+- nscd: Fix netgroup cache keys (swbz#22342)
+- Fix i386 memmove issue (swbz#22644)
+- Fix crash in resolver on memory allocation failure (swbz#23005)
+- getlogin_r: return early when linux sentinel value is set (swbz#23024)
+- resolv: Fully initialize struct mmsghdr in send_dg (swbz#23037)
+
 * Fri Mar  2 2018 Florian Weimer <fweimer@redhat.com> - 2.26-27
 - Restore unwind tables on POWER (#1550914)
 
