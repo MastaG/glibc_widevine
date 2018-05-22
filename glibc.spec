@@ -549,6 +549,14 @@ performance with LDAP, and may help with DNS as well.
 # Subpackages for NSS modules except nss_files, nss_dns
 ##############################################################################
 
+# This should remain it's own subpackage or "Provides: nss_db" to allow easy
+# migration from old systems that previously had the old nss_db package
+# installed. Note that this doesn't make the migration that smooth, the
+# databases still need rebuilding because the formats were different.
+# The nss_db package was deprecated in F16 and onwards:
+# https://lists.fedoraproject.org/pipermail/devel/2011-July/153665.html
+# The different database format does cause some issues for users:
+# https://lists.fedoraproject.org/pipermail/devel/2011-December/160497.html
 %package -n nss_db
 Summary: Name Service Switch (NSS) module using hash-indexed files
 Requires: %{name}%{_isa} = %{version}-%{release}
