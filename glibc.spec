@@ -2232,7 +2232,7 @@ rm -f *.filelist*
 - Fix signed integer overflow in random_r (swbz#17343)
 - i386: Fix i386 sigaction sa_restorer initialization (swbz#21269)
 - nscd: Fix netgroup cache keys (swbz#22342)
-- Fix i386 memmove issue (swbz#22644)
+- CVE-2017-18269: Fix i386 memmove issue (swbz#22644)
 - Fix crash in resolver on memory allocation failure (swbz#23005)
 - getlogin_r: return early when linux sentinel value is set (swbz#23024)
 - resolv: Fully initialize struct mmsghdr in send_dg (swbz#23037)
