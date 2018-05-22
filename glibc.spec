@@ -1874,7 +1874,8 @@ fi
 
 * Thu Mar 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-13
 - Auto-sync with upstream branch master,
-  commit d39c0a459ef32a41daac4840859bf304d931adab.
+  commit d39c0a459ef32a41daac4840859bf304d931adab:
+- CVE-2017-18269: memory corruption in i386 memmove (#1580934)
 
 * Mon Mar 19 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-12
 - Auto-sync with upstream branch master,
