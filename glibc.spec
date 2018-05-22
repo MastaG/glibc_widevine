@@ -2006,7 +2006,7 @@ fi
 - Enable annobin on Red Hat Enterprise Linux
 - Auto-sync with upstream branch release/2.27/master,
   commit 55ad82e45c313454de657931898e974a7a036cad:
-- i386: Fix memmove issue (swbz#22644)
+- CVE-2017-18269: i386: Fix memmove issue (swbz#22644)
 - RISC-V: fmax/fmin: Handle signalling NaNs correctly (swbz#22884)
 - RISC-V: Do not initialize $gp in TLS macros
 - cs_CZ locale: Add alternative month names (swbz#22963)
