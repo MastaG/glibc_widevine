@@ -1849,7 +1849,8 @@ fi
 %changelog
 * Wed May 23 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-20
 - Auto-sync with upstream branch master,
-  commit 7f9f1ecb710eac4d65bb02785ddf288cac098323.
+  commit 7f9f1ecb710eac4d65bb02785ddf288cac098323:
+- CVE-2018-11237: Buffer overflow in __mempcpy_avx512_no_vzeroupper (#1581275)
 - Drop glibc-rh1452750-allocate_once.patch,
   glibc-rh1452750-libidn2.patch.  Applied upstream.
 
