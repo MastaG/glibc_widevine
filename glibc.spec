@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-412-g8f145c7712
+%define glibcsrcdir glibc-2.27.9000-416-g7f9f1ecb71
 %define glibcversion 2.27.9000
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -158,8 +158,6 @@ Patch0016: glibc-nscd-sysconfig.patch
 Patch0017: glibc-cs-path.patch
 Patch0018: glibc-c-utf8-locale.patch
 Patch0019: glibc-rh1315108.patch
-Patch0020: glibc-rh1452750-allocate_once.patch
-Patch0021: glibc-rh1452750-libidn2.patch
 Patch0022: glibc-deprecate_libcrypt.patch
 Patch23: glibc-python3.patch
 
@@ -1849,6 +1847,12 @@ fi
 %endif
 
 %changelog
+* Wed May 23 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-20
+- Auto-sync with upstream branch master,
+  commit 7f9f1ecb710eac4d65bb02785ddf288cac098323.
+- Drop glibc-rh1452750-allocate_once.patch,
+  glibc-rh1452750-libidn2.patch.  Applied upstream.
+
 * Wed May 23 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-19
 - Auto-sync with upstream branch master,
   commit 8f145c77123a565b816f918969e0e35ee5b89153.
