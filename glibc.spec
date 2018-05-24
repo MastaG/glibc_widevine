@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-53-g0cd4a5e87f
+%define glibcsrcdir glibc-2.27-56-g50df56ca86
 %define glibcversion 2.27
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1969,6 +1969,11 @@ fi
 %endif
 
 %changelog
+* Thu May 24 2018 Florian Weimer <fweimer@redhat.com> - 2.27-15
+- Auto-sync with upstream branch release/2.27/master,
+  commit 50df56ca86a281c8fd99a8100aac75539813788d:
+- CVE-2018-11237: Buffer overflow in mempcpy for Xeon Phi (#1581275)
+
 * Thu May 17 2018 Florian Weimer <fweimer@redhat.com> - 2.27-14
 - Do not run telinit u on upgrades (#1579225)
 
