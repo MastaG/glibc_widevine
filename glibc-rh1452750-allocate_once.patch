@@ -1,6 +1,6 @@
-commit a829b747cf2ce18ba869ea60f67975c484bf2769
-Author: Istvan Kurucsai <pistukem@gmail.com>
-Date:   Fri Jan 12 15:34:13 2018 +0100
+commit 5f7b841d3aebdccc2baed27cb4b22ddb08cd7c0c
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed May 23 14:16:18 2018 +0200
 
     Implement allocate_once for atomic initialization with allocation
 

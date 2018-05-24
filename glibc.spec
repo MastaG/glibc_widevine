@@ -1970,6 +1970,7 @@ fi
 
 %changelog
 * Thu May 24 2018 Florian Weimer <fweimer@redhat.com> - 2.27-15
+- Switch to upstream version of libidn2 removal (#1452750)
 - Auto-sync with upstream branch release/2.27/master,
   commit 50df56ca86a281c8fd99a8100aac75539813788d:
 - CVE-2018-11237: Buffer overflow in mempcpy for Xeon Phi (#1581275)

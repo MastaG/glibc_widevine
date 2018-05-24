@@ -1,6 +1,6 @@
-commit 0e0929705f095c7eb2e11e82aee3bf9e9edd365e
+commit 7f9f1ecb710eac4d65bb02785ddf288cac098323
 Author: Florian Weimer <fweimer@redhat.com>
-Date:   Wed Jan 10 20:03:03 2018 +0100
+Date:   Wed May 23 15:26:19 2018 +0200
 
     Switch IDNA implementation to libidn2 [BZ #19728] [BZ #19729] [BZ #22247]
     
@@ -116,7 +116,7 @@ index dcb271d575746c87..0000000000000000
 -
 -#endif
 diff --git a/inet/Makefile b/inet/Makefile
-index f63c7e25bad22ecd..6fd20121936048e3 100644
+index f63c7e25bad22ecd..0fc478b3ddc59cad 100644
 --- a/inet/Makefile
 +++ b/inet/Makefile
 @@ -45,7 +45,7 @@ routines := htonl htons		\
@@ -124,10 +124,37 @@ index f63c7e25bad22ecd..6fd20121936048e3 100644
  	    getipv4sourcefilter setipv4sourcefilter \
  	    getsourcefilter setsourcefilter inet6_opt inet6_rth \
 -	    inet6_scopeid_pton deadline
-+	    inet6_scopeid_pton deadline idna
++	    inet6_scopeid_pton deadline idna idna_name_classify
  
  aux := check_pf check_native ifreq
  
+@@ -59,12 +59,20 @@ tests := htontest test_ifindex tst-ntoa tst-ether_aton tst-network \
+ tests-static += tst-deadline
+ tests-static-internal := tst-deadline
+ 
++# tst-idna_name_classify must be linked statically because it tests
++# internal functionality.
++tests-static += tst-idna_name_classify
++tests-internal += tst-idna_name_classify
++
+ # tst-inet6_scopeid_pton also needs internal functions but does not
+ # need to be linked statically.
+ tests-internal := tst-inet6_scopeid_pton
+ 
+ include ../Rules
+ 
++LOCALES := en_US.UTF-8 en_US.ISO-8859-1
++include ../gen-locales.mk
++
+ ifeq ($(have-thread-library),yes)
+ 
+ CFLAGS-gethstbyad_r.c += -fexceptions
+@@ -103,3 +111,5 @@ endif
+ ifeq ($(build-static-nss),yes)
+ CFLAGS += -DSTATIC_NSS
+ endif
++
++$(objpfx)tst-idna_name_classify.out: $(gen-locales)
 diff --git a/inet/Versions b/inet/Versions
 index 6f663f3648b9926d..9b3661e0467887b8 100644
 --- a/inet/Versions
@@ -141,7 +168,7 @@ index 6f663f3648b9926d..9b3661e0467887b8 100644
    }
  }
 diff --git a/inet/getnameinfo.c b/inet/getnameinfo.c
-index a20d20b7cd52fbf1..6f7dc456494a492f 100644
+index a20d20b7cd52fbf1..5d4978e38367446c 100644
 --- a/inet/getnameinfo.c
 +++ b/inet/getnameinfo.c
 @@ -71,10 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -166,14 +193,16 @@ index a20d20b7cd52fbf1..6f7dc456494a492f 100644
  
  static char *
  nrl_domainname (void)
-@@ -285,41 +285,24 @@ gni_host_inet_name (struct scratch_buffer *tmpbuf,
+@@ -285,41 +285,28 @@ gni_host_inet_name (struct scratch_buffer *tmpbuf,
  	/* Terminate the string after the prefix.  */
  	*c = '\0';
  
 -#ifdef HAVE_LIBIDN
        /* If requested, convert from the IDN format.  */
+-      if (flags & NI_IDN)
++      bool do_idn = flags & NI_IDN;
 +      char *h_name;
-       if (flags & NI_IDN)
++      if (do_idn)
  	{
 -	  int idn_flags = 0;
 -	  if  (flags & NI_IDN_ALLOW_UNASSIGNED)
@@ -199,11 +228,14 @@ index a20d20b7cd52fbf1..6f7dc456494a492f 100644
 -	      free (out);
 -	    }
 +	  int rc = __idna_from_dns_encoding (h->h_name, &h_name);
-+	  if (rc != 0)
++	  if (rc == EAI_IDN_ENCODE)
++	    /* Use the punycode name as a fallback.  */
++	    do_idn = false;
++	  else if (rc != 0)
 +	    return rc;
  	}
 -#endif
-+      else
++      if (!do_idn)
 +	h_name = h->h_name;
  
 -      size_t len = strlen (h->h_name) + 1;
@@ -213,12 +245,12 @@ index a20d20b7cd52fbf1..6f7dc456494a492f 100644
 +      memcpy (host, h_name, len);
  
 -      memcpy (host, h->h_name, len);
-+      if (flags & NI_IDN)
++      if (do_idn)
 +	free (h_name);
  
        return 0;
      }
-@@ -501,10 +484,7 @@ getnameinfo (const struct sockaddr *sa, socklen_t addrlen, char *host,
+@@ -501,10 +488,7 @@ getnameinfo (const struct sockaddr *sa, socklen_t addrlen, char *host,
  	     int flags)
  {
    if (flags & ~(NI_NUMERICHOST|NI_NUMERICSERV|NI_NOFQDN|NI_NAMEREQD|NI_DGRAM
@@ -232,10 +264,10 @@ index a20d20b7cd52fbf1..6f7dc456494a492f 100644
    if (sa == NULL || addrlen < sizeof (sa_family_t))
 diff --git a/inet/idna.c b/inet/idna.c
 new file mode 100644
-index 0000000000000000..1c48875a6248d820
+index 0000000000000000..c561bf2e9e15ad23
 --- /dev/null
 +++ b/inet/idna.c
-@@ -0,0 +1,163 @@
+@@ -0,0 +1,182 @@
 +/* IDNA functions, forwarding to implementations in libidn2.
 +   Copyright (C) 2018 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -350,11 +382,29 @@ index 0000000000000000..1c48875a6248d820
 +int
 +__idna_to_dns_encoding (const char *name, char **result)
 +{
++  switch (__idna_name_classify (name))
++    {
++    case idna_name_ascii:
++      /* Nothing to convert.  */
++      return gai_strdup (name, result);
++    case idna_name_nonascii:
++      /* Encoding needed.  Handled below.  */
++      break;
++    case idna_name_nonascii_backslash:
++    case idna_name_encoding_error:
++      return EAI_IDN_ENCODE;
++    case idna_name_memory_error:
++      return EAI_MEMORY;
++    case idna_name_error:
++      return EAI_SYSTEM;
++    }
++
 +  struct functions *functions = get_functions ();
 +  if (functions == NULL)
-+    /* Forward the domain name to the NSS module unencoded.  It may be
-+       able to apply its own encoding to find an answer.  */
-+    return gai_strdup (name, result);
++    /* We report this as an encoding error (assuming that libidn2 is
++       not installed), although the root cause may be a temporary
++       error condition due to resource shortage.  */
++    return EAI_IDN_ENCODE;
 +  char *ptr = NULL;
 +  __typeof__ (functions->lookup_ul) fptr = functions->lookup_ul;
 +#ifdef PTR_DEMANGLE
@@ -379,7 +429,8 @@ index 0000000000000000..1c48875a6248d820
 +{
 +  struct functions *functions = get_functions ();
 +  if (functions == NULL)
-+    /* Simply  */
++    /* Simply use the encoded name, assuming that it is not punycode
++       (but even a punycode name would be syntactically valid).  */
 +    return gai_strdup (name, result);
 +  char *ptr = NULL;
 +  __typeof__ (functions->to_unicode_lzlz) fptr = functions->to_unicode_lzlz;
@@ -399,11 +450,92 @@ index 0000000000000000..1c48875a6248d820
 +    return EAI_IDN_ENCODE;
 +}
 +libc_hidden_def (__idna_from_dns_encoding)
+diff --git a/inet/idna_name_classify.c b/inet/idna_name_classify.c
+new file mode 100644
+index 0000000000000000..3683e1133fea368a
+--- /dev/null
++++ b/inet/idna_name_classify.c
+@@ -0,0 +1,75 @@
++/* Classify a domain name for IDNA purposes.
++   Copyright (C) 2018 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <errno.h>
++#include <inet/net-internal.h>
++#include <stdbool.h>
++#include <string.h>
++#include <wchar.h>
++
++enum idna_name_classification
++__idna_name_classify (const char *name)
++{
++  mbstate_t mbs;
++  memset (&mbs, 0, sizeof (mbs));
++  const char *p = name;
++  const char *end = p + strlen (p) + 1;
++  bool nonascii = false;
++  bool backslash = false;
++  while (true)
++    {
++      wchar_t wc;
++      size_t result = mbrtowc (&wc, p, end - p, &mbs);
++      if (result == 0)
++        /* NUL terminator was reached.  */
++        break;
++      else if (result == (size_t) -2)
++        /* Incomplete trailing multi-byte character.  This is an
++           encoding error becaue we received the full name.  */
++        return idna_name_encoding_error;
++      else if (result == (size_t) -1)
++        {
++          /* Other error, including EILSEQ.  */
++          if (errno == EILSEQ)
++            return idna_name_encoding_error;
++          else if (errno == ENOMEM)
++            return idna_name_memory_error;
++          else
++            return idna_name_error;
++        }
++      else
++        {
++          /* A wide character was decoded.  */
++          p += result;
++          if (wc == L'\\')
++            backslash = true;
++          else if (wc > 127)
++            nonascii = true;
++        }
++    }
++
++  if (nonascii)
++    {
++      if (backslash)
++        return idna_name_nonascii_backslash;
++      else
++        return idna_name_nonascii;
++    }
++  else
++    return idna_name_ascii;
++}
 diff --git a/inet/net-internal.h b/inet/net-internal.h
-index 8a9505cf99c50057..a5cd4e0304e3d117 100644
+index 8a9505cf99c50057..0ba6736aef294700 100644
 --- a/inet/net-internal.h
 +++ b/inet/net-internal.h
-@@ -29,6 +29,17 @@ int __inet6_scopeid_pton (const struct in6_addr *address,
+@@ -29,6 +29,33 @@ int __inet6_scopeid_pton (const struct in6_addr *address,
  libc_hidden_proto (__inet6_scopeid_pton)
  
  
@@ -418,9 +550,104 @@ index 8a9505cf99c50057..a5cd4e0304e3d117 100644
 +libc_hidden_proto (__idna_from_dns_encoding)
 +
 +
++/* Return value of __idna_name_classify below.  */
++enum idna_name_classification
++{
++  idna_name_ascii,          /* No non-ASCII characters.  */
++  idna_name_nonascii,       /* Non-ASCII characters, no backslash.  */
++  idna_name_nonascii_backslash, /* Non-ASCII characters with backslash.  */
++  idna_name_encoding_error, /* Decoding error.  */
++  idna_name_memory_error,   /* Memory allocation failure.  */
++  idna_name_error,          /* Other error during decoding.  Check errno.  */
++};
++
++/* Check the specified name for non-ASCII characters and backslashes
++   or encoding errors.  */
++enum idna_name_classification __idna_name_classify (const char *name)
++  attribute_hidden;
++
  /* Deadline handling for enforcing timeouts.
  
     Code should call __deadline_current_time to obtain the current time
+diff --git a/inet/tst-idna_name_classify.c b/inet/tst-idna_name_classify.c
+new file mode 100644
+index 0000000000000000..c4a2c91329d2b522
+--- /dev/null
++++ b/inet/tst-idna_name_classify.c
+@@ -0,0 +1,73 @@
++/* Test IDNA name classification.
++   Copyright (C) 2018 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <http://www.gnu.org/licenses/>.  */
++
++#include <inet/net-internal.h>
++#include <locale.h>
++#include <stdio.h>
++#include <support/check.h>
++
++static void
++locale_insensitive_tests (void)
++{
++  TEST_COMPARE (__idna_name_classify (""), idna_name_ascii);
++  TEST_COMPARE (__idna_name_classify ("abc"), idna_name_ascii);
++  TEST_COMPARE (__idna_name_classify (".."), idna_name_ascii);
++  TEST_COMPARE (__idna_name_classify ("\001abc\177"), idna_name_ascii);
++  TEST_COMPARE (__idna_name_classify ("\\065bc"), idna_name_ascii);
++}
++
++static int
++do_test (void)
++{
++  puts ("info: C locale tests");
++  locale_insensitive_tests ();
++  TEST_COMPARE (__idna_name_classify ("abc\200def"),
++                idna_name_encoding_error);
++  TEST_COMPARE (__idna_name_classify ("abc\200\\def"),
++                idna_name_encoding_error);
++  TEST_COMPARE (__idna_name_classify ("abc\377def"),
++                idna_name_encoding_error);
++
++  puts ("info: en_US.ISO-8859-1 locale tests");
++  if (setlocale (LC_CTYPE, "en_US.ISO-8859-1") == 0)
++    FAIL_EXIT1 ("setlocale for en_US.ISO-8859-1: %m\n");
++  locale_insensitive_tests ();
++  TEST_COMPARE (__idna_name_classify ("abc\200def"), idna_name_nonascii);
++  TEST_COMPARE (__idna_name_classify ("abc\377def"), idna_name_nonascii);
++  TEST_COMPARE (__idna_name_classify ("abc\\\200def"),
++                idna_name_nonascii_backslash);
++  TEST_COMPARE (__idna_name_classify ("abc\200\\def"),
++                idna_name_nonascii_backslash);
++
++  puts ("info: en_US.UTF-8 locale tests");
++  if (setlocale (LC_CTYPE, "en_US.UTF-8") == 0)
++    FAIL_EXIT1 ("setlocale for en_US.UTF-8: %m\n");
++  locale_insensitive_tests ();
++  TEST_COMPARE (__idna_name_classify ("abc\xc3\x9f""def"), idna_name_nonascii);
++  TEST_COMPARE (__idna_name_classify ("abc\\\xc3\x9f""def"),
++                idna_name_nonascii_backslash);
++  TEST_COMPARE (__idna_name_classify ("abc\xc3\x9f\\def"),
++                idna_name_nonascii_backslash);
++  TEST_COMPARE (__idna_name_classify ("abc\200def"), idna_name_encoding_error);
++  TEST_COMPARE (__idna_name_classify ("abc\xc3""def"), idna_name_encoding_error);
++  TEST_COMPARE (__idna_name_classify ("abc\xc3"), idna_name_encoding_error);
++
++  return 0;
++}
++
++#include <support/test-driver.c>
 diff --git a/libidn/Makefile b/libidn/Makefile
 deleted file mode 100644
 index d61bab5fc4ff512a..0000000000000000
@@ -19462,19 +19689,6 @@ index c7e67ca563f87627..0000000000000000
 -{
 -  return stringprep_convert (str, stringprep_locale_charset (), "UTF-8");
 -}
-diff --git a/manual/contrib.texi b/manual/contrib.texi
-index 0da6dcbb596f7608..2be9122469bd91c8 100644
---- a/manual/contrib.texi
-+++ b/manual/contrib.texi
-@@ -178,7 +178,7 @@ software floating-point support and for
- his direction as part of @theglibc{} steering committee.
- 
- @item
--Simon Josefsson for the @code{libidn} add-on.
-+Simon Josefsson for the @code{libidn} add-on (which has been removed again).
- 
- @item
- Geoffrey Keating for the port to Linux on PowerPC
 diff --git a/nscd/gai.c b/nscd/gai.c
 index 576fd0045b4abf36..24bdfee1db3791e2 100644
 --- a/nscd/gai.c
@@ -19589,10 +19803,10 @@ index 0000000000000000..590696e3fa3e11b6
 +   tst-resolv-ai_idn-nolibidn2 to disable libidn2.  */
 diff --git a/resolv/tst-resolv-ai_idn-common.c b/resolv/tst-resolv-ai_idn-common.c
 new file mode 100644
-index 0000000000000000..c3b85f9c84102929
+index 0000000000000000..e7c4030e1cb0aca5
 --- /dev/null
 +++ b/resolv/tst-resolv-ai_idn-common.c
-@@ -0,0 +1,440 @@
+@@ -0,0 +1,569 @@
 +/* Common code for AI_IDN/NI_IDN tests.
 +   Copyright (C) 2018 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -19629,13 +19843,36 @@ index 0000000000000000..c3b85f9c84102929
 +#if TEST_USE_UTF8
 +/* UTF-8 encoding of "nämchen" (German for “namelet”).  */
 +# define NAEMCHEN "n\xC3\xA4mchen"
++
++/* UTF-8 encoding of "שם" (Hebrew for “name”).  */
++# define SHEM "\xD7\xA9\xD7\x9D"
++
++/* UTF-8 encoding of "buße" (German for “penance”).  This used to be
++   encoded as "busse" (“busses”) in IDNA2003.  */
++# define BUSSE "bu\xC3\x9F""e"
++
 +#else
-+/* Latin-1 encoding of the same.  */
++/* Latin-1 encodings, as far as they are available.  */
++
 +# define NAEMCHEN "n\xE4mchen"
++# define BUSSE "bu\xDF""e"
++
 +#endif
 +
 +/* IDNA encoding of NAEMCHEN.  */
 +#define NAEMCHEN_IDNA "xn--nmchen-bua"
++
++/* IDNA encoding of NAEMCHEN "_zwo".  */
++#define NAEMCHEN_ZWO_IDNA "xn--nmchen_zwo-q5a"
++
++/* IDNA encoding of SHEM.  */
++#define SHEM_IDNA "xn--iebx"
++
++/* IDNA encoding of BUSSE.  */
++#define BUSSE_IDNA "xn--bue-6ka"
++
++/* IDNA encoding of "שם1".  */
++#define SHEM1_IDNA "xn--1-qic9a"
 +
 +/* Another IDNA name.  */
 +#define ANDERES_NAEMCHEN "anderes-" NAEMCHEN
@@ -19648,6 +19885,8 @@ index 0000000000000000..c3b85f9c84102929
 +    gni_non_idn_cname_to_non_idn_name,
 +    gni_non_idn_cname_to_idn_name,
 +    gni_idn_name,
++    gni_idn_shem,
++    gni_idn_shem1,
 +    gni_idn_cname_to_non_idn_name,
 +    gni_idn_cname_to_idn_name,
 +    gni_invalid_idn_1,
@@ -19695,6 +19934,16 @@ index 0000000000000000..c3b85f9c84102929
 +    case gni_idn_name:
 +      resolv_response_open_record (b, qname, C_IN, T_PTR, 0);
 +      resolv_response_add_name (b, "xn--nmchen-bua.example");
++      resolv_response_close_record (b);
++      return;
++    case gni_idn_shem:
++      resolv_response_open_record (b, qname, C_IN, T_PTR, 0);
++      resolv_response_add_name (b, SHEM_IDNA ".example");
++      resolv_response_close_record (b);
++      return;
++    case gni_idn_shem1:
++      resolv_response_open_record (b, qname, C_IN, T_PTR, 0);
++      resolv_response_add_name (b, SHEM1_IDNA ".example");
 +      resolv_response_close_record (b);
 +      return;
 +    case gni_idn_cname_to_non_idn_name:
@@ -19746,7 +19995,7 @@ index 0000000000000000..c3b85f9c84102929
 +    if (!(('0' <= *p && *p <= '9')
 +          || ('a' <= *p && *p <= 'z')
 +          || ('A' <= *p && *p <= 'Z')
-+          || *p == '.' || *p == '-'))
++          || *p == '.' || *p == '-' || *p == '_'))
 +      {
 +        /* Non-ASCII query.  Reply with NXDOMAIN.  */
 +        struct resolv_response_flags flags = { .rcode = 3 };
@@ -19897,6 +20146,65 @@ index 0000000000000000..c3b85f9c84102929
 +            "canonname: " NAEMCHEN ".example\n"
 +            "address: STREAM/TCP 192.0.2.120 80\n");
 +
++#if TEST_USE_UTF8
++  check_ai (SHEM ".example", 0,
++            "error: Name or service not known\n");
++  check_ai (SHEM ".example", AI_IDN,
++            "flags: AI_IDN\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM ".example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
++            "canonname: " SHEM ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM ".example", AI_IDN | AI_CANONNAME,
++            "flags: AI_CANONNAME AI_IDN\n"
++            "canonname: " SHEM_IDNA ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM "1.example", AI_IDN,
++            "flags: AI_IDN\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM "1.example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
++            "canonname: " SHEM "1.example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM "1.example", AI_IDN | AI_CANONNAME,
++            "flags: AI_CANONNAME AI_IDN\n"
++            "canonname: " SHEM1_IDNA ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++#endif
++
++  /* Check that non-transitional mode is active.  German sharp S
++     should not turn into SS.  */
++  check_ai (BUSSE ".example", 0,
++            "error: Name or service not known\n");
++  check_ai (BUSSE ".example", AI_IDN,
++            "flags: AI_IDN\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (BUSSE ".example", AI_IDN | AI_CANONNAME,
++            "flags: AI_CANONNAME AI_IDN\n"
++            "canonname: " BUSSE_IDNA ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (BUSSE ".example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
++            "canonname: " BUSSE ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++
++  /* Check that Unicode TR 46 mode is active.  Underscores should be
++     permitted in IDNA components.  */
++  check_ai (NAEMCHEN "_zwo.example", 0,
++            "error: Name or service not known\n");
++  check_ai (NAEMCHEN "_zwo.example", AI_IDN,
++            "flags: AI_IDN\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (NAEMCHEN "_zwo.example", AI_IDN | AI_CANONNAME,
++            "flags: AI_CANONNAME AI_IDN\n"
++            "canonname: " NAEMCHEN_ZWO_IDNA ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (NAEMCHEN "_zwo.example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
++            "canonname: " NAEMCHEN "_zwo.example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++
 +  /* No CNAME, but already IDN-encoded.  */
 +  check_ai (NAEMCHEN_IDNA ".example", 0,
 +            "address: STREAM/TCP 192.0.2.120 80\n");
@@ -19910,6 +20218,32 @@ index 0000000000000000..c3b85f9c84102929
 +  check_ai (NAEMCHEN_IDNA ".example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
 +            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
 +            "canonname: " NAEMCHEN ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM_IDNA ".example", 0,
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM_IDNA ".example", AI_IDN,
++            "flags: AI_IDN\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++  check_ai (SHEM_IDNA ".example", AI_IDN | AI_CANONNAME,
++            "flags: AI_CANONNAME AI_IDN\n"
++            "canonname: " SHEM_IDNA ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++#if TEST_USE_UTF8
++  check_ai (SHEM_IDNA ".example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
++            "canonname: " SHEM ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++#else
++  check_ai (SHEM_IDNA ".example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
++            "canonname: " SHEM_IDNA ".example\n"
++            "address: STREAM/TCP 192.0.2.120 80\n");
++#endif
++
++  /* Invalid IDNA canonical name is returned as-is.  */
++  check_ai ("xn---.example", AI_CANONNAME | AI_CANONIDN,
++            "flags: AI_CANONNAME AI_CANONIDN\n"
++            "canonname: xn---.example\n"
 +            "address: STREAM/TCP 192.0.2.120 80\n");
 +
 +  /* Non-IDN CNAME.  */
@@ -19958,16 +20292,16 @@ index 0000000000000000..c3b85f9c84102929
 +            "error: Name or service not known\n");
 +  check_ai ("With.idn-cname." NAEMCHEN ".example", AI_IDN,
 +            "flags: AI_IDN\n"
-+            "address: STREAM/TCP 192.0.2.87 80\n");
++            "address: STREAM/TCP 192.0.2.119 80\n");
 +  check_ai ("With.idn-cname." NAEMCHEN ".example", AI_IDN | AI_CANONNAME,
 +            "flags: AI_CANONNAME AI_IDN\n"
 +            "canonname: " ANDERES_NAEMCHEN_IDNA ".example\n"
-+            "address: STREAM/TCP 192.0.2.87 80\n");
++            "address: STREAM/TCP 192.0.2.119 80\n");
 +  check_ai ("With.idn-cname." NAEMCHEN ".example",
 +            AI_IDN | AI_CANONNAME | AI_CANONIDN,
 +            "flags: AI_CANONNAME AI_IDN AI_CANONIDN\n"
 +            "canonname: " ANDERES_NAEMCHEN ".example\n"
-+            "address: STREAM/TCP 192.0.2.87 80\n");
++            "address: STREAM/TCP 192.0.2.119 80\n");
 +
 +  /* Non-IDN to IDN CNAME chain.  */
 +  check_ai ("both.cname.idn-cname.example", 0,
@@ -20020,6 +20354,15 @@ index 0000000000000000..c3b85f9c84102929
 +
 +  gni_test (gni_idn_name, 0, NAEMCHEN_IDNA ".example");
 +  gni_test (gni_idn_name, NI_IDN, NAEMCHEN ".example");
++  gni_test (gni_idn_shem, 0, SHEM_IDNA ".example");
++  gni_test (gni_idn_shem1, 0, SHEM1_IDNA ".example");
++#if TEST_USE_UTF8
++  gni_test (gni_idn_shem, NI_IDN, SHEM ".example");
++  gni_test (gni_idn_shem1, NI_IDN, SHEM "1.example");
++#else
++  gni_test (gni_idn_shem, NI_IDN, SHEM_IDNA ".example");
++  gni_test (gni_idn_shem1, NI_IDN, SHEM1_IDNA ".example");
++#endif
 +
 +  gni_test (gni_idn_cname_to_non_idn_name, 0, "non-idn-name.example");
 +  gni_test (gni_idn_cname_to_non_idn_name, NI_IDN, "non-idn-name.example");
@@ -20027,11 +20370,11 @@ index 0000000000000000..c3b85f9c84102929
 +  gni_test (gni_idn_cname_to_idn_name, 0, ANDERES_NAEMCHEN_IDNA ".example");
 +  gni_test (gni_idn_cname_to_idn_name, NI_IDN, ANDERES_NAEMCHEN ".example");
 +
-+  /* Test encoding errors. */
++  /* Test encoding errors.  */
 +  gni_test (gni_invalid_idn_1, 0, "xn---.example");
-+  gni_test (gni_invalid_idn_1, NI_IDN, NULL);
++  gni_test (gni_invalid_idn_1, NI_IDN, "xn---.example");
 +  gni_test (gni_invalid_idn_2, 0, "xn--x.example");
-+  gni_test (gni_invalid_idn_2, NI_IDN, NULL);
++  gni_test (gni_invalid_idn_2, NI_IDN, "xn--x.example");
 +}
 diff --git a/resolv/tst-resolv-ai_idn-latin1.c b/resolv/tst-resolv-ai_idn-latin1.c
 new file mode 100644
@@ -20091,10 +20434,10 @@ index 0000000000000000..fb60f3261e0ff95e
 +#include <support/test-driver.c>
 diff --git a/resolv/tst-resolv-ai_idn-nolibidn2.c b/resolv/tst-resolv-ai_idn-nolibidn2.c
 new file mode 100644
-index 0000000000000000..8f30da8741ef0d7d
+index 0000000000000000..7203c23f3cf00b1b
 --- /dev/null
 +++ b/resolv/tst-resolv-ai_idn-nolibidn2.c
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,151 @@
 +/* Test getaddrinfo and getnameinfo without usable libidn2.
 +   Copyright (C) 2018 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -20134,12 +20477,15 @@ index 0000000000000000..8f30da8741ef0d7d
 +            "canonname: non-idn.example\n"
 +            "address: STREAM/TCP 192.0.2.110 80\n");
 +
++  /* This gets passed over the network to the server, so it will
++     result in an NXDOMAIN error.  */
 +  check_ai (NAEMCHEN ".example", 0,
 +            "error: Name or service not known\n");
++  /* Due to missing libidn2, this fails inside getaddrinfo.  */
 +  check_ai (NAEMCHEN ".example", AI_IDN,
-+            "error: Name or service not known\n");
++            "error: Parameter string not correctly encoded\n");
 +  check_ai (NAEMCHEN ".example", AI_IDN | AI_CANONNAME | AI_CANONIDN,
-+            "error: Name or service not known\n");
++            "error: Parameter string not correctly encoded\n");
 +
 +  /* Non-IDN CNAME.  */
 +  check_ai ("with.cname.example", 0,
@@ -20208,7 +20554,7 @@ index 0000000000000000..8f30da8741ef0d7d
 +      gni_test (gni_idn_cname_to_idn_name, flags,
 +                ANDERES_NAEMCHEN_IDNA ".example");
 +
-+      /* Test encoding errors. */
++      /* Test encoding errors.  */
 +      gni_test (gni_invalid_idn_1, flags, "xn---.example");
 +      gni_test (gni_invalid_idn_2, flags, "xn--x.example");
 +}
@@ -20312,7 +20658,7 @@ index c5e00e516a8279f7..56dc7a9e0cbe92f3 100644
  #undef FLAG
        int remaining = ai->ai_flags & ~flags_printed;
 diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
-index c15f76e547e29533..593a718266557cf5 100644
+index c15f76e547e29533..e21e0f5f33dd422c 100644
 --- a/sysdeps/posix/getaddrinfo.c
 +++ b/sysdeps/posix/getaddrinfo.c
 @@ -85,9 +85,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -20362,7 +20708,7 @@ index c15f76e547e29533..593a718266557cf5 100644
 +	  char *out;
 +	  result = __idna_to_dns_encoding (name, &out);
 +	  if (result != 0)
-+	    return result;
++	    return -result;
 +	  name = out;
 +	  malloc_name = true;
  	}
@@ -20370,43 +20716,51 @@ index c15f76e547e29533..593a718266557cf5 100644
  
        if (__inet_aton (name, (struct in_addr *) at->addr) != 0)
  	{
-@@ -1028,40 +1008,17 @@ gaih_inet (const char *name, const struct gaih_service *service,
+@@ -1028,40 +1008,24 @@ gaih_inet (const char *name, const struct gaih_service *service,
  		 the passed in string.  */
  	      canon = orig_name;
  
 -#ifdef HAVE_LIBIDN
- 	    if (req->ai_flags & AI_CANONIDN)
+-	    if (req->ai_flags & AI_CANONIDN)
++	    bool do_idn = req->ai_flags & AI_CANONIDN;
++	    if (do_idn)
  	      {
 -		int idn_flags = 0;
 -		if (req->ai_flags & AI_IDN_ALLOW_UNASSIGNED)
 -		  idn_flags |= IDNA_ALLOW_UNASSIGNED;
 -		if (req->ai_flags & AI_IDN_USE_STD3_ASCII_RULES)
 -		  idn_flags |= IDNA_USE_STD3_ASCII_RULES;
- 
+-
  		char *out;
 -		int rc = __idna_to_unicode_lzlz (canon, &out, idn_flags);
 -		if (rc != IDNA_SUCCESS)
--		  {
++		int rc = __idna_from_dns_encoding (canon, &out);
++		if (rc == 0)
++		  canon = out;
++		else if (rc == EAI_IDN_ENCODE)
++		  /* Use the punycode name as a fallback.  */
++		  do_idn = false;
++		else
+ 		  {
 -		    if (rc == IDNA_MALLOC_ERROR)
 -		      result = -EAI_MEMORY;
 -		    else if (rc == IDNA_DLOPEN_ERROR)
 -		      result = -EAI_SYSTEM;
 -		    else
 -		      result = -EAI_IDN_ENCODE;
--		    goto free_and_return;
--		  }
++		    result = -rc;
+ 		    goto free_and_return;
+ 		  }
 -		/* In case the output string is the same as the input
 -		   string no new string has been allocated and we
 -		   make a copy.  */
 -		if (out == canon)
 -		  goto make_copy;
-+		result = __idna_from_dns_encoding (canon, &out);
-+		if (result != 0)
-+		  goto free_and_return;
- 		canon = out;
+-		canon = out;
  	      }
- 	    else
+-	    else
 -#endif
++	    if (!do_idn)
  	      {
 -#ifdef HAVE_LIBIDN
 -	      make_copy:
@@ -20414,7 +20768,7 @@ index c15f76e547e29533..593a718266557cf5 100644
  		if (canonbuf != NULL)
  		  /* We already allocated the string using malloc, but
  		     the buffer is now owned by canon.  */
-@@ -2222,10 +2179,7 @@ getaddrinfo (const char *name, const char *service,
+@@ -2222,10 +2186,7 @@ getaddrinfo (const char *name, const char *service,
  
    if (hints->ai_flags
        & ~(AI_PASSIVE|AI_CANONNAME|AI_NUMERICHOST|AI_ADDRCONFIG|AI_V4MAPPED
