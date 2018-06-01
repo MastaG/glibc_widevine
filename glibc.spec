@@ -724,9 +724,8 @@ rpm_inherit_flags ()
 
 # Propgate select compiler flags from redhat-rpm-config.  These flags
 # are target-dependent, so we use only those which are specified in
-# redhat-rpm-config.  We do not replicate the -march=/-mtune=
-# selection here because these match the defaults compiled into GCC.
-# We keep the -m32/-m32/-m64 flags to support multilib builds.
+# redhat-rpm-config.  We keep the -m32/-m32/-m64 flags to support
+# multilib builds.
 
 rpm_inherit_flags \
 	"-fasynchronous-unwind-tables" \
@@ -735,7 +734,17 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+	"-march=i686" \
+	"-march=x86-64" \
+	"-march=z13" \
+	"-march=z14" \
+	"-march=zEC12" \
+	"-mfpmath=sse" \
 	"-mstackrealign" \
+	"-mtune=generic" \
+	"-mtune=z13" \
+	"-mtune=z14" \
+	"-mtune=zEC12" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 
 ##############################################################################
