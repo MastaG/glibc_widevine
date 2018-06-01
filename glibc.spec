@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-423-gc1dc1e1b34
+%define glibcsrcdir glibc-2.27.9000-432-g104502102c
 %define glibcversion 2.27.9000
-%define glibcrelease 21%{?dist}
+%define glibcrelease 22%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1856,6 +1856,12 @@ fi
 %endif
 
 %changelog
+* Fri Jun 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-22
+- Modernise nsswitch.conf defaults (#1581809)
+- Adjust build flags inheritence from redhat-rpm-config
+- Auto-sync with upstream branch master,
+  commit 104502102c6fa322515ba0bb3c95c05c3185da7a.
+
 * Fri May 25 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-21
 - Auto-sync with upstream branch master,
   commit c1dc1e1b34873db79dfbfa8f2f0a2abbe28c0514.
