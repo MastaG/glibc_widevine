@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-432-g104502102c
+%define glibcsrcdir glibc-2.27.9000-469-g14beef7575
 %define glibcversion 2.27.9000
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1857,6 +1857,11 @@ fi
 %endif
 
 %changelog
+* Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-24
+- Auto-sync with upstream branch master,
+  commit 14beef7575099f6373f9a45b4656f1e3675f7372:
+- iconv: Make IBM273 equivalent to ISO-8859-1 (#1592270)
+
 * Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-23
 - Inherit the -msse2 build flag as well (#1592212)
 
