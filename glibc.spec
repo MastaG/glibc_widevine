@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-432-g104502102c
 %define glibcversion 2.27.9000
-%define glibcrelease 22%{?dist}
+%define glibcrelease 23%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -740,6 +740,7 @@ rpm_inherit_flags \
 	"-march=z14" \
 	"-march=zEC12" \
 	"-mfpmath=sse" \
+	"-msse2" \
 	"-mstackrealign" \
 	"-mtune=generic" \
 	"-mtune=z13" \
@@ -1856,6 +1857,9 @@ fi
 %endif
 
 %changelog
+* Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-23
+- Inherit the -msse2 build flag as well (#1592212)
+
 * Fri Jun 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-22
 - Modernise nsswitch.conf defaults (#1581809)
 - Adjust build flags inheritence from redhat-rpm-config
