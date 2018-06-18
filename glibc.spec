@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-63-g80c83e9114
 %define glibcversion 2.27
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -236,6 +236,7 @@ Patch2055: glibc-collation-cldr-13.patch
 Patch2056: glibc-collation-cldr-14.patch
 Patch2057: glibc-collation-cldr-15.patch
 Patch2058: glibc-python3.patch
+Patch2059: glibc-rh1592270.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -779,6 +780,7 @@ microbenchmark tests on the system.
 %patch2056 -p1
 %patch2057 -p1
 %patch2058 -p1
+%patch2059 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -1974,6 +1976,9 @@ fi
 %endif
 
 %changelog
+* Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27-18
+- iconv: Make IBM273 equivalent to ISO-8859-1 (#1592270)
+
 * Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27-17
 - Align build flags inheritance with master (downstream only)
 

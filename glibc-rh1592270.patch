@@ -1,0 +1,33 @@
+commit 14beef7575099f6373f9a45b4656f1e3675f7372
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Thu Jun 14 22:34:09 2018 +0200
+
+    localedata: Make IBM273 compatible with ISO-8859-1 [BZ #23290]
+    
+    Reviewed-by: Carlos O'Donell <carlos@redhat.com>
+
+diff --git a/iconvdata/ibm273.c b/iconvdata/ibm273.c
+index c303cf306db56d81..132c06f0eb629f6e 100644
+--- a/iconvdata/ibm273.c
++++ b/iconvdata/ibm273.c
+@@ -23,6 +23,6 @@
+ #define TABLES <ibm273.h>
+ 
+ #define CHARSET_NAME	"IBM273//"
+-#define HAS_HOLES	1	/* Not all 256 character are defined.  */
++#define HAS_HOLES	0
+ 
+ #include <8bit-gap.c>
+diff --git a/localedata/charmaps/IBM273 b/localedata/charmaps/IBM273
+index c3f70e2a6f7c4595..4401101b5013c706 100644
+--- a/localedata/charmaps/IBM273
++++ b/localedata/charmaps/IBM273
+@@ -194,7 +194,7 @@ CHARMAP
+ <U00BE>     /xb9         VULGAR FRACTION THREE QUARTERS
+ <U00AC>     /xba         NOT SIGN
+ <U007C>     /xbb         VERTICAL LINE
+-<U203E>     /xbc         OVERLINE
++<U00AF>     /xbc         MACRON
+ <U00A8>     /xbd         DIAERESIS
+ <U00B4>     /xbe         ACUTE ACCENT
+ <U00D7>     /xbf         MULTIPLICATION SIGN
