@@ -2227,7 +2227,7 @@ rm -f *.filelist*
 - Do not run telinit u on upgrades (#1579225)
 - Auto-sync with upstream branch release/2.26/master,
   commit af7519f7b35024224c163e32a89fb247b0c446fc:
-- Fix path length overflow in realpath (swbz#22786)
+- CVE-2018-11236: Fix path length overflow in realpath (#1581270, swbz#22786)
 - Fix stack overflow with huge PT_NOTE segment (swbz#20419)
 - Fix signed integer overflow in random_r (swbz#17343)
 - i386: Fix i386 sigaction sa_restorer initialization (swbz#21269)
