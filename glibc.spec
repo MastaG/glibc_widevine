@@ -2005,7 +2005,7 @@ fi
   commit 0cd4a5e87f6885a2f15fe8e7eb7378d010cdb606:
 - sunrpc: Remove stray exports (#1577210)
 - gd_GB: Fix typo in abbreviated "May" (swbz#23152)
-- realpath: Fix path length overflow (swbz#22786)
+- CVE-2018-11236: realpath: Fix path length overflow (#1581270, swbz#22786)
 - elf: Fix stack overflow with huge PT_NOTE segment (swbz#20419)
 - resolv: Fully initialize struct mmsghdr in send_dg (swbz#23037)
 - manual: Various fixes to the mbstouwcs example, and mbrtowc update
