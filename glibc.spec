@@ -1896,7 +1896,8 @@ fi
 - Inherit the -mstackrealign flag if it is set
 - Inherit compiler flags in the original order
 - Auto-sync with upstream branch master,
-  commit 89aacb513eb77549a29df2638913a0f8178cf3f5.
+  commit 89aacb513eb77549a29df2638913a0f8178cf3f5:
+- CVE-2018-11236: realpath: Fix path length overflow (#1581270, swbz#22786)
 
 * Fri May 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-16
 - Use /usr/bin/python3 for benchmarks scripts (#1577223)
