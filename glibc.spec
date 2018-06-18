@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-56-g50df56ca86
+%define glibcsrcdir glibc-2.27-63-g80c83e9114
 %define glibcversion 2.27
-%define glibcrelease 15%{?dist}
+%define glibcrelease 16%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1969,6 +1969,14 @@ fi
 %endif
 
 %changelog
+* Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27-16
+- Auto-sync with upstream branch release/2.27/master,
+  commit 80c83e91140d429c73f79092fdb75eed0fb71da0:
+- libio: Avoid _allocate_buffer, _free_buffer function pointers (swbz#23236)
+- posix: Fix posix_spawnp to not execute invalid binaries in non compat mode
+  (swbz#23264)
+- elf: Improve DST handling (swbz#23102, swbz#21942, swbz#18018, swbz#23259)
+
 * Thu May 24 2018 Florian Weimer <fweimer@redhat.com> - 2.27-15
 - Rebuild to add back .symtab section in ld.so (#1570246)
 - Switch to upstream version of libidn2 removal (#1452750)
