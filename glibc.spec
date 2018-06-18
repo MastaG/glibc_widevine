@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-63-g80c83e9114
 %define glibcversion 2.27
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -851,13 +851,18 @@ rpm_inherit_flags \
 	"-m64" \
 	"-mstackrealign" \
 %if 0%{?rhel} > 0
+	"-march=i686" \
+	"-march=x86-64" \
+	"-march=z13" \
+	"-march=z14" \
+	"-march=zEC12" \
+	"-mfpmath=sse" \
+	"-msse2" \
+	"-mtune=generic" \
+	"-mtune=z13" \
+	"-mtune=z14" \
+	"-mtune=zEC12" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
-%endif
-
-%if 0%{?rhel} > 0
-%ifarch i686
-BuildFlags="$BuildFlags -mstackrealign"
-%endif
 %endif
 
 ##############################################################################
@@ -1969,6 +1974,9 @@ fi
 %endif
 
 %changelog
+* Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27-17
+- Align build flags inheritance with master (downstream only)
+
 * Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27-16
 - Auto-sync with upstream branch release/2.27/master,
   commit 80c83e91140d429c73f79092fdb75eed0fb71da0:
