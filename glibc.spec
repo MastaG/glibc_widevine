@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-63-g80c83e9114
 %define glibcversion 2.27
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1976,6 +1976,9 @@ fi
 %endif
 
 %changelog
+* Wed Jun 20 2018 Florian Weimer <fweimer@redhat.com> - 2.27-19
+- Modernise nsswitch.conf defaults (#1581809)
+
 * Mon Jun 18 2018 Florian Weimer <fweimer@redhat.com> - 2.27-18
 - iconv: Make IBM273 equivalent to ISO-8859-1 (#1592270)
 
