@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-497-gf496b28e61
 %define glibcversion 2.27.9000
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -160,6 +160,7 @@ Patch0018: glibc-c-utf8-locale.patch
 Patch0019: glibc-rh1315108.patch
 Patch0022: glibc-deprecate_libcrypt.patch
 Patch23: glibc-python3.patch
+Patch24: glibc-linux-timespec-header-compat.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1857,6 +1858,9 @@ fi
 %endif
 
 %changelog
+* Thu Jun 21 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-27
+- Compatibility fix for <sys/stat.h> and <linux/time.h>
+
 * Thu Jun 21 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-26
 - Auto-sync with upstream branch master,
   commit f496b28e61d0342f579bf794c71b80e9c7d0b1b5.
