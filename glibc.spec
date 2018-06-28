@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-497-gf496b28e61
+%define glibcsrcdir glibc-2.27.9000-523-gc49e18222e
 %define glibcversion 2.27.9000
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -157,7 +157,6 @@ Patch0015: glibc-rh1070416.patch
 Patch0016: glibc-nscd-sysconfig.patch
 Patch0017: glibc-cs-path.patch
 Patch0018: glibc-c-utf8-locale.patch
-Patch0019: glibc-rh1315108.patch
 Patch0022: glibc-deprecate_libcrypt.patch
 Patch23: glibc-python3.patch
 Patch24: glibc-linux-timespec-header-compat.patch
@@ -1858,6 +1857,11 @@ fi
 %endif
 
 %changelog
+* Thu Jun 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-28
+- Drop glibc-rh1315108.patch.  extend_alloca was removed upstream. (#1315108)
+- Auto-sync with upstream branch master,
+  commit c49e18222e4c40f21586dabced8a49732d946917.
+
 * Thu Jun 21 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-27
 - Compatibility fix for <sys/stat.h> and <linux/time.h>
 
