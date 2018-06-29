@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-523-gc49e18222e
+%define glibcsrcdir glibc-2.27.9000-534-ge69d994a63
 %define glibcversion 2.27.9000
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -157,9 +157,7 @@ Patch0015: glibc-rh1070416.patch
 Patch0016: glibc-nscd-sysconfig.patch
 Patch0017: glibc-cs-path.patch
 Patch0018: glibc-c-utf8-locale.patch
-Patch0022: glibc-deprecate_libcrypt.patch
 Patch23: glibc-python3.patch
-Patch24: glibc-linux-timespec-header-compat.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -792,7 +790,7 @@ build()
 %if %{with bootstrap}
 		--without-selinux \
 %endif
-		--disable-nss-crypt ||
+		--disable-crypt ||
 		{ cat config.log; false; }
 
 	make %{?_smp_mflags} -O -r
@@ -1354,7 +1352,6 @@ popd
 # Lastly copy some additional documentation for the packages.
 rm -rf documentation
 mkdir documentation
-cp crypt/README.ufc-crypt documentation/README.ufc-crypt
 cp timezone/README documentation/README.timezone
 cp posix/gai.conf documentation/
 
@@ -1857,6 +1854,12 @@ fi
 %endif
 
 %changelog
+* Fri Jun 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-29
+- Drop glibc-deprecate_libcrypt.patch.  Variant applied upstream.
+- Drop glibc-linux-timespec-header-compat.patch.  Upstreamed.
+- Auto-sync with upstream branch master,
+  commit e69d994a63afc2d367f286a2a7df28cbf710f0fe.
+
 * Thu Jun 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-28
 - Drop glibc-rh1315108.patch.  extend_alloca was removed upstream. (#1315108)
 - Auto-sync with upstream branch master,
