@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-534-ge69d994a63
+%define glibcsrcdir glibc-2.27.9000-545-gb7b88cea41
 %define glibcversion 2.27.9000
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1854,6 +1854,11 @@ fi
 %endif
 
 %changelog
+* Mon Jul 02 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-30
+- Auto-sync with upstream branch master,
+  commit b7b88cea4151d85eafd7ababc2e4b7ae1daeedf5:
+- New locale: dsb_DE (Lower Sorbian)
+
 * Fri Jun 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-29
 - Drop glibc-deprecate_libcrypt.patch.  Variant applied upstream.
 - Drop glibc-linux-timespec-header-compat.patch.  Upstreamed.
