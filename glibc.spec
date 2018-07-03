@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-63-g80c83e9114
+%define glibcsrcdir glibc-2.27-70-g7602b9e48c
 %define glibcversion 2.27
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1976,6 +1976,15 @@ fi
 %endif
 
 %changelog
+* Tue Jul 03 2018 Florian Weimer <fweimer@redhat.com> - 2.27-20
+- Auto-sync with upstream branch release/2.27/master,
+  commit 7602b9e48c30c146d52df91dd83e518b8d0d343b:
+- math: Fix parameter type in C++ version of iseqsig (swbz#23171)
+- Use _STRUCT_TIMESPEC as guard in <bits/types/struct_timespec.h> (swbz#23349)
+- getifaddrs: Don't return ifa entries with NULL names (swbz#21812)
+- libio: Disable vtable validation in case of interposition (swbz#23313)
+- stdio-common/tst-printf.c: Remove part under a non-free license (swbz#23363)
+
 * Wed Jun 20 2018 Florian Weimer <fweimer@redhat.com> - 2.27-19
 - Modernise nsswitch.conf defaults (#1581809)
 
