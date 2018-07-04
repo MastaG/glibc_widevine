@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-70-g7602b9e48c
+%define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 21%{?dist}
+%define glibcrelease 22%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1984,6 +1984,11 @@ fi
 %endif
 
 %changelog
+* Wed Jul 04 2018 Florian Weimer <fweimer@redhat.com> - 2.27-22
+- Auto-sync with upstream branch release/2.27/master,
+  commit 5fab7fe1dc9cab9a46cf5c8840aa9b7ea3a26296:
+- math: Set 387 and SSE2 rounding mode for tgamma on i386 (swbz#23253)
+
 * Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-21
 - Switch to upstream implementation of --disable-crypt (#1566464)
 
