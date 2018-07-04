@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-545-gb7b88cea41
 %define glibcversion 2.27.9000
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -181,6 +181,7 @@ Patch0017: glibc-cs-path.patch
 Patch0018: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch24: glibc-with-nonshared-cflags.patch
+Patch25: glibc-asflags.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -255,8 +256,8 @@ BuildRequires: make >= 4.0
 # The intl subsystem generates a parser using bison.
 BuildRequires: bison >= 2.7
 
-# binutils 2.29 is needed for static PIE support in i386/x86_64.
-BuildRequires: binutils >= 2.29
+# binutils 2.30-17 is needed for --generate-missing-build-notes.
+BuildRequires: binutils >= 2.30-17
 
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
@@ -771,6 +772,11 @@ rpm_inherit_flags \
 	"-mtune=zEC12" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 
+# Special flag to enable annobin annotations for statically linked
+# assembler code.  Needs to be passed to make; not preserved by
+# configure.
+%define glibc_make_flags ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
+
 ##############################################################################
 # %%build - Generic options.
 ##############################################################################
@@ -819,7 +825,7 @@ build()
 		--disable-crypt ||
 		{ cat config.log; false; }
 
-	make %{?_smp_mflags} -O -r
+	make %{?_smp_mflags} -O -r %{glibc_make_flags}
 	popd
 }
 
@@ -1880,6 +1886,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-32
+- Add annobin annotations to assembler code (#1548438)
+
 * Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-31
 - Enable -D_FORTIFY_SOURCE=2 for nonshared code
 
