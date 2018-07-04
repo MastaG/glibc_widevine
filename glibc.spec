@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 22%{?dist}
+%define glibcrelease 23%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -261,6 +261,7 @@ Patch2056: glibc-collation-cldr-14.patch
 Patch2057: glibc-collation-cldr-15.patch
 Patch2058: glibc-python3.patch
 Patch2059: glibc-rh1592270.patch
+Patch2060: glibc-with-nonshared-cflags.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -809,6 +810,7 @@ microbenchmark tests on the system.
 %patch2057 -p1
 %patch2058 -p1
 %patch2059 -p1
+%patch2060 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -920,6 +922,7 @@ build()
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$BuildFlags $*" \
 		--prefix=%{_prefix} \
 		--with-headers=%{_prefix}/include $EnableKernel \
+		--with-nonshared-cflags="-D_FORTIFY_SOURCE=2" \
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
@@ -2004,6 +2007,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-23
+- Enable -D_FORTIFY_SOURCE=2 for nonshared code
+
 * Wed Jul 04 2018 Florian Weimer <fweimer@redhat.com> - 2.27-22
 - Auto-sync with upstream branch release/2.27/master,
   commit 5fab7fe1dc9cab9a46cf5c8840aa9b7ea3a26296:
