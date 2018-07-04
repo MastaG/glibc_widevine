@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-70-g7602b9e48c
 %define glibcversion 2.27
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -219,7 +219,11 @@ Patch2031: glibc-rh1070416.patch
 Patch2037: glibc-rh1315108.patch
 Patch2040: glibc-rh1452750-allocate_once.patch
 Patch2041: glibc-rh1452750-libidn2.patch
-Patch2042: glibc-deprecate_libcrypt.patch
+Patch2100: glibc-disable-crypt-0.patch
+Patch2101: glibc-disable-crypt-1.patch
+Patch2102: glibc-disable-crypt-2.patch
+Patch2103: glibc-disable-crypt-3.patch
+Patch2104: glibc-disable-crypt-4.patch
 Patch2043: glibc-collation-cldr-1.patch
 Patch2044: glibc-collation-cldr-2.patch
 Patch2045: glibc-collation-cldr-3.patch
@@ -763,7 +767,11 @@ microbenchmark tests on the system.
 %patch2037 -p1
 %patch2040 -p1
 %patch2041 -p1
-%patch2042 -p1
+%patch2100 -p1
+%patch2101 -p1
+%patch2102 -p1
+%patch2103 -p1
+%patch2104 -p1
 %patch2043 -p1
 %patch2044 -p1
 %patch2045 -p1
@@ -911,7 +919,7 @@ build()
 %if %{with bootstrap}
 		--without-selinux \
 %endif
-		--disable-nss-crypt ||
+		--disable-crypt ||
 		{ cat config.log; false; }
 
 	make %{?_smp_mflags} -O -r
@@ -1976,6 +1984,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-21
+- Switch to upstream implementation of --disable-crypt (#1566464)
+
 * Tue Jul 03 2018 Florian Weimer <fweimer@redhat.com> - 2.27-20
 - Auto-sync with upstream branch release/2.27/master,
   commit 7602b9e48c30c146d52df91dd83e518b8d0d343b:
