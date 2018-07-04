@@ -1862,7 +1862,7 @@ fi
 - New locale: dsb_DE (Lower Sorbian)
 
 * Fri Jun 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-29
-- Drop glibc-deprecate_libcrypt.patch.  Variant applied upstream.
+- Drop glibc-deprecate_libcrypt.patch.  Variant applied upstream. (#1566464)
 - Drop glibc-linux-timespec-header-compat.patch.  Upstreamed.
 - Auto-sync with upstream branch master,
   commit e69d994a63afc2d367f286a2a7df28cbf710f0fe.
