@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-545-gb7b88cea41
 %define glibcversion 2.27.9000
-%define glibcrelease 30%{?dist}
+%define glibcrelease 31%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -158,6 +158,7 @@ Patch0016: glibc-nscd-sysconfig.patch
 Patch0017: glibc-cs-path.patch
 Patch0018: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
+Patch24: glibc-with-nonshared-cflags.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -773,6 +774,7 @@ build()
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$BuildFlags $*" \
 		--prefix=%{_prefix} \
 		--with-headers=%{_prefix}/include $EnableKernel \
+		--with-nonshared-cflags="-D_FORTIFY_SOURCE=2" \
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
@@ -1856,6 +1858,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-31
+- Enable -D_FORTIFY_SOURCE=2 for nonshared code
+
 * Mon Jul 02 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-30
 - Auto-sync with upstream branch master,
   commit b7b88cea4151d85eafd7ababc2e4b7ae1daeedf5:
