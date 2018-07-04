@@ -726,7 +726,9 @@ rpm_inherit_flags ()
 # multilib builds.
 
 rpm_inherit_flags \
+	"-Wp,-D_GLIBCXX_ASSERTIONS" \
 	"-fasynchronous-unwind-tables" \
+	"-fcf-protection" \
 	"-fstack-clash-protection" \
 	"-funwind-tables" \
 	"-m31" \
