@@ -112,12 +112,32 @@ Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
 Release: %{glibcrelease}
-# GPLv2+ is used in a bunch of programs, LGPLv2+ is used for libraries.
-# Things that are linked directly into dynamically linked programs
-# and shared libraries (e.g. crt files, lib*_nonshared.a) have an additional
-# exception which allows linking it into any kind of programs or shared
-# libraries without restrictions.
-License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+
+
+# In general, GPLv2+ is used by programs, LGPLv2+ is used for
+# libraries.
+#
+# LGPLv2+ with exceptions is used for things that are linked directly
+# into dynamically linked programs and shared libraries (e.g. crt
+# files, lib*_nonshared.a).  Historically, this exception also applies
+# to parts of libio.
+#
+# GPLv2+ with exceptions is used for parts of the Arm unwinder.
+#
+# GFDL is used for the documentation.
+#
+# Some other licenses are used in various places (BSD, Inner-Net,
+# ISC, Public Domain).
+#
+# HSRL and FSFAP are only used in test cases, which currently do not
+# ship in binary RPMs, so they are not listed here.  MIT is used for
+# scripts/install-sh, which does not ship, either.
+#
+# GPLv3+ is used by manual/texinfo.tex, which we do not use.
+#
+# LGPLv2 is used in one place (time/timespec_get.c, by mistake), but
+# it is not actually compiled, so it does not matter for libraries.
+License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+ and GPLv2+ with exceptions and BSD and Inner-Net and ISC and Public Domain and GFDL
+
 URL: http://www.gnu.org/software/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.gz
 Source1: build-locale-archive.c
