@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -262,6 +262,7 @@ Patch2057: glibc-collation-cldr-15.patch
 Patch2058: glibc-python3.patch
 Patch2059: glibc-rh1592270.patch
 Patch2060: glibc-with-nonshared-cflags.patch
+Patch2061: glibc-asflags.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -340,8 +341,13 @@ BuildRequires: make >= 4.0
 # The intl subsystem generates a parser using bison.
 BuildRequires: bison >= 2.7
 
+%if 0%{?rhel} > 0
+# binutils 2.30-17 is needed for --generate-missing-build-notes.
+BuildRequires: binutils >= 2.30-17
+%else
 # binutils 2.29 is needed for static PIE support in i386/x86_64.
 BuildRequires: binutils >= 2.29
+%endif
 
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
@@ -811,6 +817,7 @@ microbenchmark tests on the system.
 %patch2058 -p1
 %patch2059 -p1
 %patch2060 -p1
+%patch2061 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -897,6 +904,15 @@ rpm_inherit_flags \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 %endif
 
+# Special flag to enable annobin annotations for statically linked
+# assembler code.  Needs to be passed to make; not preserved by
+# configure.
+%if 0%{?rhel} > 0
+%define glibc_make_flags ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
+%else
+%define glibc_make_flags %{nil}
+%endif
+
 ##############################################################################
 # %%build - Generic options.
 ##############################################################################
@@ -945,7 +961,7 @@ build()
 		--disable-crypt ||
 		{ cat config.log; false; }
 
-	make %{?_smp_mflags} -O -r
+	make %{?_smp_mflags} -O -r %{glibc_make_flags}
 	popd
 }
 
@@ -2007,6 +2023,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-24
+- Add annobin annotations to assembler code (downstream only) (#1548438)
+
 * Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-23
 - Enable -D_FORTIFY_SOURCE=2 for nonshared code
 
