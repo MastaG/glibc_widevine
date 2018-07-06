@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-545-gb7b88cea41
+%define glibcsrcdir glibc-2.27.9000-556-g3a885c1f51
 %define glibcversion 2.27.9000
-%define glibcrelease 33%{?dist}
+%define glibcrelease 34%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,10 @@ fi
 %endif
 
 %changelog
+* Fri Jul 06 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-34
+- Auto-sync with upstream branch master,
+  commit 3a885c1f51b18852869a91cf59a1b39da1595c7a.
+
 * Thu Jul  5 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-33
 - Enable build flags inheritance for nonshared flags
 
