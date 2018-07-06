@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 24%{?dist}
+%define glibcrelease 26%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -862,7 +862,14 @@ df
 GCC=gcc
 GXX=g++
 
-# Propagates the listed flags to BuildFlags if supplied by redhat-rpm-config.
+# Part of rpm_inherit_flags.  Is overridden below.
+rpm_append_flag ()
+{
+    BuildFlags="$BuildFlags $*"
+}
+
+# Propagates the listed flags to rpm_append_flag if supplied by
+# redhat-rpm-config.
 BuildFlags="-O2 -g"
 rpm_inherit_flags ()
 {
@@ -870,7 +877,7 @@ rpm_inherit_flags ()
 	local flag
 	for flag in $RPM_OPT_FLAGS $RPM_LD_FLAGS ; do
 		if echo "$reference" | grep -q -F " $flag " ; then
-			BuildFlags="$BuildFlags $flag"
+			rpm_append_flag "$flag"
 		fi
 	done
 }
@@ -890,6 +897,8 @@ rpm_inherit_flags \
 	"-m64" \
 	"-mstackrealign" \
 %if 0%{?rhel} > 0
+	"-Wp,-D_GLIBCXX_ASSERTIONS" \
+	"-fcf-protection" \
 	"-march=i686" \
 	"-march=x86-64" \
 	"-march=z13" \
@@ -903,6 +912,18 @@ rpm_inherit_flags \
 	"-mtune=zEC12" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 %endif
+
+# Propagate additional build flags to BuildFlagsNonshared.  This is
+# very special because some of these files are part of the startup
+# code.  We essentially hope that these flags have little effect
+# there, and only specify the, for consistency, so that annobin
+# records the expected compiler flags.
+BuildFlagsNonshared=
+rpm_append_flag () {
+    BuildFlagsNonshared="$BuildFlagsNonshared $*"
+}
+rpm_inherit_flags \
+	"-Wp,-D_FORTIFY_SOURCE=2" \
 
 # Special flag to enable annobin annotations for statically linked
 # assembler code.  Needs to be passed to make; not preserved by
@@ -938,7 +959,7 @@ build()
 	../configure CC="$GCC" CXX="$GXX" CFLAGS="$BuildFlags $*" \
 		--prefix=%{_prefix} \
 		--with-headers=%{_prefix}/include $EnableKernel \
-		--with-nonshared-cflags="-D_FORTIFY_SOURCE=2" \
+		--with-nonshared-cflags="$BuildFlagsNonshared" \
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
@@ -2023,6 +2044,12 @@ fi
 %endif
 
 %changelog
+* Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27-26
+- Enable build flags inheritance for nonshared flags
+
+* Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27-25
+- Inherit further build flags (downstream only)
+
 * Wed Jul  4 2018 Florian Weimer <fweimer@redhat.com> - 2.27-24
 - Add annobin annotations to assembler code (downstream only) (#1548438)
 
