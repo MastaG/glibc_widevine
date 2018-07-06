@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -263,6 +263,8 @@ Patch2058: glibc-python3.patch
 Patch2059: glibc-rh1592270.patch
 Patch2060: glibc-with-nonshared-cflags.patch
 Patch2061: glibc-asflags.patch
+Patch2062: glibc-extra-stackprot-1.patch
+Patch2063: glibc-extra-stackprot-2.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -818,6 +820,8 @@ microbenchmark tests on the system.
 %patch2059 -p1
 %patch2060 -p1
 %patch2061 -p1
+%patch2062 -p1
+%patch2063 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2044,6 +2048,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27-27
+- Build additional files with stack protector
+
 * Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27-26
 - Enable build flags inheritance for nonshared flags
 
