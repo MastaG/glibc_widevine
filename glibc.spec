@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-556-g3a885c1f51
 %define glibcversion 2.27.9000
-%define glibcrelease 34%{?dist}
+%define glibcrelease 35%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -57,40 +57,6 @@
 # you install the base arch, not both. You would do this in order
 # to provide a more optimized version of the package for your arch.
 %define auxarches athlon alphaev6
-##############################################################################
-# We support only 64-bit POWER with the following runtimes:
-# 64-bit BE:
-# - Power 620 / 970 ISA (default runtime, compatile with POWER4 and newer)
-#	- Provided for the large number of PowerPC G5 users.
-#	- IFUNC support provides optimized core routines for POWER6,
-#	  POWER7, and POWER8 transparently (if not using specific runtimes
-#	  below)
-# - POWER6 (has power6x symlink to power6, enabled via AT_PLATFORM)
-#	- Legacy for old systems. Should be deprecated at some point soon.
-# - POWER7 (enabled via AT_PLATFORM)
-#	- Existing deployments.
-# - POWER8 (enabled via AT_PLATFORM)
-#	- Latest generation.
-# 64-bit LE:
-# - POWER8 LE (default)
-#	- Latest generation.
-#
-# No 32-bit POWER support is provided.
-#
-# There are currently no plans for POWER9 enablement, but as hardware and
-# upstream support become available this will be reviewed.
-#
-%ifarch ppc64
-# Build the additional runtimes for 64-bit BE POWER.
-%define buildpower6 0
-%define buildpower7 1
-%define buildpower8 1
-%else
-# No additional runtimes for ppc64le or ppc64p7, just the default.
-%define buildpower6 0
-%define buildpower7 0
-%define buildpower8 0
-%endif
 
 # Only some architectures have static PIE support.
 %define pie_arches %{ix86} x86_64
@@ -854,48 +820,6 @@ build()
 build
 
 ##############################################################################
-# Build glibc for power6:
-# If we support building a power6 alternate runtime then built glibc again for
-# power6.
-# XXX: We build in a sub-shell for no apparent reason.
-##############################################################################
-%if %{buildpower6}
-(
-	platform=`LD_SHOW_AUXV=1 /bin/true | sed -n 's/^AT_PLATFORM:[[:blank:]]*//p'`
-	if [ "$platform" != power6 ]; then
-		mkdir -p power6emul/{lib,lib64}
-		$GCC -shared -O2 -fpic -o power6emul/%{_lib}/power6emul.so %{SOURCE8} -Wl,-z,initfirst
-%ifarch ppc64
-		gcc -shared -nostdlib -O2 -fpic -m32 -o power6emul/lib/power6emul.so -xc - < /dev/null
-%endif
-		export LD_PRELOAD=`pwd`/power6emul/\$LIB/power6emul.so
-	fi
-	GCC="$GCC -mcpu=power6"
-	GXX="$GXX -mcpu=power6"
-	core_with_options="--with-cpu=power6"
-	build power6
-)
-%endif # %{buildpower6}
-
-%if %{buildpower7}
-(
-  GCC="$GCC -mcpu=power7 -mtune=power7"
-  GXX="$GXX -mcpu=power7 -mtune=power7"
-  core_with_options="--with-cpu=power7"
-  build power7
-)
-%endif
-
-%if %{buildpower8}
-(
-  GCC="$GCC -mcpu=power8 -mtune=power8"
-  GXX="$GXX -mcpu=power8 -mtune=power8"
-  core_with_options="--with-cpu=power8"
-  build power8
-)
-%endif
-
-##############################################################################
 # Install glibc...
 ##############################################################################
 %install
@@ -983,46 +907,6 @@ install_different()
 		ln -sf $libbaseso $dlib
 	done
 }
-
-##############################################################################
-# Install the power6 build files.
-##############################################################################
-%if %{buildpower6}
-%define power6_subdir power6
-%define power6_subdir_up ..
-%define power6_legacy power6x
-%define power6_legacy_up ..
-pushd build-%{target}-power6
-destdir=$RPM_BUILD_ROOT/%{_lib}
-install_different "$destdir" "%{power6_subdir}" "%{power6_subdir_up}"
-# Make a legacy /usr/lib[64]/power6x directory that is a symlink to the
-# power6 runtime.
-# XXX: When can we remove this? What is the history behind this?
-mkdir -p ${destdir}/%{power6_legacy}
-pushd ${destdir}/%{power6_legacy}
-ln -sf %{power6_legacy_up}/%{power6_subdir}/*.so .
-cp -a %{power6_legacy_up}/%{power6_subdir}/*.so.* .
-popd
-popd
-%endif # %{buildpower6}
-
-%if %{buildpower7}
-%define power7_subdir power7
-%define power7_subdir_up ..
-pushd build-%{target}-power7
-destdir=$RPM_BUILD_ROOT/%{_lib}
-install_different "$destdir" "%{power7_subdir}" "%{power7_subdir_up}"
-popd
-%endif
-
-%if %{buildpower8}
-%define power8_subdir power8
-%define power8_subdir_up ..
-pushd build-%{target}-power8
-destdir=$RPM_BUILD_ROOT/%{_lib}
-install_different "$destdir" "%{power8_subdir}" "%{power8_subdir_up}"
-popd
-%endif
 
 ##############################################################################
 # Remove the files we don't want to distribute
@@ -1678,39 +1562,6 @@ pushd build-%{target}
 run_tests
 popd
 
-%if %{buildpower6}
-echo ====================TESTING -mcpu=power6=============
-##############################################################################
-# - Test the 64-bit POWER6 BE runtimes.
-##############################################################################
-pushd build-%{target}-power6
-if [ -d ../power6emul ]; then
-    export LD_PRELOAD=`cd ../power6emul; pwd`/\$LIB/power6emul.so
-fi
-run_tests
-popd
-%endif
-
-%if %{buildpower7}
-echo ====================TESTING -mcpu=power7=============
-##############################################################################
-# - Test the 64-bit POWER7 BE runtimes.
-##############################################################################
-pushd build-%{target}-power7
-run_tests
-popd
-%endif
-
-%if %{buildpower8}
-echo ====================TESTING -mcpu=power8=============
-##############################################################################
-# - Test the 64-bit POWER8 BE runtimes.
-##############################################################################
-pushd build-%{target}-power8
-run_tests
-popd
-%endif
-
 echo ====================TESTING END=====================
 PLTCMD='/^Relocation section .*\(\.rela\?\.plt\|\.rela\.IA_64\.pltoff\)/,/^$/p'
 echo ====================PLT RELOCS LD.SO================
@@ -1808,16 +1659,6 @@ fi
 
 %files -f rpm.filelist
 %dir %{_prefix}/%{_lib}/audit
-%if %{buildpower6}
-%dir /%{_lib}/power6
-%dir /%{_lib}/power6x
-%endif
-%if %{buildpower7}
-%dir /%{_lib}/power7
-%endif
-%if %{buildpower8}
-%dir /%{_lib}/power8
-%endif
 %ifarch s390x
 /lib/ld64.so.1
 %endif
@@ -1905,6 +1746,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-35
+- Remove ppc64 multilibs
+
 * Fri Jul 06 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-34
 - Auto-sync with upstream branch master,
   commit 3a885c1f51b18852869a91cf59a1b39da1595c7a.

@@ -58,6 +58,8 @@ main (void)
       "/lib/i686/nosegneg",
 #elif defined (__powerpc64__) && _CALL_ELF != 2
       "/lib64/power6",
+      "/lib64/power7",
+      "/lib64/power8",
 #endif
     };
   for (j = 0; j < sizeof (remove_dirs) / sizeof (remove_dirs[0]); ++j)
