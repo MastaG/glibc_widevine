@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-556-g3a885c1f51
+%define glibcsrcdir glibc-2.27.9000-566-gfd70af4552
 %define glibcversion 2.27.9000
-%define glibcrelease 35%{?dist}
+%define glibcrelease 36%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1746,6 +1746,17 @@ fi
 %endif
 
 %changelog
+* Tue Jul 10 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-36
+- Auto-sync with upstream branch master,
+  commit fd70af45528d59a00eb3190ef6706cb299488fcd:
+- Add the statx function
+- regexec: Fix off-by-one bug in weight comparison (#1582229)
+- nss_files: Fix re-reading of long lines (swbz#18991)
+- aarch64: add HWCAP_ATOMICS to HWCAP_IMPORTANT
+- aarch64: Remove HWCAP_CPUID from HWCAP_IMPORTANT
+- conform/conformtest.pl: Escape literal braces in regular expressions
+- x86: Use AVX_Fast_Unaligned_Load from Zen onwards.
+
 * Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-35
 - Remove ppc64 multilibs
 
