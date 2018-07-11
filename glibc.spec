@@ -836,7 +836,7 @@ build()
 	popd
 }
 
-# Default set of potions.
+# Default set of compiler options.
 build
 
 %if %{buildpower9}
