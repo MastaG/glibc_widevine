@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-566-gfd70af4552
+%define glibcsrcdir glibc-2.27.9000-568-g93304f5f7a
 %define glibcversion 2.27.9000
-%define glibcrelease 37%{?dist}
+%define glibcrelease 38%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1757,6 +1757,12 @@ fi
 %endif
 
 %changelog
+* Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-38
+- Auto-sync with upstream branch master,
+  commit 93304f5f7a32f73b551266c5a181db51d97a71e4:
+- Install <bits/statx.h> header
+- Put the correct Unicode version number 11.0.0 into the generated files
+
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-37
 - Work around valgrind issue on i686 (#1600034)
 
