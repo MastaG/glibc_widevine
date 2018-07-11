@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -94,6 +94,13 @@
 
 # Only some architectures have static PIE support.
 %define pie_arches %{ix86} x86_64
+
+# Build the POWER9 runtime on POWER, but only for downstream.
+%ifarch ppc64le
+%define buildpower9 0%{?rhel} > 0
+%else
+%define buildpower9 0
+%endif
 
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
@@ -890,9 +897,12 @@ rpm_inherit_flags ()
 
 # Propgate select compiler flags from redhat-rpm-config.  These flags
 # are target-dependent, so we use only those which are specified in
-# redhat-rpm-config.  We do not replicate the -march=/-mtune=
-# selection here because these match the defaults compiled into GCC.
-# We keep the -m32/-m32/-m64 flags to support multilib builds.
+# redhat-rpm-config.  We keep the -m32/-m32/-m64 flags to support
+# multilib builds.
+#
+# Note: For building alternative run-times, care is required to avoid
+# overriding the architecture flags which go into CC/CXX.  The flags
+# below are passed in CFLAGS.
 
 rpm_inherit_flags \
 	"-fasynchronous-unwind-tables" \
@@ -1003,9 +1013,7 @@ build()
 	popd
 }
 
-##############################################################################
-# Build glibc for the default set of options.
-##############################################################################
+# Default set of options.
 build
 
 ##############################################################################
@@ -1047,6 +1055,15 @@ build
   GXX="$GXX -mcpu=power8 -mtune=power8"
   core_with_options="--with-cpu=power8"
   build power8
+)
+%endif
+
+%if %{buildpower9}
+(
+  GCC="$GCC -mcpu=power9 -mtune=power9"
+  GXX="$GXX -mcpu=power9 -mtune=power9"
+  core_with_options="--with-cpu=power9"
+  build power9
 )
 %endif
 
@@ -1138,6 +1155,12 @@ install_different()
 		ln -sf $libbaseso $dlib
 	done
 }
+
+%if %{buildpower9}
+pushd build-%{target}-power9
+install_different "$RPM_BUILD_ROOT/%{_lib}" power9 ..
+popd
+%endif
 
 ##############################################################################
 # Install the power6 build files.
@@ -1819,17 +1842,8 @@ run_tests () {
 export TIMEOUTFACTOR=16
 parent=$$
 echo ====================TESTING=========================
-##############################################################################
-# - Test the default runtime.
-#	- Power 620 / 970 ISA for 64-bit POWER BE.
-#	- POWER8 for 64-bit POWER LE.
-#	- ??? for 64-bit x86_64
-#	- ??? for 32-bit x86
-#	- ??? for 64-bit AArch64
-#	- ??? for 32-bit ARM
-#	- zEC12 for 64-bit s390x
-#	- ??? for 32-bit s390
-##############################################################################
+
+# Default libraries.
 pushd build-%{target}
 run_tests
 popd
@@ -1863,6 +1877,13 @@ echo ====================TESTING -mcpu=power8=============
 # - Test the 64-bit POWER8 BE runtimes.
 ##############################################################################
 pushd build-%{target}-power8
+run_tests
+popd
+%endif
+
+%if %{buildpower9}
+echo ====================TESTING -mcpu=power9=============
+pushd build-%{target}-power9
 run_tests
 popd
 %endif
@@ -1974,6 +1995,9 @@ fi
 %if %{buildpower8}
 %dir /%{_lib}/power8
 %endif
+%if %{buildpower9}
+%dir /%{_lib}/power9
+%endif
 %ifarch s390x
 /lib/ld64.so.1
 %endif
@@ -2061,6 +2085,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-29
+- Add POWER9 multilib (downstream only)
+
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-28
 - Work around valgrind issue on i686 (#1600034)
 
