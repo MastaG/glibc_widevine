@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-566-gfd70af4552
 %define glibcversion 2.27.9000
-%define glibcrelease 36%{?dist}
+%define glibcrelease 37%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -148,6 +148,7 @@ Patch0018: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch24: glibc-with-nonshared-cflags.patch
 Patch25: glibc-asflags.patch
+Patch26: glibc-ldflags.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -760,7 +761,17 @@ rpm_inherit_flags \
 # Special flag to enable annobin annotations for statically linked
 # assembler code.  Needs to be passed to make; not preserved by
 # configure.
-%define glibc_make_flags ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
+%define glibc_make_flags_as ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
+%define glibc_make_flags %{glibc_make_flags_as} %{glibc_make_flags_ld}
+
+# valgrind reports false positives if ld.so is linked with -z
+# separate-code (the default) on i686, so we work around that here.
+# See <https://bugzilla.redhat.com/show_bug.cgi?id=1600034>.
+%ifarch %{ix86}
+%define glibc_make_flags_ld LDFLAGS-rtld="-g -Wa,--generate-missing-build-notes=yes"
+%else
+%define glibc_make_flags_ld %{nil}
+%endif
 
 ##############################################################################
 # %%build - Generic options.
@@ -1746,6 +1757,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-37
+- Work around valgrind issue on i686 (#1600034)
+
 * Tue Jul 10 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-36
 - Auto-sync with upstream branch master,
   commit fd70af45528d59a00eb3190ef6706cb299488fcd:
