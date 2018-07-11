@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-568-g93304f5f7a
 %define glibcversion 2.27.9000
-%define glibcrelease 38%{?dist}
+%define glibcrelease 39%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -60,6 +60,13 @@
 
 # Only some architectures have static PIE support.
 %define pie_arches %{ix86} x86_64
+
+# Build the POWER9 runtime on POWER, but only for downstream.
+%ifarch ppc64le
+%define buildpower9 0%{?rhel} > 0
+%else
+%define buildpower9 0
+%endif
 
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
@@ -722,6 +729,10 @@ rpm_inherit_flags ()
 # are target-dependent, so we use only those which are specified in
 # redhat-rpm-config.  We keep the -m32/-m32/-m64 flags to support
 # multilib builds.
+#
+# Note: For building alternative run-times, care is required to avoid
+# overriding the architecture flags which go into CC/CXX.  The flags
+# below are passed in CFLAGS.
 
 rpm_inherit_flags \
 	"-Wp,-D_GLIBCXX_ASSERTIONS" \
@@ -825,10 +836,17 @@ build()
 	popd
 }
 
-##############################################################################
-# Build glibc for the default set of options.
-##############################################################################
+# Default set of potions.
 build
+
+%if %{buildpower9}
+(
+  GCC="$GCC -mcpu=power9 -mtune=power9"
+  GXX="$GXX -mcpu=power9 -mtune=power9"
+  core_with_options="--with-cpu=power9"
+  build power9
+)
+%endif
 
 ##############################################################################
 # Install glibc...
@@ -918,6 +936,12 @@ install_different()
 		ln -sf $libbaseso $dlib
 	done
 }
+
+%if %{buildpower9}
+pushd build-%{target}-power9
+install_different "$RPM_BUILD_ROOT/%{_lib}" power9 ..
+popd
+%endif
 
 ##############################################################################
 # Remove the files we don't want to distribute
@@ -1558,20 +1582,20 @@ run_tests () {
 export TIMEOUTFACTOR=16
 parent=$$
 echo ====================TESTING=========================
-##############################################################################
-# - Test the default runtime.
-#	- Power 620 / 970 ISA for 64-bit POWER BE.
-#	- POWER8 for 64-bit POWER LE.
-#	- ??? for 64-bit x86_64
-#	- ??? for 32-bit x86
-#	- ??? for 64-bit AArch64
-#	- ??? for 32-bit ARM
-#	- zEC12 for 64-bit s390x
-#	- ??? for 32-bit s390
-##############################################################################
+
+# Default libraries.
 pushd build-%{target}
 run_tests
 popd
+
+%if %{buildpower9}
+echo ====================TESTING -mcpu=power9=============
+pushd build-%{target}-power9
+run_tests
+popd
+%endif
+
+
 
 echo ====================TESTING END=====================
 PLTCMD='/^Relocation section .*\(\.rela\?\.plt\|\.rela\.IA_64\.pltoff\)/,/^$/p'
@@ -1670,6 +1694,9 @@ fi
 
 %files -f rpm.filelist
 %dir %{_prefix}/%{_lib}/audit
+%if %{buildpower9}
+%dir /%{_lib}/power9
+%endif
 %ifarch s390x
 /lib/ld64.so.1
 %endif
@@ -1757,6 +1784,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-39
+- Add POWER9 multilib (downstream only)
+
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-38
 - Auto-sync with upstream branch master,
   commit 93304f5f7a32f73b551266c5a181db51d97a71e4:
