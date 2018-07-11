@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
+%define glibcsrcdir glibc-2.27-74-g68c1bf8097
 %define glibcversion 2.27
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2085,6 +2085,13 @@ fi
 %endif
 
 %changelog
+* Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-30
+- Auto-sync with upstream branch release/2.27/master,
+  commit 68c1bf80978594388157c62fd2edd467d4e8dfb2:
+- regexec: Fix off-by-one bug in weight comparison (#1582229)
+- es_BO locale: Change LC_PAPER to en_US (swbz#22996)
+- conform/conformtest.pl: Escape literal braces in regular expressions
+
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-29
 - Add POWER9 multilib (downstream only)
 
