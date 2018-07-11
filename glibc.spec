@@ -768,7 +768,7 @@ rpm_inherit_flags \
 # separate-code (the default) on i686, so we work around that here.
 # See <https://bugzilla.redhat.com/show_bug.cgi?id=1600034>.
 %ifarch %{ix86}
-%define glibc_make_flags_ld LDFLAGS-rtld="-g -Wa,--generate-missing-build-notes=yes"
+%define glibc_make_flags_ld LDFLAGS-rtld="-Wl,-z,noseparate-code"
 %else
 %define glibc_make_flags_ld %{nil}
 %endif
