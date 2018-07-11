@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-71-g5fab7fe1dc
 %define glibcversion 2.27
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -265,6 +265,7 @@ Patch2060: glibc-with-nonshared-cflags.patch
 Patch2061: glibc-asflags.patch
 Patch2062: glibc-extra-stackprot-1.patch
 Patch2063: glibc-extra-stackprot-2.patch
+Patch2064: glibc-ldflags.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -822,6 +823,7 @@ microbenchmark tests on the system.
 %patch2061 -p1
 %patch2062 -p1
 %patch2063 -p1
+%patch2064 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -932,10 +934,21 @@ rpm_inherit_flags \
 # Special flag to enable annobin annotations for statically linked
 # assembler code.  Needs to be passed to make; not preserved by
 # configure.
+%define glibc_make_flags_as ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
 %if 0%{?rhel} > 0
-%define glibc_make_flags ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
+%define glibc_make_flags %{glibc_make_flags_as} %{glibc_make_flags_ld}
 %else
 %define glibc_make_flags %{nil}
+%endif
+
+# valgrind reports false positives if ld.so is linked with
+# -z # separate-code (the downstream default) on i686, so
+# we work around that here.  See
+# <https://bugzilla.redhat.com/show_bug.cgi?id=1600034>.
+%ifarch %{ix86}
+%define glibc_make_flags_ld LDFLAGS-rtld="-Wl,-z,noseparate-code"
+%else
+%define glibc_make_flags_ld %{nil}
 %endif
 
 ##############################################################################
@@ -2048,6 +2061,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-28
+- Work around valgrind issue on i686 (#1600034)
+
 * Fri Jul  6 2018 Florian Weimer <fweimer@redhat.com> - 2.27-27
 - Build additional files with stack protector
 
