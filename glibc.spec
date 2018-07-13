@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27.9000-568-g93304f5f7a
 %define glibcversion 2.27.9000
-%define glibcrelease 39%{?dist}
+%define glibcrelease 40%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1219,7 +1219,7 @@ done
 ##############################################################################
 # There are several main file lists (and many more for
 # the langpack sub-packages (langpack-${lang}.filelist)):
-# * rpm.filelist
+# * master.filelist
 #	- Master file list from which all other lists are built.
 # * glibc.filelist
 #	- Files for the glibc packages.
@@ -1251,7 +1251,7 @@ done
 # Create the main file lists. This way we can append to any one of them later
 # wihtout having to create it. Note these are removed at the start of the
 # install phase.
-touch rpm.filelist
+touch master.filelist
 touch glibc.filelist
 touch common.filelist
 touch utils.filelist
@@ -1304,12 +1304,16 @@ touch debuginfocommon.filelist
       -e '\,.*/etc/\(localtime\|nsswitch.conf\|ld\.so\.conf\|ld\.so\.cache\|default\|rpc\|gai\.conf\),d' \
       -e '\,.*/%{_libdir}/lib\(pcprofile\|memusage\)\.so,d' \
       -e '\,.*/bin/\(memusage\|mtrace\|xtrace\|pcprofiledump\),d'
-} | sort > rpm.filelist
+} | sort > master.filelist
 
 # The master file list is now used by each subpackage to list their own
 # files. We go through each package and subpackage now and create their lists.
 # Each subpackage picks the files from the master list that they need.
 # The order of the subpackage list generation does not matter.
+
+# Make the master file list read-only after this point to avoid accidental
+# modification.
+chmod 0444 master.filelist
 
 ###############################################################################
 # glibc
@@ -1326,7 +1330,7 @@ touch debuginfocommon.filelist
 # - All bench test binaries.
 # - The aux-cache, since it's handled specially in the files section.
 # - The build-locale-archive binary since it's in the common package.
-cat rpm.filelist \
+cat master.filelist \
 	| grep -v \
 	-e '%{_infodir}' \
 	-e '%{_libdir}/lib.*_p.a' \
@@ -1351,12 +1355,12 @@ cat rpm.filelist \
 # - The nss_files, nss_compat, and nss_db files.
 # - The libmemusage.so and libpcprofile.so used by utils.
 for module in compat files dns; do
-    cat rpm.filelist \
+    cat master.filelist \
 	| grep -E \
 	-e "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
 	>> glibc.filelist
 done
-grep -e "libmemusage.so" -e "libpcprofile.so" rpm.filelist >> glibc.filelist
+grep -e "libmemusage.so" -e "libpcprofile.so" master.filelist >> glibc.filelist
 
 ###############################################################################
 # glibc-devel
@@ -1364,18 +1368,18 @@ grep -e "libmemusage.so" -e "libpcprofile.so" rpm.filelist >> glibc.filelist
 
 %if %{with docs}
 # Put the info files into the devel file list, but exclude the generated dir.
-grep '%{_infodir}' rpm.filelist | grep -v '%{_infodir}/dir' > devel.filelist
+grep '%{_infodir}' master.filelist | grep -v '%{_infodir}/dir' > devel.filelist
 %endif
 
 # Put some static files into the devel package.
-grep '%{_libdir}/lib.*\.a' rpm.filelist \
+grep '%{_libdir}/lib.*\.a' master.filelist \
   | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
   >> devel.filelist
 
 # Put all of the object files and *.so (not the versioned ones) into the
 # devel package.
-grep '%{_libdir}/.*\.o' < rpm.filelist >> devel.filelist
-grep '%{_libdir}/lib.*\.so' < rpm.filelist >> devel.filelist
+grep '%{_libdir}/.*\.o' < master.filelist >> devel.filelist
+grep '%{_libdir}/lib.*\.so' < master.filelist >> devel.filelist
 # The exceptions are:
 # - libmemusage.so and libpcprofile.so in glibc used by utils.
 # - libnss_*.so which are in nss-devel.
@@ -1392,10 +1396,10 @@ sed -i -e '\,libmemusage.so,d' \
 # across all multilib packages. We must keep gnu/stubs.h and gnu/lib-names.h
 # in the glibc-headers package, but the -32, -64, -64-v1, and -64-v2 versions
 # go into the development packages.
-grep '%{_prefix}/include/gnu/stubs-.*\.h$' < rpm.filelist >> devel.filelist || :
-grep '%{_prefix}/include/gnu/lib-names-.*\.h$' < rpm.filelist >> devel.filelist || :
+grep '%{_prefix}/include/gnu/stubs-.*\.h$' < master.filelist >> devel.filelist || :
+grep '%{_prefix}/include/gnu/lib-names-.*\.h$' < master.filelist >> devel.filelist || :
 # Put the include files into headers file list.
-grep '%{_prefix}/include' < rpm.filelist \
+grep '%{_prefix}/include' < master.filelist \
   | egrep -v '%{_prefix}/include/gnu/stubs-.*\.h$' \
   | egrep -v '%{_prefix}/include/gnu/lib-names-.*\.h$' \
   > headers.filelist
@@ -1405,7 +1409,7 @@ grep '%{_prefix}/include' < rpm.filelist \
 ###############################################################################
 
 # Put the rest of the static files into the static package.
-grep '%{_libdir}/lib.*\.a' < rpm.filelist \
+grep '%{_libdir}/lib.*\.a' < master.filelist \
   | grep -v '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
   > static.filelist
 
@@ -1416,15 +1420,15 @@ grep '%{_libdir}/lib.*\.a' < rpm.filelist \
 # All of the bin and certain sbin files go into the common package except
 # glibc_post_upgrade.* and iconvconfig which need to go in glibc. Likewise
 # nscd is excluded because it goes in nscd.
-grep '%{_prefix}/bin' rpm.filelist >> common.filelist
-grep '%{_prefix}/sbin/[^gi]' rpm.filelist \
+grep '%{_prefix}/bin' master.filelist >> common.filelist
+grep '%{_prefix}/sbin/[^gi]' master.filelist \
 	| grep -v 'nscd' >> common.filelist
 # All of the files under share go into the common package since they should be
 # multilib-independent.
 # Exceptions:
 # - The actual share directory, not owned by us.
 # - The info files which go in devel, and the info directory.
-grep '%{_prefix}/share' rpm.filelist \
+grep '%{_prefix}/share' master.filelist \
 	| grep -v \
 	-e '%{_prefix}/share/info/libc.info.*' \
 	-e '%%dir %{prefix}/share/info' \
@@ -1464,7 +1468,7 @@ EOF
 # to pick up .debug files, and the -devel symbolic links.
 for module in db hesiod; do
   grep -E "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
-    rpm.filelist > nss_$module.filelist
+    master.filelist > nss_$module.filelist
 done
 
 ###############################################################################
@@ -1473,14 +1477,14 @@ done
 
 # Symlinks go into the nss-devel package (instead of the main devel
 # package).
-grep '/libnss_[a-z]*\.so$' rpm.filelist > nss-devel.filelist
+grep '/libnss_[a-z]*\.so$' master.filelist > nss-devel.filelist
 
 ###############################################################################
 # libnsl
 ###############################################################################
 
 # Prepare the libnsl-related file lists.
-grep '/libnsl-[0-9.]*.so$' rpm.filelist > libnsl.filelist
+grep '/libnsl-[0-9.]*.so$' master.filelist > libnsl.filelist
 test $(wc -l < libnsl.filelist) -eq 1
 
 ###############################################################################
@@ -1501,7 +1505,6 @@ echo "%{_prefix}/libexec/glibc-benchtests/compare_bench.py*" >> benchtests.filel
 echo "%{_prefix}/libexec/glibc-benchtests/import_bench.py*" >> benchtests.filelist
 echo "%{_prefix}/libexec/glibc-benchtests/validate_benchout.py*" >> benchtests.filelist
 %endif
-sed -i -e '\,glibc-benchtests,d' rpm.filelist
 
 ###############################################################################
 # glibc-debuginfocommon, and glibc-debuginfo
@@ -1770,7 +1773,7 @@ if test $1 = 0; then
 fi
 %systemd_postun_with_restart nscd.service
 
-%files -f rpm.filelist
+%files -f glibc.filelist
 %dir %{_prefix}/%{_lib}/audit
 %if %{buildpower9}
 %dir /%{_lib}/power9
@@ -1862,6 +1865,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27.9000-40
+- Fix file list for glibc RPM packaging (#1601011).
+
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-39
 - Add POWER9 multilib (downstream only)
 
