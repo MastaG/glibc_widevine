@@ -288,6 +288,9 @@ Provides: ldconfig
 Provides: rtld(GNU_HASH)
 Requires: glibc-common = %{version}-%{release}
 
+# Various components (regex, glob) have been imported from gnulib.
+Provides: bundled(gnulib)
+
 Requires(pre): basesystem
 
 # This is for building auxiliary programs like memusage, nscd
