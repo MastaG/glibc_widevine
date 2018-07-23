@@ -292,6 +292,12 @@ Provides: ldconfig
 # The dynamic linker supports DT_GNU_HASH
 Provides: rtld(GNU_HASH)
 
+# Various components (regex, glob) have been imported from gnulib.
+Provides: bundled(gnulib)
+
+# The IDNA implementation is based on libidn.
+Provides: bundled(libidn)
+
 # This is a short term need until everything is rebuilt in the ARM world
 # to use the new dynamic linker path
 %ifarch armv7hl armv7hnl
