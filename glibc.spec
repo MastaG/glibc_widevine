@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-568-g93304f5f7a
+%define glibcsrcdir glibc-2.27.9000-645-gcfba5dbb10
 %define glibcversion 2.27.9000
-%define glibcrelease 40%{?dist}
+%define glibcrelease 41%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -740,7 +740,6 @@ rpm_inherit_flags ()
 rpm_inherit_flags \
 	"-Wp,-D_GLIBCXX_ASSERTIONS" \
 	"-fasynchronous-unwind-tables" \
-	"-fcf-protection" \
 	"-fstack-clash-protection" \
 	"-funwind-tables" \
 	"-m31" \
@@ -822,6 +821,9 @@ build()
 		--enable-tunables \
 		--enable-systemtap \
 		${core_with_options} \
+%ifarch x86_64 %{ix86}
+	       --enable-cet \
+%endif
 %ifarch %{ix86}
 		--disable-multi-arch \
 %endif
@@ -1868,6 +1870,23 @@ fi
 %endif
 
 %changelog
+* Thu Jul 26 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-41
+- Build with --enable-cet on x86_64, i686
+- Auto-sync with upstream branch master,
+  commit cfba5dbb10cc3abde632b46c60c10b2843917035:
+- Keep expected behaviour for [a-z] and [A-z] (#1607286)
+- Additional ucontext tests
+- Intel CET enhancements
+- ISO C11 threads support
+- Fix out-of-bounds access in IBM-1390 converter (swbz#23448)
+- New locale Yakut (Sakha) for Russia (sah_RU) (swbz#22241)
+- os_RU: Add alternative month names (swbz#23140)
+- powerpc64: Always restore TOC on longjmp (swbz#21895)
+- dsb_DE locale: Fix syntax error and add tests (swbz#23208)
+- Improve performance of the generic strstr implementation
+- regcomp: Fix off-by-one bug in build_equiv_class (swbz#23396)
+- Fix out of bounds access in findidxwc (swbz#23442)
+
 * Fri Jul 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27.9000-40
 - Fix file list for glibc RPM packaging (#1601011).
 
