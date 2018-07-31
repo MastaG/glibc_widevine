@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-645-gcfba5dbb10
+%define glibcsrcdir glibc-2.27.9000-659-gaf86087f02
 %define glibcversion 2.27.9000
-%define glibcrelease 41%{?dist}
+%define glibcrelease 42%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1870,6 +1870,15 @@ fi
 %endif
 
 %changelog
+* Mon Jul 30 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-42
+- Auto-sync with upstream branch master,
+  commit af86087f02a5522d8801a11d8381e04f95e33162:
+- x86/CET: Don't parse beyond the note end
+- Fix Linux fcntl OFD locks tests on unsupported kernels
+- x86: Populate COMMON_CPUID_INDEX_80000001 for Intel CPUs (swbz#23459)
+- x86: Correct index_cpu_LZCNT (swbz#23456)
+- Fix string/tst-xbzero-opt if build with gcc head
+
 * Thu Jul 26 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-41
 - Build with --enable-cet on x86_64, i686
 - Auto-sync with upstream branch master,
