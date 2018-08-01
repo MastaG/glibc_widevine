@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27.9000-659-gaf86087f02
-%define glibcversion 2.27.9000
-%define glibcrelease 42%{?dist}
+%define glibcsrcdir glibc-2.28
+%define glibcversion 2.28
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -114,7 +114,7 @@ Release: %{glibcrelease}
 License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+ and GPLv2+ with exceptions and BSD and Inner-Net and ISC and Public Domain and GFDL
 
 URL: http://www.gnu.org/software/glibc/
-Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.gz
+Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.xz
 Source1: build-locale-archive.c
 Source4: nscd.conf
 Source7: nsswitch.conf
@@ -1870,6 +1870,12 @@ fi
 %endif
 
 %changelog
+* Wed Aug 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-43
+- Update to glibc 2.28 release tarball:
+- Translation updates
+- x86/CET: Fix property note parser (swbz#23467)
+- x86: Add tst-get-cpu-features-static to $(tests) (swbz#23458)
+
 * Mon Jul 30 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-42
 - Auto-sync with upstream branch master,
   commit af86087f02a5522d8801a11d8381e04f95e33162:
