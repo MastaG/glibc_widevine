@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -32,18 +32,22 @@
 %bcond_without werror
 # Default: Always build documentation.
 %bcond_without docs
-# Default: Always run valgrind tests
-%bcond_without valgrind
 
-# Run a valgrind smoke test to ensure that the release is compatible and
-# doesn't any new feature that might cause valgrind to abort.
+# Default: Always run valgrind tests if there is architecture support.
+%ifarch %{valgrind_arches}
+%bcond_without valgrind
+%else
+%bcond_with valgrind
+%endif
+# Restrict %%{valgrind_arches} further in case there are problems with
+# the smoke test.
 %if %{with valgrind}
-%ifarch s390 ppc64 ppc64p7 %{mips} riscv64
-# There is no valgrind support for 31-bit s390, nor for MIPS, nor RISC-V.
-# The valgrind test does not work on ppc64, ppc64p7 (bug 1273103).
+%ifarch ppc64 ppc64p7
+# The valgrind smoke test does not work on ppc64, ppc64p7 (bug 1273103).
 %undefine with_valgrind
 %endif
 %endif
+
 %if %{with bootstrap}
 # Disable benchtests, -Werror, docs, and valgrind if we're bootstrapping
 %undefine with_benchtests
@@ -1870,6 +1874,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug  2 2018 Florian Weimer <fweimer@redhat.com> - 2.28-2
+- Honor %%{valgrind_arches}
+
 * Wed Aug 01 2018 Florian Weimer <fweimer@redhat.com> - 2.27.9000-43
 - Update to glibc 2.28 release tarball:
 - Translation updates
