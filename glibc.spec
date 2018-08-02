@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -705,6 +705,7 @@ diff -u %{SOURCE11} localedata/SUPPORTED
 uname -a
 LD_SHOW_AUXV=1 /bin/true
 cat /proc/cpuinfo
+cat /proc/sysinfo 2>/dev/null || true
 cat /proc/meminfo
 df
 
@@ -1874,6 +1875,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug  2 2018 Florian Weimer <fweimer@redhat.com> - 2.28-3
+- Log /proc/sysinfo if available (on s390x)
+
 * Thu Aug  2 2018 Florian Weimer <fweimer@redhat.com> - 2.28-2
 - Honor %%{valgrind_arches}
 
