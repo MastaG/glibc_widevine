@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -160,6 +160,7 @@ Patch23: glibc-python3.patch
 Patch24: glibc-with-nonshared-cflags.patch
 Patch25: glibc-asflags.patch
 Patch26: glibc-ldflags.patch
+Patch27: glibc-rh1614705.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1875,6 +1876,9 @@ fi
 %endif
 
 %changelog
+* Fri Aug 10 2018 Florian Weimer <fweimer@redhat.com> - 2.28-4
+- Fix regression in readdir64@GLIBC_2.1 compat symbol (#1614705)
+
 * Thu Aug  2 2018 Florian Weimer <fweimer@redhat.com> - 2.28-3
 - Log /proc/sysinfo if available (on s390x)
 
