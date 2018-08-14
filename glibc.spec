@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -138,29 +138,30 @@ Source12: ChangeLog.old
 # - See each individual patch file for origin and upstream status.
 # - For new patches follow template.patch format.
 ##############################################################################
-Patch0001: glibc-post_upgrade.patch
-Patch0002: glibc-fedora-nscd.patch
-Patch0003: glibc-rh697421.patch
-Patch0004: glibc-fedora-linux-tcsetattr.patch
-Patch0005: glibc-rh741105.patch
-Patch0006: glibc-fedora-localedef.patch
-Patch0007: glibc-fedora-nis-rh188246.patch
-Patch0008: glibc-fedora-manual-dircategory.patch
-Patch0009: glibc-rh827510.patch
-Patch0010: glibc-fedora-locarchive.patch
-Patch0011: glibc-fedora-streams-rh436349.patch
-Patch0012: glibc-rh819430.patch
-Patch0013: glibc-fedora-localedata-rh61908.patch
-Patch0014: glibc-fedora-__libc_multiple_libcs.patch
-Patch0015: glibc-rh1070416.patch
-Patch0016: glibc-nscd-sysconfig.patch
-Patch0017: glibc-cs-path.patch
-Patch0018: glibc-c-utf8-locale.patch
+Patch1: glibc-post_upgrade.patch
+Patch2: glibc-fedora-nscd.patch
+Patch3: glibc-rh697421.patch
+Patch4: glibc-fedora-linux-tcsetattr.patch
+Patch5: glibc-rh741105.patch
+Patch6: glibc-fedora-localedef.patch
+Patch7: glibc-fedora-nis-rh188246.patch
+Patch8: glibc-fedora-manual-dircategory.patch
+Patch9: glibc-rh827510.patch
+Patch10: glibc-fedora-locarchive.patch
+Patch11: glibc-fedora-streams-rh436349.patch
+Patch12: glibc-rh819430.patch
+Patch13: glibc-fedora-localedata-rh61908.patch
+Patch14: glibc-fedora-__libc_multiple_libcs.patch
+Patch15: glibc-rh1070416.patch
+Patch16: glibc-nscd-sysconfig.patch
+Patch17: glibc-cs-path.patch
+Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch24: glibc-with-nonshared-cflags.patch
 Patch25: glibc-asflags.patch
 Patch26: glibc-ldflags.patch
 Patch27: glibc-rh1614705.patch
+Patch28: glibc-rh1615608.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1876,6 +1877,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-5
+- Remove abort() warning in manual (#1615608)
+
 * Fri Aug 10 2018 Florian Weimer <fweimer@redhat.com> - 2.28-4
 - Fix regression in readdir64@GLIBC_2.1 compat symbol (#1614705)
 
