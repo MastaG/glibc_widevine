@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.26-156-gaf7519f7b3
 %define glibcversion 2.26
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -238,6 +238,9 @@ Patch63: glibc-rh1498880-1.patch
 Patch64: glibc-rh1498880-2.patch
 Patch65: glibc-nscd-reproducible.patch
 Patch66: glibc-nss_compat.patch
+
+# Bug 1615608 - Remove abort() warning in manual.
+Patch67: glibc-rh1615608.patch
 
 ##############################################################################
 #
@@ -882,6 +885,7 @@ microbenchmark tests on the system.
 %patch64 -p1
 %patch65 -p1
 %patch66 -p1
+%patch67 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2229,6 +2233,9 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.26-29
+- Remove abort() warning in manual (#1615608)
+
 * Fri May 18 2018 Florian Weimer <fweimer@redhat.com> - 2.26-28
 - Do not run telinit u on upgrades (#1579225)
 - Auto-sync with upstream branch release/2.26/master,
