@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-74-g68c1bf8097
 %define glibcversion 2.27
-%define glibcrelease 30%{?dist}
+%define glibcrelease 31%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -213,6 +213,9 @@ Patch0053: glibc-cs-path.patch
 
 # Add C.UTF-8 locale into /usr/lib/locale/
 Patch0059: glibc-c-utf8-locale.patch
+
+# Bug 1615608 - Remove abort() warning in manual.
+Patch0060: glibc-rh1615608.patch
 
 ##############################################################################
 #
@@ -834,6 +837,7 @@ microbenchmark tests on the system.
 %patch2062 -p1
 %patch2063 -p1
 %patch2064 -p1
+%patch0060 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2088,6 +2092,9 @@ fi
 %endif
 
 %changelog
+* Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27.31
+- Remove abort() warning in manual (#1615608)
+
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-30
 - Auto-sync with upstream branch release/2.27/master,
   commit 68c1bf80978594388157c62fd2edd467d4e8dfb2:
