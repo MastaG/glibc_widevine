@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 5%{?dist}
+%define glibcrelease 6%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -162,6 +162,9 @@ Patch25: glibc-asflags.patch
 Patch26: glibc-ldflags.patch
 Patch27: glibc-rh1614705.patch
 Patch28: glibc-rh1615608.patch
+Patch29: glibc-error-va_end.patch
+Patch30: glibc-nscd-leak.patch
+Patch31: glibc-nss_files-leak.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1877,6 +1880,11 @@ fi
 %endif
 
 %changelog
+* Tue Aug 25 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-6
+- nss_files: Fix file stream leak in aliases lookup (swbz#23521)
+- nscd: Deallocate existing user names in file parser.
+- error, error_at_line: Add missing va_end calls.
+
 * Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-5
 - Remove abort() warning in manual (#1615608)
 
