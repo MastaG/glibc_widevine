@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28
-%define glibcversion 2.28
-%define glibcrelease 5%{?dist}
+%define glibcsrcdir glibc-2.28.9000-79-gaa42b3dbcb
+%define glibcversion 2.28.9000
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -157,10 +157,7 @@ Patch16: glibc-nscd-sysconfig.patch
 Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
-Patch24: glibc-with-nonshared-cflags.patch
-Patch25: glibc-asflags.patch
 Patch26: glibc-ldflags.patch
-Patch27: glibc-rh1614705.patch
 Patch28: glibc-rh1615608.patch
 
 ##############################################################################
@@ -1877,6 +1874,13 @@ fi
 %endif
 
 %changelog
+* Tue Aug 21 2018 Carlos O'Donell <carlos@systemhalted.org> - 2.28.9000-1
+- Drop glibc-asflags.patch. Applied upstream.
+- Drop glibc-rh1614705.patch. Applied upstream.
+- Drop glibc-with-nonshared-cflags.patch. Applied upstream.
+- Auto-sync with upstream branch master,
+  commit aa42b3dbcb0326badf377fec2c7fb2f34fdabecd.
+
 * Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-5
 - Remove abort() warning in manual (#1615608)
 

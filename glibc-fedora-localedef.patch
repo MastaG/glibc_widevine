@@ -8,14 +8,14 @@ behaviour which updates the locale archive. The Fedora install phase
 in the spec file of the rpm will handle this manually.
 
 diff --git a/localedata/Makefile b/localedata/Makefile
-index a5f3c92d58954dfc..56719c7c714aa0f1 100644
+index 0eea396ad86da956..54caabda33728207 100644
 --- a/localedata/Makefile
 +++ b/localedata/Makefile
-@@ -218,6 +218,7 @@ $(INSTALL-SUPPORTED-LOCALES): install-locales-dir
+@@ -413,6 +413,7 @@ define build-one-locale
  	echo -n '...'; \
  	input=`echo $$locale | sed 's/\([^.]*\)[^@]*\(.*\)/\1\2/'`; \
  	$(LOCALEDEF) $$flags --alias-file=../intl/locale.alias \
 +		     --no-archive \
  		     -i locales/$$input -f charmaps/$$charset \
  		     $(addprefix --prefix=,$(install_root)) $$locale \
- 	&& echo ' done'; \
+ 	&& echo ' done';
