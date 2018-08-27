@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-79-gaa42b3dbcb
+%define glibcsrcdir glibc-2.28.9000-96-g99ea93ca31
 %define glibcversion 2.28.9000
-%define glibcrelease 1%{?dist}
+%define glibcrelease 2%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1874,6 +1874,12 @@ fi
 %endif
 
 %changelog
+* Mon Aug 27 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-2
+- Auto-sync with upstream branch master,
+  commit 99ea93ca31795469d2a1f1570f17a5c39c2eb7e2:
+- nptl: Fix waiters-after-spinning case in pthread_cond_broadcast (#1622669)
+- regex: Fix memory corruption when pattern and input contain NUL (#1622674)
+
 * Tue Aug 21 2018 Carlos O'Donell <carlos@systemhalted.org> - 2.28.9000-1
 - Drop glibc-asflags.patch. Applied upstream.
 - Drop glibc-rh1614705.patch. Applied upstream.
