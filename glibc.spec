@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-74-g68c1bf8097
+%define glibcsrcdir glibc-2.27-78-g2b47bb9cba
 %define glibcversion 2.27
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2092,6 +2092,13 @@ fi
 %endif
 
 %changelog
+* Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-32
+- Auto-sync with upstream branch release/2.27/master,
+  commit 2b47bb9cba048e778a7d832f284feccb14a40483:
+- regex: Fix memory overread when pattern contains NUL byte (#1622674)
+- x86: Correct index_cpu_LZCNT (swbz#23456)
+- x86: Populate COMMON_CPUID_INDEX_80000001 for Intel CPUs (swbz#23459)
+
 * Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27.31
 - Remove abort() warning in manual (#1615608)
 
