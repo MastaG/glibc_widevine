@@ -1880,7 +1880,7 @@ fi
 %endif
 
 %changelog
-* Tue Aug 25 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-6
+* Sat Aug 25 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-6
 - nss_files: Fix file stream leak in aliases lookup (swbz#23521)
 - nscd: Deallocate existing user names in file parser.
 - error, error_at_line: Add missing va_end calls.
