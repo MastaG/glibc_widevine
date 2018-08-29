@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-156-gaf7519f7b3
+%define glibcsrcdir glibc-2.26-174-g174709d879
 %define glibcversion 2.26
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2233,6 +2233,22 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.26-30
+- Auto-sync with upstream branch release/2.26/master,
+  commit 174709d879a15590e00119c7f91dc2460aaf571c:
+- CVE-2018-11237: Buffer overflow in mempcpy for Xeon Phi (#1581275)
+- nptl: Fix waiters-after-spinning case in pthread_cond_broadcast (#1622669)
+- x86: Correct index_cpu_LZCNT (swbz#23456)
+- x86: Populate COMMON_CPUID_INDEX_80000001 for Intel CPUs (swbz#23459)
+- stdio-common/tst-printf.c: Remove part under a non-free license (swbz#23363)
+- libio: Disable vtable validation in case of interposition (swbz#23313)
+- if_nametoindex: Check length of ifname before copying (swbz#22442)
+- getifaddrs: Don't return ifa entries with NULL names (swbz#21812)
+- time: Use _STRUCT_TIMESPEC as guard in <bits/types/struct_timespec.h>
+  (swbz#23349)
+- math: Fix parameter type in C++ version of iseqsig (swbz#23171)
+- libio: Avoid _allocate_buffer, _free_buffer function pointers (swbz#23236)
+
 * Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.26-29
 - Remove abort() warning in manual (#1615608)
 
