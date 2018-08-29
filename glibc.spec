@@ -2095,7 +2095,7 @@ fi
 * Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-32
 - Auto-sync with upstream branch release/2.27/master,
   commit 2b47bb9cba048e778a7d832f284feccb14a40483:
-- regex: Fix memory overread when pattern contains NUL byte (#1622674)
+- nptl: Fix waiters-after-spinning case in pthread_cond_broadcast (#1622669)
 - x86: Correct index_cpu_LZCNT (swbz#23456)
 - x86: Populate COMMON_CPUID_INDEX_80000001 for Intel CPUs (swbz#23459)
 
