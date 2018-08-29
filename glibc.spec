@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -166,6 +166,8 @@ Patch29: glibc-error-va_end.patch
 Patch30: glibc-nscd-leak.patch
 Patch31: glibc-nss_files-leak.patch
 Patch32: glibc-rh1622669.patch
+Patch33: glibc-1622674-1.patch
+Patch34: glibc-1622674-2.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1881,6 +1883,9 @@ fi
 %endif
 
 %changelog
+* Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28-8
+- regex: Fix memory overread when pattern contains NUL byte (#1622674)
+
 * Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28-7
 - nptl: Fix waiters-after-spinning case in pthread_cond_broadcast (#1622669)
 
