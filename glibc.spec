@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -165,6 +165,7 @@ Patch28: glibc-rh1615608.patch
 Patch29: glibc-error-va_end.patch
 Patch30: glibc-nscd-leak.patch
 Patch31: glibc-nss_files-leak.patch
+Patch32: glibc-rh1622669.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1880,6 +1881,9 @@ fi
 %endif
 
 %changelog
+* Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28-7
+- nptl: Fix waiters-after-spinning case in pthread_cond_broadcast (#1622669)
+
 * Sat Aug 25 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-6
 - nss_files: Fix file stream leak in aliases lookup (swbz#23521)
 - nscd: Deallocate existing user names in file parser.
