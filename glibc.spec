@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-96-g99ea93ca31
+%define glibcsrcdir glibc-2.28.9000-104-gff6b24501f
 %define glibcversion 2.28.9000
-%define glibcrelease 2%{?dist}
+%define glibcrelease 3%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1874,6 +1874,10 @@ fi
 %endif
 
 %changelog
+* Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-3
+- Auto-sync with upstream branch master,
+  commit ff6b24501f70da7d6375d6f5929262b9509db39e.
+
 * Mon Aug 27 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-2
 - Auto-sync with upstream branch master,
   commit 99ea93ca31795469d2a1f1570f17a5c39c2eb7e2:
