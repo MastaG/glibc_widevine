@@ -2099,7 +2099,7 @@ fi
 - x86: Correct index_cpu_LZCNT (swbz#23456)
 - x86: Populate COMMON_CPUID_INDEX_80000001 for Intel CPUs (swbz#23459)
 
-* Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27.31
+* Mon Aug 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27-31
 - Remove abort() warning in manual (#1615608)
 
 * Wed Jul 11 2018 Florian Weimer <fweimer@redhat.com> - 2.27-30
