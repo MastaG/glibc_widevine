@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-104-gff6b24501f
 %define glibcversion 2.28.9000
-%define glibcrelease 3%{?dist}
+%define glibcrelease 4%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -157,7 +157,6 @@ Patch16: glibc-nscd-sysconfig.patch
 Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
-Patch26: glibc-ldflags.patch
 Patch28: glibc-rh1615608.patch
 
 ##############################################################################
@@ -779,16 +778,7 @@ rpm_inherit_flags \
 # assembler code.  Needs to be passed to make; not preserved by
 # configure.
 %define glibc_make_flags_as ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
-%define glibc_make_flags %{glibc_make_flags_as} %{glibc_make_flags_ld}
-
-# valgrind reports false positives if ld.so is linked with -z
-# separate-code (the default) on i686, so we work around that here.
-# See <https://bugzilla.redhat.com/show_bug.cgi?id=1600034>.
-%ifarch %{ix86}
-%define glibc_make_flags_ld LDFLAGS-rtld="-Wl,-z,noseparate-code"
-%else
-%define glibc_make_flags_ld %{nil}
-%endif
+%define glibc_make_flags %{glibc_make_flags_as}
 
 ##############################################################################
 # %%build - Generic options.
@@ -1874,6 +1864,9 @@ fi
 %endif
 
 %changelog
+* Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-4
+- Remove workaround for valgrind bug (#1600034)
+
 * Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-3
 - Auto-sync with upstream branch master,
   commit ff6b24501f70da7d6375d6f5929262b9509db39e.
