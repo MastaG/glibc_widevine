@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-78-g2b47bb9cba
 %define glibcversion 2.27
-%define glibcrelease 32%{?dist}
+%define glibcrelease 33%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -275,7 +275,6 @@ Patch2060: glibc-with-nonshared-cflags.patch
 Patch2061: glibc-asflags.patch
 Patch2062: glibc-extra-stackprot-1.patch
 Patch2063: glibc-extra-stackprot-2.patch
-Patch2064: glibc-ldflags.patch
 
 ##############################################################################
 # End of glibc patches.
@@ -836,7 +835,6 @@ microbenchmark tests on the system.
 %patch2061 -p1
 %patch2062 -p1
 %patch2063 -p1
-%patch2064 -p1
 %patch0060 -p1
 
 ##############################################################################
@@ -948,25 +946,8 @@ rpm_append_flag () {
 rpm_inherit_flags \
 	"-Wp,-D_FORTIFY_SOURCE=2" \
 
-# Special flag to enable annobin annotations for statically linked
-# assembler code.  Needs to be passed to make; not preserved by
-# configure.
-%define glibc_make_flags_as ASFLAGS="-g -Wa,--generate-missing-build-notes=yes"
-%if 0%{?rhel} > 0
-%define glibc_make_flags %{glibc_make_flags_as} %{glibc_make_flags_ld}
-%else
+# Special flags which need to be passed to make.  Currently none.
 %define glibc_make_flags %{nil}
-%endif
-
-# valgrind reports false positives if ld.so is linked with
-# -z # separate-code (the downstream default) on i686, so
-# we work around that here.  See
-# <https://bugzilla.redhat.com/show_bug.cgi?id=1600034>.
-%ifarch %{ix86}
-%define glibc_make_flags_ld LDFLAGS-rtld="-Wl,-z,noseparate-code"
-%else
-%define glibc_make_flags_ld %{nil}
-%endif
 
 ##############################################################################
 # %%build - Generic options.
@@ -2092,6 +2073,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug 30 2018 Florian Weimer <fweimer@redhat.com> - 2.27-33
+- Revert glibc_make_flags setting which is not needed in Fedora 28 (#1600034)
+
 * Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.27-32
 - Auto-sync with upstream branch release/2.27/master,
   commit 2b47bb9cba048e778a7d832f284feccb14a40483:
