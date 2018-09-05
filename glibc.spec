@@ -1897,7 +1897,7 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
-* Wed Sep 05 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-10
+* Wed Sep 05 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-5
 - Provide compatibility support for linking against libpthread_nonshared.a
   (#1625507)
 
