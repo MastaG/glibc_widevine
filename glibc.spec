@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 10%{?dist}
+%define glibcrelease 11%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -217,10 +217,12 @@ BuildRequires: valgrind
 # We use systemd rpm macros for nscd
 BuildRequires: systemd
 
-# We use python for the microbenchmarks and locale data regeneration from
-# unicode sources (carried out manually). We choose python3 explicitly
-# because it supports both use cases.
-BuildRequires: python3
+# We use python for the microbenchmarks and locale data regeneration
+# from unicode sources (carried out manually). We choose python3
+# explicitly because it supports both use cases.  On some
+# distributions, python3 does not actually install /usr/bin/python3,
+# so we also depend on python3-devel.
+BuildRequires: python3 python3-devel
 
 # This GCC version is needed for -fstack-clash-protection support.
 BuildRequires: gcc >= 7.2.1-6
@@ -1906,6 +1908,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Sep  5 2018 Florian Weimer <fweimer@redhat.com> - 2.28-11
+- Add python3-devel build dependency for downstream benefit
+
 * Wed Sep 05 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-10
 - Provide compatibility support for linking against libpthread_nonshared.a
   (#1625507)
