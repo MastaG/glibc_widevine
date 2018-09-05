@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-104-gff6b24501f
 %define glibcversion 2.28.9000
-%define glibcrelease 4%{?dist}
+%define glibcrelease 5%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -662,6 +662,22 @@ microbenchmark tests on the system.
 %endif
 
 ##############################################################################
+# compat-libpthread-nonshared
+# See: https://sourceware.org/bugzilla/show_bug.cgi?id=23500
+##############################################################################
+%package -n compat-libpthread-nonshared
+Summary: Compatibility support for linking against libpthread_nonshared.a.
+
+%description -n compat-libpthread-nonshared
+This package provides compatibility support for applications that expect
+libpthread_nonshared.a to exist. The support provided is in the form of
+an empty libpthread_nonshared.a that allows dynamic links to succeed.
+Such applications should be adjusted to avoid linking against
+libpthread_nonshared.a which is no longer used. The static library
+libpthread_nonshared.a is an internal implementation detail of the C
+runtime and should not be expected to exist.
+
+##############################################################################
 # Prepare for the build.
 ##############################################################################
 %prep
@@ -1207,6 +1223,13 @@ for i in %{glibc_sysroot}%{_prefix}/bin/{xtrace,memusage}; do
 done
 
 ##############################################################################
+# Build an empty libpthread_nonshared.a for compatiliby with applications
+# that have old linker scripts that reference this file. We ship this only
+# in compat-libpthread-nonshared sub-package.
+##############################################################################
+ar cr %{glibc_sysroot}%{_prefix}/%{_lib}/libpthread_nonshared.a
+
+##############################################################################
 # Beyond this point in the install process we no longer modify the set of
 # installed files, with one exception, for auxarches we cleanup the file list
 # at the end and remove files which we don't intend to ship. We need the file
@@ -1241,6 +1264,8 @@ done
 #       - File lists for nss_* NSS module subpackages.
 # * nss-devel.filelist
 #       - File list with the .so symbolic links for NSS packages.
+# * compat-libpthread-nonshared.filelist.
+#	- File list for compat-libpthread-nonshared subpackage.
 # * debuginfo.filelist
 #	- Files for the glibc debuginfo package.
 # * debuginfocommon.filelist
@@ -1262,6 +1287,7 @@ touch libnsl.filelist
 touch nss_db.filelist
 touch nss_hesiod.filelist
 touch nss-devel.filelist
+touch compat-libpthread-nonshared.filelist
 touch debuginfo.filelist
 touch debuginfocommon.filelist
 
@@ -1504,6 +1530,11 @@ echo "%{_prefix}/libexec/glibc-benchtests/compare_bench.py*" >> benchtests.filel
 echo "%{_prefix}/libexec/glibc-benchtests/import_bench.py*" >> benchtests.filelist
 echo "%{_prefix}/libexec/glibc-benchtests/validate_benchout.py*" >> benchtests.filelist
 %endif
+
+###############################################################################
+# compat-libpthread-nonshared
+###############################################################################
+echo "%{_libdir}/libpthread_nonshared.a" >> compat-libpthread-nonshared.filelist
 
 ###############################################################################
 # glibc-debuginfocommon, and glibc-debuginfo
@@ -1863,7 +1894,13 @@ fi
 %files benchtests -f benchtests.filelist
 %endif
 
+%files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
+
 %changelog
+* Wed Sep 05 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-10
+- Provide compatibility support for linking against libpthread_nonshared.a
+  (#1625507)
+
 * Wed Aug 29 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-4
 - Remove workaround for valgrind bug (#1600034)
 
