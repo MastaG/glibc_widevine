@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-104-gff6b24501f
+%define glibcsrcdir glibc-2.28.9000-146-gdb9a8ad4ff
 %define glibcversion 2.28.9000
-%define glibcrelease 6%{?dist}
+%define glibcrelease 7%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1899,6 +1899,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Sep 20 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-7
+- Auto-sync with upstream branch master,
+  commit db9a8ad4ff3fc58e3773a9a4d0cabe3c1bc9c94c:
+- gethostid: Missing NULL check for gethostbyname_r result (#1631338)
+- stdlib/tst-setcontext9 test suite failure (#1623519)
+
 * Wed Sep  5 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-6
 - Add python3-devel build dependency for downstream benefit
 
