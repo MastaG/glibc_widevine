@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -171,6 +171,7 @@ Patch35: glibc-rh1631338-1.patch
 Patch36: glibc-rh1631338-2.patch
 Patch37: glibc-rh1623519.patch
 Patch38: glibc-rh1631719.patch
+Patch39: glibc-rh1631728.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1912,6 +1913,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Sep 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-15
+- Add missing ENDBR32 in start.S (#1631728)
+
 * Wed Sep 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-14
 - Fix bug in generic strstr with large needles (#1631719)
 
