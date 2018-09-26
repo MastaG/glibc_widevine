@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 11%{?dist}
+%define glibcrelease 12%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -167,6 +167,8 @@ Patch31: glibc-nss_files-leak.patch
 Patch32: glibc-rh1622669.patch
 Patch33: glibc-1622674-1.patch
 Patch34: glibc-1622674-2.patch
+Patch35: glibc-rh1631338-1.patch
+Patch36: glibc-rh1631338-2.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1908,6 +1910,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Sep 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-12
+- gethostid: Missing NULL check for gethostbyname_r result (#1631338)
+
 * Wed Sep  5 2018 Florian Weimer <fweimer@redhat.com> - 2.28-11
 - Add python3-devel build dependency for downstream benefit
 
