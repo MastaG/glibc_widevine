@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -169,6 +169,7 @@ Patch33: glibc-1622674-1.patch
 Patch34: glibc-1622674-2.patch
 Patch35: glibc-rh1631338-1.patch
 Patch36: glibc-rh1631338-2.patch
+Patch37: glibc-rh1623519.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1910,6 +1911,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Sep 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-13
+- stdlib/tst-setcontext9 test suite failure (#1623519)
+
 * Wed Sep 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-12
 - gethostid: Missing NULL check for gethostbyname_r result (#1631338)
 
