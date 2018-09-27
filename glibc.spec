@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-146-gdb9a8ad4ff
+%define glibcsrcdir glibc-2.28.9000-161-gf841c97e51
 %define glibcversion 2.28.9000
-%define glibcrelease 7%{?dist}
+%define glibcrelease 8%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1899,6 +1899,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Sep 27 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-8
+- Auto-sync with upstream branch master,
+  commit f841c97e515a1673485a2b12b3c280073d737890:
+- stdlib/tst-setcontext9 test suite failure on ppc64le (#1623519)
+
 * Thu Sep 20 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-7
 - Auto-sync with upstream branch master,
   commit db9a8ad4ff3fc58e3773a9a4d0cabe3c1bc9c94c:
