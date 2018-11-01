@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-229-gc6982f7efc
 %define glibcversion 2.28.9000
-%define glibcrelease 12%{?dist}
+%define glibcrelease 13%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1032,7 +1032,7 @@ $olddir/build-%{target}/elf/ld.so \
         --library-path $olddir/build-%{target}/ \
         $olddir/build-%{target}/locale/localedef \
         --prefix %{glibc_sysroot} --add-to-archive \
-        *_*
+        eo *_*
 # Setup the locale-archive template for use by glibc-all-langpacks.
 mv locale-archive{,.tmpl}
 # Create the file lists for the language specific sub-packages:
@@ -1899,6 +1899,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Nov  1 2018 Mike FABIAN <mfabian@redhat.com> - 2.28.9000-13
+- Include Esperanto (eo) in glibc-all-langpacks (#1643756)
+
 * Mon Oct 29 2018 DJ Delorie <dj@redhat.com> - 2.28.9000-12
 - Auto-sync with upstream branch master,
   commit c6982f7efc1c70fe2d6160a87ee44d871ac85ab0.
