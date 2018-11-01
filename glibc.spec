@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28
 %define glibcversion 2.28
-%define glibcrelease 16%{?dist}
+%define glibcrelease 17%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1047,7 +1047,7 @@ $olddir/build-%{target}/elf/ld.so \
         --library-path $olddir/build-%{target}/ \
         $olddir/build-%{target}/locale/localedef \
         --prefix %{glibc_sysroot} --add-to-archive \
-        *_*
+        eo *_*
 # Setup the locale-archive template for use by glibc-all-langpacks.
 mv locale-archive{,.tmpl}
 # Create the file lists for the language specific sub-packages:
@@ -1914,6 +1914,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Nov  1 2018 Mike FABIAN <mfabian@redhat.com> - 2.28-17
+- Include Esperanto (eo) in glibc-all-langpacks (#1643756)
+
 * Thu Sep 27 2018 Florian Weimer <fweimer@redhat.com> - 2.28-16
 - stdlib/tst-setcontext9 test suite failure on ppc64le (#1623519)
 
