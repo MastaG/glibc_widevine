@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-229-gc6982f7efc
+%define glibcsrcdir glibc-2.28.9000-267-g1df872fd74
 %define glibcversion 2.28.9000
-%define glibcrelease 13%{?dist}
+%define glibcrelease 14%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1899,6 +1899,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Nov 07 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-14
+- Auto-sync with upstream branch master,
+  commit 1df872fd74f730bcae3df201a229195445d2e18a:
+- libanl: Fix crash if first helper thread creation failed (#1646381)
+
 * Thu Nov  1 2018 Mike FABIAN <mfabian@redhat.com> - 2.28.9000-13
 - Include Esperanto (eo) in glibc-all-langpacks (#1643756)
 
