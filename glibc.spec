@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28
+%define glibcsrcdir glibc-2.28-34-gfc0e3393ff
 %define glibcversion 2.28
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -159,20 +159,7 @@ Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch24: glibc-with-nonshared-cflags.patch
 Patch25: glibc-asflags.patch
-Patch27: glibc-rh1614705.patch
 Patch28: glibc-rh1615608.patch
-Patch29: glibc-error-va_end.patch
-Patch30: glibc-nscd-leak.patch
-Patch31: glibc-nss_files-leak.patch
-Patch32: glibc-rh1622669.patch
-Patch33: glibc-1622674-1.patch
-Patch34: glibc-1622674-2.patch
-Patch35: glibc-rh1631338-1.patch
-Patch36: glibc-rh1631338-2.patch
-Patch37: glibc-rh1623519.patch
-Patch38: glibc-rh1631719.patch
-Patch39: glibc-rh1631728.patch
-Patch40: glibc-rh1623519-2.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1914,6 +1901,36 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Nov 07 2018 Florian Weimer <fweimer@redhat.com> - 2.28-18
+- Drop patches that were applied to upstream release/2.28/master branch:
+    glibc-rh1614705.patch
+    glibc-rh1615608.patch
+    glibc-error-va_end.patch
+    glibc-nscd-leak.patch
+    glibc-nss_files-leak.patch
+    glibc-rh1622669.patch
+    glibc-1622674-1.patch
+    glibc-1622674-2.patch
+    glibc-rh1631338-1.patch
+    glibc-rh1631338-2.patch
+    glibc-rh1623519.patch
+    glibc-rh1631719.patch
+    glibc-rh1631728.patch
+    glibc-rh1623519-2.patch
+- Auto-sync with upstream branch release/2.28/master,
+  commit fc0e3393ff775aa795b523083bb0db7f18d3b91e:
+- RISC-V: Move libc_fesetround_riscv after libc_feholdexcept_riscv
+- pthread_spawn: Fix potential segfault in maybe_script_execute
+- preadv2/pwritev2: Fix misreported errno (swbz#23579)
+- kl_GL: Fix spelling of Sunday, should be "sapaat" (swbz#20209)
+- i386: Use _dl_runtime_[resolve|profile]_shstk for SHSTK (swbz#23716)
+- pthread_mutex_lock: Fix race while promoting to PTHREAD_MUTEX_ELISION_NP
+  (swbz#23275)
+- signal: Use correct type for si_band in siginfo_t (swbz#23562)
+- stdlib/test-bz22786: Avoid spurious test failures using alias mappings
+- x86: Fix Haswell CPU string flags (swbz#23709)
+- libanl: Fix crash if first helper thread creation failed (swbz#22927)
+
 * Thu Nov  1 2018 Mike FABIAN <mfabian@redhat.com> - 2.28-17
 - Include Esperanto (eo) in glibc-all-langpacks (#1643756)
 
