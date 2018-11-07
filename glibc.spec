@@ -1929,7 +1929,7 @@ fi
 - signal: Use correct type for si_band in siginfo_t (swbz#23562)
 - stdlib/test-bz22786: Avoid spurious test failures using alias mappings
 - x86: Fix Haswell CPU string flags (swbz#23709)
-- libanl: Fix crash if first helper thread creation failed (swbz#22927)
+- libanl: Fix crash if first helper thread creation failed (#1646381)
 
 * Thu Nov  1 2018 Mike FABIAN <mfabian@redhat.com> - 2.28-17
 - Include Esperanto (eo) in glibc-all-langpacks (#1643756)
