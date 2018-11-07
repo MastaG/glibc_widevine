@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-267-g1df872fd74
+%define glibcsrcdir glibc-2.28.9000-268-g00c86a37d1
 %define glibcversion 2.28.9000
-%define glibcrelease 14%{?dist}
+%define glibcrelease 15%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1899,6 +1899,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Nov 07 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-15
+- Auto-sync with upstream branch master,
+  commit 00c86a37d1b63044e3169d1f2ebec23447c73f79.
+
 * Wed Nov 07 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-14
 - Auto-sync with upstream branch master,
   commit 1df872fd74f730bcae3df201a229195445d2e18a:
