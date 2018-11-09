@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-34-gfc0e3393ff
+%define glibcsrcdir glibc-2.28-35-g3e8d8dd5af
 %define glibcversion 2.28
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1901,6 +1901,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Nov 09 2018 Florian Weimer <fweimer@redhat.com> - 2.28-19
+- Auto-sync with upstream branch release/2.28/master,
+  commit 3e8d8dd5afba18a847ff7a80f473336f777cc329:
+- Disable CET for binaries created by older link editors (#1648297)
+
 * Wed Nov 07 2018 Florian Weimer <fweimer@redhat.com> - 2.28-18
 - Drop patches that were applied to upstream release/2.28/master branch:
     glibc-rh1614705.patch
