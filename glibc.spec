@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-35-g3e8d8dd5af
+%define glibcsrcdir glibc-2.28-44-gf44c2ca5ea
 %define glibcversion 2.28
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1901,6 +1901,16 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Nov 19 2018 Florian Weimer <fweimer@redhat.com> - 2.28-20
+- Auto-sync with upstream branch release/2.28/master,
+  commit f44c2ca5eacd2df76fc38be75f9ebb8f0ff555eb:
+- Update system call list to Linux 4.19
+- time: Fix tzfile low-memory assertion failure (swbz#21716)
+- Add newlines in __libc_fatal calls (swbz#20271)
+- nscd: Fix use-after-free in addgetnetgrentX (swbz#23520)
+- malloc: Additional heap integrity checks
+- Add an additional test to resolv/tst-resolv-network.c (swbz#17630)
+
 * Fri Nov 09 2018 Florian Weimer <fweimer@redhat.com> - 2.28-19
 - Auto-sync with upstream branch release/2.28/master,
   commit 3e8d8dd5afba18a847ff7a80f473336f777cc329:
