@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-299-g346ef23f19
+%define glibcsrcdir glibc-2.28.9000-306-gbcdaad21d4
 %define glibcversion 2.28.9000
-%define glibcrelease 17%{?dist}
+%define glibcrelease 18%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1899,6 +1899,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 20 2018 DJ Delorie <dj@redhat.com> - 2.28.9000-18
+- Auto-sync with upstream branch master,
+  commit bcdaad21d4635931d1bd3b54a7894276925d081d.
+- malloc: tcache double free check
+- [AArch64] Adjust writeback in non-zero memset
+- Update config.guess and config.sub to current versions.
+- support: Print timestamps in timeout handler
+- Use STRFMON_LDBL_IS_DBL instead of __ldbl_is_dbl.
+
 * Fri Nov 16 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-17
 - Auto-sync with upstream branch master,
   commit 346ef23f197a0c8ba807c344bd39101b711050ee.
