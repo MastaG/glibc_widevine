@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-306-gbcdaad21d4
 %define glibcversion 2.28.9000
-%define glibcrelease 18%{?dist}
+%define glibcrelease 19%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -158,6 +158,7 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
+Patch29: glibc-rh1652495.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1899,6 +1900,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Nov 22 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-19
+- malloc: Revert tcache double-free check (#1652495)
+
 * Tue Nov 20 2018 DJ Delorie <dj@redhat.com> - 2.28.9000-18
 - Auto-sync with upstream branch master,
   commit bcdaad21d4635931d1bd3b54a7894276925d081d.
