@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-78-g2b47bb9cba
 %define glibcversion 2.27
-%define glibcrelease 33%{?dist}
+%define glibcrelease 34%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1092,7 +1092,9 @@ make -j1 install_root=$RPM_BUILD_ROOT install -C build-%{target}
 # locales.
 %ifnarch %{auxarches}
 pushd build-%{target}
-make %{?_smp_mflags} -O install_root=$RPM_BUILD_ROOT \
+# Do not use a parallel make here because the hardlink optimization in
+# localedef is not fully reproducible when running concurrently.
+make install_root=$RPM_BUILD_ROOT \
 	install-locales -C ../localedata objdir=`pwd`
 popd
 %endif
@@ -2073,6 +2075,9 @@ fi
 %endif
 
 %changelog
+* Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.27-34
+- Do not use parallel make for building locales (#1652228)
+
 * Thu Aug 30 2018 Florian Weimer <fweimer@redhat.com> - 2.27-33
 - Revert glibc_make_flags setting which is not needed in Fedora 28 (#1600034)
 
