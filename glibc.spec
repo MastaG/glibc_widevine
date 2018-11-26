@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-306-gbcdaad21d4
 %define glibcversion 2.28.9000
-%define glibcrelease 19%{?dist}
+%define glibcrelease 20%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -909,7 +909,9 @@ make -j1 install_root=%{glibc_sysroot} install -C build-%{target}
 # locales.
 %ifnarch %{auxarches}
 pushd build-%{target}
-make %{?_smp_mflags} -O install_root=%{glibc_sysroot} \
+# Do not use a parallel make here because the hardlink optimization in
+# localedef is not fully reproducible when running concurrently.
+make install_root=%{glibc_sysroot} \
 	install-locales -C ../localedata objdir=`pwd`
 popd
 %endif
@@ -1900,6 +1902,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-20
+- Do not use parallel make for building locales (#1652228)
+
 * Thu Nov 22 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-19
 - malloc: Revert tcache double-free check (#1652495)
 
