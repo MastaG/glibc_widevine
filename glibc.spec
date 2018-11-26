@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-44-gf44c2ca5ea
 %define glibcversion 2.28
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -910,7 +910,9 @@ make -j1 install_root=%{glibc_sysroot} install -C build-%{target}
 # locales.
 %ifnarch %{auxarches}
 pushd build-%{target}
-make %{?_smp_mflags} -O install_root=%{glibc_sysroot} \
+# Do not use a parallel make here because the hardlink optimization in
+# localedef is not fully reproducible when running concurrently.
+make install_root=%{glibc_sysroot} \
 	install-locales -C ../localedata objdir=`pwd`
 popd
 %endif
@@ -1901,6 +1903,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-21
+- Do not use parallel make for building locales (#1652228)
+
 * Mon Nov 19 2018 Florian Weimer <fweimer@redhat.com> - 2.28-20
 - Auto-sync with upstream branch release/2.28/master,
   commit f44c2ca5eacd2df76fc38be75f9ebb8f0ff555eb:
