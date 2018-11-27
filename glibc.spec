@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-306-gbcdaad21d4
+%define glibcsrcdir glibc-2.28.9000-319-gce035c6e90
 %define glibcversion 2.28.9000
-%define glibcrelease 20%{?dist}
+%define glibcrelease 21%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -158,7 +158,6 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
-Patch29: glibc-rh1652495.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1902,6 +1901,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 27 2018 Arjun Shankar <arjun@redhat.com> - 2.28.9000-21
+- Drop glibc-rh1652495.patch.  Applied upstream. (#1652495)
+- Auto-sync with upstream branch master,
+  commit ce035c6e909ad20ef2fe13c92eab4e69f6495b61.
+
 * Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-20
 - Do not use parallel make for building locales (#1652228)
 
