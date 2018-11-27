@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-319-gce035c6e90
 %define glibcversion 2.28.9000
-%define glibcrelease 21%{?dist}
+%define glibcrelease 22%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -577,6 +577,7 @@ the Hesiod convention of Project Athena.
 
 %package nss-devel
 Summary: Development files for directly linking NSS service modules
+Requires: %{name}%{_isa} = %{version}-%{release}
 Requires: nss_db%{_isa} = %{version}-%{release}
 Requires: nss_hesiod%{_isa} = %{version}-%{release}
 
@@ -1901,6 +1902,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 27 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-22
+- Add requires on explicit glibc version for glibc-nss-devel (#1651260)
+
 * Tue Nov 27 2018 Arjun Shankar <arjun@redhat.com> - 2.28.9000-21
 - Drop glibc-rh1652495.patch.  Applied upstream. (#1652495)
 - Auto-sync with upstream branch master,
