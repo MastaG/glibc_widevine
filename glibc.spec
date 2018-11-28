@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.26-174-g174709d879
+%define glibcsrcdir glibc-2.26-193-ga0bc5dd3be
 %define glibcversion 2.26
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2235,6 +2235,29 @@ rm -f *.filelist*
 %endif
 
 %changelog
+* Wed Nov 28 2018 Florian Weimer <fweimer@redhat.com> - 2.26-32
+- Auto-sync with upstream branch release/2.26/master,
+  commit a0bc5dd3bed4b04814047265b3bcead7ab973b87:
+- CVE-2018-19591: if_nametoindex: Fix descriptor leak (#1654000)
+- libanl: proper cleanup if first helper thread creation failed (#1646381)
+- x86: Fix Haswell CPU string flags (#1641980)
+- resolv/tst-resolv-network.c: Additional test case (swbz#17630)
+- Disable -Wrestrict for two nptl/tst-attr3.c tests
+- Fix string/bug-strncat1.c build with GCC 8
+- Ignore -Wrestrict for one strncat test
+- Disable strncat test array-bounds warnings for GCC 8.
+- Fix string/tester.c build with GCC 8.
+- Fix nscd readlink argument aliasing (swbz#22446)
+- nscd: Increase buffer size due to warning from ToT GCC
+- Fix p_secstodate overflow handling (swbz#22463)
+- timezone: pacify GCC -Wstringop-truncation
+- utmp: Avoid -Wstringop-truncation warning
+- Avoid use of strlen in getlogin_r (swbz#22447)
+- signal: Use correct type for si_band in siginfo_t (swbz#23562)
+- Fix misreported errno on preadv2/pwritev2 (swbz#23579)
+- preadv2/pwritev2: Handle offset == -1 (swbz#22753)
+- posix_spawn: Fix potential segmentation fault
+
 * Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.26-31
 - Do not use parallel make for building locales (#1652228)
 
