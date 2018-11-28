@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-44-gf44c2ca5ea
+%define glibcsrcdir glibc-2.28-49-gce6ba630db
 %define glibcversion 2.28
-%define glibcrelease 21%{?dist}
+%define glibcrelease 22%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1903,6 +1903,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Nov 28 2018 Florian Weimer <fweimer@redhat.com> - 2.28-22
+- Auto-sync with upstream branch release/2.28/master,
+  commit ce6ba630dbc96f49eb1f30366aa62261df4792f9:
+- CVE-2018-19591: if_nametoindex: Fix descriptor leak (#1654000)
+- support: Print timestamps in timeout handler
+- libio/tst-readline: Increase timeout
+
 * Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.28-21
 - Do not use parallel make for building locales (#1652228)
 
