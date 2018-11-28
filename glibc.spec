@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-78-g2b47bb9cba
+%define glibcsrcdir glibc-2.27-89-g9f433fc791
 %define glibcversion 2.27
-%define glibcrelease 34%{?dist}
+%define glibcrelease 35%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2075,6 +2075,22 @@ fi
 %endif
 
 %changelog
+* Wed Nov 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27-35
+- Auto-sync with upstream branch release/2.27/master,
+  commit 9f433fc791ca4f9d678903ff45b504b524c886fb:
+- CVE-2018-19591: if_nametoindex: Fix descriptor leak (#1654000)
+- libanl: proper cleanup if first helper thread creation failed (#1646381)
+- x86: Fix Haswell CPU string flags (#1641980)
+- resolv/tst-resolv-network.c: Additional test case (swbz#17630)
+- ia64: fix missing exp2f, log2f and powf symbols in libm.a (swbz#23822)
+- conform: XFAIL siginfo_t si_band test on sparc64
+- signal: Use correct type for si_band in siginfo_t (swbz#23562)
+- pthread_mutex_lock: Fix race while promoting to PTHREAD_MUTEX_ELISION_NP
+  (swbz#23275)
+- preadv2/pwritev2: Fix misreported errno (swbz#23579)
+- preadv2/pwritev2: Handle offset == -1 (swbz#22753)
+- posix_spawn: Fix potential segmentation fault
+
 * Mon Nov 26 2018 Florian Weimer <fweimer@redhat.com> - 2.27-34
 - Do not use parallel make for building locales (#1652228)
 
