@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-319-gce035c6e90
 %define glibcversion 2.28.9000
-%define glibcrelease 22%{?dist}
+%define glibcrelease 23%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -167,6 +167,10 @@ Provides: ldconfig
 
 # The dynamic linker supports DT_GNU_HASH
 Provides: rtld(GNU_HASH)
+
+# We need libgcc for cancellation support in POSIX threads.
+Requires: libgcc%{_isa}
+
 Requires: glibc-common = %{version}-%{release}
 
 # Various components (regex, glob) have been imported from gnulib.
@@ -314,7 +318,6 @@ Requires(pre): /sbin/install-info
 Requires(pre): %{name}-headers
 Requires: %{name}-headers = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
-Requires: libgcc%{_isa}
 Requires: libxcrypt-devel%{_isa} >= 4.0.0
 
 %description devel
@@ -1902,6 +1905,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Nov 29 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-23
+- Move requirement on libgcc from glibc-devel to glibc (#1352973)
+
 * Tue Nov 27 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-22
 - Add requires on explicit glibc version for glibc-nss-devel (#1651260)
 
