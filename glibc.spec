@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-319-gce035c6e90
+%define glibcsrcdir glibc-2.28.9000-345-g7b36d26b22
 %define glibcversion 2.28.9000
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Dec 03 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-24
+- Auto-sync with upstream branch master,
+  commit 7b36d26b22d147ffc347f427f9fd584700578a94:
+- CVE-2018-19591: if_nametoindex: Fix descriptor for overlong name (#1654000)
+- Mutex: Add pthread mutex tunables
+- stdlib: assert on NULL function pointer in atexit etc. (swbz#20544)
+- Enable VDSO on i386 statically linked programs
+- posix: Use posix_spawn on system
+- posix: Use posix_spawn on popen (swbz#17490, swbz#22834)
+- Fix _dl_profile_fixup data-dependency issue (swbz#23690)
+- Enable VDSO for static linking on aarch64
+
 * Thu Nov 29 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-23
 - Move requirement on libgcc from glibc-devel to glibc (#1352973)
 
