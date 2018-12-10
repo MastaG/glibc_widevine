@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-345-g7b36d26b22
+%define glibcsrcdir glibc-2.28.9000-374-g8d20a2f414
 %define glibcversion 2.28.9000
-%define glibcrelease 24%{?dist}
+%define glibcrelease 25%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Dec 10 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-25
+- Auto-sync with upstream branch master,
+  commit 8d20a2f414fa52aceef8a0e3675415df54a840db:
+- compat getdents64: Use correct offset for retry (swbz#23972)
+- x86: Fix static analysis warning in tst-cet-property-2 (swbz#23490)
+- malloc: Add another test for tcache double free check (swbz#23907)
+- getcpu: New system call wrapper
+- posix_spawn_file_actions_addfchdir_np: New function (swbz#17405)
+- Preparations for the IBM long double transition
+- Preparations for 64-bit time_t on 32-bit architectures
+- Enable VDSO for static linking on arm (swbz#19767)
+
 * Mon Dec 03 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-24
 - Auto-sync with upstream branch master,
   commit 7b36d26b22d147ffc347f427f9fd584700578a94:
