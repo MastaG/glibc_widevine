@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-374-g8d20a2f414
+%define glibcsrcdir glibc-2.28.9000-379-g505b5b2922
 %define glibcversion 2.28.9000
-%define glibcrelease 25%{?dist}
+%define glibcrelease 26%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Dec 11 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-26
+- Auto-sync with upstream branch master,
+  commit 505b5b292293a5d6bd4046a6bc7f8c2381a33da4.
+- Fix powf overflow handling in non-nearest rounding mode (swbz#23961)
+- test-container: move postclean outside of namespace changes (swbz#23948)
+- Enable VDSO for static linking on mips (swbz#19767)
+
 * Mon Dec 10 2018 Florian Weimer <fweimer@redhat.com> - 2.28.9000-25
 - Auto-sync with upstream branch master,
   commit 8d20a2f414fa52aceef8a0e3675415df54a840db:
