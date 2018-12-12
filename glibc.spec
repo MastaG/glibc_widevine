@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-50-gb8dd0f4278
+%define glibcsrcdir glibc-2.28-58-gea16a6938d
 %define glibcversion 2.28
-%define glibcrelease 23%{?dist}
+%define glibcrelease 24%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1903,6 +1903,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Dec 12 2018 Florian Weimer <fweimer@redhat.com> - 2.28-24
+- Auto-sync with upstream branch release/2.28/master,
+  commit ea16a6938d7ca5f4c2b67c11251c70b30796602a:
+- malloc: Add additional test case for tcache double free check (#1647395)
+- inet/tst-if_index-long: New test case for CVE-2018-19591 (swbz#23927)
+- compat getdents64: Use correct offset for retry (swbz#23972)
+- elf: Fix _dl_profile_fixup data-dependency issue (swbz#23690)
+
 * Thu Nov 29 2018 DJ Delorie <dj@redhat.com> - 2.28-23
 - Auto-sync with upstream branch release/2.28/master,
   commit b8dd0f42780a3133c02f064a2c0c5c4e7ab61aaa.
