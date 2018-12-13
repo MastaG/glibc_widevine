@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-58-gea16a6938d
+%define glibcsrcdir glibc-2.28-59-g852620258d
 %define glibcversion 2.28
-%define glibcrelease 24%{?dist}
+%define glibcrelease 25%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1903,6 +1903,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Dec 13 2018 Florian Weimer <fweimer@redhat.com> - 2.28-25
+- Auto-sync with upstream branch release/2.28/master,
+  commit 852620258deea8afda5674f397113fa87ce1007c:
+- powerpc: missing CFI register information in __mpn_* functions (swbz#23614)
+
 * Wed Dec 12 2018 Florian Weimer <fweimer@redhat.com> - 2.28-24
 - Auto-sync with upstream branch release/2.28/master,
   commit ea16a6938d7ca5f4c2b67c11251c70b30796602a:
