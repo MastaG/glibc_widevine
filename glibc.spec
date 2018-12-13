@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-379-g505b5b2922
+%define glibcsrcdir glibc-2.28.9000-391-gade8b817fe
 %define glibcversion 2.28.9000
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Dec 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-27
+- Auto-sync with upstream branch master,
+  commit ade8b817fead73b302d08c88cd44ea2ea56793d4.
+- powerpc: missing CFI register information in __mpn_* functions (swbz#23614)
+- rdlock stalls indefinitely on an unlocked pthread rwlock (swbz#23861)
+
 * Tue Dec 11 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-26
 - Auto-sync with upstream branch master,
   commit 505b5b292293a5d6bd4046a6bc7f8c2381a33da4.
