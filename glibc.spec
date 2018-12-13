@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-59-g852620258d
+%define glibcsrcdir glibc-2.28-60-g4d7af7815a
 %define glibcversion 2.28
-%define glibcrelease 25%{?dist}
+%define glibcrelease 26%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1903,6 +1903,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Dec 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-26
+- Auto-sync with upstream branch release/2.28/master,
+  commit 4d7af7815af5217db6e8fde6032ddf4f6b2a4420.
+- rdlock stalls indefinitely on an unlocked pthread rwlock (swbz#23861)
+
 * Thu Dec 13 2018 Florian Weimer <fweimer@redhat.com> - 2.28-25
 - Auto-sync with upstream branch release/2.28/master,
   commit 852620258deea8afda5674f397113fa87ce1007c:
