@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-89-g9f433fc791
+%define glibcsrcdir glibc-2.27-98-g2794474c65
 %define glibcversion 2.27
-%define glibcrelease 35%{?dist}
+%define glibcrelease 36%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2075,6 +2075,14 @@ fi
 %endif
 
 %changelog
+* Thu Dec 13 2018 Florian Weimer <fweimer@redhat.com> - 2.27-36
+- Auto-sync with upstream branch release/2.27/master,
+  commit 2794474c655a0f895862a6de9fb79a2fd2cdde28:
+- powerpc: missing CFI register information in __mpn_* functions (swbz#23614)
+- malloc: Implement tcache double free check (#1647395)
+- inet/tst-if_index-long: New test case for CVE-2018-19591 (swbz#23927)
+- elf: Fix _dl_profile_fixup data-dependency issue (swbz#23690)
+
 * Wed Nov 28 2018 Florian Weimer <fweimer@redhat.com> - 2.27-35
 - Auto-sync with upstream branch release/2.27/master,
   commit 9f433fc791ca4f9d678903ff45b504b524c886fb:
