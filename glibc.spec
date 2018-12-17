@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-391-gade8b817fe
+%define glibcsrcdir glibc-2.28.9000-400-g6bbfc5c09f
 %define glibcversion 2.28.9000
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Dec 17 2018 DJ Delorie <dj@redhat.com> - 2.28.9000-28
+- Auto-sync with upstream branch master,
+  commit 6bbfc5c09fc5b5e3d4a0cddbbd4e2e457767dae7.
+- Add statx conditionals for wordsize-32 *xstat.c
+- regex: fix storage-exhaustion error (swbz#18040)
+- regex: fix heap-use-after-free error (swbz#18040)
+- manual: Document thread/task IDs for Linux
+
 * Thu Dec 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-27
 - Auto-sync with upstream branch master,
   commit ade8b817fead73b302d08c88cd44ea2ea56793d4.
