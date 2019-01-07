@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-400-g6bbfc5c09f
+%define glibcsrcdir glibc-2.28.9000-551-g2ef4271688
 %define glibcversion 2.28.9000
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1905,6 +1905,26 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jan 07 2019 Arjun Shankar <arjun@redhat.com> - 2.28.9000-29
+- Auto-sync with upstream branch master,
+  commit 2ef427168818ce04b03cecb7b739f9db0156e3e4.
+- Require GCC 5 or later to build glibc (swbz#23993)
+- Only build libm with -fno-math-errno (swbz#24024)
+- sysdeps/ieee754: prevent maybe-uninitialized errors with -O (swbz#19444)
+- Multiple locales: Use the correct 12-hour time formats (swbz#10496)
+- sq_AL: Use the correct date and time formats (swbz#10496, swbz#23724)
+- en_US: define date_fmt (swbz#24046)
+- Remove executable bit from localedata/locales/bi_VU (swbz#23995)
+- malloc: Always call memcpy in _int_realloc (swbz#24027)
+- ARM: fix kernel assisted atomics with GCC 8 (swbz#24034)
+- S390: Unify 31/64bit mem{set,cmp,cpy,pcpy}, bzero with ifunc handling
+- S390: Refactor ifunc handling for several str* and wc* functions
+- posix: Clear close-on-exec for posix_spawn adddup2 (swbz#23640)
+- termios: Define TIOCSER_TEMT with __USE_MISC (swbz#17783)
+- termios: Consolidate Baud Rate Selection definitions (swbz#23783)
+- Y2038: add __{localtime64,gmttime64,ctime64}[_r] functions
+- Y2038: make __difftime compatible with 64-bit time
+
 * Mon Dec 17 2018 DJ Delorie <dj@redhat.com> - 2.28.9000-28
 - Auto-sync with upstream branch master,
   commit 6bbfc5c09fc5b5e3d4a0cddbbd4e2e457767dae7.
