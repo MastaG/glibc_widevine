@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-551-g2ef4271688
 %define glibcversion 2.28.9000
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -770,6 +770,7 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+	"-march=haswell" \
 	"-march=i686" \
 	"-march=x86-64" \
 	"-march=z13" \
@@ -1905,6 +1906,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jan 10 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-30
+- Inherit -march=haswell flag from redhat-rpm-config
+
 * Mon Jan 07 2019 Arjun Shankar <arjun@redhat.com> - 2.28.9000-29
 - Auto-sync with upstream branch master,
   commit 2ef427168818ce04b03cecb7b739f9db0156e3e4.
