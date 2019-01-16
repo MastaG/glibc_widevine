@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-551-g2ef4271688
+%define glibcsrcdir glibc-2.28.9000-564-g008b598e2a
 %define glibcversion 2.28.9000
-%define glibcrelease 30%{?dist}
+%define glibcrelease 31%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1906,6 +1906,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jan 16 2019 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-31
+- Auto-sync with upstream branch master,
+  commit 008b598e2a495024f9777006716cfd8668f3db33.
+- x86-64: Optimize strcat/strncat, strcpy/strncpy and stpcpy/stpncpy with AVX2
+- powerpc: Fix VSCR position in ucontext (swbz#24088)
+- AArch64: Add ifunc support for Ares
+- soft-fp: Properly check _FP_W_TYPE_SIZE (swbz#24066)
+
 * Thu Jan 10 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-30
 - Inherit -march=haswell flag from redhat-rpm-config
 
