@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-564-g008b598e2a
 %define glibcversion 2.28.9000
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -785,17 +785,13 @@ rpm_inherit_flags \
 	"-mtune=zEC12" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 
-# Propagate additional build flags to BuildFlagsNonshared.  This is
-# very special because some of these files are part of the startup
-# code.  We essentially hope that these flags have little effect
-# there, and only specify the, for consistency, so that annobin
-# records the expected compiler flags.
-BuildFlagsNonshared=
-rpm_append_flag () {
-    BuildFlagsNonshared="$BuildFlagsNonshared $*"
-}
-rpm_inherit_flags \
-	"-Wp,-D_FORTIFY_SOURCE=2" \
+# libc_nonshared.a cannot be built with the default hardening flags
+# because the glibc build system is incompatible with
+# -D_FORTIFY_SOURCE.  The object files need to be marked as to be
+# skipped in annobin annotations.  (The -specs= variant of activating
+# annobin does not work here because of flag ordering issues.)
+# See <https://bugzilla.redhat.com/show_bug.cgi?id=1668822>.
+BuildFlagsNonshared="-fplugin=annobin -fplugin-arg-annobin-disable -Wa,--generate-missing-build-notes=yes"
 
 # Special flag to enable annobin annotations for statically linked
 # assembler code.  Needs to be passed to make; not preserved by
@@ -1906,6 +1902,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jan 23 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-32
+- Use assembler to produce annobin notes for nonshared libraries (#1668822)
+
 * Wed Jan 16 2019 Carlos O'Donell <carlos@redhat.com> - 2.28.9000-31
 - Auto-sync with upstream branch master,
   commit 008b598e2a495024f9777006716cfd8668f3db33.
