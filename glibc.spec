@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-564-g008b598e2a
+%define glibcsrcdir glibc-2.28.9000-583-g3367acdb34
 %define glibcversion 2.28.9000
-%define glibcrelease 32%{?dist}
+%define glibcrelease 33%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1902,6 +1902,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jan 24 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-33
+- Auto-sync with upstream branch master,
+  commit 3367acdb344a1d7fcf8f53748d301d652c8911dd:
+- elf: Fix LD_AUDIT for modules with invalid version (swbz#24122)
+- CVE-2016-10739: getaddrinfo: Fully parse IPv4 address strings (#1331390)
+- resolv: Do not send queries for non-host-names in nss_dns (swbz#24112)
+- malloc: Revert fastbins to old-style atomics
+
 * Wed Jan 23 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-32
 - Use assembler to produce annobin notes for nonshared libraries (#1668822)
 
