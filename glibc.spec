@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-583-g3367acdb34
+%define glibcsrcdir glibc-2.28.9000-590-g83e6b59625
 %define glibcversion 2.28.9000
-%define glibcrelease 33%{?dist}
+%define glibcrelease 34%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1902,6 +1902,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jan 25 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-34
+- Auto-sync with upstream branch master,
+  commit 83e6b59625f45db1eee93e5684091f740c52a083:
+- elf: Revert LD_AUDIT fix for modules with invalid version (swbz#24122)
+- strftime: Pass the additional flags from "%EY" to "%Ey" (swbz#24096)
+- strftime: Set the default width of "%Ey" to 2 (swbz#23758)
+
 * Thu Jan 24 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-33
 - Auto-sync with upstream branch master,
   commit 3367acdb344a1d7fcf8f53748d301d652c8911dd:
