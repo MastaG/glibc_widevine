@@ -314,7 +314,6 @@ applications should use libnsl2 instead to gain IPv6 support.
 ##############################################################################
 %package devel
 Summary: Object files for development using standard C libraries.
-Requires(pre): /sbin/install-info
 Requires(pre): %{name}-headers
 Requires: %{name}-headers = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
@@ -1772,23 +1771,11 @@ end
 -- recreate a new copy of the cache.
 os.remove("%{_prefix}/lib/locale/locale-archive")
 
-%if %{with docs}
-%post devel
-/sbin/install-info %{_infodir}/libc.info.gz %{_infodir}/dir > /dev/null 2>&1 || :
-%endif
-
 %pre headers
 # this used to be a link and it is causing nightmares now
 if [ -L %{_prefix}/include/scsi ] ; then
   rm -f %{_prefix}/include/scsi
 fi
-
-%if %{with docs}
-%preun devel
-if [ "$1" = 0 ]; then
-  /sbin/install-info --delete %{_infodir}/libc.info.gz %{_infodir}/dir > /dev/null 2>&1 || :
-fi
-%endif
 
 %pre -n nscd
 getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
