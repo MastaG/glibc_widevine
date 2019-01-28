@@ -1,0 +1,57 @@
+resolv: Enable full ICMP error reporting for UDP DNS sockets
+
+The Linux kernel suppresses some ICMP error messages by default for UDP
+sockets.  This commit enables full ICMP error reporting, hopefully
+resulting in faster timeouts.
+
+diff --git a/resolv/Makefile b/resolv/Makefile
+index 8f22e6a154621238..ebe1b733f294a97c 100644
+--- a/resolv/Makefile
++++ b/resolv/Makefile
+@@ -105,7 +105,7 @@ libresolv-routines := res_comp res_debug \
+ 		      res_data res_mkquery res_query res_send		\
+ 		      inet_net_ntop inet_net_pton inet_neta base64	\
+ 		      ns_parse ns_name ns_netint ns_ttl ns_print	\
+-		      ns_samedomain ns_date \
++		      ns_samedomain ns_date res_enable_icmp \
+ 		      compat-hooks compat-gethnamaddr
+ 
+ libanl-routines := gai_cancel gai_error gai_misc gai_notify gai_suspend \
+diff --git a/resolv/res_send.c b/resolv/res_send.c
+index fa040c1198fadce5..0f6ec83a7ba05986 100644
+--- a/resolv/res_send.c
++++ b/resolv/res_send.c
+@@ -943,6 +943,18 @@ reopen (res_state statp, int *terrno, int ns)
+ 			return (-1);
+ 		}
+ 
++		/* Enable full ICMP error reporting for this
++		   socket.  */
++		if (__res_enable_icmp (nsap->sa_family,
++				       EXT (statp).nssocks[ns]) < 0)
++		  {
++		    int saved_errno = errno;
++		    __res_iclose (statp, false);
++		    __set_errno (saved_errno);
++		    *terrno = saved_errno;
++		    return -1;
++		  }
++
+ 		/*
+ 		 * On a 4.3BSD+ machine (client and server,
+ 		 * actually), sending to a nameserver datagram
+diff --git a/resolv/resolv-internal.h b/resolv/resolv-internal.h
+index 6ab8f2af09a7ce0b..1500adc607f2ce3e 100644
+--- a/resolv/resolv-internal.h
++++ b/resolv/resolv-internal.h
+@@ -100,4 +100,10 @@ libc_hidden_proto (__inet_pton_length)
+ /* Called as part of the thread shutdown sequence.  */
+ void __res_thread_freeres (void) attribute_hidden;
+ 
++/* The Linux kernel does not enable all ICMP messages on a UDP socket
++   by default.  A call this function enables full error reporting for
++   the socket FD.  FAMILY must be AF_INET or AF_INET6.  Returns 0 on
++   success, -1 on failure.  */
++int __res_enable_icmp (int family, int fd) attribute_hidden;
++
+ #endif  /* _RESOLV_INTERNAL_H */

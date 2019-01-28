@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28.9000-590-g83e6b59625
 %define glibcversion 2.28.9000
-%define glibcrelease 35%{?dist}
+%define glibcrelease 36%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -158,6 +158,7 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
+Patch29: glibc-rh1670028.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1889,6 +1890,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jan 28 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-36
+- resolv: Enable full ICMP error reporting in stub resolver (#1670028)
+
 * Mon Jan 28 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-35
 - Remove obsolete scriptlets
 
