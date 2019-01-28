@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-590-g83e6b59625
+%define glibcsrcdir glibc-2.28.9000-591-ge1e47c912a
 %define glibcversion 2.28.9000
-%define glibcrelease 36%{?dist}
+%define glibcrelease 37%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1890,6 +1890,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jan 28 2019 DJ Delorie <dj@redhat.com> - 2.28.9000-37
+- Auto-sync with upstream branch master,
+  commit e1e47c912a8e557508362715f7468091def3ec4f.
+- Update translations.
+
 * Mon Jan 28 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-36
 - resolv: Enable full ICMP error reporting in stub resolver (#1670028)
 
