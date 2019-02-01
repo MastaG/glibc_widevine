@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28.9000-591-ge1e47c912a
-%define glibcversion 2.28.9000
-%define glibcrelease 37%{?dist}
+%define glibcsrcdir glibc-2.29-1-g86013ef5ce
+%define glibcversion 2.29
+%define glibcrelease 1%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1890,6 +1890,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jan 31 2019 Carlos O'Donell <carlos@redhat.com> - 2.29-1
+- Auto-sync with upstream branch release/2.29/master,
+  commit 86013ef5cea322b8f4b9c22f230c22cce369e947.
+- nptl: Fix pthread_rwlock_try*lock stalls (swbz#23844)
+
 * Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org>
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
