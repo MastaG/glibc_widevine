@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-1-g86013ef5ce
+%define glibcsrcdir glibc-2.29-3-g2de15ac957
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1889,6 +1889,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Feb 06 2019 Florian Weimer <fweimer@redhat.com> - 2.29-3
+- Auto-sync with upstream branch release/2.29/master,
+  commit 2de15ac95713a238dc258eb8977ecdfca811fc19:
+- arm: Use "nr" constraint for Systemtap probes (#1196181)
+
 * Fri Feb  1 2019 Florian Weimer <fweimer@redhat.com> - 2.29-2
 - Eliminate %%glibcrelease macro.
 - Switch to regular Release: pattern.
