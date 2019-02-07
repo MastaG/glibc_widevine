@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,6 +158,7 @@ Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
 Patch29: glibc-rh1670028.patch
+Patch30: glibc-rh1673018.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1889,6 +1890,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Feb  7 2019 Florian Weimer <fweimer@redhat.com> - 2.29-4
+- Work around LRA hang on ppc64le (#1673018)
+
 * Wed Feb 06 2019 Florian Weimer <fweimer@redhat.com> - 2.29-3
 - Auto-sync with upstream branch release/2.29/master,
   commit 2de15ac95713a238dc258eb8977ecdfca811fc19:
