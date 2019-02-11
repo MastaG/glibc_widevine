@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-3-g2de15ac957
+%define glibcsrcdir glibc-2.29-5-gc096b008d2
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1890,6 +1890,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-5
+- Auto-sync with upstream branch release/2.29/master,
+  commit c096b008d2671028c21ac8cf01f18a2083e73c44:
+- nptl: Avoid fork handler lock for async-signal-safe fork (swbz#24161)
+- nptl: Add compiler barriers in pthread_mutex_trylock (swbz#24180)
+
 * Thu Feb  7 2019 Florian Weimer <fweimer@redhat.com> - 2.29-4
 - Work around LRA hang on ppc64le (#1673018)
 
