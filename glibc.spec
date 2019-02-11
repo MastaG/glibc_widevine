@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,6 +158,7 @@ Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
 Patch29: glibc-rh1670028.patch
+Patch99: glibc-rh1674280.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1889,6 +1890,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-7
+- Hotfix for invalid Systemtap probe in pthread_join (#1674280)
+
 * Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-6
 - Remove LRA bug on POWER workaround, fixed in gcc-9.0.1-0.4.fc30 (#1673018)
 
