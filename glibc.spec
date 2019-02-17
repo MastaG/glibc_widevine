@@ -1168,6 +1168,7 @@ cp benchtests/scripts/benchout.schema.json %{glibc_sysroot}%{_prefix}/libexec/gl
 cp benchtests/scripts/compare_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 cp benchtests/scripts/import_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 cp benchtests/scripts/validate_benchout.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
+%endif # with benchtests
 
 %if 0%{?_enable_debug_packages}
 # The #line directives gperf generates do not give the proper
@@ -1489,8 +1490,8 @@ cat > utils.filelist <<EOF
 %if %{without bootstrap}
 %{_prefix}/bin/memusage
 %{_prefix}/bin/memusagestat
-%endif
 %{_prefix}/bin/mtrace
+%endif
 %{_prefix}/bin/pcprofiledump
 %{_prefix}/bin/xtrace
 EOF
@@ -1522,6 +1523,7 @@ grep '/libnss_[a-z]*\.so$' master.filelist > nss-devel.filelist
 grep '/libnsl-[0-9.]*.so$' master.filelist > libnsl.filelist
 test $(wc -l < libnsl.filelist) -eq 1
 
+%if %{with benchtests}
 ###############################################################################
 # glibc-benchtests
 ###############################################################################
