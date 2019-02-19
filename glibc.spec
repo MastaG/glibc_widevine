@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-5-gc096b008d2
+%define glibcsrcdir glibc-2.29-6-g067fc32968
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,7 +158,6 @@ Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
 Patch29: glibc-rh1670028.patch
-Patch99: glibc-rh1674280.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1890,6 +1889,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Feb 19 2019 Florian Weimer <fweimer@redhat.com> - 2.29-8
+- Drop glibc-rh1674280.patch.  Different fix applied upstream.  (#1674280)
+- Auto-sync with upstream branch release/2.29/master,
+  commit 067fc32968b601493f4b247a3ac00caeea3f3d61:
+- nptl: Fix invalid Systemtap probe in pthread_join (#1674280)
+
 * Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-7
 - Hotfix for invalid Systemtap probe in pthread_join (#1674280)
 
