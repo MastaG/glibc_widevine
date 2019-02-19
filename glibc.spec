@@ -1485,8 +1485,8 @@ cat > utils.filelist <<EOF
 %if %{without bootstrap}
 %{_prefix}/bin/memusage
 %{_prefix}/bin/memusagestat
-%{_prefix}/bin/mtrace
 %endif
+%{_prefix}/bin/mtrace
 %{_prefix}/bin/pcprofiledump
 %{_prefix}/bin/xtrace
 EOF
