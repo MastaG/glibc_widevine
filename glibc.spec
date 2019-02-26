@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.29-6-g067fc32968
-%define glibcversion 2.29
+%define glibcsrcdir glibc-2.29.9000-86-ge0cb7b6131
+%define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 1%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1889,6 +1889,30 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Feb 26 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-1
+- Auto-sync with upstream branch master,
+  commit e0cb7b6131ee5f2dca2938069b8b9590304e6f6b:
+- nss_files: Fix /etc/aliases null pointer dereference (swbz#24059)
+- regex: fix read overrun (swbz#24114)
+- libio: use stdout in puts and putchar, etc (swbz#24051)
+- aarch64: Add AmpereComputing emag to tunable cpu list
+- aarch64: Optimized memset specific to AmpereComputing emag
+- aarch64: Optimized memchr specific to AmpereComputing emag
+- Require GCC 6.2 or later to build glibc
+- manual: Document lack of conformance of sched_* functions (swbz#14829)
+- libio: Use stdin consistently for input functions (swbz#24153)
+- x86-64 memcmp: Use unsigned Jcc instructions on size (swbz#24155)
+- Fix handling of collating elements in fnmatch (swbz#17396,swbz#16976)
+- arm: Use "nr" constraint for Systemtap probes (swbz#24164)
+- Fix alignment of TLS variables for tls variant TLS_TCB_AT_TP (swbz#23403)
+- Add compiler barriers for pthread_mutex_trylock (swbz#24180)
+- rt: Turn forwards from librt to libc into compat symbols (swbz#24194)
+- Linux: Add gettid system call wrapper (swbz#6399)
+- nptl: Avoid fork handler lock for async-signal-safe fork (swbz#24161)
+- elf: Ignore LD_AUDIT interfaces if la_version returns 0 (swbz#24122)
+- nptl: Reinstate pthread_timedjoin_np as a cancellation point (swbz#24215)
+- nptl: Fix invalid Systemtap probe in pthread_join (swbz#24211)
+
 * Tue Feb 19 2019 Florian Weimer <fweimer@redhat.com> - 2.29-8
 - Drop glibc-rh1674280.patch.  Different fix applied upstream.  (#1674280)
 - Auto-sync with upstream branch release/2.29/master,
