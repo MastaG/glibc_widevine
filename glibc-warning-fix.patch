@@ -1,0 +1,25 @@
+Temporary work around to fix compiler warning for set but not used
+'res' variable.
+
+e.g.
+BUILDSTDERR: bench-malloc-simple.c: In function 'bench':
+BUILDSTDERR: bench-malloc-simple.c:89:17: error: variable 'res' set but not used [-Werror=unused-but-set-variable]
+BUILDSTDERR:    89 |   unsigned long res;
+BUILDSTDERR:       |                 ^~~
+BUILDSTDERR: cc1: all warnings being treated as errors
+
+Affects aarch64, armv7hl, and s390x.
+
+diff --git a/benchtests/bench-malloc-simple.c b/benchtests/bench-malloc-simple.c
+index 83203ff3187654a1..e449dd5a2e351278 100644
+--- a/benchtests/bench-malloc-simple.c
++++ b/benchtests/bench-malloc-simple.c
+@@ -90,6 +90,8 @@ bench (unsigned long size)
+ 
+   TIMING_INIT (res);
+ 
++  (void) res;
++
+   for (int t = 0; t <= 3; t++)
+     for (int i = 0; i < NUM_ALLOCS; i++)
+       {
