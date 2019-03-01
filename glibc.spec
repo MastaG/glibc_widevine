@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1545,7 +1545,7 @@ echo "%{_libdir}/libpthread_nonshared.a" >> compat-libpthread-nonshared.filelist
 # glibc-debuginfocommon, and glibc-debuginfo
 ###############################################################################
 
-find_debuginfo_args='--strict-build-id -g'
+find_debuginfo_args='--strict-build-id -g -i'
 %ifarch %{debuginfocommonarches}
 find_debuginfo_args="$find_debuginfo_args \
 	-l common.filelist \
@@ -1890,6 +1890,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Mar 1 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-3
+- Add .gdb_index to debug information (rhbz#1680765)
+
 * Wed Feb 27 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-2
 - Fix build failure related to microbenchmarks.
 
