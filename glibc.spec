@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-86-ge0cb7b6131
+%define glibcsrcdir glibc-2.29.9000-114-g0ddb7ea842
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1890,6 +1890,40 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Mar 06 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-4
+- Auto-sync with upstream branch master,
+  commit 0ddb7ea842abf63516b74d4b057c052afc6ba863.
+- nptl: Assume __ASSUME_FUTEX_CLOCK_REALTIME support
+- powerpc: Fix build of wcscpy with --disable-multi-arch
+- elf: Remove remnants of MAP_ANON emulation
+- S390: Increase function alignment to 16 bytes.
+- ja_JP: Change the offset for Taisho gan-nen from 2 to 1 [BZ #24162]
+- ldbl-opt: Reuse test cases from misc/ that check long double
+- ldbl-opt: Add error and error_at_line (bug 23984)
+- ldbl-opt: Add err, errx, verr, verrx, warn, warnx, vwarn, and vwarnx (bug 23984)
+- ldbl-opt: Reuse argp tests that print long double
+- ldbl-opt: Add argp_error and argp_failure (bug 23983)
+- elf/tst-big-note: Improve accuracy of test [BZ #20419]
+- S390: Fix introduction of __wcscpy and weak wcscpy symbols.
+- __netlink_assert_response: Add more __libc_fatal newlines [BZ #20271]
+- Add more spaces before '('.
+- elf: Add tests with a local IFUNC resolver [BZ #23937]
+- elf/Makefile: Run IFUNC tests if binutils supports IFUNC
+- powerpc: Fix linknamespace introduced by 4d8015639a75
+- hurd: Add renameat2 support for RENAME_NOREPLACE
+- Fix -Wempty-body warnings in Hurd-specific code.
+- Add some spaces before '('.
+- wcsmbs: optimize wcsnlen
+- wcsmbs: optimize wcsncpy
+- wcsmbs: optimize wcsncat
+- wcsmbs: optimize wcscpy
+- wcsmbs: optimize wcscat
+- wcsmbs: optimize wcpncpy
+- wcsmbs: optimize wcpcpy
+- Break further lines before not after operators.
+- Add and move fall-through comments in system-specific code.
+
+
 * Fri Mar 1 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-3
 - Add .gdb_index to debug information (rhbz#1680765)
 
