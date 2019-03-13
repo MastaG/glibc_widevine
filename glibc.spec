@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-114-g0ddb7ea842
+%define glibcsrcdir glibc-2.29.9000-124-g38b52865d4
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -157,7 +157,6 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
-Patch29: glibc-rh1670028.patch
 Patch30: glibc-warning-fix.patch
 
 ##############################################################################
@@ -1892,6 +1891,21 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Mar 13 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-5
+- Drop glibc-rh1670028.patch, applied upstream
+- Auto-sync with upstream branch master,
+  commit 38b52865d4ccfee3647f27e969e539a4396a73b1:
+- elf: Add DF_1_KMOD, DF_1_WEAKFILTER, DF_1_NOCOMMON to <elf.h>
+- resolv: Enable full ICMP errors for UDP DNS sockets [BZ #24047]
+- C-SKY: add elf header definition for elfutils
+- C-SKY: mark lr as undefined to stop unwinding
+- C-SKY: remove user_regs definition
+- C-SKY: fix sigcontext miss match
+- Bug 24307: Update to Unicode 12.0.0
+- Break lines before not after operators, batch 4.
+- check-wrapper-headers test: Adjust Fortran include file directory
+- Fix location where math-vector-fortran.h is installed.
+
 * Wed Mar 06 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-4
 - Auto-sync with upstream branch master,
   commit 0ddb7ea842abf63516b74d4b057c052afc6ba863.
