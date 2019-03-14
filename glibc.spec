@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-124-g38b52865d4
+%define glibcsrcdir glibc-2.29.9000-132-ga0a0dc8317
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -147,7 +147,6 @@ Patch7: glibc-fedora-nis-rh188246.patch
 Patch8: glibc-fedora-manual-dircategory.patch
 Patch9: glibc-rh827510.patch
 Patch10: glibc-fedora-locarchive.patch
-Patch11: glibc-fedora-streams-rh436349.patch
 Patch12: glibc-rh819430.patch
 Patch13: glibc-fedora-localedata-rh61908.patch
 Patch14: glibc-fedora-__libc_multiple_libcs.patch
@@ -1891,6 +1890,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Mar 14 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-6
+- Drop glibc-fedora-streams-rh436349.patch.  STREAMS was removed upstream.
+- Auto-sync with upstream branch master,
+  commit a0a0dc83173ce11ff45105fd32e5d14356cdfb9c:
+- Remove obsolete, never-implemented XSI STREAMS declarations
+- nss: Fix tst-nss-files-alias-truncated for default --as-needed linking
+- scripts/check-obsolete-constructs.py: Process all headers as UTF-8.
+- Use Linux 5.0 in build-many-glibcs.py.
+- hurd: Add no-op version of __res_enable_icmp [BZ #24047]
+- Move inttypes.h and stdint.h to stdlib.
+- Use a proper C tokenizer to implement the obsolete typedefs test.
+- Fix output of LD_SHOW_AUXV=1.
+
 * Wed Mar 13 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-5
 - Drop glibc-rh1670028.patch, applied upstream
 - Auto-sync with upstream branch master,
