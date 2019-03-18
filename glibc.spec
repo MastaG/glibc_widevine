@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-132-ga0a0dc8317
+%define glibcsrcdir glibc-2.29.9000-139-g78919d3886
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1890,6 +1890,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Mar 18 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-7
+- Auto-sync with upstream branch master,
+  commit 78919d3886c9543279ec755a701e279c62b44164.
+
 * Thu Mar 14 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-6
 - Drop glibc-fedora-streams-rh436349.patch.  STREAMS was removed upstream.
 - Auto-sync with upstream branch master,
