@@ -1896,7 +1896,7 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
-* Thu Mar 07 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-8
+* Wed Mar 20 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-8
 - Add warnings and notes to /etc/nsswitch.conf and /etc/nscd.conf.
 
 * Mon Mar 18 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-7
