@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-139-g78919d3886
+%define glibcsrcdir glibc-2.29.9000-168-g993e3107af
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1896,6 +1896,29 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Apr 01 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-9
+- Auto-sync with upstream branch master,
+  commit 993e3107af67edefcfc79a62ae55f7b98aa5151e:
+- Add AArch64 HWCAPs from Linux 5.0
+- tt_RU: Fix orthographic mistakes in day and abday sections [BZ #24296]
+- iconv, localedef: avoid floating point rounding differences [BZ #24372]
+- Fix parentheses error in iconvconfig.c and ld-collate.c [BZ #24372]
+- S390: New configure check and hwcap values for new CPU architecture arch13
+- S390: Add memmove, strstr, and memmem ifunc variants for arch13
+- nptl: Remove pthread_clock_gettime pthread_clock_settime
+- linux: Assume clock_getres CLOCK_{PROCESS,THREAD}_CPUTIME_ID
+- Remove __get_clockfreq
+- Do not use HP_TIMING_NOW for random bits
+- hp-timing: Refactor rtld usage, add generic support
+- Add NT_ARM_PAC_MASK and NT_MIPS_MSA from Linux 5.0 to elf.h
+- Add UDP_GRO from Linux 5.0 to netinet/udp.h
+- nptl: Convert tst-sem5 & tst-sem13 to use libsupport
+- nptl/tst-rwlock14: Test pthread_rwlock_timedwrlock correctly
+- nss/tst-nss-files-alias-leak: add missing opening quote in printf
+- math: Enable some math builtins for clang
+- powerpc: Use __builtin_{mffs,mtfsf}
+- RISC-V: Fix `test' operand error with soft-float ABI being configured
+
 * Wed Mar 20 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-8
 - Add warnings and notes to /etc/nsswitch.conf and /etc/nscd.conf.
 
