@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-99-gf6d0e8c36f
+%define glibcsrcdir glibc-2.27-114-gde9d4aa353
 %define glibcversion 2.27
-%define glibcrelease 37%{?dist}
+%define glibcrelease 38%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2075,6 +2075,24 @@ fi
 %endif
 
 %changelog
+* Wed Apr 03 2019 Carlos O'Donell <carlos@redhat.com> - 2.27-38
+- Auto-sync with upstream branch release/2.27/master,
+  commit de9d4aa3534282645fde9d3a4a1113a947a057db:
+- ja_JP locale: Add entry for the new Japanese era [BZ #22964] (#1695404)
+- S390: Mark vx and vxe as important hwcap.
+- Add compiler barriers for robust mutex locks. [BZ #24180]
+- x86-64 memcmp: Use unsigned Jcc instructions on size [BZ #24155]
+- x86-64 strnlen/wcsnlen: Properly handle the length parameter [BZ #24097]
+- x86-64 strncpy: Properly handle the length parameter [BZ #24097]
+- x86-64 strncmp family: Properly handle the length parameter [BZ #24097]
+- x86-64 memset/wmemset: Properly handle the length parameter [BZ #24097]
+- x86-64 memrchr: Properly handle the length parameter [BZ #24097]
+- x86-64 memcpy: Properly handle the length parameter [BZ #24097]
+- x86-64 memcmp/wmemcmp: Properly handle the length parameter [BZ #24097]
+- x86-64 memchr/wmemchr: Properly handle the length parameter [BZ #24097]
+- intl: Do not return NULL on asprintf failure in gettext [BZ #24018]
+- malloc: Always call memcpy in _int_realloc [BZ #24027]
+
 * Thu Dec 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.27-37
 - Auto-sync with upstream branch release/2.27/master,
   commit f6d0e8c36f02b387d33f2cc58c7cb204f201d92e.
