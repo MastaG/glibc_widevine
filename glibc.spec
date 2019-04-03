@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-6-g067fc32968
+%define glibcsrcdir glibc-2.29-12-g0941350c20
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1889,6 +1889,16 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 03 2019 Arjun Shankar <arjun@redhat.com> - 2.29-9
+- Auto-sync with upstream branch release/2.29/master,
+  commit 0941350c20a52447e53c5169354408e3db591f73:
+- Fix output of LD_SHOW_AUXV=1
+- regex: fix read overrun [BZ #24114]
+- Record CVE-2019-9169 in NEWS and ChangeLog [BZ #24114]
+- S390: Mark vx and vxe as important hwcap
+- ja_JP: Change the offset for Taisho gan-nen from 2 to 1 [BZ #24162]
+- ja_JP locale: Add entry for the new Japanese era [BZ #22964]
+
 * Tue Feb 19 2019 Florian Weimer <fweimer@redhat.com> - 2.29-8
 - Drop glibc-rh1674280.patch.  Different fix applied upstream.  (#1674280)
 - Auto-sync with upstream branch release/2.29/master,
