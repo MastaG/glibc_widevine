@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-168-g993e3107af
+%define glibcsrcdir glibc-2.29.9000-176-g8260f23616
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1896,6 +1896,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Apr 04 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-10
+- Auto-sync with upstream branch master,
+  commit 8260f23616c1a2a4e609f989a195fba7690a42ca:
+- Fix strptime era handling, add more strftime tests [BZ #24394]
+- time/tst-strftime2.c: Make the file easier to maintain
+- time: Add tests for Minguo calendar [BZ #24293]
+- ja_JP locale: Add entry for the new Japanese era [BZ #22964]
+- Add Reiwa era tests to time/tst-strftime3.c
+
 * Mon Apr 01 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-9
 - Auto-sync with upstream branch master,
   commit 993e3107af67edefcfc79a62ae55f7b98aa5151e:
