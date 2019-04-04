@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-60-g4d7af7815a
+%define glibcsrcdir glibc-2.28-95-g7423da211d
 %define glibcversion 2.28
-%define glibcrelease 26%{?dist}
+%define glibcrelease 27%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1903,6 +1903,46 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 03 2019 DJ Delorie <dj@redhat.com> - 2.28-27
+- Auto-sync with upstream branch release/2.28/master,
+  commit 7423da211d1490d9fc76c2f0ce49e5dd90ea9bcc.
+
+- ja_JP locale: Add entry for the new Japanese era [BZ #22964]
+- S390: Mark vx and vxe as important hwcap.
+- Record CVE-2019-9169 in NEWS and ChangeLog [BZ #24114]
+- regex: fix read overrun [BZ #24114]
+- RISC-V: don't assume PI mutexes and robust futexes before 4.20 (bug 23864)
+- powerpc: Only enable TLE with PPC_FEATURE2_HTM_NOSC
+- RISC-V: Fix elfutils testsuite unwind failures.
+- nptl: Fix pthread_rwlock_try*lock stalls (Bug 23844)
+- nptl: Avoid fork handler lock for async-signal-safe fork [BZ #24161]
+- Add compiler barriers around modifications of the robust mutex list for pthread_mutex_trylock. [BZ #24180]
+- NEWS: Mention bug 24112.
+- nscd: Do not use __inet_aton_exact@GLIBC_PRIVATE [BZ #20018]
+- CVE-2016-10739: getaddrinfo: Fully parse IPv4 address strings [BZ #20018]
+- resolv: Do not send queries for non-host-names in nss_dns [BZ #24112]
+- resolv: Reformat inet_addr, inet_aton to GNU style
+- x86-64 memcmp: Use unsigned Jcc instructions on size [BZ #24155]
+- x86-64 strnlen/wcsnlen: Properly handle the length parameter [BZ #24097]
+- x86-64 strncpy: Properly handle the length parameter [BZ #24097]
+- x86-64 strncmp family: Properly handle the length parameter [BZ #24097]
+- x86-64 memset/wmemset: Properly handle the length parameter [BZ #24097]
+- x86-64 memrchr: Properly handle the length parameter [BZ #24097]
+- x86-64 memcpy: Properly handle the length parameter [BZ #24097]
+- x86-64 memcmp/wmemcmp: Properly handle the length parameter [BZ #24097]
+- x86-64 memchr/wmemchr: Properly handle the length parameter [BZ #24097]
+- Add XFAIL_ROUNDING_IBM128_LIBGCC to more fma() tests
+- Only build libm with -fno-math-errno (bug 24024)
+- sysdeps/ieee754/soft-fp: ignore maybe-uninitialized with -O [BZ #19444]
+- ARM: fix kernel assisted atomics with GCC 8 (bug 24034)
+- riscv: Use __has_include__ to include <asm/syscalls.h> [BZ #24022]
+- intl: Do not return NULL on asprintf failure in gettext [BZ #24018]
+- malloc: Always call memcpy in _int_realloc [BZ #24027]
+- Update Alpha libm-test-ulps
+- m68k: Fix sigaction kernel definition (BZ #23967)
+- RISC-V: properly terminate call chain (bug 23125)
+- support: Do not require overflow builtin in support/blob_repeat.c
+
 * Thu Dec 13 2018 Carlos O'Donell <carlos@redhat.com> - 2.28-26
 - Auto-sync with upstream branch release/2.28/master,
   commit 4d7af7815af5217db6e8fde6032ddf4f6b2a4420.
