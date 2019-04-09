@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-176-g8260f23616
+%define glibcsrcdir glibc-2.29.9000-189-g648279f4af
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -156,7 +156,6 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
-Patch30: glibc-warning-fix.patch
 
 # In progress upstream submission for nsswitch.conf changes:
 # https://www.sourceware.org/ml/libc-alpha/2019-03/msg00425.html
@@ -1896,6 +1895,17 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Apr 09 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-11
+- Drop glibc-warning-fix.patch. Microbenchmark code fixed upstream.
+- Auto-sync with upstream branch master,
+  commit 648279f4af423c4783ec1dfa63cb7b46a7640217:
+- powerpc: Use generic wcscpy optimization
+- powerpc: Use generic wcschr optimization
+- powerpc: Use generic wcsrchr optimization
+- aarch64: thunderx2 memcpy implementation cleanup and streamlining
+- resolv: Remove support for RES_USE_INET6 and the inet6 option
+- resolv: Remove RES_INSECURE1, RES_INSECURE2
+
 * Thu Apr 04 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-10
 - Auto-sync with upstream branch master,
   commit 8260f23616c1a2a4e609f989a195fba7690a42ca:
