@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -253,7 +253,7 @@ Conflicts: prelink < 0.4.2
 
 %if 0%{?_enable_debug_packages}
 BuildRequires: elfutils >= 0.72
-BuildRequires: rpm >= 4.2-0.56
+BuildRequires: rpm >= 4.14.2.1-5
 %endif
 
 %if %{without bootstrap}
@@ -1550,7 +1550,7 @@ echo "%{_libdir}/libpthread_nonshared.a" >> compat-libpthread-nonshared.filelist
 # glibc-debuginfocommon, and glibc-debuginfo
 ###############################################################################
 
-find_debuginfo_args='--strict-build-id -g -i'
+find_debuginfo_args='--strict-build-id --g-libs -i'
 %ifarch %{debuginfocommonarches}
 find_debuginfo_args="$find_debuginfo_args \
 	-l common.filelist \
@@ -1895,6 +1895,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 10 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-12
+- Strip debugging information from installed programs again (#1661510)
+
 * Tue Apr 09 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-11
 - Drop glibc-warning-fix.patch. Microbenchmark code fixed upstream.
 - Auto-sync with upstream branch master,
