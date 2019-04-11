@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1726,22 +1726,26 @@ echo ====================PLT RELOCS LIBC.SO==============
 readelf -Wr %{glibc_sysroot}/%{_lib}/libc-*.so | sed -n -e "$PLTCMD"
 echo ====================PLT RELOCS END==================
 
+# Obtain a way to run the dynamic loader.  Avoid matching the symbolic
+# link and then pick the first loader (although there should be only
+# one).
+run_ldso="$(find %{glibc_sysroot}/%{_lib}/ld-*.so -type f | LC_ALL=C sort | head -n1) --library-path %{glibc_sysroot}/%{_lib}"
+
+# Show the auxiliary vector as seen by the new library
+# (even if we do not perform the valgrind test).
+LD_SHOW_AUXV=1 $run_ldso /bin/true
+
 # Finally, check if valgrind runs with the new glibc.
 # We want to fail building if valgrind is not able to run with this glibc so
 # that we can then coordinate with valgrind to get it fixed before we update
 # glibc.
-pushd build-%{target}
-
-# Show the auxiliary vector as seen by the new library
-# (even if we do not perform the valgrind test).
-LD_SHOW_AUXV=1 elf/ld.so --library-path .:elf:nptl:dlfcn /bin/true
-
 %if %{with valgrind}
-elf/ld.so --library-path .:elf:nptl:dlfcn \
-	/usr/bin/valgrind --error-exitcode=1 \
-	elf/ld.so --library-path .:elf:nptl:dlfcn /usr/bin/true
+$run_ldso /usr/bin/valgrind --error-exitcode=1 \
+	$run_ldso /usr/bin/true
+# true --help performs some memory allocations.
+$run_ldso /usr/bin/valgrind --error-exitcode=1 \
+	$run_ldso /usr/bin/true --help >/dev/null
 %endif
-popd
 
 %endif # %{run_glibc_tests}
 
@@ -1895,6 +1899,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Apr 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-14
+- Run valgrind smoke test against the install tree
+
 * Thu Apr 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-13
 - Do not use --g-libs with find-debuginfo.sh; it breaks valgrind (#1698824)
 
