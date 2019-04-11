@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -253,7 +253,7 @@ Conflicts: prelink < 0.4.2
 
 %if 0%{?_enable_debug_packages}
 BuildRequires: elfutils >= 0.72
-BuildRequires: rpm >= 4.14.2.1-5
+BuildRequires: rpm >= 4.2-0.56
 %endif
 
 %if %{without bootstrap}
@@ -1550,7 +1550,7 @@ echo "%{_libdir}/libpthread_nonshared.a" >> compat-libpthread-nonshared.filelist
 # glibc-debuginfocommon, and glibc-debuginfo
 ###############################################################################
 
-find_debuginfo_args='--strict-build-id --g-libs -i'
+find_debuginfo_args='--strict-build-id -g -i'
 %ifarch %{debuginfocommonarches}
 find_debuginfo_args="$find_debuginfo_args \
 	-l common.filelist \
@@ -1895,6 +1895,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Apr 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-13
+- Do not use --g-libs with find-debuginfo.sh; it breaks valgrind (#1698824)
+
 * Wed Apr 10 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-12
 - Strip debugging information from installed programs again (#1661510)
 
