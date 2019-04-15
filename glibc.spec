@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-189-g648279f4af
+%define glibcsrcdir glibc-2.29.9000-196-ge3f454bac0
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1899,6 +1899,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Apr 15 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-15
+- Auto-sync with upstream branch master,
+  commit e3f454bac0f968216699ca405c127c858f0657c7:
+- nss_dns: Do not replace root domain with empty string
+- alloc_buffer: Return unqualified pointer type in alloc_buffer_next
+- malloc: Set and reset all hooks for tracing (swbz#16573)
+
 * Thu Apr 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-14
 - Run valgrind smoke test against the install tree
 
