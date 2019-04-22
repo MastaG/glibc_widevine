@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-196-ge3f454bac0
+%define glibcsrcdir glibc-2.29.9000-207-g25f7a3c961
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1899,6 +1899,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Apr 22 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-16
+- Auto-sync with upstream branch master,
+  commit 25f7a3c96116a9102df8bf7b04ef160faa32416d.
+- malloc: make malloc fail with requests larger than PTRDIFF_MAX (BZ#23741)
+- powerpc: Fix format issue from 3a16dd780eeba602
+- powerpc: fma using builtins
+- powerpc: Use generic fabs{f} implementations
+- mips: Remove rt_sigreturn usage on context function
+- powerpc: Remove rt_sigreturn usage on context function
+- support: Add support_capture_subprogram
+- stdlib/tst-secure-getenv: handle >64 groups
+
 * Mon Apr 15 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-15
 - Auto-sync with upstream branch master,
   commit e3f454bac0f968216699ca405c127c858f0657c7:
