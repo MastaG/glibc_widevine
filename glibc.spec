@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.27-114-gde9d4aa353
 %define glibcversion 2.27
-%define glibcrelease 38%{?dist}
+%define glibcrelease 39%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -216,6 +216,12 @@ Patch0059: glibc-c-utf8-locale.patch
 
 # Bug 1615608 - Remove abort() warning in manual.
 Patch0060: glibc-rh1615608.patch
+Patch61: glibc-rh1702671-1.patch
+Patch62: glibc-rh1702671-2.patch
+Patch63: glibc-rh1702671-3.patch
+Patch64: glibc-rh1702671-4.patch
+Patch65: glibc-rh1702671-5.patch
+Patch66: glibc-rh1702671-6.patch
 
 ##############################################################################
 #
@@ -836,6 +842,12 @@ microbenchmark tests on the system.
 %patch2062 -p1
 %patch2063 -p1
 %patch0060 -p1
+%patch61 -p1
+%patch62 -p1
+%patch63 -p1
+%patch64 -p1
+%patch65 -p1
+%patch66 -p1
 
 ##############################################################################
 # %%prep - Additional prep required...
@@ -2075,6 +2087,9 @@ fi
 %endif
 
 %changelog
+* Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.27-39
+- Increase BIND_NOW coverage (#1702671)
+
 * Wed Apr 03 2019 Carlos O'Donell <carlos@redhat.com> - 2.27-38
 - Auto-sync with upstream branch release/2.27/master,
   commit de9d4aa3534282645fde9d3a4a1113a947a057db:
