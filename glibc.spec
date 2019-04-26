@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.27-114-gde9d4aa353
+%define glibcsrcdir glibc-2.27-115-g1961e5c729
 %define glibcversion 2.27
-%define glibcrelease 39%{?dist}
+%define glibcrelease 40%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2087,6 +2087,11 @@ fi
 %endif
 
 %changelog
+* Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.27-40
+- Auto-sync with upstream branch release/2.27/master,
+  commit 1961e5c72965a428e5ff18a49c4efdcb65991347:
+- Fix pldd hang (#1361689)
+
 * Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.27-39
 - Increase BIND_NOW coverage (#1702671)
 
