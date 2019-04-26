@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-95-g7423da211d
+%define glibcsrcdir glibc-2.28-98-g5cbb73004b
 %define glibcversion 2.28
-%define glibcrelease 28%{?dist}
+%define glibcrelease 29%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1909,6 +1909,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.28-29
+- Auto-sync with upstream branch release/2.28/master,
+  commit 5cbb73004b635e762e20b447c2d93c307cb40f41:
+- Fix pldd hang (#1361689)
+
 * Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.28-28
 - Increase BIND_NOW coverage (#1702671)
 
