@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-12-g0941350c20
+%define glibcsrcdir glibc-2.29-17-geaea1dfbe9
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1895,6 +1895,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.29-11
+- Auto-sync with upstream branch release/2.29/master,
+  commit eaea1dfbe95a31c29adc259100569962cddb6f19:
+- Fix pldd hang (#1361689)
+- malloc: Set and reset all hooks for tracing (swbz#16573)
+
 * Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.29-10
 - Increase BIND_NOW coverage (#1702671)
 
