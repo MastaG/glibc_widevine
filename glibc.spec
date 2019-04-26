@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-95-g7423da211d
 %define glibcversion 2.28
-%define glibcrelease 27%{?dist}
+%define glibcrelease 28%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -160,6 +160,12 @@ Patch23: glibc-python3.patch
 Patch24: glibc-with-nonshared-cflags.patch
 Patch25: glibc-asflags.patch
 Patch28: glibc-rh1615608.patch
+Patch29: glibc-rh1702671-1.patch
+Patch30: glibc-rh1702671-2.patch
+Patch31: glibc-rh1702671-3.patch
+Patch32: glibc-rh1702671-4.patch
+Patch33: glibc-rh1702671-5.patch
+Patch34: glibc-rh1702671-6.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1903,6 +1909,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.28-28
+- Increase BIND_NOW coverage (#1702671)
+
 * Wed Apr 03 2019 DJ Delorie <dj@redhat.com> - 2.28-27
 - Auto-sync with upstream branch release/2.28/master,
   commit 7423da211d1490d9fc76c2f0ce49e5dd90ea9bcc.
