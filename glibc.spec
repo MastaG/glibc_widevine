@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-17-geaea1dfbe9
+%define glibcsrcdir glibc-2.29-18-g52b7cd6e9a
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1895,6 +1895,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.29-12
+- Auto-sync with upstream branch release/2.29/master,
+  commit 52b7cd6e9a701bb203023d56e84551943dc6a4c0:
+- malloc: Check for large bin list corruption when inserting unsorted chunk
+  (swbz#24216)
+
 * Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.29-11
 - Auto-sync with upstream branch release/2.29/master,
   commit eaea1dfbe95a31c29adc259100569962cddb6f19:
