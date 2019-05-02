@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-98-g5cbb73004b
+%define glibcsrcdir glibc-2.28-102-g4a5e58827f
 %define glibcversion 2.28
-%define glibcrelease 29%{?dist}
+%define glibcrelease 30%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1909,6 +1909,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.28-30
+- Auto-sync with upstream branch release/2.28/master,
+  commit 4a5e58827f2b6efa94ea50a9db5f3c861173837f:
+- malloc: Improve bad chunk detection (#1705549)
+
 * Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.28-29
 - Auto-sync with upstream branch release/2.28/master,
   commit 5cbb73004b635e762e20b447c2d93c307cb40f41:
