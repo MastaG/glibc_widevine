@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-219-gc57afec0a9
+%define glibcsrcdir glibc-2.29.9000-224-g20aa581958
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1899,6 +1899,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-18
+- Auto-sync with upstream branch master,
+  commit 20aa5819586ac7ad11f711bab64feda307965191:
+- semaphore.h: Add nonnull attributes
+- powerpc: Remove power4 mpa optimization
+- powerpc: Refactor ceil/ceilf
+- Fix -O1 compilation errors with `__ddivl' and `__fdivl' [BZ #19444]
+- Make mktime etc. compatible with __time64_t
+
 * Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-17
 - Auto-sync with upstream branch master,
   commit c57afec0a9b318bb691e0f5fa4e9681cf30df7a4:
