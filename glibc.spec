@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-224-g20aa581958
+%define glibcsrcdir glibc-2.29.9000-261-g32ff397533
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1899,6 +1899,44 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed May 15 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-19
+- Auto-sync with upstream branch master,
+  commit 32ff397533715988c19cbf3675dcbd727ec13e18:
+- Fix crash in _IO_wfile_sync (#1710460)
+- nss: Turn __nss_database_lookup into a compatibility symbol
+- support: Add support_install_rootsbindir
+- iconv: Remove public declaration of __gconv_transliterate
+- Linux: Add the tgkill function
+- manual: Adjust twalk_r documentation.
+- elf: Fix tst-pldd for non-default --prefix and/or --bindir (swbz#24544)
+- support: Export bindir path on support_path
+- configure: Make --bindir effective
+- x86: Remove arch-specific low level lock implementation
+- nptl: Assume LLL_LOCK_INITIALIZER is 0
+- nptl: Small optimization for lowlevellock
+- Add single-thread.h header
+- locale: Update to Unicode 12.1.0 (swbz#24535)
+- malloc: Fix tcache count maximum (swbz#24531)
+- sem_close: Use __twalk_r
+- support: Fix timespec printf
+- nptl/tst-abstime: Use libsupport
+- nptl: Convert some rwlock tests to use libsupport
+- nptl: Use recent additions to libsupport in tst-sem5
+- nptl: Convert tst-cond11.c to use libsupport
+- support: Add timespec.h
+- Move nptl/tst-eintr1 to xtests (swbz#24537)
+- powerpc: trunc/truncf refactor
+- powerpc: round/roundf refactor
+- powerpc: floor/floorf refactor
+- support: Add xclock_gettime
+- malloc/tst-mallocfork2: Use process-shared barriers
+- Update syscall-names.list for Linux 5.1
+- Use GCC 9 in build-many-glibcs.py
+- aarch64: thunderx2 memmove performance improvements
+- misc/tst-tsearch: Additional explicit error checking
+- elf: Fix elf/tst-pldd with --enable-hardcoded-path-in-tests (swbz#24506)
+- misc: Add twalk_r function
+
 * Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-18
 - Auto-sync with upstream branch master,
   commit 20aa5819586ac7ad11f711bab64feda307965191:
