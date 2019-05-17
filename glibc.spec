@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -136,7 +136,6 @@ Source12: ChangeLog.old
 # - See each individual patch file for origin and upstream status.
 # - For new patches follow template.patch format.
 ##############################################################################
-Patch1: glibc-post_upgrade.patch
 Patch2: glibc-fedora-nscd.patch
 Patch3: glibc-rh697421.patch
 Patch4: glibc-fedora-linux-tcsetattr.patch
@@ -399,8 +398,11 @@ libraries, as well as national language (locale) support.
 /sbin/ldconfig
 %end
 
-# We need to run ldconfig manually because ldconfig cannot handle the
-# relative include path in the /etc/ld.so.conf file we gneerate.
+# We need to run ldconfig manually because __brp_ldconfig assumes that
+# glibc itself is always installed in $RPM_BUILD_ROOT, but with sysroots
+# we may be installed into a subdirectory of that path.  Therefore we
+# unset __brp_ldconfig and run ldconfig by hand with the sysroots path
+# passed to -r.
 %undefine __brp_ldconfig
 
 ######################################################################
@@ -1089,10 +1091,6 @@ truncate -s 0 %{glibc_sysroot}/etc/gai.conf
 truncate -s 0 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
 chmod 644 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
 
-# Install the upgrade program
-install -m 700 build-%{target}/elf/glibc_post_upgrade \
-  %{glibc_sysroot}%{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
-
 ##############################################################################
 # Install debug copies of unstripped static libraries
 # - This step must be last in order to capture any additional static
@@ -1115,8 +1113,8 @@ rm -rf %{glibc_sysroot}%{_prefix}/share/zoneinfo
 #
 # XXX: Ideally ld.so.conf should have the timestamp of the spec file, but there
 # doesn't seem to be any macro to give us that.  So we do the next best thing,
-# which is to at least keep the timestamp consistent.  The choice of using
-# glibc_post_upgrade.c is arbitrary.
+# which is to at least keep the timestamp consistent. The choice of using
+# SOURCE0 is arbitrary.
 touch -r %{SOURCE0} %{glibc_sysroot}/etc/ld.so.conf
 touch -r sunrpc/etc.rpc %{glibc_sysroot}/etc/rpc
 
@@ -1341,8 +1339,9 @@ chmod 0444 master.filelist
 # - The partial (lib*_p.a) static libraries, include files.
 # - The static files, objects, unversioned DSOs, and nscd.
 # - The bin, locale, some sbin, and share.
-#   - The use of [^gi] is meant to exclude all files except glibc_post_upgrade,
-#     and iconvconfig, which we want in the main packages.
+#   - We want iconvconfig in the main package and we do this by using
+#     a double negation of -v and [^i] so it removes all files in
+#     sbin *but* iconvconfig.
 # - All the libnss files (we add back the ones we want later).
 # - All bench test binaries.
 # - The aux-cache, since it's handled specially in the files section.
@@ -1357,7 +1356,7 @@ cat master.filelist \
 	-e 'nscd' \
 	-e '%{_prefix}/bin' \
 	-e '%{_prefix}/lib/locale' \
-	-e '%{_prefix}/sbin/[^gi]' \
+	-e '%{_prefix}/sbin/[^i]' \
 	-e '%{_prefix}/share' \
 	-e '/var/db/Makefile' \
 	-e '/libnss_.*\.so[0-9.]*$' \
@@ -1433,10 +1432,13 @@ grep '%{_libdir}/lib.*\.a' < master.filelist \
 ###############################################################################
 
 # All of the bin and certain sbin files go into the common package except
-# glibc_post_upgrade.* and iconvconfig which need to go in glibc. Likewise
-# nscd is excluded because it goes in nscd.
+# iconvconfig which needs to go in glibc. Likewise nscd is excluded because
+# it goes in nscd. The iconvconfig binary is kept in the main glibc package
+# because we use it in the post-install scriptlet to rebuild the
+# gconv-modules.cache.
 grep '%{_prefix}/bin' master.filelist >> common.filelist
-grep '%{_prefix}/sbin/[^gi]' master.filelist \
+grep '%{_prefix}/sbin' master.filelist \
+	| grep -v '%{_prefix}/sbin/iconvconfig' \
 	| grep -v 'nscd' >> common.filelist
 # All of the files under share go into the common package since they should be
 # multilib-independent.
@@ -1736,7 +1738,135 @@ if rpm.vercmp(rel, required) < 0 then
   error("FATAL: kernel too old", 0)
 end
 
-%post -p %{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
+%post -p <lua>
+-- We use lua's posix.exec because there may be no shell that we can
+-- run during glibc upgrade.
+function post_exec (program, ...)
+  local pid = posix.fork ()
+  if pid == 0 then
+    assert (posix.exec (program, ...))
+  elseif pid > 0 then
+    posix.wait (pid)
+  end
+end
+
+-- (1) Remove multilib libraries from previous installs.
+-- In order to support in-place upgrades, we must immediately remove
+-- obsolete platform directories after installing a new glibc
+-- version.  RPM only deletes files removed by updates near the end
+-- of the transaction.  If we did not remove the obsolete platform
+-- directories here, they may be preferred by the dynamic linker
+-- during the execution of subsequent RPM scriptlets, likely
+-- resulting in process startup failures.
+
+-- Full set of libraries glibc may install.
+install_libs = { "anl", "BrokenLocale", "c", "dl", "m", "mvec",
+		 "nss_compat", "nss_db", "nss_dns", "nss_files",
+		 "nss_hesiod", "pthread", "resolv", "rt", "SegFault",
+		 "thread_db", "util" }
+
+-- We are going to remove these libraries. Generally speaking we remove
+-- all core libraries in the multilib directory.
+-- We employ a tight match where X.Y is in [2.0,9.9*], so we would 
+-- match "libc-2.0.so" and so on up to "libc-9.9*".
+remove_regexps = {}
+for i = 1, #install_libs do
+  remove_regexps[i] = ("lib" .. install_libs[i]
+                       .. "%%-[2-9]%%.[0-9]+%%.so$")
+end
+
+-- Two exceptions:
+remove_regexps[#install_libs + 1] = "libthread_db%%-1%%.0%%.so"
+remove_regexps[#install_libs + 2] = "libSegFault%%.so"
+
+-- We are going to search these directories.
+local remove_dirs = { "%{_libdir}/i686",
+		      "%{_libdir}/i686/nosegneg",
+		      "%{_libdir}/power6",
+		      "%{_libdir}/power7",
+		      "%{_libdir}/power8" }
+
+-- Walk all the directories with files we need to remove...
+for _, rdir in ipairs (remove_dirs) do
+  if posix.access (rdir) then
+    -- If the directory exists we look at all the files...
+    local remove_files = posix.files (rdir)
+    for rfile in remove_files do
+      for _, rregexp in ipairs (remove_regexps) do
+	-- Does it match the regexp?
+	local dso = string.match (rfile, rregexp)
+        if (dso ~= nil) then
+	  -- Removing file...
+	  os.remove (rdir .. '/' .. rfile)
+	end
+      end
+    end
+  end
+end
+
+-- (2) Update /etc/ld.so.conf
+-- Next we update /etc/ld.so.conf to ensure that it starts with
+-- a literal "include ld.so.conf.d/*.conf".
+
+local ldsoconf = "/etc/ld.so.conf"
+local ldsoconf_tmp = "/etc/glibc_post_upgrade.ld.so.conf"
+
+if posix.access (ldsoconf) then
+
+  -- We must have a "include ld.so.conf.d/*.conf" line.
+  local have_include = false
+  for line in io.lines (ldsoconf) do
+    -- This must match, and we don't ignore whitespace.
+    if string.match (line, "^include ld.so.conf.d/%%*%%.conf$") ~= nil then
+      have_include = true
+    end
+  end
+
+  if not have_include then
+    -- Insert "include ld.so.conf.d/*.conf" line at the start of the
+    -- file. We only support one of these post upgrades running at
+    -- a time (temporary file name is fixed).
+    local tmp_fd = io.open (ldsoconf_tmp, "w")
+    if tmp_fd ~= nil then
+      tmp_fd:write ("include ld.so.conf.d/*.conf\n")
+      for line in io.lines (ldsoconf) do
+        tmp_fd:write (line .. "\n")
+      end
+      tmp_fd:close ()
+      local res = os.rename (ldsoconf_tmp, ldsoconf)
+      if res == nil then
+        io.stdout:write ("Error: Unable to update configuration file (rename).\n")
+      end
+    else
+      io.stdout:write ("Error: Unable to update configuration file (open).\n")
+    end
+  end
+end
+
+-- (3) Rebuild ld.so.cache early.
+-- If the format of the cache changes then we need to rebuild
+-- the cache early to avoid any problems running binaries with
+-- the new glibc.
+
+-- Note: We use _prefix because Fedora's UsrMove says so.
+post_exec ("%{_prefix}/sbin/ldconfig")
+
+-- (4) Update gconv modules cache.
+-- If the /usr/lib/gconv/gconv-modules.cache exists, then update it
+-- with the latest set of modules that were just installed.
+-- We assume that the cache is in _libdir/gconv and called
+-- "gconv-modules.cache".
+
+local iconv_dir = "%{_libdir}/gconv"
+local iconv_cache = iconv_dir .. "/gconv-modules.cache"
+if (posix.utime (iconv_cache) == 0) then
+  post_exec ("%{_prefix}/sbin/iconvconfig",
+	     "-o", iconv_cache,
+	     "--nostdlib",
+	     iconv_dir)
+else
+  io.stdout:write ("Error: Missing " .. iconv_cache .. " file.\n")
+end
 
 %pre headers
 # this used to be a link and it is causing nightmares now
@@ -1855,6 +1985,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sat Jun 01 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-23
+- Convert glibc_post_upgrade to lua.
+
 * Sat Jun 01 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-22
 - Remove support for filtering glibc-all-langpacks (#1715891)
 - Auto-sync with upstream branch master,
