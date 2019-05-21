@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-261-g32ff397533
+%define glibcsrcdir glibc-2.29.9000-280-g46ae07324b
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1899,6 +1899,30 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue May 21 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-20
+- Auto-sync with upstream branch master,
+  commit 46ae07324b1cd50fbf8f37a076d6babcfca7c510.
+- Improve string benchtest timing
+- sysvipc: Add missing bit of semtimedop s390 consolidation
+- wcsmbs: Fix data race in __wcsmbs_clone_conv [swbz #24584]
+- libio: Fix gconv-related memory leak [swbz #24583]
+- libio: Remove codecvt vtable [swbz #24588]
+- support: Expose sbindir as support_sbindir_prefix
+- support: Add missing EOL terminators on timespec
+- support: Correct confusing comment
+- sysvipc: Consolidate semtimedop s390
+- sysvipc: Fix compat msgctl (swbz#24570)
+- Add NT_ARM_PACA_KEYS and NT_ARM_PACG_KEYS from Linux 5.1 to elf.h.
+- Small tcache improvements
+- manual: Document O_DIRECTORY
+- Update kernel-features.h files for Linux 5.1.
+- nss_nis, nss_nisplus: Remove RES_USE_INET6 handling
+- nss_files: Remove RES_USE_INET6 from hosts processing
+- support: Report NULL blobs explicitly in TEST_COMPARE
+- dlfcn: Guard __dlerror_main_freeres with __libc_once_get (once) [swbz# 24476]
+- Add missing Changelog entry
+
+
 * Wed May 15 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-19
 - Auto-sync with upstream branch master,
   commit 32ff397533715988c19cbf3675dcbd727ec13e18:
