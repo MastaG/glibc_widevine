@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-280-g46ae07324b
+%define glibcsrcdir glibc-2.29.9000-286-g85188d8211
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1899,6 +1899,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon May 27 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-21
+- Auto-sync with upstream branch master,
+  commit 85188d8211698d1a255f0aec6529546db5c56de3:
+- Remove support for PowerPC SPE extension
+- elf: Add tst-ldconfig-bad-aux-cache test
+- Add F_SEAL_FUTURE_WRITE from Linux 5.1 to bits/fcntl-linux.h
+- nss_dns: Check for proper A/AAAA address alignment
+
 * Tue May 21 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-20
 - Auto-sync with upstream branch master,
   commit 46ae07324b1cd50fbf8f37a076d6babcfca7c510.
