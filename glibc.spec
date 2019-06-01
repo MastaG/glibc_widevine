@@ -118,7 +118,6 @@ License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+ and GPLv2+ with exceptio
 
 URL: http://www.gnu.org/software/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.xz
-Source1: build-locale-archive.c
 Source4: nscd.conf
 Source7: nsswitch.conf
 Source8: power6emul.c
@@ -146,7 +145,6 @@ Patch6: glibc-fedora-localedef.patch
 Patch7: glibc-fedora-nis-rh188246.patch
 Patch8: glibc-fedora-manual-dircategory.patch
 Patch9: glibc-rh827510.patch
-Patch10: glibc-fedora-locarchive.patch
 Patch12: glibc-rh819430.patch
 Patch13: glibc-fedora-localedata-rh61908.patch
 Patch14: glibc-fedora-__libc_multiple_libcs.patch
@@ -1032,15 +1030,12 @@ rm -f %{glibc_sysroot}%{_infodir}/libc.info*
 olddir=`pwd`
 pushd %{glibc_sysroot}%{_prefix}/lib/locale
 rm -f locale-archive
-# Intentionally we do not pass --alias-file=, aliases will be added
-# by build-locale-archive.
 $olddir/build-%{target}/elf/ld.so \
         --library-path $olddir/build-%{target}/ \
         $olddir/build-%{target}/locale/localedef \
+	--alias-file=$olddir/intl/locale.alias \
         --prefix %{glibc_sysroot} --add-to-archive \
         eo *_*
-# Setup the locale-archive template for use by glibc-all-langpacks.
-mv locale-archive{,.tmpl}
 # Create the file lists for the language specific sub-packages:
 for i in eo *_*
 do
@@ -1125,17 +1120,6 @@ rm -rf %{glibc_sysroot}%{_prefix}/share/zoneinfo
 touch -r %{SOURCE0} %{glibc_sysroot}/etc/ld.so.conf
 touch -r sunrpc/etc.rpc %{glibc_sysroot}/etc/rpc
 
-pushd build-%{target}
-$GCC -Os -g -static -o build-locale-archive %{SOURCE1} \
-	../build-%{target}/locale/locarchive.o \
-	../build-%{target}/locale/md5.o \
-	../build-%{target}/locale/record-status.o \
-	-I. -DDATADIR=\"%{_datadir}\" -DPREFIX=\"%{_prefix}\" \
-	-L../build-%{target} \
-	-B../build-%{target}/csu/ -lc -lc_nonshared
-install -m 700 build-locale-archive %{glibc_sysroot}%{_prefix}/sbin/build-locale-archive
-popd
-
 # Lastly copy some additional documentation for the packages.
 rm -rf documentation
 mkdir documentation
@@ -1185,7 +1169,6 @@ rm -f %{glibc_sysroot}%{_infodir}/dir
 %endif
 
 %ifnarch %{auxarches}
-truncate -s 0 %{glibc_sysroot}/%{_prefix}/lib/locale/locale-archive
 mkdir -p %{glibc_sysroot}/var/{db,run}/nscd
 touch %{glibc_sysroot}/var/{db,run}/nscd/{passwd,group,hosts,services}
 touch %{glibc_sysroot}/var/run/nscd/{socket,nscd.pid}
@@ -1363,7 +1346,6 @@ chmod 0444 master.filelist
 # - All the libnss files (we add back the ones we want later).
 # - All bench test binaries.
 # - The aux-cache, since it's handled specially in the files section.
-# - The build-locale-archive binary since it's in the common package.
 cat master.filelist \
 	| grep -v \
 	-e '%{_infodir}' \
@@ -1382,7 +1364,6 @@ cat master.filelist \
 	-e '/libnsl' \
 	-e 'glibc-benchtests' \
 	-e 'aux-cache' \
-	-e 'build-locale-archive' \
 	> glibc.filelist
 
 # Add specific files:
@@ -1468,9 +1449,6 @@ grep '%{_prefix}/share' master.filelist \
 	-e '%%dir %{prefix}/share/info' \
 	-e '%%dir %{prefix}/share' \
 	>> common.filelist
-
-# Add the binary to build locales to the common subpackage.
-echo '%{_prefix}/sbin/build-locale-archive' >> common.filelist
 
 ###############################################################################
 # nscd
@@ -1760,27 +1738,6 @@ end
 
 %post -p %{_prefix}/sbin/glibc_post_upgrade.%{_target_cpu}
 
-%posttrans all-langpacks -e -p <lua>
--- If at the end of the transaction we are still installed
--- (have a template of non-zero size), then we rebuild the
--- locale cache (locale-archive) from the pre-populated
--- locale cache (locale-archive.tmpl) i.e. template.
-if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
-  pid = posix.fork()
-  if pid == 0 then
-    posix.exec("%{_prefix}/sbin/build-locale-archive", "--install-langs", "%%{_install_langs}")
-  elseif pid > 0 then
-    posix.wait(pid)
-  end
-end
-
-%postun all-langpacks -p <lua>
--- In the postun we always remove the locale cache.
--- We are being uninstalled and if this is an upgrade
--- then the new packages template will be used to
--- recreate a new copy of the cache.
-os.remove("%{_prefix}/lib/locale/locale-archive")
-
 %pre headers
 # this used to be a link and it is causing nightmares now
 if [ -L %{_prefix}/include/scsi ] ; then
@@ -1837,8 +1794,7 @@ fi
 %doc documentation/gai.conf
 
 %files all-langpacks
-%attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
-%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
+%attr(0644,root,root) %{_prefix}/lib/locale/locale-archive
 
 %files locale-source
 %dir %{_prefix}/share/i18n/locales
