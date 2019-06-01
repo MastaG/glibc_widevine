@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-286-g85188d8211
+%define glibcsrcdir glibc-2.29.9000-292-g9250e6610f
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 21%{?dist}
+Release: 22%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1855,6 +1855,17 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sat Jun 01 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-22
+- Remove support for filtering glibc-all-langpacks (#1715891)
+- Auto-sync with upstream branch master,
+  commit 9250e6610fdb0f3a6f238d2813e319a41fb7a810:
+- powerpc: Fix build failures with current GCC
+- Remove unused get_clockfreq files
+- powerpc: generic nearbyint/nearbyintf
+- tt_RU: Add lang_name (swbz#24370)
+- tt_RU: Fix orthographic mistakes in mon and abmon sections (swbz#24369)
+- Add IGMP_MRDISC_ADV from Linux 5.1 to netinet/igmp.h.
+
 * Mon May 27 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-21
 - Auto-sync with upstream branch master,
   commit 85188d8211698d1a255f0aec6529546db5c56de3:
