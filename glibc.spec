@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-292-g9250e6610f
+%define glibcsrcdir glibc-2.29.9000-296-gdc91a19e6f
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 23%{?dist}
+Release: 24%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1985,6 +1985,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 03 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-24
+- Auto-sync with upstream branch master,
+  commit dc91a19e6f71e1523f4ac179191a29b2131d74bb:
+- Linux: Add oddly-named arm syscalls to syscall-names.list.
+- arm: Remove ioperm/iopl/inb/inw/inl/outb/outw/outl support.
+- Add INADDR_ALLSNOOPERS_GROUP from Linux 5.1 to netinet/in.h.
+
 * Sat Jun 01 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-23
 - Convert glibc_post_upgrade to lua.
 
