@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 25%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -159,6 +159,8 @@ Patch28: glibc-rh1615608.patch
 # In progress upstream submission for nscd.conf changes:
 # https://www.sourceware.org/ml/libc-alpha/2019-03/msg00436.html
 Patch31: glibc-fedora-nscd-warnings.patch
+
+Patch32: glibc-rh1716710.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -507,6 +509,11 @@ end
 # and thus satisfies glibc's requirement for installed locales.
 # Users can add one more other langauge packs and then eventually
 # uninstall all-langpacks to save space.
+#
+# Historically, the postun scriptlet of glibc-all-langpacks deleted
+# the locale-archive file.  Therefore, we tell glibc to use a
+# different, release-specific name.
+%global locale_archive_name locale-archive.%{version}-%{release}
 %package all-langpacks
 Summary: All language packs for %{name}.
 Requires: %{name} = %{version}-%{release}
@@ -828,6 +835,7 @@ build()
 		--prefix=%{_prefix} \
 		--with-headers=%{_prefix}/include $EnableKernel \
 		--with-nonshared-cflags="$BuildFlagsNonshared" \
+		--with-locale-archive-name="%{locale_archive_name}" \
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
@@ -1031,7 +1039,7 @@ rm -f %{glibc_sysroot}%{_infodir}/libc.info*
 %ifnarch %{auxarches}
 olddir=`pwd`
 pushd %{glibc_sysroot}%{_prefix}/lib/locale
-rm -f locale-archive
+rm -f %{locale_archive_name}
 $olddir/build-%{target}/elf/ld.so \
         --library-path $olddir/build-%{target}/ \
         $olddir/build-%{target}/locale/localedef \
@@ -1924,7 +1932,7 @@ fi
 %doc documentation/gai.conf
 
 %files all-langpacks
-%attr(0644,root,root) %{_prefix}/lib/locale/locale-archive
+%attr(0644,root,root) %{_prefix}/lib/locale/%{locale_archive_name}
 
 %files locale-source
 %dir %{_prefix}/share/i18n/locales
@@ -1985,6 +1993,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jun  4 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-25
+- Add glibc version to locale-archive name (#1716710)
+
 * Mon Jun 03 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-24
 - Auto-sync with upstream branch master,
   commit dc91a19e6f71e1523f4ac179191a29b2131d74bb:
