@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-18-g52b7cd6e9a
+%define glibcsrcdir glibc-2.29-24-g2ec0b166bf
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1897,6 +1897,16 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun 05 2019 Florian Weimer <fweimer@redhat.com> - 2.29-13
+- Fix --without benchtests builds.
+- Auto-sync with upstream branch release/2.29/master,
+  commit 2ec0b166bf04e22bb6921a08bb1a1131b57889a1:
+- Use a proper C tokenizer to implement the obsolete typedefs test
+- malloc: Fix warnings in tests with GCC
+- Fix tcache count maximum (swbz#24531)
+- dlfcn: Guard __dlerror_main_freeres with __libc_once_get (once) (swbz#24476)
+- Fix crash in _IO_wfile_sync (#1710460)
+
 * Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.29-12
 - Auto-sync with upstream branch release/2.29/master,
   commit 52b7cd6e9a701bb203023d56e84551943dc6a4c0:
