@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1773,11 +1773,11 @@ if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
 end
 
 %postun all-langpacks -p <lua>
--- In the postun we always remove the locale cache.
--- We are being uninstalled and if this is an upgrade
--- then the new packages template will be used to
--- recreate a new copy of the cache.
-os.remove("%{_prefix}/lib/locale/locale-archive")
+-- In the postun we remove the locale cache if unstalling.
+-- (build-locale-archive will delete the archive during an upgrade.)
+if arg[2] == 0 then
+  os.remove("%{_prefix}/lib/locale/locale-archive")
+end
 
 %pre headers
 # this used to be a link and it is causing nightmares now
@@ -1836,7 +1836,7 @@ fi
 
 %files all-langpacks
 %attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
-%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
+%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %{_prefix}/lib/locale/locale-archive
 
 %files locale-source
 %dir %{_prefix}/share/i18n/locales
@@ -1897,6 +1897,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun 05 2019 Florian Weimer <fweimer@redhat.com> - 2.29-14
+- Delete /usr/lib/locale/locale-archive only on uninstall (#1717367)
+- Do not mark /usr/lib/locale/locale-archive as a configuration file
+  because it is always automatically overwritten by build-locale-archive.
+
 * Wed Jun 05 2019 Florian Weimer <fweimer@redhat.com> - 2.29-13
 - Fix --without benchtests builds.
 - Auto-sync with upstream branch release/2.29/master,
