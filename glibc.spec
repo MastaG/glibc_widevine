@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-105-g58d2672f64
 %define glibcversion 2.28
-%define glibcrelease 32%{?dist}
+%define glibcrelease 33%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1775,11 +1775,11 @@ if posix.stat("%{_prefix}/lib/locale/locale-archive.tmpl", "size") > 0 then
 end
 
 %postun all-langpacks -p <lua>
--- In the postun we always remove the locale cache.
--- We are being uninstalled and if this is an upgrade
--- then the new packages template will be used to
--- recreate a new copy of the cache.
-os.remove("%{_prefix}/lib/locale/locale-archive")
+-- In the postun we remove the locale cache if unstalling.
+-- (build-locale-archive will delete the archive during an upgrade.)
+if arg[2] == 0 then
+  os.remove("%{_prefix}/lib/locale/locale-archive")
+end
 
 %if %{with docs}
 %post devel
@@ -1850,7 +1850,7 @@ fi
 
 %files all-langpacks
 %attr(0644,root,root) %verify(not md5 size mtime) %{_prefix}/lib/locale/locale-archive.tmpl
-%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %config(missingok,noreplace) %{_prefix}/lib/locale/locale-archive
+%attr(0644,root,root) %verify(not md5 size mtime mode) %ghost %{_prefix}/lib/locale/locale-archive
 
 %files locale-source
 %dir %{_prefix}/share/i18n/locales
@@ -1911,6 +1911,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun  6 2019 Florian Weimer <fweimer@redhat.com> - 2.28-33
+- Delete /usr/lib/locale/locale-archive only on uninstall (#1717367)
+- Do not mark /usr/lib/locale/locale-archive as a configuration file
+  because it is always automatically overwritten by build-locale-archive.
+
 * Thu Jun  6 2019 Florian Weimer <fweimer@redhat.com> - 2.28-32
 - locale: Add LOCPATH diagnostics (#1717492)
 
