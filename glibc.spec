@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 25%{?dist}
+Release: 26%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -159,8 +159,6 @@ Patch28: glibc-rh1615608.patch
 # In progress upstream submission for nscd.conf changes:
 # https://www.sourceware.org/ml/libc-alpha/2019-03/msg00436.html
 Patch31: glibc-fedora-nscd-warnings.patch
-
-Patch32: glibc-rh1716710.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -509,11 +507,6 @@ end
 # and thus satisfies glibc's requirement for installed locales.
 # Users can add one more other langauge packs and then eventually
 # uninstall all-langpacks to save space.
-#
-# Historically, the postun scriptlet of glibc-all-langpacks deleted
-# the locale-archive file.  Therefore, we tell glibc to use a
-# different, release-specific name.
-%global locale_archive_name locale-archive.%{version}-%{release}
 %package all-langpacks
 Summary: All language packs for %{name}.
 Requires: %{name} = %{version}-%{release}
@@ -835,7 +828,6 @@ build()
 		--prefix=%{_prefix} \
 		--with-headers=%{_prefix}/include $EnableKernel \
 		--with-nonshared-cflags="$BuildFlagsNonshared" \
-		--with-locale-archive-name="%{locale_archive_name}" \
 		--enable-bind-now \
 		--build=%{target} \
 		--enable-stack-protector=strong \
@@ -1039,13 +1031,18 @@ rm -f %{glibc_sysroot}%{_infodir}/libc.info*
 %ifnarch %{auxarches}
 olddir=`pwd`
 pushd %{glibc_sysroot}%{_prefix}/lib/locale
-rm -f %{locale_archive_name}
+rm -f locale-archive
 $olddir/build-%{target}/elf/ld.so \
         --library-path $olddir/build-%{target}/ \
         $olddir/build-%{target}/locale/localedef \
 	--alias-file=$olddir/intl/locale.alias \
         --prefix %{glibc_sysroot} --add-to-archive \
         eo *_*
+# Historically, glibc-all-langpacks deleted the file on updates (sic),
+# so we need to restore it in the posttrans scriptlet (like the old
+# glibc-all-langpacks versions)
+ln locale-archive locale-archive.real
+
 # Create the file lists for the language specific sub-packages:
 for i in eo *_*
 do
@@ -1876,6 +1873,30 @@ else
   io.stdout:write ("Error: Missing " .. iconv_cache .. " file.\n")
 end
 
+%posttrans all-langpacks -e -p <lua>
+-- The old glibc-all-langpacks postun scriptlet deleted the locale-archive
+-- file, so we may have to resurrect it on upgrades.
+local archive_path = "%{_prefix}/lib/locale/locale-archive"
+local real_path = "%{_prefix}/lib/locale/locale-archive.real"
+local stat_archive = posix.stat(archive_path)
+local stat_real = posix.stat(real_path)
+-- If the hard link was removed, restore it.
+if stat_archive ~= nil and stat_real ~= nil
+    and (stat_archive.ino ~= stat_real.ino
+         or stat_archive.dev ~= stat_real.dev) then
+  posix.unlink(archive_path)
+  stat_archive = nil
+end
+-- If the file is gone, restore it.
+if stat_archive == nil then
+  posix.link(real_path, archive_path)
+end
+-- Remove .rpmsave file potentially created due to config file change.
+local save_path = archive_path .. ".rpmsave"
+if posix.access(save_path) then
+  posix.unlink(save_path)
+end
+
 %pre headers
 # this used to be a link and it is causing nightmares now
 if [ -L %{_prefix}/include/scsi ] ; then
@@ -1932,7 +1953,8 @@ fi
 %doc documentation/gai.conf
 
 %files all-langpacks
-%attr(0644,root,root) %{_prefix}/lib/locale/%{locale_archive_name}
+%{_prefix}/lib/locale/locale-archive
+%{_prefix}/lib/locale/locale-archive.real
 
 %files locale-source
 %dir %{_prefix}/share/i18n/locales
@@ -1993,6 +2015,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun  5 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-26
+- Restore /usr/lib/locale/locale-archive under its original name (#1716710)
+
 * Tue Jun  4 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-25
 - Add glibc version to locale-archive name (#1716710)
 
