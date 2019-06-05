@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-102-g4a5e58827f
+%define glibcsrcdir glibc-2.28-105-g58d2672f64
 %define glibcversion 2.28
-%define glibcrelease 30%{?dist}
+%define glibcrelease 31%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1909,6 +1909,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun 05 2019 Florian Weimer <fweimer@redhat.com> - 2.28-31
+- Auto-sync with upstream branch release/2.28/master,
+  commit 58d2672f64176fcb323859d3bd5240fb1cf8f25c:
+- malloc: Fix tcache count maximum (swbz#24531)
+- dlfcn: Guard __dlerror_main_freeres with __libc_once_get (once) (swbz#24476)
+- libio: Fix crash in _IO_wfile_sync (#1710460)
+
 * Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.28-30
 - Auto-sync with upstream branch release/2.28/master,
   commit 4a5e58827f2b6efa94ea50a9db5f3c861173837f:
