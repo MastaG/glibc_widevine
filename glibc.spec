@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -164,6 +164,8 @@ Patch32: glibc-rh1702671-3.patch
 Patch33: glibc-rh1702671-4.patch
 Patch34: glibc-rh1702671-5.patch
 Patch35: glibc-rh1702671-6.patch
+Patch36: glibc-rh1717492-1.patch
+Patch37: glibc-rh1717492-2.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1897,6 +1899,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun  6 2019 Florian Weimer <fweimer@redhat.com> - 2.29-15
+- locale: Add LOCPATH diagnostics (#1717492)
+
 * Wed Jun 05 2019 Florian Weimer <fweimer@redhat.com> - 2.29-14
 - Delete /usr/lib/locale/locale-archive only on uninstall (#1717367)
 - Do not mark /usr/lib/locale/locale-archive as a configuration file
