@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-105-g58d2672f64
 %define glibcversion 2.28
-%define glibcrelease 31%{?dist}
+%define glibcrelease 32%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -166,6 +166,8 @@ Patch31: glibc-rh1702671-3.patch
 Patch32: glibc-rh1702671-4.patch
 Patch33: glibc-rh1702671-5.patch
 Patch34: glibc-rh1702671-6.patch
+Patch35: glibc-rh1717492-1.patch
+Patch36: glibc-rh1717492-2.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1909,6 +1911,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun  6 2019 Florian Weimer <fweimer@redhat.com> - 2.28-32
+- locale: Add LOCPATH diagnostics (#1717492)
+
 * Wed Jun 05 2019 Florian Weimer <fweimer@redhat.com> - 2.28-31
 - Auto-sync with upstream branch release/2.28/master,
   commit 58d2672f64176fcb323859d3bd5240fb1cf8f25c:
