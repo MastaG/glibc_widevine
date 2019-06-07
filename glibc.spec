@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2016,6 +2016,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Aug 16 2019 Carlos O'Donell <carlos@redhat.com> - 2.30.9000-2
+- Fix C.UTF-8 to use full code ranges.
+
 * Thu Aug 15 2019 Florian Weimer <fweimer@redhat.com> - 2.30.9000-1
 - Auto-sync with upstream branch master,
   commit 341da5b4b6253de9a7581a066f33f89cacb44dec.
