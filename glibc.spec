@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-296-gdc91a19e6f
+%define glibcsrcdir glibc-2.29.9000-302-g51ea67d548
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 26%{?dist}
+Release: 27%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 10 2019 Patsy Franklin <patsy@redhat.com> - 2.29.9000-27
+- Auto-sync with upstream branch master,
+  commit 51ea67d54882318c4fa5394c386f4816ddc22408.
+- powerpc: get_rounding_mode: utilize faster method to get rounding mode
+- riscv: Do not use __has_include__
+- powerpc: fegetexcept: utilize function instead of duplicating code
+- iconv: Use __twalk_r in __gconv_release_shlib
+- Fix iconv buffer handling with IGNORE error handler (swbz#18830)
+
 * Wed Jun  5 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-26
 - Restore /usr/lib/locale/locale-archive under its original name (#1716710)
 
