@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -166,6 +166,10 @@ Patch34: glibc-rh1702671-5.patch
 Patch35: glibc-rh1702671-6.patch
 Patch36: glibc-rh1717492-1.patch
 Patch37: glibc-rh1717492-2.patch
+Patch38: glibc-rh1721129-1.patch
+Patch39: glibc-rh1721129-2.patch
+Patch40: glibc-rh1721129-3.patch
+Patch41: glibc-rh1721129-4.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1899,6 +1903,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 17 2019 Florian Weimer <fweimer@redhat.com> - 2.29-16
+- Address conflict between <sys/stat.h> and <linux/stat.h> (#1721129)
+
 * Thu Jun  6 2019 Florian Weimer <fweimer@redhat.com> - 2.29-15
 - locale: Add LOCPATH diagnostics (#1717492)
 
