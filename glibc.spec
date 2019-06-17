@@ -659,8 +659,8 @@ This package provides debug information for package %{name}.
 Debug information is useful when developing applications that use this
 package or when debugging this package.
 
-%endif # %{debuginfocommonarches}
-%endif # 0%{?_enable_debug_packages}
+%endif
+%endif
 
 %if %{with benchtests}
 %package benchtests
@@ -1153,7 +1153,7 @@ cp benchtests/scripts/benchout.schema.json %{glibc_sysroot}%{_prefix}/libexec/gl
 cp benchtests/scripts/compare_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 cp benchtests/scripts/import_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 cp benchtests/scripts/validate_benchout.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
-%endif # with benchtests
+%endif
 
 %if 0%{?_enable_debug_packages}
 # The #line directives gperf generates do not give the proper
@@ -1595,13 +1595,13 @@ egrep "$auxarches_debugsources" debuginfocommon.sources >> debuginfo.filelist
 egrep -v "$auxarches_debugsources" \
   debuginfocommon.sources >> debuginfocommon.filelist
 
-%endif # %{biarcharches}
+%endif
 
 # Add the list of *.a archives in the debug directory to
 # the common debuginfo package.
 list_debug_archives >> debuginfocommon.filelist
 
-%endif # %{debuginfocommonarches}
+%endif
 
 # Remove some common directories from the common package debuginfo so that we
 # don't end up owning them.
@@ -1621,7 +1621,7 @@ exclude_common_dirs debuginfocommon.filelist
 %endif
 exclude_common_dirs debuginfo.filelist
 
-%endif # 0%{?_enable_debug_packages}
+%endif
 
 ##############################################################################
 # Delete files that we do not intended to ship with the auxarch.
@@ -1637,7 +1637,7 @@ sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
 	debuginfocommon.filelist \
 %endif
 	| (cd %{glibc_sysroot}; xargs --no-run-if-empty rm -f 2> /dev/null || :)
-%endif # %{auxarches}
+%endif
 
 ##############################################################################
 # Run the glibc testsuite
@@ -1732,7 +1732,7 @@ $run_ldso /usr/bin/valgrind --error-exitcode=1 \
 	$run_ldso /usr/bin/true --help >/dev/null
 %endif
 
-%endif # %{run_glibc_tests}
+%endif
 
 
 %pre -p <lua>
