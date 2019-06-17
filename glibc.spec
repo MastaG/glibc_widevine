@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-302-g51ea67d548
+%define glibcsrcdir glibc-2.29.9000-325-g48c3c12389
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 27%{?dist}
+Release: 28%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,33 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 17 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-28
+- Auto-sync with upstream branch master,
+  commit 48c3c1238925410b4e777dc94e2fde4cc9132d44.
+- Linux: Fix __glibc_has_include use for <sys/stat.h> and statx (#1721129)
+- <sys/cdefs.h>: Inhibit macro expansion for __glibc_has_include
+- Add IPV6_ROUTER_ALERT_ISOLATE from Linux 5.1 to bits/in.h
+- aarch64: handle STO_AARCH64_VARIANT_PCS
+- aarch64: add STO_AARCH64_VARIANT_PCS and DT_AARCH64_VARIANT_PCS
+- powerpc: Remove optimized finite
+- math: Use wordsize-64 version for finite
+- powerpc: Remove optimized isinf
+- math: Use wordsize-64 version for isinf
+- powerpc: Remove optimized isnan
+- math: Use wordsize-64 version for isnan
+- benchtests: Add isnan/isinf/isfinite benchmark
+- powerpc: copysign cleanup
+- powerpc: consolidate rint
+- libio: freopen of default streams crashes in old programs (swbz#24632)
+- Linux: Deprecate <sys/sysctl.h> and sysctl
+- <sys/stat.h>: Use Linux UAPI header for statx if available and useful
+  (#1721129)
+- <sys/cdefs.h>: Add __glibc_has_include macro
+- Improve performance of memmem
+- Improve performance of strstr
+- Benchmark strstr hard needles
+- Fix malloc tests build with GCC 10
+
 * Mon Jun 10 2019 Patsy Franklin <patsy@redhat.com> - 2.29.9000-27
 - Auto-sync with upstream branch master,
   commit 51ea67d54882318c4fa5394c386f4816ddc22408.
