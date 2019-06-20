@@ -1,0 +1,192 @@
+This patch adds a chunk scanning algorithm to the
+_int_memalign code path that reduces external fragmentation
+by reusing already aligned chunks instead of looking for
+chunks of larger sizes and splitting them.
+
+The goal is it fix the pathological use cases where heaps
+grow continuously in Ruby or orther workloads that are
+heavy users of memalign.
+
+diff --git a/malloc/malloc.c b/malloc/malloc.c
+index 00ce48cf5879c87f..cc6d8299e272441d 100644
+--- a/malloc/malloc.c
++++ b/malloc/malloc.c
+@@ -4665,8 +4665,7 @@ _int_memalign (mstate av, size_t alignment, size_t bytes)
+   mchunkptr remainder;            /* spare room at end to split off */
+   unsigned long remainder_size;   /* its size */
+   INTERNAL_SIZE_T size;
+-
+-
++  mchunkptr victim;
+ 
+   if (!checked_request2size (bytes, &nb))
+     {
+@@ -4674,29 +4673,135 @@ _int_memalign (mstate av, size_t alignment, size_t bytes)
+       return NULL;
+     }
+ 
+-  /*
+-     Strategy: find a spot within that chunk that meets the alignment
++  /* Strategy: search the bins looking for an existing block that meets
++     our needs.  */
++
++  /* This will be set if we found a candidate chunk.  */
++  victim = NULL;
++
++  /* Fast bins are singly-linked, hard to remove a chunk from the middle
++     and unlikely to meet our alignment requirements.  We have not done
++     any experimentation with searching for aligned fastbins.  */
++
++  if (in_smallbin_range (nb))
++    {
++      /* Check small bins.  Small bin chunks are doubly-linked despite
++	 being the same size.  */
++      int victim_index;                 /* its bin index */
++
++      victim_index = smallbin_index (nb);
++      mchunkptr fwd;                    /* misc temp for linking */
++      mchunkptr bck;                    /* misc temp for linking */
++
++      bck = bin_at (av, victim_index);
++      fwd = bck->fd;
++      while (fwd != bck)
++	{
++	  if (((intptr_t)chunk2mem (fwd) & (alignment - 1)) == 0)
++	    {
++	      victim = fwd;
++
++	      /* Unlink it */
++	      victim->fd->bk = victim->bk;
++	      victim->bk->fd = victim->fd;
++	      break;
++	    }
++
++	  fwd = fwd->fd;
++	}
++    }
++  else
++    {
++      /* Check large bins.  */
++      int victim_index;                 /* its bin index */
++      mchunkptr fwd;                    /* misc temp for linking */
++      mchunkptr bck;                    /* misc temp for linking */
++      mchunkptr best = NULL;
++      size_t best_size = 0;
++
++      victim_index = largebin_index (nb);
++      bck = bin_at (av, victim_index);
++      fwd = bck->fd;
++
++      while (fwd != bck)
++	{
++	  if (chunksize (fwd) >= nb
++	      && (((intptr_t)chunk2mem (fwd) & (alignment - 1)) == 0)
++	      && (chunksize (fwd) <= best_size || best == NULL))
++	    {
++	      best = fwd;
++	      best_size = chunksize(fwd);
++	    }
++
++	  fwd = fwd->fd;
++	  if (chunksize (fwd) < nb)
++	    break;
++	}
++      victim = best;
++
++      if (victim)
++	{
++	  if (victim->fd_nextsize)
++	    {
++	      if (victim->fd_nextsize != victim->fd
++		  && victim->fd != bck)
++		{
++		  /* There's more with the same size, but we've chosen the
++		     "leader".  We need to make the next one the leader.  */
++		  victim->fd->fd_nextsize = victim->fd_nextsize;
++		  victim->fd->bk_nextsize = victim->bk_nextsize;
++		  if (victim->fd_nextsize)
++		    victim->fd_nextsize->bk_nextsize = victim->fd;
++		  if (victim->bk_nextsize)
++		    victim->bk_nextsize->fd_nextsize = victim->fd;
++		}
++	      else
++		{
++		  /* There's only this one with this size.  */
++		  if (victim->fd_nextsize)
++		    victim->fd_nextsize->bk_nextsize = victim->bk_nextsize;
++		  if (victim->bk_nextsize)
++		    victim->bk_nextsize->fd_nextsize = victim->fd_nextsize;
++		}
++	    }
++
++	  if (victim->fd)
++	    victim->fd->bk = victim->bk;
++	  if (victim->bk)
++	    victim->bk->fd = victim->fd;
++	}
++    }
++
++  /* Strategy: find a spot within that chunk that meets the alignment
+      request, and then possibly free the leading and trailing space.
+-   */
++     This strategy is incredibly costly and can lead to external
++     fragmentation if header and footer chunks are unused.  */
+ 
+-  /* Call malloc with worst case padding to hit alignment. */
++  if (victim != NULL)
++    {
++      p = victim;
++      m = chunk2mem (p);
++      set_inuse (p);
++    }
++  else
++    {
++      /* Call malloc with worst case padding to hit alignment. */
+ 
+-  m = (char *) (_int_malloc (av, nb + alignment + MINSIZE));
++      m = (char *) (_int_malloc (av, nb + alignment + MINSIZE));
+ 
+-  if (m == 0)
+-    return 0;           /* propagate failure */
++      if (m == 0)
++	return 0;           /* propagate failure */
+ 
+-  p = mem2chunk (m);
++      p = mem2chunk (m);
++    }
+ 
+   if ((((unsigned long) (m)) % alignment) != 0)   /* misaligned */
+-
+-    { /*
+-                Find an aligned spot inside chunk.  Since we need to give back
+-                leading space in a chunk of at least MINSIZE, if the first
+-                calculation places us at a spot with less than MINSIZE leader,
+-                we can move to the next aligned spot -- we've allocated enough
+-                total room so that this is always possible.
+-                 */
++    {
++      /* Find an aligned spot inside chunk.  Since we need to give back
++         leading space in a chunk of at least MINSIZE, if the first
++         calculation places us at a spot with less than MINSIZE leader,
++         we can move to the next aligned spot -- we've allocated enough
++         total room so that this is always possible.  */
+       brk = (char *) mem2chunk (((unsigned long) (m + alignment - 1)) &
+                                 - ((signed long) alignment));
+       if ((unsigned long) (brk - (char *) (p)) < MINSIZE)
+@@ -5385,6 +5490,16 @@ __malloc_info (int options, FILE *fp)
+ 
+   fputs ("<malloc version=\"1\">\n", fp);
+ 
++  fprintf (fp, "<malloc_alignment bytes=\"%ld\" />\n", (long) MALLOC_ALIGNMENT);
++  fprintf (fp, "<min_chunk_size bytes=\"%ld\" />\n", (long) MIN_CHUNK_SIZE);
++  fprintf (fp, "<max_fast_alloc bytes=\"%ld\" />\n", (long) MAX_FAST_SIZE);
++  fprintf (fp, "<max_tcache_alloc bytes=\"%ld\" />\n", (long) MAX_TCACHE_SIZE);
++  fprintf (fp, "<min_large_alloc bytes=\"%ld\" />\n", (long) MIN_LARGE_SIZE);
++  fprintf (fp, "<default_mmap_threshold bytes=\"%ld\" />\n", (long) DEFAULT_MMAP_THRESHOLD);
++  fprintf (fp, "<max_mmap_threshold bytes=\"%ld\" />\n", (long) DEFAULT_MMAP_THRESHOLD_MAX);
++  fprintf (fp, "<heap_min_size bytes=\"%ld\" />\n", (long) HEAP_MIN_SIZE);
++  fprintf (fp, "<heap_max_size bytes=\"%ld\" />\n", (long) HEAP_MAX_SIZE);
++
+   /* Iterate over all arenas currently in use.  */
+   mstate ar_ptr = &main_arena;
+   do
