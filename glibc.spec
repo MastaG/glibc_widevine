@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-325-g48c3c12389
+%define glibcsrcdir glibc-2.29.9000-337-g21cc130b78
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 28%{?dist}
+Release: 29%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,20 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-29
+- Auto-sync with upstream branch master,
+  commit 21cc130b78a4db9113fb6695e2b951e697662440:
+- During exit, skip wide buffer handling for legacy stdio handles (#1722216)
+- powerpc: add 'volatile' to asm
+- powerpc: Fix static-linked version of __ppc_get_timebase_freq (swbz#24640)
+- nl_AW locale: Correct the negative monetary format (swb#z24614)
+- Fix gcc 9 build errors for make xcheck. (swbz#24556)
+- dlfcn: Avoid one-element flexible array in Dl_serinfo (swbz#24166)
+- elf: Refuse to dlopen PIE objects (swbz#24323)
+- nl_NL locale: Correct the negative monetary format (swbz#24614)
+- powerpc: Refactor powerpc64 lround/lroundf/llround/llroundf
+- powerpc: refactor powerpc64 lrint/lrintf/llrint/llrintf
+
 * Mon Jun 17 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-28
 - Auto-sync with upstream branch master,
   commit 48c3c1238925410b4e777dc94e2fde4cc9132d44.
