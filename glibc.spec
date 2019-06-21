@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -170,6 +170,7 @@ Patch38: glibc-rh1721129-1.patch
 Patch39: glibc-rh1721129-2.patch
 Patch40: glibc-rh1721129-3.patch
 Patch41: glibc-rh1721129-4.patch
+Patch42: glibc-rh1722832.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1903,6 +1904,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29-18
+- Avoid ABI exposure of the NSS service_user type (#1722832)
+
 * Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29-17
 - Auto-sync with upstream branch release/2.29/master,
   commit 34fb5f61d3c3f4b8fc616ea259fa19168b58ecd4:
