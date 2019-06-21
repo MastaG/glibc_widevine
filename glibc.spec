@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-24-g2ec0b166bf
+%define glibcsrcdir glibc-2.29-25-g34fb5f61d3
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 16%{?dist}
+Release: 17%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1903,6 +1903,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29-17
+- Auto-sync with upstream branch release/2.29/master,
+  commit 34fb5f61d3c3f4b8fc616ea259fa19168b58ecd4:
+- During exit, skip wide buffer handling for legacy stdio handles (#1722216)
+
 * Mon Jun 17 2019 Florian Weimer <fweimer@redhat.com> - 2.29-16
 - Address conflict between <sys/stat.h> and <linux/stat.h> (#1721129)
 
