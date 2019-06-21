@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-105-g58d2672f64
+%define glibcsrcdir glibc-2.28-106-g91b02c5b4d
 %define glibcversion 2.28
-%define glibcrelease 34%{?dist}
+%define glibcrelease 35%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1915,6 +1915,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.28-35
+- Auto-sync with upstream branch release/2.28/master,
+  commit 91b02c5b4d17d60015af24d277eb31348fc0bc34:
+- During exit, skip wide buffer handling for legacy stdio handles (#1722216)
+
 * Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.28-34
 - Address conflict between <sys/stat.h> and <linux/stat.h> (#1721129)
 
