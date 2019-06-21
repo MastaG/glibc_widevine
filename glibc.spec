@@ -170,7 +170,8 @@ Patch38: glibc-rh1721129-1.patch
 Patch39: glibc-rh1721129-2.patch
 Patch40: glibc-rh1721129-3.patch
 Patch41: glibc-rh1721129-4.patch
-Patch42: glibc-rh1722832.patch
+Patch42: glibc-rh1722832-1.patch
+Patch43: glibc-rh1722832-2.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:

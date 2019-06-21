@@ -82,7 +82,7 @@ index 9a9783318b852703..cda276eadefbf69c 100644
        /* No such service.  */
        cacheable = do_notfound (db, fd, req, key, &dataset, &total, &timeout,
 diff --git a/nss/Versions b/nss/Versions
-index db8c8877202fbcd1..afc82a23c2175be8 100644
+index 24efd56601127804..529d85ae5c7d8bd1 100644
 --- a/nss/Versions
 +++ b/nss/Versions
 @@ -1,8 +1,10 @@
@@ -98,7 +98,7 @@ index db8c8877202fbcd1..afc82a23c2175be8 100644
    }
    GLIBC_2.2.2 {
      __nss_hostname_digits_dots;
-@@ -15,7 +17,7 @@ libc {
+@@ -17,7 +19,7 @@ libc {
  
      __nss_passwd_lookup2; __nss_group_lookup2; __nss_hosts_lookup2;
      __nss_services_lookup2; __nss_next2; __nss_lookup;
