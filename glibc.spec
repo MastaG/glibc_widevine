@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-105-g58d2672f64
 %define glibcversion 2.28
-%define glibcrelease 33%{?dist}
+%define glibcrelease 34%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -168,6 +168,10 @@ Patch33: glibc-rh1702671-5.patch
 Patch34: glibc-rh1702671-6.patch
 Patch35: glibc-rh1717492-1.patch
 Patch36: glibc-rh1717492-2.patch
+Patch37: glibc-rh1721129-1.patch
+Patch38: glibc-rh1721129-2.patch
+Patch39: glibc-rh1721129-3.patch
+Patch40: glibc-rh1721129-4.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1911,6 +1915,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.28-34
+- Address conflict between <sys/stat.h> and <linux/stat.h> (#1721129)
+
 * Thu Jun  6 2019 Florian Weimer <fweimer@redhat.com> - 2.28-33
 - Delete /usr/lib/locale/locale-archive only on uninstall (#1717367)
 - Do not mark /usr/lib/locale/locale-archive as a configuration file
