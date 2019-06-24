@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-337-g21cc130b78
+%define glibcsrcdir glibc-2.29.9000-343-g2bd81b60d6
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 29%{?dist}
+Release: 30%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,16 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 24 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-30
+- Auto-sync with upstream branch master,
+  commit 2bd81b60d6ffdf7e0d22006d69f4b812b1c80513.
+- szl_PL locale: Spelling corrections (swbz 24652).
+- nl_{AW,NL}: Correct the thousands separator and grouping (swbz 23831).
+- Add missing VDSO_{NAME,HASH}_* macros and use them for PREPARE_VERSION_KNOWN
+- nptl: Convert various tests to use libsupport
+- support: Invent verbose_printf macro
+- support: Add xclock_now helper function.
+
 * Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-29
 - Auto-sync with upstream branch master,
   commit 21cc130b78a4db9113fb6695e2b951e697662440:
