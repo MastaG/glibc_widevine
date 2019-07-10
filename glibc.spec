@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-343-g2bd81b60d6
+%define glibcsrcdir glibc-2.29.9000-381-g30ba037546
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 30%{?dist}
+Release: 31%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,25 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 10 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-31
+- Auto-sync with upstream branch master,
+  commit 30ba0375464f34e4bf8129f3d3dc14d0c09add17.
+- Don't declare __malloc_check_init in <malloc.h> (bug 23352)
+- nftw: fill in stat buf for dangling links [BZ #23501]
+- dl-vdso: Add LINUX_4 HASH CODE to support nds32 vdso mechanism
+- riscv: restore ABI compatibility (bug 24484)
+- aarch64: new ifunc resolver ABI
+- nptl: Remove vfork IFUNC-based forwarder from libpthread [BZ #20188]
+- malloc: Add nptl, htl dependency for the subdirectory [BZ #24757]
+- Call _dl_open_check after relocation [BZ #24259]
+- Linux: Use mmap instead of malloc in dirent/tst-getdents64
+- ld.so: Support moving versioned symbols between sonames [BZ #24741]
+- io: Remove copy_file_range emulation [BZ #24744]
+- Linux: Adjust gedents64 buffer size to int range [BZ #24740]
+- powerpc: Use generic e_expf
+- Linux: Add nds32 specific syscalls to syscall-names.list
+- szl_PL locale: Fix a typo in the previous commit (bug 24652).
+
 * Mon Jun 24 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-30
 - Auto-sync with upstream branch master,
   commit 2bd81b60d6ffdf7e0d22006d69f4b812b1c80513.
