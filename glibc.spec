@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-381-g30ba037546
+%define glibcsrcdir glibc-2.29.9000-399-g3556658c5b
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 31%{?dist}
+Release: 32%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,28 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jul 18 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-32
+- Auto-sync with upstream branch master,
+  commit 3556658c5b8765480711b265abc901c67d5fc060.
+- Regenerate po/libc.pot for 2.30 release.
+- nptl: Add POSIX-proposed _clock functions to hppa pthread.h
+- nptl: Remove unnecessary forwarding of pthread_cond_clockwait from libc
+- Afar locales: Months and days updated from CLDR (bug 21897).
+- nl_BE locale: Use "copy "nl_NL"" in LC_NAME (bug 23996).
+- nl_BE and nl_NL locales: Dutch salutations (bug 23996).
+- ga_IE and en_IE locales: Revert first_weekday removal (bug 24200).
+- nptl: Remove futex_supports_exact_relative_timeouts
+- Update NEWS for new _clockwait and _clocklock functions
+- nptl: Add POSIX-proposed pthread_mutex_clocklock
+- nptl: Rename lll_timedlock to lll_clocklock and add clockid parameter
+- nptl: Add POSIX-proposed pthread_rwlock_clockrdlock & pthread_rwlock_clockwrlock
+- nptl: pthread_rwlock: Move timeout validation into _full functions
+- nptl: Add POSIX-proposed pthread_cond_clockwait
+- nptl: Add POSIX-proposed sem_clockwait
+- nptl: Add clockid parameter to futex timed wait calls
+- posix: Fix large mmap64 offset for mips64n32 (BZ#24699)
+- nss_db: fix endent wrt NULL mappings [BZ #24695] [BZ #24696]
+
 * Wed Jul 10 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-31
 - Auto-sync with upstream branch master,
   commit 30ba0375464f34e4bf8129f3d3dc14d0c09add17.
