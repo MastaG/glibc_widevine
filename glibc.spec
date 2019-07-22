@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-399-g3556658c5b
+%define glibcsrcdir glibc-2.29.9000-402-gdcf36bcad3
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 32%{?dist}
+Release: 33%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2015,6 +2015,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 22 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-33
+- Auto-sync with upstream branch master,
+  commit dcf36bcad3f283f77893d3b157ef7bb2c99419f2.
+- Add NEWS entry about the new AArch64 IFUNC resolver call ABI
+- locale/C-translit.h.in: Cyrillic -> ASCII transliteration [BZ #2872]
+- Linux: Update syscall-names.list to Linux 5.2
+
+
 * Thu Jul 18 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-32
 - Auto-sync with upstream branch master,
   commit 3556658c5b8765480711b265abc901c67d5fc060.
