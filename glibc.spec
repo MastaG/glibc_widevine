@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29.9000-402-gdcf36bcad3
+%define glibcsrcdir glibc-2.29.9000-411-g8a814e20d4
 %define glibcversion 2.29.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 35%{?dist}
+Release: 36%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -159,7 +159,6 @@ Patch28: glibc-rh1615608.patch
 # In progress upstream submission for nscd.conf changes:
 # https://www.sourceware.org/ml/libc-alpha/2019-03/msg00436.html
 Patch31: glibc-fedora-nscd-warnings.patch
-Patch32: glibc-rh1732406.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2016,6 +2015,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jul 30 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-36
+- Drop glibc-rh1732406.patch, fix for the regression applied upstream.
+- Auto-sync with upstream branch master,
+  commit 8a814e20d443adc460a1030fa1a66aa9ae817483:
+- nptl: Use uintptr_t for address diagnostic in nptl/tst-pthread-getattr
+- Linux: Move getdents64 to <dirent.h>
+- test-container: Install with $(sorted-subdirs) (swbz#24794)
+- gconv: Check reference count in __gconv_release_cache (#1732406)
+- x86-64: Compile branred.c with -mprefer-vector-width=128 (swbz#24603)
+- build-many-glibcs.py: Use Linux 5.2 by default
+- Linux: Use in-tree copy of SO_ constants for !__USE_MISC (swbz#24532)
+- test-container: Avoid copying unintended system libraries
+
 * Thu Jul 25 2019 Fedora Release Engineering <releng@fedoraproject.org>
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
