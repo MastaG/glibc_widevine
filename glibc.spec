@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 36%{?dist}
+Release: 37%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -159,6 +159,8 @@ Patch28: glibc-rh1615608.patch
 # In progress upstream submission for nscd.conf changes:
 # https://www.sourceware.org/ml/libc-alpha/2019-03/msg00436.html
 Patch31: glibc-fedora-nscd-warnings.patch
+
+Patch32: glibc-rh1734680.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2015,6 +2017,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 31 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-37
+- Fix memory leak in iconv_open (#1734680)
+
 * Tue Jul 30 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-36
 - Drop glibc-rh1732406.patch, fix for the regression applied upstream.
 - Auto-sync with upstream branch master,
