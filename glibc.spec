@@ -2016,7 +2016,7 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
-* Fri Aug 02 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-38
+* Fri Aug 02 2019 Florian Weimer <fweimer@redhat.com> - 2.30-1
 - Drop glibc-rh1734680.patch, applied upstream.
 - Auto-sync with upstream branch release/2.30/master,
   commit be9a328c93834648e0bec106a1f86357d1a8c7e1:
