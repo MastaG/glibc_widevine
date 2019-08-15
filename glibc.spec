@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.30-1-gbe9a328c93
-%define glibcversion 2.30
+%define glibcsrcdir glibc-2.30.9000-30-g341da5b4b6
+%define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2016,6 +2016,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Aug 15 2019 Florian Weimer <fweimer@redhat.com> - 2.30.9000-1
+- Auto-sync with upstream branch master,
+  commit 341da5b4b6253de9a7581a066f33f89cacb44dec.
+
 * Fri Aug 02 2019 Florian Weimer <fweimer@redhat.com> - 2.30-1
 - Drop glibc-rh1734680.patch, applied upstream.
 - Auto-sync with upstream branch release/2.30/master,
