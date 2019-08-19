@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-30-g341da5b4b6
+%define glibcsrcdir glibc-2.30.9000-45-gd34d4c8022
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -118,11 +118,9 @@ License: LGPLv2+ and LGPLv2+ with exceptions and GPLv2+ and GPLv2+ with exceptio
 
 URL: http://www.gnu.org/software/glibc/
 Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.xz
-Source4: nscd.conf
-Source7: nsswitch.conf
-Source8: power6emul.c
-Source9: bench.mk
-Source10: glibc-bench-compare
+Source1: nscd.conf
+Source2: bench.mk
+Source3: glibc-bench-compare
 # A copy of localedata/SUPPORTED in the Source0 tarball.  The
 # SUPPORTED file is used below to generate the list of locale
 # packages, using a Lua snippet.
@@ -136,7 +134,7 @@ Source12: ChangeLog.old
 # - See each individual patch file for origin and upstream status.
 # - For new patches follow template.patch format.
 ##############################################################################
-Patch2: glibc-fedora-nscd.patch
+Patch1: glibc-fedora-nscd.patch
 Patch3: glibc-rh697421.patch
 Patch4: glibc-fedora-linux-tcsetattr.patch
 Patch5: glibc-rh741105.patch
@@ -153,13 +151,7 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch28: glibc-rh1615608.patch
-
-# In progress upstream submission for nsswitch.conf changes:
-# https://www.sourceware.org/ml/libc-alpha/2019-03/msg00425.html
-# In progress upstream submission for nscd.conf changes:
-# https://www.sourceware.org/ml/libc-alpha/2019-03/msg00436.html
-Patch31: glibc-fedora-nscd-warnings.patch
-
+Patch29: glibc-fedora-nsswitch.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1071,13 +1063,13 @@ mv  %{glibc_sysroot}%{_prefix}/lib/locale/*.filelist .
 # Install configuration files for services
 ##############################################################################
 
-install -p -m 644 %{SOURCE7} %{glibc_sysroot}/etc/nsswitch.conf
+install -p -m 644 nss/nsswitch.conf %{glibc_sysroot}/etc/nsswitch.conf
 
 %ifnarch %{auxarches}
 # This is for ncsd - in glibc 2.2
 install -m 644 nscd/nscd.conf %{glibc_sysroot}/etc
 mkdir -p %{glibc_sysroot}%{_tmpfilesdir}
-install -m 644 %{SOURCE4} %{buildroot}%{_tmpfilesdir}
+install -m 644 %{SOURCE1} %{buildroot}%{_tmpfilesdir}
 mkdir -p %{glibc_sysroot}/lib/systemd/system
 install -m 644 nscd/nscd.service nscd/nscd.socket %{glibc_sysroot}/lib/systemd/system
 %endif
@@ -1146,7 +1138,7 @@ popd
 mkdir -p %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests
 cp $(find build-%{target}/benchtests -type f -executable) %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 # ... and the makefile.
-for b in %{SOURCE9} %{SOURCE10}; do
+for b in %{SOURCE2} %{SOURCE3}; do
 	cp $b %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 done
 # .. and finally, the comparison scripts.
@@ -1517,7 +1509,7 @@ find build-%{target}/benchtests -type f -executable | while read b; do
 	echo "%{_prefix}/libexec/glibc-benchtests/$(basename $b)"
 done >> benchtests.filelist
 # ... and the makefile.
-for b in %{SOURCE9} %{SOURCE10}; do
+for b in %{SOURCE2} %{SOURCE3}; do
 	echo "%{_prefix}/libexec/glibc-benchtests/$(basename $b)" >> benchtests.filelist
 done
 # ... and finally, the comparison scripts.
@@ -2016,6 +2008,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Aug 19 2019 Carlos O'Donell <carlos@redhat.com> - 2.30.9000-3
+- Drop glibc-fedora-nscd-warnings.patch; applied upstream.
+- Drop Source7: nsswitch.conf; applying patch to upstream.
+- Add glibc-fedora-nsswitch.patch for Fedora customizations.
+- Auto-sync with upstream branch master,
+  commit d34d4c80226b3f5a1b51a8e5b005a52fba07d7ba:
+- Do not print backtraces on fatal glibc errors.
+- elf: Self-dlopen failure with explict loader invocation (swbz#24900)
+- login: Add nonstring attributes to struct utmp, struct utmpx (swbz#24899)
+- login: Use struct flock64 in utmp (swbz#24880)
+- login: Disarm timer after utmp lock acquisition (swbz#24879)
+
 * Fri Aug 16 2019 Carlos O'Donell <carlos@redhat.com> - 2.30.9000-2
 - Fix C.UTF-8 to use full code ranges.
 
