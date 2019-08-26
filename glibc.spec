@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-45-gd34d4c8022
+%define glibcsrcdir glibc-2.30.9000-61-g1bced8cadc
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2008,6 +2008,27 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Aug 26 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-4
+- Auto-sync with upstream branch master,
+  commit 1bced8cadc82077f0201801239e89eb24b68e9aa.
+- Don't put non-ASCII into installed headers
+- Fix spellings of contributor names in comments and doc
+- [MIPS] Raise highest supported EI_ABIVERSION value [SWBZ #24916]
+- mips: Force RWX stack for hard-float builds that can run on pre-4.8 kernels
+- linux: Make profil_counter a compat_symbol (SWBZ#17726)
+- Refactor sigcontextinfo.h
+- Add RTLD_SINGLE_THREAD_P on generic single-thread.h
+- Chinese locales: Set first_weekday to 2 (swbug 24682).
+- powerpc: Fix typos and field name in comments
+- Mark IDN tests unsupported with libidn2 before 2.0.5.
+- Document strftime %Ob and %OB as C2X features.
+- Remove dead regex code
+- Fix bad pointer / leak in regex code
+- Don't use the argument to time.
+- Add tgmath.h macros for narrowing functions.
+- Update i386 libm-test-ulps
+
+
 * Mon Aug 19 2019 Carlos O'Donell <carlos@redhat.com> - 2.30.9000-3
 - Drop glibc-fedora-nscd-warnings.patch; applied upstream.
 - Drop Source7: nsswitch.conf; applying patch to upstream.
