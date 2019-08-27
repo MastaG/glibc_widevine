@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1433,8 +1433,10 @@ grep '%{_libdir}/lib.*\.a' < master.filelist \
 # iconvconfig which needs to go in glibc. Likewise nscd is excluded because
 # it goes in nscd. The iconvconfig binary is kept in the main glibc package
 # because we use it in the post-install scriptlet to rebuild the
-# gconv-modules.cache.
-grep '%{_prefix}/bin' master.filelist >> common.filelist
+# gconv-modules.cache.  The makedb binary is in nss_db.
+grep '%{_prefix}/bin' master.filelist \
+	| grep -v '%{_prefix}/bin/makedb' \
+	>> common.filelist
 grep '%{_prefix}/sbin' master.filelist \
 	| grep -v '%{_prefix}/sbin/iconvconfig' \
 	| grep -v 'nscd' >> common.filelist
@@ -1482,6 +1484,7 @@ for module in db hesiod; do
   grep -E "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
     master.filelist > nss_$module.filelist
 done
+grep -E "%{_prefix}/bin/makedb$" master.filelist >> nss_db.filelist
 
 ###############################################################################
 # nss-devel
@@ -2008,6 +2011,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Aug 27 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-5
+- Move makedb from glibc-common to nss_db (#1704334)
+
 * Mon Aug 26 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-4
 - Auto-sync with upstream branch master,
   commit 1bced8cadc82077f0201801239e89eb24b68e9aa.
