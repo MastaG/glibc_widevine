@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -175,6 +175,10 @@ Patch43: glibc-rh1722832-2.patch
 Patch44: glibc-rh1748279-1.patch
 Patch45: glibc-rh1748279-2.patch
 Patch46: glibc-rh1748279-3.patch
+Patch47: glibc-rh1473680-1.patch
+Patch48: glibc-rh1473680-2.patch
+Patch49: glibc-rh1473680-3.patch
+Patch50: glibc-rh1473680-4.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1908,6 +1912,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.29-21
+- ld.so: Support moving versioned symbols between sonames (swbz#24741)
+- malloc: Add nptl, htl dependency for the subdirectory (swbz#24757)
+- nptl: Remove vfork IFUNC-based forwarder from libpthread (swbz#20188)
+
 * Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.29-20
 - Filter "ignore" autofs mount entries in getmntnt (#1748279)
 
