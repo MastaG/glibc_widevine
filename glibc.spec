@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-110-g57922433fa
 %define glibcversion 2.28
-%define glibcrelease 36%{?dist}
+%define glibcrelease 37%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -172,6 +172,11 @@ Patch37: glibc-rh1721129-1.patch
 Patch38: glibc-rh1721129-2.patch
 Patch39: glibc-rh1721129-3.patch
 Patch40: glibc-rh1721129-4.patch
+Patch41: glibc-rh1748279-1.patch
+Patch42: glibc-rh1748279-2.patch
+Patch43: glibc-rh1748279-3.patch
+Patch44: glibc-rh1748279-4.patch
+Patch45: glibc-rh1748279-5.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1915,6 +1920,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.28-37
+- Filter "ignore" autofs mount entries in getmntnt (#1748279)
+
 * Tue Sep 03 2019 Florian Weimer <fweimer@redhat.com> - 2.28-36
 - Auto-sync with upstream branch release/2.28/master,
   commit 57922433fa038faa6e37798b9655f85a94978d89:

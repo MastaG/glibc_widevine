@@ -1,0 +1,33 @@
+commit 00c86a37d1b63044e3169d1f2ebec23447c73f79
+Author: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Date:   Wed Nov 7 11:09:02 2018 -0200
+
+    support: Fix printf format for TEST_COMPARE_STRING
+    
+    Fix the following on 32 bits targets:
+    
+    support_test_compare_string.c: In function ‘support_test_compare_string’:
+    support_test_compare_string.c:80:37: error: format ‘%lu’ expects argument of
+    type ‘long unsigned int’, but argument 2 has type ‘size_t’ {aka ‘unsigned int’}
+    [-Werror=format=]
+             printf ("  string length: %lu bytes\n", left_length);
+                                       ~~^           ~~~~~~~~~~~
+                                       %u
+    Checked on arm-linux-gnueabihf.
+    
+            * support/support_test_compare_string.c
+            (support_test_compare_string): Fix printf format.
+
+diff --git a/support/support_test_compare_string.c b/support/support_test_compare_string.c
+index 9958aaeec170aee9..a76ba8eda7782d9d 100644
+--- a/support/support_test_compare_string.c
++++ b/support/support_test_compare_string.c
+@@ -77,7 +77,7 @@ support_test_compare_string (const char *left, const char *right,
+       support_record_failure ();
+       printf ("%s:%d: error: blob comparison failed\n", file, line);
+       if (left_length == right_length && right != NULL && left != NULL)
+-        printf ("  string length: %lu bytes\n", left_length);
++        printf ("  string length: %zu bytes\n", left_length);
+       else
+         {
+           report_length ("left", left, left_length);
