@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-110-g57922433fa
 %define glibcversion 2.28
-%define glibcrelease 37%{?dist}
+%define glibcrelease 38%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -177,6 +177,10 @@ Patch42: glibc-rh1748279-2.patch
 Patch43: glibc-rh1748279-3.patch
 Patch44: glibc-rh1748279-4.patch
 Patch45: glibc-rh1748279-5.patch
+Patch46: glibc-rh1473680-1.patch
+Patch47: glibc-rh1473680-2.patch
+Patch48: glibc-rh1473680-3.patch
+Patch49: glibc-rh1473680-4.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1920,6 +1924,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.28-38
+- ld.so: Support moving versioned symbols between sonames (swbz#24741)
+- malloc: Add nptl, htl dependency for the subdirectory (swbz#24757)
+- nptl: Remove vfork IFUNC-based forwarder from libpthread (swbz#20188)
+
 * Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.28-37
 - Filter "ignore" autofs mount entries in getmntnt (#1748279)
 
