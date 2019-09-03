@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30-1-gbe9a328c93
+%define glibcsrcdir glibc-2.30-2-gd74461fa34
 %define glibcversion 2.30
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2016,6 +2016,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep 03 2019 Florian Weimer <fweimer@redhat.com> - 2.30-2
+- Auto-sync with upstream branch release/2.30/master,
+  commit d74461fa348de4176894f98672cb9ce721e26676:
+- Chinese locales: Set first_weekday to 2 (swbz#24682)
+
 * Fri Aug 02 2019 Florian Weimer <fweimer@redhat.com> - 2.30-1
 - Drop glibc-rh1734680.patch, applied upstream.
 - Auto-sync with upstream branch release/2.30/master,
