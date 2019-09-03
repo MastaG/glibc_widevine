@@ -1,6 +1,6 @@
-%define glibcsrcdir glibc-2.28-106-g91b02c5b4d
+%define glibcsrcdir glibc-2.28-110-g57922433fa
 %define glibcversion 2.28
-%define glibcrelease 35%{?dist}
+%define glibcrelease 36%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -1915,6 +1915,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep 03 2019 Florian Weimer <fweimer@redhat.com> - 2.28-36
+- Auto-sync with upstream branch release/2.28/master,
+  commit 57922433fa038faa6e37798b9655f85a94978d89:
+- aarch64: handle STO_AARCH64_VARIANT_PCS
+- aarch64: add STO_AARCH64_VARIANT_PCS and DT_AARCH64_VARIANT_PCS
+- io: Remove copy_file_range emulation (#1724976)
+
 * Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.28-35
 - Auto-sync with upstream branch release/2.28/master,
   commit 91b02c5b4d17d60015af24d277eb31348fc0bc34:
