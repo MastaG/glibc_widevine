@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -159,6 +159,8 @@ Patch28: glibc-rh1615608.patch
 # In progress upstream submission for nscd.conf changes:
 # https://www.sourceware.org/ml/libc-alpha/2019-03/msg00436.html
 Patch31: glibc-fedora-nscd-warnings.patch
+Patch32: glibc-rh1748279-1.patch
+Patch33: glibc-rh1748279-2.patch
 
 
 ##############################################################################
@@ -2016,6 +2018,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.30-3
+- Filter "ignore" autofs mount entries in getmntnt (#1748279)
+
 * Tue Sep 03 2019 Florian Weimer <fweimer@redhat.com> - 2.30-2
 - Auto-sync with upstream branch release/2.30/master,
   commit d74461fa348de4176894f98672cb9ce721e26676:
