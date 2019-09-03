@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -172,6 +172,9 @@ Patch40: glibc-rh1721129-3.patch
 Patch41: glibc-rh1721129-4.patch
 Patch42: glibc-rh1722832-1.patch
 Patch43: glibc-rh1722832-2.patch
+Patch44: glibc-rh1748279-1.patch
+Patch45: glibc-rh1748279-2.patch
+Patch46: glibc-rh1748279-3.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1905,6 +1908,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.29-20
+- Filter "ignore" autofs mount entries in getmntnt (#1748279)
+
 * Tue Sep 03 2019 Florian Weimer <fweimer@redhat.com> - 2.29-19
 - Auto-sync with upstream branch release/2.29/master,
   commit 6d8eaf4a25c09256b53efe57d3f77f2f0bd77ede:
