@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-25-g34fb5f61d3
+%define glibcsrcdir glibc-2.29-32-g6d8eaf4a25
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1905,6 +1905,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep 03 2019 Florian Weimer <fweimer@redhat.com> - 2.29-19
+- Auto-sync with upstream branch release/2.29/master,
+  commit 6d8eaf4a25c09256b53efe57d3f77f2f0bd77ede:
+- aarch64: handle STO_AARCH64_VARIANT_PCS
+- aarch64: add STO_AARCH64_VARIANT_PCS and DT_AARCH64_VARIANT_PCS
+- io: Remove copy_file_range emulation (#1724976)
+
 * Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29-18
 - Avoid ABI exposure of the NSS service_user type (#1722832)
 
