@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -161,6 +161,7 @@ Patch28: glibc-rh1615608.patch
 Patch31: glibc-fedora-nscd-warnings.patch
 Patch32: glibc-rh1748279-1.patch
 Patch33: glibc-rh1748279-2.patch
+Patch34: glibc-rh1473680-1.patch
 
 
 ##############################################################################
@@ -2018,6 +2019,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Sep  4 2019 Florian Weimer <fweimer@redhat.com> - 2.30-4
+- Avoid relocation-dependent IFUNC resolvers in librt (swbz#24959, #1473680)
+
 * Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.30-3
 - Filter "ignore" autofs mount entries in getmntnt (#1748279)
 
