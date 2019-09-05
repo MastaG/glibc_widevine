@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-110-g57922433fa
 %define glibcversion 2.28
-%define glibcrelease 38%{?dist}
+%define glibcrelease 39%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -181,6 +181,11 @@ Patch46: glibc-rh1473680-1.patch
 Patch47: glibc-rh1473680-2.patch
 Patch48: glibc-rh1473680-3.patch
 Patch49: glibc-rh1473680-4.patch
+Patch50: glibc-rh1473680-5.patch
+Patch51: glibc-rh1473680-6.patch
+Patch52: glibc-rh1473680-7.patch
+Patch53: glibc-rh1473680-8.patch
+Patch54: glibc-rh1473680-9.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1924,6 +1929,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Sep  5 2019 Florian Weimer <fweimer@redhat.com> - 2.28-39
+- Avoid relocation-dependent IFUNC resolvers in librt (swbz#24959, #1473680)
+
 * Tue Sep  3 2019 Florian Weimer <fweimer@redhat.com> - 2.28-38
 - ld.so: Support moving versioned symbols between sonames (swbz#24741)
 - malloc: Add nptl, htl dependency for the subdirectory (swbz#24757)
