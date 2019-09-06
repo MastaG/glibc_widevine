@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-61-g1bced8cadc
+%define glibcsrcdir glibc-2.30.9000-95-g1b7f04070b
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2011,6 +2011,43 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Sep 06 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-6
+- Auto-sync with upstream branch master,
+  commit 1b7f04070bd94f259e2ed24d6fb76309d64fb164.
+- locale: Avoid zero-length array in _nl_category_names [BZ #24962]
+- math: Replace const attribute with pure in totalorder* functions
+- y2038: Introduce the __ASSUME_TIME64_SYSCALLS define
+- Finish move of clock_* functions to libc. [BZ #24959]
+- Update Alpha libm-test-ulps
+- localedef: Use initializer for flexible array member [BZ #24950]
+- Add misc/tst-mntent-autofs, testing autofs "ignore" filtering
+- Use autofs "ignore" mount hint in getmntent_r/getmntent
+- hurd: Fix build
+- Use generic memset/memcpy/memmove in benchtests
+- nptl: Move pthread_attr_getinheritsched implementation into libc
+- hurd: Fix SS_ONSTACK support
+- hurd: Remove optimizing anonymous maps as __vm_allocate.
+- hurd: Fix poll and select POSIX compliancy details about errors
+- hurd: Fix timeout handling in _hurd_select
+- hurd getcwd: Allow unknown root directory
+- hurd: Fix implementation of setitimer.
+- hurd: Fix _hurd_select for single fd sets
+- MIPS support for GNU hash
+- sh: Split BE/LE abilist
+- microblaze: Split BE/LE abilist
+- arm: Split BE/LE abilist
+- Correct the spelling of more contributors
+- Fix posix/tst-regex by using UTF-8 and own test input
+- [powerpc] fegetenv_status: simplify instruction generation
+- [powerpc] fesetenv: optimize FPSCR access
+- [powerpc] SET_RESTORE_ROUND improvements
+- [powerpc] fe{en,dis}ableexcept, fesetmode: optimize FPSCR accesses
+- [powerpc] fe{en,dis}ableexcept optimize bit translations
+- misc: Use allocate_once in getmntent
+- nptl: Move pthread_attr_setdetachstate implementation into libc
+- login: pututxline could fail to overwrite existing entries [BZ #24902]
+- Fix posix/tst-regex by using a dedicated input-file.
+
 * Tue Aug 27 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-5
 - Move makedb from glibc-common to nss_db (#1704334)
 
