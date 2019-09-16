@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -468,11 +468,11 @@ end
 
 -- Compute the Supplements: list for a language, based on the regions.
 local function compute_supplements(lang)
-   result = "langpacks-" .. lang
+   result = "langpacks-core-" .. lang
    regions = supplements[lang]
    if regions ~= nil then
       for i = 1, #regions do
-	 result = result .. " or langpacks-" .. lang .. "_" .. regions[i]
+	 result = result .. " or langpacks-core-" .. lang .. "_" .. regions[i]
       end
    end
    return result
@@ -2019,6 +2019,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Sep 16 2019 Parag Nemade <pnemade AT redhat DOT com> - 2.30-5
+- Change Supplements "langpacks-" to "langpacks-core-" (#1729992)
+
 * Wed Sep  4 2019 Florian Weimer <fweimer@redhat.com> - 2.30-4
 - Avoid relocation-dependent IFUNC resolvers in librt (swbz#24959, #1473680)
 
