@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-95-g1b7f04070b
+%define glibcsrcdir glibc-2.30.9000-100-g1a6566094d
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2011,6 +2011,16 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Sep 16 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-7
+- Auto-sync with upstream branch master,
+  commit 1a6566094d3097f4a3037ab5555cddc6cb11c3a3.
+- alpha: force old OSF1 syscalls for getegid, geteuid and getppid [BZ #24986]
+- Fix http: URL in 'configure'
+- Regenerate charmap-kw.h, locfile-kw.h
+- Fix three GNU license URLs, along with trailing-newline issues.
+- Prefer https to http for gnu.org and fsf.org URLs
+
+
 * Fri Sep 06 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-6
 - Auto-sync with upstream branch master,
   commit 1b7f04070bd94f259e2ed24d6fb76309d64fb164.
