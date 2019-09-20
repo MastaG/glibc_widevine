@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -125,9 +125,13 @@ Source3: glibc-bench-compare
 # SUPPORTED file is used below to generate the list of locale
 # packages, using a Lua snippet.
 Source11: SUPPORTED
-
 # Include in the source RPM for reference.
 Source12: ChangeLog.old
+# Provide ISO language code to name translation using Python's
+# langtable. The langtable data is maintained by the Fedora
+# i18n team and is a harmonization of CLDR and glibc lang_name
+# data in a more accessible API (also used by Anaconda).
+Source13: convnames.py
 
 ##############################################################################
 # Patches:
@@ -212,6 +216,7 @@ BuildRequires: systemd
 # distributions, python3 does not actually install /usr/bin/python3,
 # so we also depend on python3-devel.
 BuildRequires: python3 python3-devel
+BuildRequires: python3dist(langtable)
 
 # This GCC version is needed for -fstack-clash-protection support.
 BuildRequires: gcc >= 7.2.1-6
@@ -455,6 +460,25 @@ do
    end
 end
 
+-- Compute the language names
+local langnames = {}
+local python3 = io.open('/usr/bin/python3', 'r')
+if python3 then
+   python3:close()
+   local args = table.concat(languages, ' ')
+   local file = io.popen(rpm.expand("%{SOURCE13}") .. ' ' .. args)
+   while true do
+       line = file:read()
+       if line == nil then break end
+       langnames[#langnames + 1] = line
+   end
+   file:close()
+else
+   for i = 1, #languages do
+      langnames[#langnames + 1] = languages[i]
+   end
+end
+
 -- Compute the Supplements: list for a language, based on the regions.
 local function compute_supplements(lang)
    result = "langpacks-core-" .. lang
@@ -468,13 +492,13 @@ local function compute_supplements(lang)
 end
 
 -- Emit the definition of a language pack package.
-local function lang_package(lang)
+local function lang_package(lang, langname)
    local suppl = compute_supplements(lang)
    print(rpm.expand([[
 
 %package langpack-]]..lang..[[
 
-Summary: Locale data for ]]..lang..[[
+Summary: Locale data for ]]..langname..[[
 
 Provides: glibc-langpack = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
@@ -483,7 +507,7 @@ Supplements: (glibc and (]]..suppl..[[))
 %description langpack-]]..lang..[[
 
 The glibc-langpack-]]..lang..[[ package includes the basic information required
-to support the ]]..lang..[[ language in your applications.
+to support the ]]..langname..[[ language in your applications.
 %ifnarch %{auxarches}
 %files -f langpack-]]..lang..[[.filelist langpack-]]..lang..[[
 
@@ -492,7 +516,7 @@ to support the ]]..lang..[[ language in your applications.
 end
 
 for i = 1, #languages do
-   lang_package(languages[i])
+   lang_package(languages[i], langnames[i])
 end
 }
 
@@ -2011,6 +2035,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Sep 27 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 2.30.9000-10
+- Use full locale names in langpack descriptions (#1651375)
+
 * Thu Sep 26 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-9
 - Auto-sync with upstream branch master,
   commit 464cd3a9d5f505d92bae9a941bb75b0d91ac14ee.
@@ -2047,7 +2074,6 @@ fi
 - Regenerate charmap-kw.h, locfile-kw.h
 - Fix three GNU license URLs, along with trailing-newline issues.
 - Prefer https to http for gnu.org and fsf.org URLs
-
 
 * Fri Sep 06 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-6
 - Auto-sync with upstream branch master,
