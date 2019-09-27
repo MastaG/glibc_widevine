@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-100-g1a6566094d
+%define glibcsrcdir glibc-2.30.9000-121-g464cd3a9d5
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2011,6 +2011,31 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Sep 26 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-9
+- Auto-sync with upstream branch master,
+  commit 464cd3a9d5f505d92bae9a941bb75b0d91ac14ee.
+- y2038: Introduce struct __timespec64 - new internal glibc type
+- auto-changelog: Remove latin1 from codecs
+- Set the expects flags to clock_nanosleep
+- Fix tst-sigcontext-get_pc rule name from a43565ac447b1
+- inet/net-internal.h: Fix uninitalised clntudp_call() variable
+- Fix vDSO initialization on arm and mips
+- Script to generate ChangeLog-like output from git log
+- [powerpc] SET_RESTORE_ROUND optimizations and bug fix
+- Fix building support_ptrace.c on i686-gnu.
+- S390: Use _HP_TIMING_S390_H instead of _HP_TIMING_H.
+- Update syscall-names.list for Linux 5.3.
+- Use Linux 5.3 in build-many-glibcs.py.
+- S390: Add support for HP_TIMING_NOW.
+- Fix RISC-V vfork build with Linux 5.3 kernel headers.
+- Add UNSUPPORTED check in elf/tst-pldd.
+- sparc64: Use linux generic time implementation
+- mips: Consolidate INTERNAL_VSYSCALL_CALL
+- powerpc: Simplify vsyscall internal macros
+- Refactor vDSO initialization code
+- Remove PREPARE_VERSION and PREPARE_VERSION_KNOW
+- Fix small error in HP_TIMING_PRINT trailing null char setting
+
 * Mon Sep 16 2019 Parag Nemade <pnemade AT redhat DOT com> - 2.30.9000-8
 - Change Supplements "langpacks-" to "langpacks-core-" (#1729992)
 
