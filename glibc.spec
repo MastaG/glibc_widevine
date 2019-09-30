@@ -1,6 +1,6 @@
 %define glibcsrcdir glibc-2.28-110-g57922433fa
 %define glibcversion 2.28
-%define glibcrelease 39%{?dist}
+%define glibcrelease 40%{?dist}
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -186,6 +186,7 @@ Patch51: glibc-rh1473680-6.patch
 Patch52: glibc-rh1473680-7.patch
 Patch53: glibc-rh1473680-8.patch
 Patch54: glibc-rh1473680-9.patch
+Patch55: glibc-rh1473680-10.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1929,6 +1930,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Sep 30 2019 Florian Weimer <fweimer@redhat.com> - 2.28-40
+- Set the expects flags to clock_nanosleep (#1473680)
+
 * Thu Sep  5 2019 Florian Weimer <fweimer@redhat.com> - 2.28-39
 - Avoid relocation-dependent IFUNC resolvers in librt (swbz#24959, #1473680)
 
