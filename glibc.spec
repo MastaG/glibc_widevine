@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -184,6 +184,7 @@ Patch52: glibc-rh1473680-6.patch
 Patch53: glibc-rh1473680-7.patch
 Patch54: glibc-rh1473680-8.patch
 Patch55: glibc-rh1473680-9.patch
+Patch56: glibc-rh1473680-10.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1917,6 +1918,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Sep 30 2019 Florian Weimer <fweimer@redhat.com> - 2.29-23
+- Set the expects flags to clock_nanosleep (#1473680)
+
 * Wed Sep  4 2019 Florian Weimer <fweimer@redhat.com> - 2.29-22
 - Avoid relocation-dependent IFUNC resolvers in librt (swbz#24959, #1473680)
 

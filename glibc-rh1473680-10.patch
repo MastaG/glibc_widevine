@@ -1,0 +1,38 @@
+commit b2b3b7598ae51c714b5fd0d0406d435e66f3624b
+Author: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Date:   Wed Sep 25 22:10:00 2019 +0000
+
+    Set the expects flags to clock_nanosleep
+    
+    It moves the missing CFLAGS from rt/Makefile to time/Makefile missing
+    from 7b5af2d8f2a2b (Finish move of clock_* functions to libc. [BZ #24959]).
+    
+    Checked on powerpc64le-linux-gnu.
+    
+            * rt/Makefile (CFLAGS-clock_nanosleep.c): Move to ...
+            * time/Makefile (CFLAGS-clock_nanosleep.c): ... here.
+
+diff --git a/rt/Makefile b/rt/Makefile
+index e6fbc32438c205cf..9156ccbdbf1293c9 100644
+--- a/rt/Makefile
++++ b/rt/Makefile
+@@ -56,7 +56,6 @@ include ../Rules
+ CFLAGS-aio_suspend.c += -fexceptions
+ CFLAGS-mq_timedreceive.c += -fexceptions -fasynchronous-unwind-tables
+ CFLAGS-mq_timedsend.c += -fexceptions -fasynchronous-unwind-tables
+-CFLAGS-clock_nanosleep.c += -fexceptions -fasynchronous-unwind-tables
+ CFLAGS-librt-cancellation.c += -fasynchronous-unwind-tables
+ 
+ LDFLAGS-rt.so = -Wl,--enable-new-dtags,-z,nodelete
+diff --git a/time/Makefile b/time/Makefile
+index ffe90ef04e18ebb1..29874499f2bc417c 100644
+--- a/time/Makefile
++++ b/time/Makefile
+@@ -68,6 +68,7 @@ tz-cflags = -DTZDIR='"$(zonedir)"' \
+ CFLAGS-tzfile.c += $(tz-cflags)
+ CFLAGS-tzset.c += $(tz-cflags)
+ CFLAGS-getdate.c += -fexceptions
++CFLAGS-clock_nanosleep.c += -fexceptions -fasynchronous-unwind-tables
+ 
+ # Don't warn about Y2k problem in strftime format string.
+ CFLAGS-test_time.c += -Wno-format
