@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -162,6 +162,7 @@ Patch31: glibc-fedora-nscd-warnings.patch
 Patch32: glibc-rh1748279-1.patch
 Patch33: glibc-rh1748279-2.patch
 Patch34: glibc-rh1473680-1.patch
+Patch35: glibc-rh1473680-2.patch
 
 
 ##############################################################################
@@ -2019,6 +2020,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Sep 30 2019 Florian Weimer <fweimer@redhat.com> - 2.30-6
+- Set the expects flags to clock_nanosleep (#1473680)
+
 * Mon Sep 16 2019 Parag Nemade <pnemade AT redhat DOT com> - 2.30-5
 - Change Supplements "langpacks-" to "langpacks-core-" (#1729992)
 
