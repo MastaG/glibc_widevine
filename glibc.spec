@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-121-g464cd3a9d5
+%define glibcsrcdir glibc-2.30.9000-148-gca602c1536
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2035,6 +2035,38 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Oct 08 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-11
+- Adjust glibc-rh741105.patch.
+- Auto-sync with upstream branch master,
+  commit ca602c1536ce2777f95c07525f3c42d78812e665:
+- Add TCP_TX_DELAY from Linux 5.3 to netinet/tcp.h
+- [powerpc] fenv_private.h clean up
+- [powerpc] libc_feupdateenv_test: optimize FPSCR access
+- [powerpc] __fesetround_inline optimizations
+- [powerpc] Rename fegetenv_status to fegetenv_control
+- [powerpc] libc_feholdsetround_noex_ppc_ctx: optimize FPSCR write
+- [powerpc] Rename fesetenv_mode to fesetenv_control
+- Add helper script for glibc debugging
+- Update bits/mman.h constants and tst-mman-consts.py for Linux 5.3.
+- y2038: Provide conversion helpers for struct __timespec64
+- Use binutils 2.33 branch in build-many-glibcs.py.
+- Sync "language", "lang_name", "territory", "country_name" with CLDR/langtable
+- Split up endian.h to minimize exposure of BYTE_ORDER.
+- time: Add padding for the timespec if required
+- Enable passing arguments to the inferior in debugglibc.sh
+- [powerpc] No need to enter "Ignore Exceptions Mode"
+- Y2038: Include proper header to provide support for struct timeval on HURD
+- Disable warnings in string/tester.c at top level.
+- string/endian.h: Restore the __USE_MISC conditionals
+- Disable -Wmaybe-uninitialized for total_deadline in sunrpc/clnt_udp.c.
+- ChangeLog update from my last commit
+- nptl: Move pthread_attr_setinheritsched implementation into libc.
+- elf: Never use the file ID of the main executable [BZ #24900]
+- elf: Assign TLS modid later during dlopen [BZ #24930]
+- nptl: Move pthread_attr_getschedparam implementation into libc
+- riscv: Remove support for variable page sizes
+- nptl: Move pthread_attr_setschedparam implementation into libc
+
 * Fri Sep 27 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 2.30.9000-10
 - Use full locale names in langpack descriptions (#1651375)
 

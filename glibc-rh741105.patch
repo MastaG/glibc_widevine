@@ -9,21 +9,47 @@ file. This is the wrong fix for this problem and should be dropped.
 The correct solution is to mark debuginfo files as new types of
 ELF files.
 
-Index: glibc-2.22-386-g95e8397/elf/dl-load.c
-===================================================================
---- glibc-2.22-386-g95e8397.orig/elf/dl-load.c
-+++ glibc-2.22-386-g95e8397/elf/dl-load.c
-@@ -881,7 +881,8 @@ _dl_map_object_from_fd (const char *name
- 
-   /* Get file information.  */
+diff --git a/elf/dl-load.c b/elf/dl-load.c
+index 24e2819345995bd9..007121144e71d9cf 100644
+--- a/elf/dl-load.c
++++ b/elf/dl-load.c
+@@ -880,6 +880,18 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
+      in this information for the executable in case of an explicit
+      loader invocation.  */
    struct r_file_id id;
--  if (__glibc_unlikely (!_dl_get_file_id (fd, &id)))
 +  struct stat64 st;
++
 +  if (__glibc_unlikely (!_dl_get_file_id (fd, &id, &st)))
++    {
++      errstring = N_("cannot stat shared object");
++      call_lose_errno:
++        errval = errno;
++      call_lose:
++        lose (errval, fd, name, realname, l, errstring,
++              make_consistent ? r : NULL, nsid);
++    }
++
+   if (mode & __RTLD_OPENEXEC)
      {
-       errstring = N_("cannot stat shared object");
-     call_lose_errno:
-@@ -1076,6 +1077,16 @@ _dl_map_object_from_fd (const char *name
+       assert (nsid == LM_ID_BASE);
+@@ -887,16 +899,6 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
+     }
+   else
+     {
+-      if (__glibc_unlikely (!_dl_get_file_id (fd, &id)))
+-	{
+-	  errstring = N_("cannot stat shared object");
+-	call_lose_errno:
+-	  errval = errno;
+-	call_lose:
+-	  lose (errval, fd, name, realname, l, errstring,
+-		make_consistent ? r : NULL, nsid);
+-	}
+-
+       /* Look again to see if the real name matched another already loaded.  */
+       for (l = GL(dl_ns)[nsid]._ns_loaded; l != NULL; l = l->l_next)
+ 	if (!l->l_removed && _dl_file_id_match_p (&l->l_file_id, &id))
+@@ -1074,6 +1076,16 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
  		= N_("ELF load command address/offset not properly aligned");
  	      goto call_lose;
  	    }
@@ -40,10 +66,10 @@ Index: glibc-2.22-386-g95e8397/elf/dl-load.c
  
  	  struct loadcmd *c = &loadcmds[nloadcmds++];
  	  c->mapstart = ALIGN_DOWN (ph->p_vaddr, GLRO(dl_pagesize));
-Index: glibc-2.22-386-g95e8397/sysdeps/generic/dl-fileid.h
-===================================================================
---- glibc-2.22-386-g95e8397.orig/sysdeps/generic/dl-fileid.h
-+++ glibc-2.22-386-g95e8397/sysdeps/generic/dl-fileid.h
+diff --git a/sysdeps/generic/dl-fileid.h b/sysdeps/generic/dl-fileid.h
+index 6310d46c2a6efc60..209580b6c0b8524b 100644
+--- a/sysdeps/generic/dl-fileid.h
++++ b/sysdeps/generic/dl-fileid.h
 @@ -29,7 +29,8 @@ struct r_file_id
     On error, returns false, with errno set.  */
  static inline bool
@@ -54,10 +80,10 @@ Index: glibc-2.22-386-g95e8397/sysdeps/generic/dl-fileid.h
  {
    return true;
  }
-Index: glibc-2.22-386-g95e8397/sysdeps/posix/dl-fileid.h
-===================================================================
---- glibc-2.22-386-g95e8397.orig/sysdeps/posix/dl-fileid.h
-+++ glibc-2.22-386-g95e8397/sysdeps/posix/dl-fileid.h
+diff --git a/sysdeps/posix/dl-fileid.h b/sysdeps/posix/dl-fileid.h
+index ae88a350788a5999..baa17b90a292a4d9 100644
+--- a/sysdeps/posix/dl-fileid.h
++++ b/sysdeps/posix/dl-fileid.h
 @@ -27,18 +27,16 @@ struct r_file_id
      ino64_t ino;
    };
