@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-148-gca602c1536
+%define glibcsrcdir glibc-2.30.9000-180-gef21bd2d8c
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -154,7 +154,6 @@ Patch16: glibc-nscd-sysconfig.patch
 Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
-Patch28: glibc-rh1615608.patch
 Patch29: glibc-fedora-nsswitch.patch
 
 ##############################################################################
@@ -2035,6 +2034,42 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Oct 18 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-12
+- Auto-sync with upstream branch master,
+  commit ef21bd2d8c6805c0c186a01f7c5039189f51b8c4.
+- loadarchive: guard against locale-archive corruption (Bug #25115)
+- Undo accidental commit to ChangeLog.19.
+- nptl: Document AS-safe functions in cancellation.c.
+- elf: Use nocancel pread64() instead of lseek()+read()
+- Add nocancel version of pread64()
+- Add run-one-test convenience target and makefile help text
+- Update sysvipc kernel-features.h files for Linux 5.1
+- S390: Add new s390 platform z15.
+- nptl: SIGCANCEL, SIGTIMER, SIGSETXID are always defined
+- nptl/tst-cancel25 needs to be an internal test
+- Remove libc_hidden_def from __semtimedop stub
+- sysvipc: Implement semop based on semtimedop
+- ipc: Refactor sysvipc internal definitions
+- Rename and split elf/tst-dlopen-aout collection of tests
+- dlfcn: Remove remnants of caller sensitivity from dlinfo
+- ldconfig: handle .dynstr located in separate segment (bug 25087)
+- ldd: Print "not a dynamic executable" on standard error [BZ #24150]
+- Add PTRACE_GET_SYSCALL_INFO from Linux 5.3 to sys/ptrace.h.
+- Move ChangeLog to ChangeLog.old/ChangeLog.19
+- manual: Remove warning in the documentation of the abort function
+- sysvipc: Set ipc_perm mode as mode_t (BZ#18231)
+- Simplify note processing
+- syscall-names.list: fix typos in comment
+- y2038: linux: Provide __clock_settime64 implementation
+- posix: Use posix_spawn for wordexp
+- mips: Do not malloc on getdents64 fallback
+- sparc: Assume GOTDATA support in the toolchain
+- <dirent.h>: Remove wrong comment about getdents64 declaration
+- ChangeLog: Remove leading spaces before tabs and trailing whitespace
+- Make tst-strftime2 and tst-strftime3 depend on locale generation
+- posix/tst-wordexp-nocmd: Fix diagnostics output in test
+- wordexp: Split out command execution tests from posix/wordexp-test
+
 * Tue Oct 08 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-11
 - Adjust glibc-rh741105.patch.
 - Auto-sync with upstream branch master,
