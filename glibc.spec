@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-180-gef21bd2d8c
+%define glibcsrcdir glibc-2.30.9000-185-g7db1fe38de
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2034,6 +2034,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Oct 23 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-13
+- Auto-sync with upstream branch master,
+  commit 7db1fe38de21831d53ceab9ae83493d8d1aec601:
+- Include <kernel-features.h> explicitly in Linux clock_settime.c
+- Remove math-finite.h
+- Remove finite-math tests
+- Remove x64 _finite tests and references
+- Fix testroot.pristine creation copying dynamic linker
+
 * Fri Oct 18 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-12
 - Auto-sync with upstream branch master,
   commit ef21bd2d8c6805c0c186a01f7c5039189f51b8c4.
