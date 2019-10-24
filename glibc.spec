@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -174,6 +174,7 @@ Requires: glibc-common = %{version}-%{release}
 Provides: bundled(gnulib)
 
 Requires(pre): basesystem
+Requires: basesystem
 
 # This is for building auxiliary programs like memusage, nscd
 # For initial glibc bootstraps it can be commented out
@@ -355,6 +356,8 @@ which is highly discouraged.
 Summary: Header files for development using standard C libraries.
 Provides: %{name}-headers(%{_target_cpu})
 Requires(pre): kernel-headers
+# Uses 'rm' to remove problematic kernel headers.
+Requires(pre): coreutils
 Requires: kernel-headers >= 2.2.1, %{name} = %{version}-%{release}
 BuildRequires: kernel-headers >= 3.2
 
@@ -2034,6 +2037,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Oct 24 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-14
+- Add Requires on basesystem for main package (#1757267)
+- Add Requires on coreutils for glibc-headers (uses rm)
+
 * Wed Oct 23 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-13
 - Auto-sync with upstream branch master,
   commit 7db1fe38de21831d53ceab9ae83493d8d1aec601:
