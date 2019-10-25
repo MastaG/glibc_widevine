@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1977,6 +1977,7 @@ fi
 %files all-langpacks
 %{_prefix}/lib/locale/locale-archive
 %{_prefix}/lib/locale/locale-archive.real
+%{_prefix}/share/locale/*/LC_MESSAGES/libc.mo
 
 %files locale-source
 %dir %{_prefix}/share/i18n/locales
@@ -2037,6 +2038,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Oct 25 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-15
+- Add *.mo files to all-langpacks (#1624528)
+
 * Thu Oct 24 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-14
 - Add Requires on basesystem for main package (#1757267)
 - Add Requires on coreutils for glibc-headers (uses rm)
