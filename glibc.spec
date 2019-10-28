@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-185-g7db1fe38de
+%define glibcsrcdir glibc-2.30.9000-194-g177a3d48a1
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2038,6 +2038,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Oct 28 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-16
+- Auto-sync with upstream branch master,
+  commit 177a3d48a1c74d7b2cd6bfd48901519d25a5ecad.
+- y2038: linux: Provide __clock_getres64 implementation
+- time: Introduce function to check correctness of nanoseconds value
+- Add Transliterations for Unicode Misc. Mathematical Symbols-A/B [BZ #23132]
+- Install charmaps uncompressed in testroot
+- Add wait-for-debugger test harness hooks
+- Define __STATFS_MATCHES_STATFS64
+- hurd: Fix build after __pread64 usage in the dynamic loader
+- sysdeps/stat: Handle 64-bit ino_t types on 32-bit hosts
+- S390: Remove not needed stack frame in syscall function.
+
 * Fri Oct 25 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-15
 - Add *.mo files to all-langpacks (#1624528)
 
