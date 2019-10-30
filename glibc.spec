@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 25%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -186,6 +186,7 @@ Patch54: glibc-rh1473680-8.patch
 Patch55: glibc-rh1473680-9.patch
 Patch56: glibc-rh1473680-10.patch
 Patch57: glibc-rh1764241.patch
+Patch58: glibc-rh1747453.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1919,6 +1920,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Oct 29 2019 Patsy Griffin <patsy@redhat.com> - 2.29-25
+- Implement --preload option for the dynamic linker.(#1747453)
+
 * Mon Oct 28 2019 Patsy Griffin <patsy@redhat.com> - 2.29-24
 - Remove codecvt vtable. (#1764241)
 
