@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 23%{?dist}
+Release: 24%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -185,6 +185,7 @@ Patch53: glibc-rh1473680-7.patch
 Patch54: glibc-rh1473680-8.patch
 Patch55: glibc-rh1473680-9.patch
 Patch56: glibc-rh1473680-10.patch
+Patch57: glibc-rh1764241.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1918,6 +1919,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Oct 28 2019 Patsy Griffin <patsy@redhat.com> - 2.29-24
+- Remove codecvt vtable. (#1764241)
+
 * Mon Sep 30 2019 Florian Weimer <fweimer@redhat.com> - 2.29-23
 - Set the expects flags to clock_nanosleep (#1473680)
 
