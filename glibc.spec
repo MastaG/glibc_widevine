@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-194-g177a3d48a1
+%define glibcsrcdir glibc-2.30.9000-232-g2a0356e119
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 16%{?dist}
+Release: 17%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -124,6 +124,9 @@ Source3: glibc-bench-compare
 # A copy of localedata/SUPPORTED in the Source0 tarball.  The
 # SUPPORTED file is used below to generate the list of locale
 # packages, using a Lua snippet.
+# When the upstream SUPPORTED is out of sync with our copy, the
+# prep phase will fail and you will need to update the local
+# copy.
 Source11: SUPPORTED
 # Include in the source RPM for reference.
 Source12: ChangeLog.old
@@ -2038,6 +2041,48 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Nov 06 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-17
+- Auto-sync with upstream branch master,
+  commit 2a0356e1191804d57005e1cfe2a72f019b7a8cce.
+- posix: Sync regex with gnulib
+- Add mnw language code [BZ #25139]
+- Add new locale: mnw_MM (Mon language spoken in Myanmar) [BZ #25139]
+- S390: Fp comparison are now raising FE_INVALID with gcc 10.
+- linux: pselect: Remove CALL_PSELECT6 macro
+- Fix run-one-test so that it runs elf tests
+- nptl: Fix niggles with pthread_clockjoin_np
+- hppa: Align __clone stack argument to 8 bytes (Bug 25066)
+- y2038: linux: Provide __futimens64 implementation
+- y2038: linux: Provide __utimensat64 implementation
+- nptl: Add pthread_timedjoin_np, pthread_clockjoin_np NULL timeout test
+- nptl: Add pthread_clockjoin_np
+- manual: Add documentation for pthread_tryjoin_np and pthread_timedjoin_np
+- nptl: Convert tst-join3 to use libsupport
+- Sync time/mktime.c with gnulib
+- Sync timespec-{add,sub} with gnulib
+- Sync intprops.h with gnulib
+- Refactor adjtimex based on clock_adjtime
+- Refactor PI mutexes internal definitions
+- Remove pause and nanosleep not cancel wrappers
+- nptl: Replace non cancellable pause/nanosleep with futex
+- Consolidate lowlevellock-futex.h
+- Consolidate futex-internal.h
+- Base max_fast on alignment, not width, of bins (Bug 24903)
+- Revise the documentation of simple calendar time.
+- Make second argument of gettimeofday as 'void *'
+- Use clock_gettime to implement gettimeofday.
+- Use clock_gettime to implement timespec_get.
+- Consolidate and deprecate ftime
+- Change most internal uses of time to __clock_gettime.
+- Use clock_gettime to implement time.
+- Use clock_settime to implement settimeofday.
+- Use clock_settime to implement stime; withdraw stime.
+- Change most internal uses of __gettimeofday to __clock_gettime.
+- Linux/Alpha: don't use timeval32 system calls.
+- resolv/tst-idna_name_classify: Isolate from system libraries
+- hurd: Support for file record locking
+- Comment out initgroups from example nsswitch.conf (Bug 25146)
+
 * Mon Oct 28 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-16
 - Auto-sync with upstream branch master,
   commit 177a3d48a1c74d7b2cd6bfd48901519d25a5ecad.

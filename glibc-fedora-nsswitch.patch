@@ -3,7 +3,7 @@ version with minor downstream distribution modifications for
 use with SSSD and systemd.
 
 diff --git a/nss/nsswitch.conf b/nss/nsswitch.conf
-index f55358811495c9f1..14c3cde8080a848c 100644
+index 4a6bcb1f7bc0b1f4..980a68e32e6a04b8 100644
 --- a/nss/nsswitch.conf
 +++ b/nss/nsswitch.conf
 @@ -1,7 +1,7 @@
@@ -15,7 +15,7 @@ index f55358811495c9f1..14c3cde8080a848c 100644
  # sorted with the most-used services at the beginning.
  #
  # Valid databases are: aliases, ethers, group, gshadow, hosts,
-@@ -52,18 +52,20 @@
+@@ -52,19 +52,21 @@
  # shadow:    db files
  # group:     db files
  
@@ -34,7 +34,8 @@ index f55358811495c9f1..14c3cde8080a848c 100644
 -group:      files
  gshadow:    files
 -hosts:      files dns
- initgroups: files
+ # Allow initgroups to default to the setting for group.
+ # initgroups: files
 -netgroup:   files
  networks:   files dns
 -passwd:     files
