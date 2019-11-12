@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-232-g2a0356e119
+%define glibcsrcdir glibc-2.30.9000-252-gcba932a5a9
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,30 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 12 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-18
+- Auto-sync with upstream branch master,
+  commit cba932a5a9e91cffd7f4172d7e91f9b2efb1f84b:
+- nptl: Move nanosleep implementation to libc
+- Refactor nanosleep in terms of clock_nanosleep
+- nptl: Refactor thrd_sleep in terms of clock_nanosleep
+- math: enhance the endloop condition of function handle_input_flag
+- hurd: Remove lingering references to the time function
+- hurd: Use __clock_gettime in _hurd_select
+- login: Remove double-assignment of fl.l_whence in try_file_lock
+- nptl: Add missing placeholder abi symbol from nanosleep move
+- login: Acquire write lock early in pututline [BZ #24882]
+- Remove hppa pthreadP.h
+- sysdeps/clock_nanosleep: Use clock_nanosleep_time64 if avaliable
+- Fix array bounds violation in regex matcher (bug 25149)
+- support: Add support_set_small_thread_stack_size
+- linux: Reduce stack size for nptl/tst-thread-affinity-pthread
+- y2038: linux: Provide __ppoll64 implementation
+- Declare asctime_r, ctime_r, gmtime_r, localtime_r for C2X.
+- support: Add xsetlocale function
+- libio/tst-fopenloc: Use xsetlocale, xfopen, and xfclose
+- Fix clock_nanosleep when interrupted by a signal
+- slotinfo in struct dtv_slotinfo_list should be flexible array [BZ #25097]
+
 * Wed Nov 06 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-17
 - Auto-sync with upstream branch master,
   commit 2a0356e1191804d57005e1cfe2a72f019b7a8cce.
