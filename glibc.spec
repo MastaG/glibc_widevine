@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-252-gcba932a5a9
+%define glibcsrcdir glibc-2.30.9000-266-g2a764c6ee8
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,24 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Nov 18 2019 Patsy Griffin <patsy@redhat.com> - 2.30.9000-19
+- Auto-sync with upstream branch master,
+  commit 2a764c6ee848dfe92cb2921ed3b14085f15d9e79.
+- Enhance _dl_catch_exception to allow disabling exception handling
+- hurd: Suppress GCC 10 -Warray-bounds warning in init-first.c [BZ #25097]
+- linux: Add comment on affinity set sizes to tst-skeleton-affinity.c
+- Avoid zero-length array at the end of struct link_map [BZ #25097]
+- Introduce link_map_audit_state accessor function
+- Properly initialize audit cookie for the dynamic loader [BZ #25157]
+- nios2: Work around backend bug triggered by csu/libc-tls.c (GCC PR 92499)
+- Redefine _IO_iconv_t to store a single gconv step pointer [BZ #25097]
+- Add new script for plotting string benchmark JSON output
+- support: Fix support_set_small_thread_stack_size to build on Hurd
+- login: Use pread64 in utmp implementation
+- Clarify purpose of assert in _dl_lookup_symbol_x
+- aarch64: Increase small and medium cases for __memcpy_generic
+- login: Introduce matches_last_entry to utmp processing
+
 * Tue Nov 12 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-18
 - Auto-sync with upstream branch master,
   commit cba932a5a9e91cffd7f4172d7e91f9b2efb1f84b:
