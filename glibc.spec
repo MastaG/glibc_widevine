@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30-2-gd74461fa34
+%define glibcsrcdir glibc-2.30-13-g919af705ee
 %define glibcversion 2.30
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,21 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 19 2019 Arjun Shankar <arjun@redhat.com> - 2.30-7
+- Auto-sync with upstream branch release/2.30/master,
+  commit 919af705eef416f4469341dfdf4ca23450f30236:
+- Update Alpha libm-test-ulps
+- hppa: Update libm-tests-ulps
+- alpha: force old OSF1 syscalls for getegid, geteuid and getppid [BZ #24986]
+- Fix RISC-V vfork build with Linux 5.3 kernel headers.
+- S390: Add new s390 platform z15.
+- Make tst-strftime2 and tst-strftime3 depend on locale generation
+- mips: Force RWX stack for hard-float builds that can run on pre-4.8 kernels
+- malloc: Fix missing accounting of top chunk in malloc_info [BZ #24026]
+- Add glibc.malloc.mxfast tunable
+- malloc: Various cleanups for malloc/tst-mxfast
+- Base max_fast on alignment, not width, of bins (Bug 24903)
+
 * Mon Sep 30 2019 Florian Weimer <fweimer@redhat.com> - 2.30-6
 - Set the expects flags to clock_nanosleep (#1473680)
 
