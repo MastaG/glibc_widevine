@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-32-g6d8eaf4a25
+%define glibcsrcdir glibc-2.29-51-g845278f2c6
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 25%{?dist}
+Release: 26%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1920,6 +1920,29 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 19 2019 Arjun Shankar <arjun@redhat.com> - 2.29-26
+- Auto-sync with upstream branch release/2.29/master,
+  commit 845278f2c6f93b1bb72c1e61529785740ea05f62:
+- Update Alpha libm-test-ulps
+- Improve performance of strstr
+- Improve performance of memmem
+- alpha: force old OSF1 syscalls for getegid, geteuid and getppid [BZ #24986]
+- Fix RISC-V vfork build with Linux 5.3 kernel headers.
+- Call _dl_open_check after relocation [BZ #24259]
+- support: Export bindir path on support_path
+- nss_db: fix endent wrt NULL mappings [BZ #24695] [BZ #24696]
+- elf: Refuse to dlopen PIE objects [BZ #24323]
+- mips: Force RWX stack for hard-float builds that can run on pre-4.8 kernels
+- Fix alignment of TLS variables for tls variant TLS_TCB_AT_TP [BZ #23403]
+- Fix assertion in malloc.c:tcache_get.
+- Small tcache improvements
+- malloc: Remove unwanted leading whitespace in malloc_info [BZ #24867]
+- malloc: Fix missing accounting of top chunk in malloc_info [BZ #24026]
+- Add glibc.malloc.mxfast tunable
+- malloc: Various cleanups for malloc/tst-mxfast
+- Base max_fast on alignment, not width, of bins (Bug 24903)
+- Linux: Use in-tree copy of SO_ constants for !__USE_MISC [BZ #24532]
+
 * Tue Oct 29 2019 Patsy Griffin <patsy@redhat.com> - 2.29-25
 - Implement --preload option for the dynamic linker.(#1747453)
 
