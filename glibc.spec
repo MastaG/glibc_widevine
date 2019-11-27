@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-266-g2a764c6ee8
+%define glibcsrcdir glibc-2.30.9000-298-gbfdb731438
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,34 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Nov 27 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-20
+- Auto-sync with upstream branch master,
+  commit bfdb731438206b0f70fe7afa890681155c30b419:
+- rtld: Check __libc_enable_secure for LD_PREFER_MAP_32BIT_EXEC (CVE-2019-19126)
+- Introduce DL_LOOKUP_FOR_RELOCATE flag for _dl_lookup_symbol_x
+- Enable inlining issignalingf within glibc
+- Don't use a custom wrapper macro around __has_include (bug 25189).
+- Remove duplicate inline implementation of issignalingf
+- misc: Set generic pselect as ENOSYS
+- Use DEPRECATED_SCANF macro for remaining C99-compliant scanf functions
+- ldbl-128ibm-compat: Add regular/wide character printing printing functions
+- ldbl-128ibm-compat: Test double values and positional arguments
+- ldbl-128ibm-compat: Add regular/wide character scanning functions
+- arm: Fix armv7 selection after 'Split BE/LE abilist'
+- Use Linux 5.4 in build-many-glibcs.py.
+- sysdeps/posix: Simplify if expression in getaddrinfo
+- sysdeps/posix/getaddrinfo: Return early on invalid address family
+- ru_UA locale: use copy "ru_RU" in LC_TIME (bug 25044)
+- locale: Greek -> ASCII transliteration table [BZ #12031]
+- nptl: Cleanup mutex internal offset tests
+- nptl: Add tests for internal pthread_rwlock_t offsets
+- nptl: Remove rwlock elision definitions
+- nptl: Add struct_mutex.h and struct_rwlock.h
+- nptl: Add default pthreadtypes-arch.h and pthread-offsets.h
+- Compile elf/rtld.c with -fno-tree-loop-distribute-patterns.
+- nptl: Fix __PTHREAD_MUTEX_INITIALIZER for !__PTHREAD_MUTEX_HAVE_PREV
+- S390: Fix handling of needles crossing a page in strstr z15 ifunc [BZ #25226]
+
 * Mon Nov 18 2019 Patsy Griffin <patsy@redhat.com> - 2.30.9000-19
 - Auto-sync with upstream branch master,
   commit 2a764c6ee848dfe92cb2921ed3b14085f15d9e79.
