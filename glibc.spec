@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-298-gbfdb731438
+%define glibcsrcdir glibc-2.30.9000-315-ge37c2cf299
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,27 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Nov 28 2019 Florian Weimer <fweimer@redhat.com> - 2.30.9000-21
+- Auto-sync with upstream branch master,
+  commit e37c2cf299b61ce18f62852f6c5624c27829b610:
+- Move _dl_open_check to its original place in dl_open_worker
+- Block signals during the initial part of dlopen
+- Remove all loaded objects if dlopen fails, ignoring NODELETE (#1395758)
+- Avoid late dlopen failure due to scope, TLS slotinfo updates (swbz#25112)
+- Avoid late failure in dlopen in global scope update (swbz#25112)
+- Lazy binding failures during dlopen/dlclose must be fatal (swbz#24304)
+- resolv: Implement trust-ad option for /etc/resolv.conf (#1164339)
+- dlsym: Do not determine caller link map if not needed
+- libio: Disable vtable validation for pre-2.1 interposed handles (swbz#25203)
+- ldbl-128ibm-compat: Add syslog functions
+- ldbl-128ibm-compat: Add obstack printing functions
+- ldbl-128ibm-compat: Reuse tests for err.h and error.h functions
+- ldbl-128ibm-compat: Add error.h functions
+- ldbl-128ibm-compat: Add err.h functions
+- ldbl-128ibm-compat: Add argp_error and argp_failure
+- sparc: Use atomic compiler builtins on sparc
+- Remove 32 bit sparc v7 support
+
 * Wed Nov 27 2019 Arjun Shankar <arjun@redhat.com> - 2.30.9000-20
 - Auto-sync with upstream branch master,
   commit bfdb731438206b0f70fe7afa890681155c30b419:
