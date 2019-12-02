@@ -1,0 +1,24 @@
+Emergency patch for #1778344: A reference to a unique symbol in
+libstdc++ causes it to be marked as NODELETE (as expected), but the
+assert is not prepared for that situation.
+
+diff --git a/elf/dl-open.c b/elf/dl-open.c
+index df9f29a5e5683bf2..763e90187afaf09a 100644
+--- a/elf/dl-open.c
++++ b/elf/dl-open.c
+@@ -452,12 +452,9 @@ activate_nodelete (struct link_map *new, int mode)
+ 	    _dl_debug_printf ("activating NODELETE for %s [%lu]\n",
+ 			      imap->l_name, imap->l_ns);
+ 
+-	  /* Only new objects should have set
+-	     link_map_nodelete_pending.  Existing objects should not
+-	     have gained any new dependencies and therefore cannot
+-	     reach NODELETE status.  */
+-	  assert (!imap->l_init_called || imap->l_type != lt_loaded);
+-
++	  /* Note that this can also activate NODELETE for objects
++	     which had already been loaded at the time of the dlopen
++	     call.  */
+ 	  imap->l_nodelete = link_map_nodelete_active;
+ 	}
+      }
