@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Dec  4 2019 Arjun Shankar <arjun@redhat.com> - 2.30-8
+- Rebuild to fix corrupt annobin data in crti.o and crtn.o [BZ# 1779399]
+
 * Tue Nov 19 2019 Arjun Shankar <arjun@redhat.com> - 2.30-7
 - Auto-sync with upstream branch release/2.30/master,
   commit 919af705eef416f4469341dfdf4ca23450f30236:
