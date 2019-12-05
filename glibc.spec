@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 23%{?dist}
+Release: 24%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,7 +158,9 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
-Patch30: glibc-rh1778344.patch
+Patch30: glibc-dlopen-nodelete-fixes-1.patch
+Patch31: glibc-dlopen-nodelete-fixes-2.patch
+Patch32: glibc-dlopen-nodelete-fixes-3.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2042,6 +2044,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Dec  5 2019 Florian Weimer <fweimer@redhat.com> - 2.30.9000-24
+- Upstream patches for fallout from dlopen NODELETE changes (#1778344, #1778366)
+
 * Wed Dec 04 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-23
 - Auto-sync with upstream branch master,
   commit ec138c67cbda8b5826a0a2a7ba456408117996dc.
