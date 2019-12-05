@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-315-ge37c2cf299
+%define glibcsrcdir glibc-2.30.9000-338-gec138c67cb
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2042,6 +2042,32 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Dec 04 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-23
+- Auto-sync with upstream branch master,
+  commit ec138c67cbda8b5826a0a2a7ba456408117996dc.
+- sysdeps: Add clock_gettime64 vDSO
+- Do not use ld.so to open statically linked programs in debugglibc.sh
+- Attach to test in container from debugglibc.sh
+- Expand $(as-needed) and $(no-as-needed) throughout the build system
+- x86: Assume --enable-cet if GCC defaults to CET [BZ #25225]
+- ldbl-128ibm-compat: Add tests for strfroml, strtold, and wcstold
+- ldbl-128ibm-compat: Add tests for strfmon and strfmon_l
+- ldbl-128ibm-compat: Add strfmon_l with IEEE long double format
+- ldbl-128ibm-compat: Replace http with https in new files
+- elf: Do not run IFUNC resolvers for LD_DEBUG=unused [BZ #24214]
+- elf/tst-dlopenfail: Disable --no-as-needed for tst-dlopenfailmod1.so
+- hurd: Fix ld.so __access override from libc
+- hurd: Fix ld.so __getcwd override from libc
+- hurd: Make __sigprocmask GLIBC_PRIVATE
+- hurd: Fix renameat2 error
+- hurd: make strerror(0) coherent with other ports
+- hurd: Fix ld.so link
+- Update kernel version to 5.4 in tst-mman-consts.py.
+- Update SOMAXCONN value from Linux 5.4.
+- Update syscall-names.list for Linux 5.4.
+- Fix syntax error in build-many-glibcs.py.
+- Define MADV_COLD and MADV_PAGEOUT from Linux 5.4.
+
 * Mon Dec  2 2019 Florian Weimer <fweimer@redhat.com> - 2.30.9000-22
 - dlopen: Remove incorrect assert in activate_nodelete (#1778344)
 
