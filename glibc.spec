@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-338-gec138c67cb
+%define glibcsrcdir glibc-2.30.9000-349-g0487ebed22
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 25%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2044,6 +2044,21 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Dec 09 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-25
+- Auto-sync with upstream branch master,
+  commit 0487ebed2278b20971af4cabf186fd3681adccf0.
+- nptl: Add more missing placeholder abi symbol from nanosleep move
+- sysdeps/riscv/start.S: rename .Lload_gp to load_gp (bug 24376)
+- y2038: linux: Provide __timer_settime64 implementation
+- y2038: linux: Provide __timer_gettime64 implementation
+- timer: Decouple x86_64 specific timer_settime from generic Linux implementation
+- timer: Decouple x86_64 specific timer_gettime from generic Linux implementation
+- time: Introduce glibc's internal struct __itimerspec64
+- Correct range checking in mallopt/mxfast/tcache [BZ #25194]
+- misc/test-errno-linux: Handle EINVAL from quotactl
+- <string.h>: Define __CORRECT_ISO_CPP_STRING_H_PROTO for Clang [BZ #25232]
+- build-many-glibcs.py: Move sparcv8 to extra_glibcs
+
 * Thu Dec  5 2019 Florian Weimer <fweimer@redhat.com> - 2.30.9000-24
 - Upstream patches for fallout from dlopen NODELETE changes (#1778344, #1778366)
 
