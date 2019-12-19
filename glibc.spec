@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-349-g0487ebed22
+%define glibcsrcdir glibc-2.30.9000-396-g3dcad8158f
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 25%{?dist}
+Release: 26%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,9 +158,6 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
-Patch30: glibc-dlopen-nodelete-fixes-1.patch
-Patch31: glibc-dlopen-nodelete-fixes-2.patch
-Patch32: glibc-dlopen-nodelete-fixes-3.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2044,6 +2041,57 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Dec 19 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-26
+- Auto-sync with upstream branch master,
+  commit 3dcad8158f43d71d5b8f6f317f82952ddf3468f3.
+- hurd: Do not make sigprocmask available in ld.so
+- build-many-glibcs.py: Do not build C++ PCHs by default
+- hurd: Make getrandom honour GRND_NONBLOCK
+- tunables: report sbrk() failure
+- build-many-glibcs.py: Add mipsisa64r6el-linux-gnu target
+- mips: Do not include hi and lo in __SYSCALL_CLOBBERS for R6
+- ldbl-128ibm-compat: Add ISO C99 versions of scanf functions
+- ldbl-128ibm-compat: Fix selection of GNU and ISO C99 scanf
+- hurd: Fix local PLT
+- dlopen: Do not block signals
+- dlopen: Rework handling of pending NODELETE status
+- dlopen: Fix issues related to NODELETE handling and relocations
+- hurd: Fix __close_nocancel_nostatus availability
+- hurd: add getrandom and getentropy implementations
+- hurd: Implement __close_nocancel_nostatus
+- manual: clarify fopen with the x flag
+- S390: Use sysdeps/ieee754/dbl-64/wordsize-64 on s390x.
+- S390: Implement roundtoint and converttoint and define TOINT_INTRINSICS.
+- S390: Implement math-barriers math_opt_barrier and math_force_eval.
+- S390: Use libc_fe* macros in fe* functions.
+- S390: Implement libc_fe* macros.
+- S390: Use convert-to-fixed instruction for llround functions.
+- S390: Use convert-to-fixed instruction for lround functions.
+- S390: Use convert-to-fixed instruction for llrint functions.
+- S390: Use convert-to-fixed instruction for lrint functions.
+- S390: Use load-fp-integer instruction for roundeven functions.
+- Adjust s_copysignl.c regarding code style.
+- Adjust s_ceilf.c and s_ceill.c regarding code style.
+- Adjust s_floorf.c and s_floorl.c regarding code style.
+- Adjust s_rintf.c and s_rintl.c regarding code style.
+- Adjust s_nearbyintf.c and s_nearbyintl.c regarding code style.
+- Use GCC builtins for copysign functions if desired.
+- Use GCC builtins for round functions if desired.
+- Use GCC builtins for trunc functions if desired.
+- Use GCC builtins for ceil functions if desired.
+- Use GCC builtins for floor functions if desired.
+- Use GCC builtins for rint functions if desired.
+- Use GCC builtins for nearbyint functions if desired.
+- Always use wordsize-64 version of s_round.c.
+- Always use wordsize-64 version of s_trunc.c.
+- Always use wordsize-64 version of s_ceil.c.
+- Always use wordsize-64 version of s_floor.c.
+- Always use wordsize-64 version of s_rint.c.
+- Always use wordsize-64 version of s_nearbyint.c.
+- ldconfig: Do not print a warning for a missing ld.so.conf file
+- hurd: Fix using altstack while in an RPC call to be aborted
+- Fix failure when CFLAGS contains -DNDEBUG (Bug 25251)
+
 * Mon Dec 09 2019 DJ Delorie <dj@redhat.com> - 2.30.9000-25
 - Auto-sync with upstream branch master,
   commit 0487ebed2278b20971af4cabf186fd3681adccf0.
