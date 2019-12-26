@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-396-g3dcad8158f
+%define glibcsrcdir glibc-2.30.9000-419-gb8c210bcc7
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 26%{?dist}
+Release: 27%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,33 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Dec 26 2019 Carlos O'Donell <carlos@redhat.com> - 2.30.9000-27
+- Auto-sync with upstream branch master,
+  commit b8c210bcc74840d24c61d39bde15bea9daf3e271.
+- mnw_MM, my_MM, and shn_MM locales: Do not use %Op
+- Avoid compat symbols for totalorder in powerpc64le IEEE long double
+- ldbl-128ibm-compat: Add *cvt functions
+- Refactor *cvt functions implementation (2/2)
+- Refactor *cvt functions implementation (1/2)
+- Add exception-based flags for wait4
+- aarch64: Optimized memset for Kunpeng processor.
+- aarch64: Optimized strlen for strlen_asimd
+- aarch64: Add Huawei Kunpeng to tunable cpu list
+- aarch64: Optimized implementation of memrchr
+- aarch64: Optimized implementation of strnlen
+- aarch64: Optimized implementation of strcpy
+- aarch64: Optimized implementation of memcmp
+- Consolidate wait3 implementations
+- Implement waitpid in terms of wait4
+- linux: Use waitid on wait4 if __NR_wait4 is not defined
+- Implement wait in terms of waitpid
+- nptl: Move waitpid implementation to libc
+- nptl: Move wait implementation to libc
+- Remove __waitpid_nocancel
+- Fix test isolation for elf/tst-ifunc-fault-lazy, elf/tst-ifunc-fault-bindnow
+- Fix __libc_signal_block_all on sparc64
+- powerpc: Do not run IFUNC resolvers for LD_DEBUG=unused [BZ #24214]
+
 * Thu Dec 19 2019 Patsy Franklin <patsy@redhat.com> - 2.30.9000-26
 - Auto-sync with upstream branch master,
   commit 3dcad8158f43d71d5b8f6f317f82952ddf3468f3.
