@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-419-gb8c210bcc7
+%define glibcsrcdir glibc-2.30.9000-445-gcc47d5c5f5
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 27%{?dist}
+Release: 28%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,22 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jan 02 2020 Florian Weimer <fweimer@redhat.com> - 2.30.9000-28
+- Auto-sync with upstream branch master,
+  commit cc47d5c5f53f6d845ac54698ae8929af15662c44:
+- Linux: Use built-in system call tables
+- lv_LV locale: Correct the time part of d_t_fmt (swbz#25324)
+- km_KH locale: Use "%M" instead of "m" in d_t_fmt (swbz#25323)
+- ldbl-128ibm-compat: Do not mix -mabi=*longdouble and -mlong-double-128
+- ldbl-128ibm-compat: Compiler flags for stdio functions
+- Do not redirect calls to __GI_* symbols, when redirecting to *ieee128
+- aarch64: add default memcpy version for kunpeng920
+- aarch64: ifunc rename for kunpeng
+- aarch64: Modify error-shown comments for strcpy
+- linux: Consolidate sigprocmask
+- Fix return code for __libc_signal_* functions
+- nptl: Remove duplicate internal __SIZEOF_PTHREAD_MUTEX_T (swbz#25241)
+
 * Thu Dec 26 2019 Carlos O'Donell <carlos@redhat.com> - 2.30.9000-27
 - Auto-sync with upstream branch master,
   commit b8c210bcc74840d24c61d39bde15bea9daf3e271.
