@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-445-gcc47d5c5f5
+%define glibcsrcdir glibc-2.30.9000-470-gcbce69e70d
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 28%{?dist}
+Release: 29%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,35 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jan 06 2020 Arjun Shankar <arjun@redhat.com> - 2.30.9000-29
+- Auto-sync with upstream branch master,
+  commit cbce69e70dc4b04fefcc7257e593733b8b03856c:
+- Multiple locales: Add date_fmt (bug 24054)
+- Update libc.pot for 2.31 release
+- Add libm_alias_finite for _finite symbols
+- Linux: Fix clock_nanosleep time64 check
+- linux: Fix vDSO macros build with time64 interfaces
+- x86: Make x32 use x86 time implementation
+- Remove vDSO support from make-syscall.sh
+- linux: Update x86 vDSO symbols
+- linux: Update mips vDSO symbols
+- linux: Consolidate Linux gettimeofday
+- linux: Consolidate time implementation
+- elf: Enable relro for static build
+- elf: Move vDSO setup to rtld (BZ#24967)
+- linux: Add support for clock_gettime64 vDSO
+- linux: Optimize fallback 32-bit clock_gettime
+- linux: Enable vDSO clock_gettime64 for i386
+- linux: Enable vDSO clock_gettime64 for arm
+- linux: Enable vDSO clock_gettime64 for mips
+- linux: Add support for clock_getres64 vDSO
+- linux: Optimize fallback 32-bit clock_getres
+- htl: Use dso_handle.h
+- htl: Drop common tcbhead_t definition
+- htl: Move pthread_atfork to libc_nonshared.a
+- htl: Add __errno_location and __h_errno_location
+- hurd: Fix message reception for timer_thread
+
 * Thu Jan 02 2020 Florian Weimer <fweimer@redhat.com> - 2.30.9000-28
 - Auto-sync with upstream branch master,
   commit cc47d5c5f53f6d845ac54698ae8929af15662c44:
