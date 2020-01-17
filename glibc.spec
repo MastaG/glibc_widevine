@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-470-gcbce69e70d
+%define glibcsrcdir glibc-2.30.9000-492-g70ba28f7ab
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 29%{?dist}
+Release: 30%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,21 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jan 17 2020 Florian Weimer <fweimer@redhat.com> - 2.30.9000-30
+- Auto-sync with upstream branch master,
+  commit 70ba28f7ab2923d4e36ffc9d5d2e32357353b25c:
+- Fix tst-pkey.c pkey_alloc return checks and manual
+- powerpc: Move cache line size to rtld_global_ro
+- powerpc: Initialize rtld_global_ro for static dlopen (swbz#20802)
+- Revert outdated translations
+- vcs-to-changelog: Add quirk for __nonnull
+- elf: Add elf/tst-dlopenfail-2 (swbz#25396, #1395758)
+- Clear GL(dl_initfirst) when freeing its link_map (swbz#25396, #1395758)
+- Update Translations
+- Fix "elf: Add tst-ldconfig-ld_so_conf-update test" on 32bit.
+- elf: Add tst-ldconfig-ld_so_conf-update test
+- sl_SI locale: Use "." as the thousands separator (swbz#25233)
+
 * Mon Jan 06 2020 Arjun Shankar <arjun@redhat.com> - 2.30.9000-29
 - Auto-sync with upstream branch master,
   commit cbce69e70dc4b04fefcc7257e593733b8b03856c:
