@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -163,6 +163,21 @@ Patch32: glibc-rh1748279-1.patch
 Patch33: glibc-rh1748279-2.patch
 Patch34: glibc-rh1473680-1.patch
 Patch35: glibc-rh1473680-2.patch
+Patch36: glibc-rh1395758-1.patch
+Patch37: glibc-rh1395758-2.patch
+Patch38: glibc-rh1395758-3.patch
+Patch39: glibc-rh1395758-4.patch
+Patch40: glibc-rh1395758-5.patch
+Patch41: glibc-rh1395758-6.patch
+Patch42: glibc-rh1395758-7.patch
+Patch43: glibc-rh1395758-8.patch
+Patch44: glibc-rh1395758-9.patch
+Patch45: glibc-rh1395758-10.patch
+Patch46: glibc-rh1395758-11.patch
+Patch47: glibc-rh1395758-12.patch
+Patch48: glibc-rh1395758-13.patch
+Patch49: glibc-rh1395758-14.patch
+Patch50: glibc-rh1395758-15.patch
 
 
 ##############################################################################
@@ -2020,6 +2035,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jan 17 2020 Florian Weimer <fweimer@redhat.com> - 2.30-10
+- Fix dynamic loader crash after dlopen failure with NODELETE (#1395758)
+- Lazy binding failures during ELF constructors and destructors now always
+  terminate the process.
+
 * Fri Jan 17 2020 Florian Weimer <fweimer@redhat.com> - 2.30-9
 - Auto-sync with upstream branch release/2.30/master,
   commit 994e529a37953a057b9e6c80afa03b03fd3724f2:
