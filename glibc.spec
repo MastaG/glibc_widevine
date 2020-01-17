@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30-13-g919af705ee
+%define glibcsrcdir glibc-2.30-34-g994e529a37
 %define glibcversion 2.30
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,32 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jan 17 2020 Florian Weimer <fweimer@redhat.com> - 2.30-9
+- Auto-sync with upstream branch release/2.30/master,
+  commit 994e529a37953a057b9e6c80afa03b03fd3724f2:
+- Remove incorrect alloc_size attribute from pvalloc (swbz#25401)
+- login: Use pread64 in utmp implementation
+- Add nocancel version of pread64()
+- login: Introduce matches_last_entry to utmp processing
+- login: Acquire write lock early in pututline (swbz#24882)
+- login: Add nonstring attributes to struct utmp, struct utmpx (swbz#24899)
+- login: Remove double-assignment of fl.l_whence in try_file_lock
+- login: pututxline could fail to overwrite existing entries (swbz#24902)
+- login: Use struct flock64 in utmp (swbz#24880)
+- login: Disarm timer after utmp lock acquisition (swbz#24879)
+- login: Fix updwtmp, updwtmx unlocking
+- login: Replace macro-based control flow with function calls in utmp
+- login: Assume that _HAVE_UT_* constants are true
+- login: Remove utmp backend jump tables (swbz#23518)
+- misc/test-errno-linux: Handle EINVAL from quotactl
+- <string.h>: Define __CORRECT_ISO_CPP_STRING_H_PROTO for Clang (swbz#25232)
+- x86: Assume --enable-cet if GCC defaults to CET (swbz#25225)
+- libio: Disable vtable validation for pre-2.1 interposed handles (swbz#25203)
+- S390: Fix handling of needles crossing a page in strstr z15 ifunc-variant. (swbz#25226)
+- rtld: Check __libc_enable_secure before honoring LD_PREFER_MAP_32BIT_EXEC
+  (CVE-2019-19126) (#1774682)
+- Don't use a custom wrapper macro around __has_include (swbz#25189)
+
 * Wed Dec  4 2019 Arjun Shankar <arjun@redhat.com> - 2.30-8
 - Rebuild to fix corrupt annobin data in crti.o and crtn.o [BZ# 1779399]
 
