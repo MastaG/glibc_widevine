@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-492-g70ba28f7ab
+%define glibcsrcdir glibc-2.30.9000-501-g92ce43eef7
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 30%{?dist}
+Release: 31%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jan 20 2020 Patsy Franklin <patsy@redhat.com> - 2.30.9000-31
+- Auto-sync with upstream branch master,
+  commit 92ce43eef7ac844782d50a8015d977d216fbadec.
+- Run bench-timing-type with newly built libc.
+- Get rid of Werror=maybe-uninitialized in res_send.c.
+- translations: Update translations
+- translations: Trim po files using msgattrib
+- Update translations
+- translations: Run msgmerge when downloading translations
+- Fix maybe-uninitialized error on powerpc
+- powerpc32: Fix syntax error in __GLRO macro
+- Remove incorrect alloc_size attribute from pvalloc (swbz#25401)
+
 * Fri Jan 17 2020 Florian Weimer <fweimer@redhat.com> - 2.30.9000-30
 - Auto-sync with upstream branch master,
   commit 70ba28f7ab2923d4e36ffc9d5d2e32357353b25c:
