@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-51-g845278f2c6
+%define glibcsrcdir glibc-2.29-57-gea6f2c3174
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 27%{?dist}
+Release: 28%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1920,6 +1920,14 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jan 21 2020 Florian Weimer <fweimer@redhat.com> - 2.29-28
+- Auto-sync with upstream branch release/2.29/master,
+  commit ea6f2c3174232ca7f66ab1524f0d5fedc7b26f23:
+- <string.h>: Define __CORRECT_ISO_CPP_STRING_H_PROTO for Clang (swbz#25232)
+- x86: Assume --enable-cet if GCC defaults to CET (swbz#25225)
+- libio: Disable vtable validation for pre-2.1 interposed handles (swbz#25203)
+- CVE-2019-19126: LD_PREFER_MAP_32BIT_EXEC not ignored for SUID programs (#1774682)
+
 * Wed Dec  4 2019 Arjun Shankar <arjun@redhat.com> - 2.29-27
 - Rebuild to fix corrupt annobin data in crti.o and crtn.o [BZ# 1779399]
 
