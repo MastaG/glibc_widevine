@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 31%{?dist}
+Release: 32%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
 * Mon Jan 20 2020 Patsy Franklin <patsy@redhat.com> - 2.30.9000-31
 - Auto-sync with upstream branch master,
   commit 92ce43eef7ac844782d50a8015d977d216fbadec.
