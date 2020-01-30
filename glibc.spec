@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30.9000-501-g92ce43eef7
+%define glibcsrcdir glibc-2.30.9000-509-g352bb99754
 %define glibcversion 2.30.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 32%{?dist}
+Release: 33%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jan 30 2020 Patsy Franklin <patsy@redhat.com> - 2.30.9000-33
+- Auto-sync with upstream branch master,
+  commit 352bb99754ae7c83ff1b974f9c52244e974c9410.
+- Build raise with -fasynchronous-unwind-tables.
+- Fix locale/tst-locale-locpath cross-testing when sshd sets LANG.
+- Fix elf/tst-rtld-preload cross-testing.
+- Fix cross-testing of tst-ifunc-fault-* tests.
+- gitlog-to-changelog: Drop scripts in favour of gnulib version
+- Add NEWS entry about the change in handling of PT_GNU_STACK on MIPS
+- Fix array overflow in backtrace on PowerPC (bug 25423)
+- getaddrinfo: Fix resource leak after strdup failure in gethosts (swbz#25425)
+
 * Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org>
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
