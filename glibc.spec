@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.30.9000-509-g352bb99754
-%define glibcversion 2.30.9000
+%define glibcsrcdir glibc-2.31
+%define glibcversion 2.31
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 33%{?dist}
+Release: 1%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,20 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Feb 03 2020 DJ Delorie <dj@redhat.com> - 2.31-1
+- Auto-sync with upstream branch release/2.31/master,
+  commit 9ea3686266dca3f004ba874745a4087a89682617.
+- glibc 2.31 release
+- Generate ChangeLog.old/ChangeLog.20 for 2.31
+- Add bugs fixed in 2.31 in NEWS
+- Update newest tested versions of dependencies in install.texi
+- Add more contributors to the manual
+- Add note to NEWS about kernel headers dependency on risc-v
+- Add Portuguese (Portugal) translation
+- Add NEWS entry about 64-bit time_t syscall use on 32-bit targets
+- nptl: Avoid using PTHREAD_MUTEX_DEFAULT in macro definition [BZ #25271]
+
+
 * Thu Jan 30 2020 Patsy Franklin <patsy@redhat.com> - 2.30.9000-33
 - Auto-sync with upstream branch master,
   commit 352bb99754ae7c83ff1b974f9c52244e974c9410.
