@@ -22,7 +22,7 @@ index 4a6bcb1f7bc0b1f4..980a68e32e6a04b8 100644
 -# In alphabetical order. Re-order as required to optimize peformance.
 +# In order of likelihood of use to accelerate lookup.
 +passwd:     sss files
-+shadow:     files sss
++shadow:     files
 +group:      sss files
 +hosts:      files dns myhostname
 +services:   files sss
