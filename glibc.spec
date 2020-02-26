@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.31
-%define glibcversion 2.31
+%define glibcsrcdir glibc-2.31.9000-189-g758599bc9d
+%define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2041,6 +2041,200 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Feb 26 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-1
+- Auto-sync with upstream branch master,
+  commit 758599bc9dcc5764e862bd9e1613c5d1e6efc5d3.
+- elf: Apply attribute_relro to pointers in elf/dl-minimal.c
+- powerpc: Refactor fenvinline.h
+- nss_nis: Use NSS_DECLARE_MODULE_FUNCTIONS
+- csu: Use ELF constructor instead of _init in libc.so
+- ldbl-128ibm: make ieee754.h work with IEEE 128 long double
+- ldbl-128ibm-compat: fixup subdir location of several funcs
+- ldbl-128ibm-compat: enforce correct abi flags on internal file
+- ldbl-128ibm-compat: Provide ieee128 symbols to narrow functions
+- Undefine redirections after long double definition on __LDBL_COMPAT [BZ #23294]
+- nios2: Fix Linux kABI for syscall return
+- Fix use-after-free in glob when expanding ~user (bug 25414)
+- nptl: Move pthread_setschedparam implementation into libc
+- nptl: Move pthread_getschedparam implementation into libc
+- Add hidden prototypes for __sched_getparam, __sched_getscheduler
+- nptl: Move pthread_cond_init implementation into libc
+- nptl: Move pthread_cond_destroy implementation into libc
+- nptl: Move pthread_condattr_init implementation into libc
+- nptl: Move pthread_condattr_destroy implementation into libc
+- nptl: Move pthread_attr_setscope implementation into libc
+- nptl: Move pthread_attr_getscope implementation into libc
+- nptl: Move pthread_attr_setschedpolicy implementation into libc
+- nptl: Move pthread_attr_getschedpolicy implementation into libc
+- nptl: Sort routines list in Makefile alphabetically
+- nptl: Use .NOTPARALLEL in Makefile only if actually running tests
+- Block all signals on timer_create thread (BZ#10815)
+- Fix tst-pkey expectations on pkey_get [BZ #23202]
+- y2038: linux: Provide __gettimeofday64 implementation
+- Linux: Work around kernel bugs in chmod on /proc/self/fd paths [BZ #14578]
+- Introduce <elf-initfini.h> and ELF_INITFINI for all architectures
+- mips: Fix bracktrace result for signal frames
+- Move implementation of <file_change_detection.h> into a C file
+- <fd_to_filename.h>: Add type safety and port to Hurd
+- Prepare redirections for IEEE long double on powerpc64le
+- conform/conformtest.py: Extend tokenizer to cover character constants
+- stdlib: Reduce namespace pollution in <inttypes.h>
+- x86: Avoid single-argument _Static_assert in <tls.h>
+- x86 tls: Use _Static_assert for TLS access size assertion
+- htl: Link internal htl tests against libpthread
+- pthread: Fix building tst-robust8 with nptl
+- pthread: Move robust mutex tests from nptl to sysdeps/pthread
+- htl: Remove stub warning for pthread_mutexattr_setpshared
+- htl: Add missing functions and defines for robust mutexes
+- htl: Only check pthread_self coherency when DEBUG is set
+- hurd: Add THREAD_GET/SETMEM/_NC
+- hurd tls: update comment about fields at the end of tcbhead
+- ld.so: Do not export free/calloc/malloc/realloc functions [BZ #25486]
+- Remove weak declaration of free from <inline-hashtab.h>
+- elf: Extract _dl_sym_post, _dl_sym_find_caller_map from elf/dl-sym.c
+- elf: Introduce the rtld-stubbed-symbols makefile variable
+- arm: fix use of INTERNAL_SYSCALL_CALL
+- linux: Remove INTERNAL_SYSCALL_DECL
+- nptl: Remove ununsed pthread-errnos.h rule
+- linux: Consolidate INLINE_SYSCALL
+- s390: Consolidate Linux syscall definition
+- riscv: Avoid clobbering register parameters in syscall
+- microblaze: Avoid clobbering register parameters in syscall
+- nios2: Use Linux kABI for syscall return
+- mips: Use Linux kABI for syscall return
+- mips64: Consolidate Linux sysdep.h
+- ia64: Use Linux kABI for syscall return
+- alpha: Refactor syscall and Use Linux kABI for syscall return
+- sparc: Avoid clobbering register parameters in syscall
+- sparc: Use Linux kABI for syscall return
+- powerpc: Use Linux kABI for syscall return
+- powerpc: Consolidate Linux syscall definition
+- i386: Enable CET support in ucontext functions
+- tst-clone3: Use __NR_futex_time64 if we don't have __NR_futex
+- powerpc64: Add memory protection key support [BZ #23202]
+- ldbl-128ibm-compat: Provide a scalb implementation
+- Add a generic scalb implementation
+- Adjust thresholds in Bessel function implementations (bug 14469).
+- resolv: Fix ABA race in /etc/resolv.conf change detection [BZ #25420]
+- resolv: Enhance __resolv_conf_load to capture file change data
+- resolv: Fix file handle leak in __resolv_conf_load [BZ #25429]
+- resolv: Use <file_change_detection.h> in __resolv_conf_get_current
+- Add STATX_ATTR_VERITY from Linux 5.5 to bits/statx-generic.h.
+- Use gcc -finput-charset=ascii for check-installed-headers.
+- math/test-sinl-pseudo: Use stack protector only if available
+- alpha: Fix static gettimeofday symbol
+- nss_nisplus: Use NSS_DECLARE_MODULE_FUNCTIONS
+- nss_dns: Use NSS_DECLARE_MODULE_FUNCTIONS
+- nss_files: Use NSS_DECLARE_MODULE_FUNCTIONS
+- nss_db: Use NSS_DECLARE_MODULE_FUNCTIONS
+- nss_compat: Use NSS_DECLARE_MODULE_FUNCTIONS
+- nss_hesiod: Use NSS_DECLARE_MODULE_FUNCTIONS
+- nss: Add function types and NSS_DECLARE_MODULE_FUNCTIONS macro to <nss.h>
+- nss_compat: Do not use nss_* names for function pointers
+- Avoid ldbl-96 stack corruption from range reduction of pseudo-zero (bug 25487).
+- mips: Fix argument passing for inlined syscalls on Linux [BZ #25523]
+- mips: Use 'long int' and 'long long int' in linux syscall code
+- alpha: Use generic gettimeofday implementation
+- sunrpc: Properly clean up if tst-udp-timeout fails
+- elf: avoid stack allocation in dl_open_worker
+- elf: avoid redundant sort in dlopen
+- elf: Allow dlopen of filter object to work [BZ #16272]
+- Update translations
+- Rename RWF_WRITE_LIFE_NOT_SET to RWH_WRITE_LIFE_NOT_SET following Linux 5.5.
+- S390: Fix non-ascii character in fenv.h.
+- io: Add io/tst-lchmod covering lchmod and fchmodat
+- Linux: Emulate fchmodat with AT_SYMLINK_NOFOLLOW using O_PATH [BZ #14578]
+- io: Implement lchmod using fchmodat [BZ #14578]
+- Add internal <file_change_detection.h> header file
+- elf.h: Add R_RISCV_IRELATIVE
+- Fix typo in the name for Wednesday in Kurdish [BZ #9809]
+- debug: Add missing locale dependencies of fortify tests
+- htl C11 threads: Avoid pthread_ symbols visibility in static library
+- hurd: Add __pthread_spin_wait and use it
+- ldbl-128ibm-compat: set PRINTF_CHK flag in {,v}sprintf_chk
+- Use --disable-gdbserver in build-many-glibcs.py.
+- Improve random memcpy benchmark
+- nptl: update default pthread-offsets.h
+- nptl: add missing pthread-offsets.h
+- htl: Avoid a local plt for pthread_self
+- pthread: Move some join tests from nptl to sysdeps/pthread
+- htl: Make joining self return EDEADLK
+- pthread: Move most barrier tests from nptl to sysdeps/pthread
+- htl: Fix barrier_wait with one thread
+- pthread: Move most sem tests from nptl to sysdeps/pthread
+- htl: Make sem_wait/sem_timedwait interruptible
+- htl: Make sem_open return ENOSYS
+- htl: Add support for semaphore maximum value
+- pthread: Move key tests from nptl to sysdeps/pthread
+- hurd: Make nanosleep a cancellation point
+- htl: Add support for libc cancellation points
+- htl: clean __pthread_get_cleanup_stack hidden proto
+- htl: XFAIL rwlock tests which need pshared support
+- pthread: Move some rwlock tests from nptl to sysdeps/pthread
+- pthread: Move most once tests from nptl to sysdeps/pthread
+- htl: support cancellation during pthread_once
+- pthread: Move most cond tests from nptl to sysdeps/pthread
+- htl: make pthread_cond_destroy return EBUSY on waiters
+- htl: Report missing mutex lock on pthread_cond_*wait
+- htl: Fix linking static testcases
+- htl: Move __register_atfork from forward to own file
+- pthread: Move some attr tests from nptl to sysdeps/pthread
+- htl: Fix default guard size
+- pthread: Move most mutex tests from nptl to sysdeps/pthread
+- pthread: Move spin tests from nptl to sysdeps/pthread
+- htl: make pthread_spin_lock really spin
+- htl: Avoid check-installed-headers looking at inlines
+- htl: Do not put spin_lock inlines in public headers
+- pthread: Move basic tests from nptl to sysdeps/pthread
+- htl: Fix calling pthread_exit in the child of a fork
+- x86: Remove <bits/select.h> and use the generic version
+- C11 threads: Move implementation to sysdeps/pthread
+- htl: Add C11 threads types definitions
+- C11 threads: make thrd_join more portable
+- C11 threads: Fix thrd_t / pthread_t compatibility assertion
+- C11 threads: do not require PTHREAD_DESTRUCTOR_ITERATIONS
+- nptl: Move nptl-specific types to separate header
+- htl: Make __PTHREAD_ONCE_INIT more flexible
+- htl: Add support for C11 threads behavior
+- htl: Add missing internal functions declarations
+- htl: Rename _pthread_mutex_init/destroy to __pthread_mutex_init/destroy
+- htl: Move internal mutex/rwlock symbols to GLIBC_PRIVATE
+- Linux: Add io/tst-o_path-locks test
+- support: Add the xlstat function
+- htl: Remove duplicate files
+- htl: Remove unused files
+- resolv: Fix CNAME chaining in resolv/tst-resolv-ai_idn-common.c
+- Remove a comment claiming that sin/cos round correctly.
+- y2038: linux: Provide __settimeofday64 implementation
+- y2038: Provide conversion helpers for struct __timeval64
+- y2038: alpha: Rename valid_timeval64_to_timeval to valid_timeval_to_timeval32
+- y2038: alpha: Rename valid_timeval_to_timeval64 to valid_timeval32_to_timeval
+- y2038: Introduce struct __timeval64 - new internal glibc type
+- y2038: Define __suseconds64_t type to be used with struct __timeval64
+- Update kernel version to 5.5 in tst-mman-consts.py.
+- Update syscall lists for Linux 5.5.
+- NEWS: Set fill-column hint to 72
+- y2038: linux: Provide __timespec_get64 implementation
+- Use binutils 2.34 branch in build-many-glibcs.py.
+- Run nptl/tst-pthread-getattr in a container
+- test-container: add exec, cwd
+- Use Linux 5.5 in build-many-glibcs.py.
+- rt: avoid PLT setup in timer_[sg]ettime
+- Update or_IN collation [BZ #22525]
+- Fix ckb_IQ [BZ #9809]
+- Add new locale: ckb_IQ (Kurdish/Sorani spoken in Iraq) [BZ #9809]
+- list-fixed-bugs.py: Wrap at 72 chars
+- y2038: linux: Provide __sched_rr_get_interval64 implementation
+- y2038: linux: Provide __timerfd_settime64 implementation
+- y2038: linux: Provide __timerfd_gettime64 implementation
+- i386: Remove _exit.S
+- i386: Use ENTRY/END in assembly codes
+- i386-mcount.S: Add _CET_ENDBR to _mcount and __fentry__
+- i386/sub_n.S: Add a missing _CET_ENDBR to indirect jump target
+- i386: Don't unnecessarily save and restore EAX, ECX and EDX [BZ# 25262]
+- x86: Don't make 2 calls to dlerror () in a row
+- Open master for 2.32 development
+
 * Mon Feb 03 2020 DJ Delorie <dj@redhat.com> - 2.31-1
 - Auto-sync with upstream branch release/2.31/master,
   commit 9ea3686266dca3f004ba874745a4087a89682617.
@@ -2053,7 +2247,6 @@ fi
 - Add Portuguese (Portugal) translation
 - Add NEWS entry about 64-bit time_t syscall use on 32-bit targets
 - nptl: Avoid using PTHREAD_MUTEX_DEFAULT in macro definition [BZ #25271]
-
 
 * Thu Jan 30 2020 Patsy Franklin <patsy@redhat.com> - 2.30.9000-33
 - Auto-sync with upstream branch master,
