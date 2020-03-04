@@ -28,13 +28,3 @@ index 08681aafdc200f64..2264da00370f9f02 100644
  # Copyright (C) 2015-2020 Free Software Foundation, Inc.
  # This file is part of the GNU C Library.
  #
-diff --git a/benchtests/scripts/validate_benchout.py b/benchtests/scripts/validate_benchout.py
-index 715218aff804baa0..6b4877a67b86b791 100755
---- a/benchtests/scripts/validate_benchout.py
-+++ b/benchtests/scripts/validate_benchout.py
-@@ -1,4 +1,4 @@
--#!/usr/bin/python
-+#!/usr/bin/python3
- # Copyright (C) 2014-2020 Free Software Foundation, Inc.
- # This file is part of the GNU C Library.
- #

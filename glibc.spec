@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-189-g758599bc9d
+%define glibcsrcdir glibc-2.31.9000-236-g78c9d0c6ef
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,57 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Mar 03 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-2
+- Auto-sync with upstream branch master,
+  commit 78c9d0c6efabe2067ef7f93cd36325f54c60adc2.
+- Update translations
+- Convert Python scripts to Python 3
+- alpha: Do not build with -fpic
+- y2038: linux: Provide __utime64 implementation
+- y2038: linux: Provide __utimes64 implementation
+- y2038: Introduce struct __utimbuf64 - new internal glibc type
+- microblaze: vfork is always available
+- m68k: getpagesize syscall number is always available
+- Linux: epoll_pwait syscall number is always available
+- x86_64: Do not define __NR_semtimedop in <sysdep.h>
+- ia64: Do not define __NR_semtimedop in <sysdep.h>
+- Linux: open_by_handle_at syscall number is always available
+- Linux: set_robust_list syscall number is always available
+- Linux: pciconfig_iobase syscall number is always available on alpha
+- Linux: getdents64 syscall number is always available on MIPS
+- Linux: Clean up preadv2, pwritev2 system call names
+- Linux: exit_group syscall number is always available
+- Linux: set_tid_address syscall number is always available
+- Linux: pkey_mprotect syscall number is always available
+- Linux: rt_sigqueueinfo syscall number is always available
+- Linux: getrandom syscall number is always available
+- Linux: Clean up preadv, pwritev system call names
+- Linux: Clean up pread64/pwrite64 system call names
+- Linux: sigaltstack syscall number is always available
+- Linux: sched_getaffinity syscall number is always available
+- Linux: sched_setaffinity syscall number is always available
+- Linux: statx syscall number is always available
+- Linux: mq_* syscall numbers are always available
+- Linux: mlock2 syscall number is always available
+- Linux: copy_file_range syscall number is always available
+- Linux: renameat2 syscall number is always available
+- build-many-glibcs.py: Add list-compilers, list-glibcs commands
+- build-many-glibcs.py: Add --shallow option
+- Fixed typo in run_command_array() in support/shell-container.c
+- Add missing libc_hidden_def for __utimensat64
+- elf: Add elf/check-wx-segment, a test for the presence of WX segments
+- i386: Use comdat instead of .gnu.linkonce for i386 setup pic register (BZ #20543)
+- ldbl-128ibm-compat: link tst-ldbl-efgcvt against loader too
+- ldbl-128ibm-compat: enforce ibm128 on compat tests
+- ldbl-128ibm-compat: Provide nexttoward functions
+- ldbl-128ibm-compat: Provide a significand implementation
+- ldbl-128ibm-compat: Redirect complex math functions
+- ldbl-128ibm-compat: Redirect long double functions to f128/ieee128 functions
+- posix: Remove posix waitid
+- posix: Refactor tst-waitid (BZ #14666)
+- support: Add support_process_state_wait
+- malloc/tst-mallocfork2: Kill lingering process for unexpected failures
+
 * Wed Feb 26 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-1
 - Auto-sync with upstream branch master,
   commit 758599bc9dcc5764e862bd9e1613c5d1e6efc5d3.
