@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,6 +158,7 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
+Patch30: glibc-utimes.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2041,6 +2042,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Mar  5 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-3
+- Emergency patch for broken utimes/utime functions
+
 * Tue Mar 03 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-2
 - Auto-sync with upstream branch master,
   commit 78c9d0c6efabe2067ef7f93cd36325f54c60adc2.
