@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-236-g78c9d0c6ef
+%define glibcsrcdir glibc-2.31.9000-263-g2de7fe6253
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -158,7 +158,6 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
-Patch30: glibc-utimes.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2042,6 +2041,37 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Mar 13 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-4
+- Auto-sync with upstream branch master,
+  commit 2de7fe62534b7a6461c633114f03e9dff394f5f7.
+- parse_tunables: Fix typo in comment
+- ldconfig: trace origin paths with -v
+- test-container: print errno when execvp fails
+- [AArch64] Improve integer memcpy
+- Add NEWS entry for CVE-2020-10029 (bug 25487)
+- gcc PR 89877: miscompilation due to missing cc clobber in longlong.h macros
+- mips: Fix wrong INTERNAL_SYSCALL_ERROR_P check from bc2eb9321e
+- elf: Fix wrong indentation from commit eb447b7b4b
+- y2038: linux: Provide __futimesat64 implementation
+- y2038: linux: Provide __lutimes64 implementation
+- y2038: linux: Provide __futimes64 implementation
+- y2038: fix: Add missing libc_hidden_def for __futimens64
+- sparc: Move sigreturn stub to assembly 
+- ldbl-128ibm: Let long double files have specific compiler flags
+- ldbl-128ibm-compat: Add tests for IBM long double functions
+- powerpc: Fix feraiseexcept and feclearexcept macros
+- arm: Fix softp-fp Implies (BZ #25635)
+- Remove reference of --without-fp on configure
+- linux/sysipc: Include linux/posix_types.h for __kernel_mode_t
+- Improve IFUNC check [BZ #25506]
+- linux: Clear mode_t padding bits (BZ#25623)
+- linux: Remove aarch64 ipc_priv.h
+- Linux: Use __fstatat64 in fchmodat implementation
+- Linux: Use AT_FDCWD in utime, utimes when calling utimensat
+- S390: Remove backchain-based fallback and use generic backtrace.c.
+- manual: Fix wrong declaration of wcschr [BZ #24654]
+- manual: Fix typo in parse_printf_format example [BZ #24638]
+
 * Thu Mar  5 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-3
 - Emergency patch for broken utimes/utime functions
 
