@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31
+%define glibcsrcdir glibc-2.31-17-gab029a2801
 %define glibcversion 2.31
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,27 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Mar 19 2020 Patsy Griffin <patsy@redhat.com> - 2.31-2
+- Auto-sync with upstream branch release/2.31/master,
+  commit ab029a2801d4ddfeade8f64a6e46ee7e47fde710.
+- Fix use-after-free in glob when expanding ~user (bug 25414)
+- Update syscall lists for Linux 5.5.
+- NEWS: update list of bugs fixed on the 2.31 branch
+- Add NEWS entry for CVE-2020-10029 (bug 25487)
+- math/test-sinl-pseudo: Use stack protector only if available
+- sparc: Move sigreturn stub to assembly
+- arm: Fix softp-fp Implies (BZ #25635)
+- linux/sysipc: Include linux/posix_types.h for __kernel_mode_t
+- linux: Clear mode_t padding bits (BZ#25623)
+- i386: Use comdat instead of .gnu.linkonce for i386 setup pic register (BZ #20543)
+- Improve IFUNC check [BZ #25506]
+- Avoid ldbl-96 stack corruption from range reduction of pseudo-zero (bug 25487).
+- malloc/tst-mallocfork2: Kill lingering process for unexpected failures
+- riscv: Avoid clobbering register parameters in syscall
+- microblaze: Avoid clobbering register parameters in syscall
+- mips: Fix argument passing for inlined syscalls on Linux [BZ #25523]
+- mips: Use 'long int' and 'long long int' in linux syscall code
+
 * Mon Feb 03 2020 DJ Delorie <dj@redhat.com> - 2.31-1
 - Auto-sync with upstream branch release/2.31/master,
   commit 9ea3686266dca3f004ba874745a4087a89682617.
