@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30-34-g994e529a37
+%define glibcsrcdir glibc-2.30-46-gfb266e65cc
 %define glibcversion 2.30
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2035,6 +2035,22 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Mar 23 2020 Patsy Franklin <patsy@redhat.com> - 2.30-11
+- Auto-sync with upstream branch release/2.30/master,
+  commit fb266e65ccf6fd674e05352ceb5f12d60889b92d.
+- Fix array overflow in backtrace on PowerPC (bug 25423)
+- Fix use-after-free in glob when expanding ~user (bug 25414)
+- Add NEWS entry for CVE-2020-10029 (bug 25487)
+- math/test-sinl-pseudo: Use stack protector only if available
+- Avoid ldbl-96 stack corruption from range reduction of pseudo-zero (bug 25487).
+- Improve IFUNC check [BZ #25506]
+- malloc/tst-mallocfork2: Kill lingering process for unexpected failures 
+- riscv: Avoid clobbering register parameters in syscall
+- microblaze: Avoid clobbering register parameters in syscall
+- mips: Fix argument passing for inlined syscalls on Linux [BZ #25523]
+- mips: Use 'long int' and 'long long int' in linux syscall code
+- hppa: Align __clone stack argument to 8 bytes (Bug 25066)
+
 * Fri Jan 17 2020 Florian Weimer <fweimer@redhat.com> - 2.30-10
 - Fix dynamic loader crash after dlopen failure with NODELETE (#1395758)
 - Lazy binding failures during ELF constructors and destructors now always
