@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.29-57-gea6f2c3174
+%define glibcsrcdir glibc-2.29-62-ga318448f7a
 %define glibcversion 2.29
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 28%{?dist}
+Release: 29%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1920,6 +1920,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Mar 24 2020 Patsy Franklin <patsy@redhat.com> - 2.29-29
+- Auto-sync with upstream branch release/2.29/master,
+  commit a318448f7aca169f7795d9d300c525d96f914af0.
+- Fix array overflow in backtrace on PowerPC (bug 25423)
+- Fix use-after-free in glob when expanding ~user (bug 25414)
+- math/test-sinl-pseudo: Use stack protector only if available
+- Avoid ldbl-96 stack corruption from range reduction of pseudo-zero (bug 25487).
+- riscv: Do not use __has_include__
+
 * Tue Jan 21 2020 Florian Weimer <fweimer@redhat.com> - 2.29-28
 - Auto-sync with upstream branch release/2.29/master,
   commit ea6f2c3174232ca7f66ab1524f0d5fedc7b26f23:
