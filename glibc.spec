@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-263-g2de7fe6253
+%define glibcsrcdir glibc-2.31.9000-285-g4eda036f5b
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,32 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Mar 25 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-5
+- Auto-sync with upstream branch master,
+  commit 4eda036f5b897fa8bc20ddd2099b5a6ed4239dc9.
+- stdlib: Move tst-system to tests-container
+- support/shell-container.c: Add builtin kill
+- support/shell-container.c: Add builtin exit
+- support/shell-container.c: Return 127 if execve fails
+- Add NEWS entry for CVE-2020-1751 (bug 25423)
+- posix: Fix system error return value [BZ #25715]
+- y2038: fix: Add missing libc_hidden_def attribute for some syscall wrappers
+- Extended Char Intro: Use getwc in example (Bug 25626)
+- stdio: Add tests for printf multibyte convertion leak [BZ#25691]
+- stdio: Remove memory leak from multibyte convertion [BZ#25691]
+- Add NEWS entry for CVE-2020-1752 (bug 25414)
+- math: Remove inline math tests
+- Remove __LIBC_INTERNAL_MATH_INLINES
+- math: Remove mathinline
+- m68k: Remove mathinline.h
+- oc_FR locale: Fix spelling of Thursday (bug 25639)
+- x86: Remove ARCH_CET_LEGACY_BITMAP [BZ #25397]
+- Fix build with GCC 10 when long double = double.
+- nscd/cachedumper.c : fix whitespace
+- Fix nscd/cachedumper.c compile errors
+- manual: Fix inconsistent declaration of wcsrchr [BZ #24655]
+- nscd: add cache dumper
+
 * Fri Mar 13 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-4
 - Auto-sync with upstream branch master,
   commit 2de7fe62534b7a6461c633114f03e9dff394f5f7.
