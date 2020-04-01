@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-285-g4eda036f5b
+%define glibcsrcdir glibc-2.31.9000-307-g49c3c37651
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,32 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Mar 31 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-6
+- Auto-sync with upstream branch master,
+  commit 49c3c37651e2d2ec4ff8ce21252bbbc08a9d6639.
+- Fix alignment bug in Safe-Linking
+- Typo fixes and CR cleanup in Safe-Linking
+- Use Linux 5.6 and GMP 6.2.0 in build-many-glibcs.py.
+- Add new file missed in previous hppa commit.
+- powerpc: Add support for fmaf128() in hardware
+- Fix data race in setting function descriptors during lazy binding on hppa.
+- sparc: Move __fenv_{ld,st}fsr to fenv-private.h
+- x86: Remove feraiseexcept optimization
+- math: Remove fenvinline.h
+- hurd: Make O_TRUNC update mtime/ctime
+- Add Safe-Linking to fastbins and tcache
+- Add benchtests for roundeven and roundevenf.
+- time: Add a __itimerval64 struct
+- time: Add a timeval with a 32-bit tv_sec and tv_usec
+- sysv/linux: Rename alpha functions to be alpha specific
+- ARC: add definitions to elf/elf.h
+- powerpc64: apply -mabi=ibmlongdouble to special files
+- powerpc64le: add -mno-gnu-attribute to *f128 objects and difftime
+- Makeconfig: sandwich gnulib-tests between libc/ld linking of tests
+- powerpc64le: Ensure correct ldouble compiler flags are used
+- Fix tests which expose ldbl -> _Float128 redirects
+- ldbl-128ibm-compat: PLT redirects for using ldbl redirects internally
+
 * Wed Mar 25 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-5
 - Auto-sync with upstream branch master,
   commit 4eda036f5b897fa8bc20ddd2099b5a6ed4239dc9.
