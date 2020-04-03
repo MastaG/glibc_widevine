@@ -80,6 +80,12 @@
 # not biarch.
 %ifarch %{biarcharches}
 %define need_headers_package 1
+%ifarch %{ix86} x86_64
+%define headers_package_name glibc-headers-x86
+%endif
+%ifarch s390 s390x
+%define headers_package_name glibc-headers-s390
+%endif
 %else
 %define need_headers_package 0
 %endif
@@ -96,7 +102,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -326,14 +332,12 @@ Requires: libxcrypt-devel%{_isa} >= 4.0.0
 Requires: kernel-headers >= 3.2
 BuildRequires: kernel-headers >= 3.2
 %if %{need_headers_package}
-Requires: %{name}-headers = %{version}-%{release}
-%else
-# For backwards compatibility, when all architectures had the
-# glibc-headers package.
+Requires: %{headers_package_name} = %{version}-%{release}
+%endif
+# For backwards compatibility, when the glibc-headers package existed.
 Provides: glibc-headers = %{version}-%{release}
 Provides: glibc-headers(%{_target_cpu})
-Obsoletes: glibc-headers < %{name} = %{version}-%{release}
-%endif
+Obsoletes: glibc-headers < %{version}-%{release}
 
 %description devel
 The glibc-devel package contains the object files necessary
@@ -369,13 +373,13 @@ which is highly discouraged.
 #   respective i686 and x86_64 devel packages.
 ##############################################################################
 %if %{need_headers_package}
-%package headers
-Summary: Additional header files for glibc-devel.
+%package -n %{headers_package_name}
+Summary: Additional internal header files for glibc-devel.
+BuildArch: noarch
 Requires: %{name} = %{version}-%{release}
-Provides: %{name}-headers(%{_target_cpu})
 
-%description headers
-The glibc-headers package contains the architecture-specific
+%description -n %{headers_package_name}
+The %{headers_package_name} package contains the architecture-specific
 header files which cannot be included in glibc-devel package.
 %endif
 
@@ -1997,7 +2001,7 @@ fi
 %files -f static.filelist static
 
 %if  %{need_headers_package}
-%files -f headers.filelist headers
+%files -f headers.filelist -n %{headers_package_name}
 %endif
 
 %files -f utils.filelist utils
@@ -2047,6 +2051,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Apr 27 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-11
+- Introduce glibc-headers-x86, glibc-headers-s390 packages
+- Remove the glibc-headers package
+
 * Mon Apr 20 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-10
 - Auto-sync with upstream branch master,
   commit 0798b8ecc8da8667362496c1217d18635106c609.
