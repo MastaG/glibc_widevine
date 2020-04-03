@@ -75,6 +75,15 @@
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
 # code in userspace is considered a biarch arch.
 %define biarcharches %{ix86} x86_64 s390 s390x
+
+# Avoid generating a glibc-headers package on architectures which are
+# not biarch.
+%ifarch %{biarcharches}
+%define need_headers_package 1
+%else
+%define need_headers_package 0
+%endif
+
 ##############################################################################
 # If the debug information is split into two packages, the core debuginfo
 # package and the common debuginfo package then the arch should be listed
@@ -312,9 +321,19 @@ applications should use libnsl2 instead to gain IPv6 support.
 ##############################################################################
 %package devel
 Summary: Object files for development using standard C libraries.
-Requires: %{name}-headers = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
 Requires: libxcrypt-devel%{_isa} >= 4.0.0
+Requires: kernel-headers >= 3.2
+BuildRequires: kernel-headers >= 3.2
+%if %{need_headers_package}
+Requires: %{name}-headers = %{version}-%{release}
+%else
+# For backwards compatibility, when all architectures had the
+# glibc-headers package.
+Provides: glibc-headers = %{version}-%{release}
+Provides: glibc-headers(%{_target_cpu})
+Obsoletes: glibc-headers < %{name} = %{version}-%{release}
+%endif
 
 %description devel
 The glibc-devel package contains the object files necessary
@@ -343,29 +362,22 @@ which is highly discouraged.
 ##############################################################################
 # glibc "headers" sub-package
 # - The headers package includes all common headers that are shared amongst
-#   the multilib builds. It was created to reduce the download size, and
-#   thus avoid downloading one header package per multilib. The package is
-#   identical both in content and file list, any difference is an error.
+#   the multilib builds. It avoids file conflicts between the architecture-
+#   specific glibc-devel variants.
 #   Files like gnu/stubs.h which have gnu/stubs-32.h (i686) and gnu/stubs-64.h
 #   are included in glibc-headers, but the -32 and -64 files are in their
 #   respective i686 and x86_64 devel packages.
 ##############################################################################
+%if %{need_headers_package}
 %package headers
-Summary: Header files for development using standard C libraries.
+Summary: Additional header files for glibc-devel.
+Requires: %{name} = %{version}-%{release}
 Provides: %{name}-headers(%{_target_cpu})
-Requires: kernel-headers >= 3.2, %{name} = %{version}-%{release}
-BuildRequires: kernel-headers >= 3.2
 
 %description headers
-The glibc-headers package contains the header files necessary
-for developing programs which use the standard C libraries (which are
-used by nearly all programs).  If you are developing programs which
-will use the standard C libraries, your system needs to have these
-standard header files available in order to create the
-executables.
-
-Install glibc-headers if you are going to develop programs which will
-use the standard C libraries.
+The glibc-headers package contains the architecture-specific
+header files which cannot be included in glibc-devel package.
+%endif
 
 ##############################################################################
 # glibc "common" sub-package
@@ -1425,10 +1437,11 @@ sed -i -e '\,libmemusage.so,d' \
 # glibc-headers
 ###############################################################################
 
+%if %{need_headers_package}
 # The glibc-headers package includes only common files which are identical
 # across all multilib packages. We must keep gnu/stubs.h and gnu/lib-names.h
 # in the glibc-headers package, but the -32, -64, -64-v1, and -64-v2 versions
-# go into the development packages.
+# go into glibc-devel.
 grep '%{_prefix}/include/gnu/stubs-.*\.h$' < master.filelist >> devel.filelist || :
 grep '%{_prefix}/include/gnu/lib-names-.*\.h$' < master.filelist >> devel.filelist || :
 # Put the include files into headers file list.
@@ -1436,6 +1449,11 @@ grep '%{_prefix}/include' < master.filelist \
   | egrep -v '%{_prefix}/include/gnu/stubs-.*\.h$' \
   | egrep -v '%{_prefix}/include/gnu/lib-names-.*\.h$' \
   > headers.filelist
+%else
+# If there is no glibc-headers package, all header files go into the
+# glibc-devel package.
+grep '%{_prefix}/include' < master.filelist >> devel.filelist
+%endif
 
 ###############################################################################
 # glibc-static
@@ -1978,7 +1996,9 @@ fi
 
 %files -f static.filelist static
 
+%if  %{need_headers_package}
 %files -f headers.filelist headers
+%endif
 
 %files -f utils.filelist utils
 
