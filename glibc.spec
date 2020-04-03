@@ -77,7 +77,7 @@
 %define biarcharches %{ix86} x86_64 %{power64} s390 s390x
 ##############################################################################
 # If the debug information is split into two packages, the core debuginfo
-# pacakge and the common debuginfo package then the arch should be listed
+# package and the common debuginfo package then the arch should be listed
 # here. If the arch is not listed here then a single core debuginfo package
 # will be created for the architecture.
 %define debuginfocommonarches %{biarcharches} alpha alphaev6
@@ -536,7 +536,7 @@ Requires: %{name}-common = %{version}-%{release}
 Provides: %{name}-langpack = %{version}-%{release}
 %description all-langpacks
 
-# No %files, this is an empty pacakge. The C/POSIX and
+# No %files, this is an empty package. The C/POSIX and
 # C.UTF-8 files are already installed by glibc. We create
 # minimal-langpack because the virtual provide of
 # glibc-langpack needs at least one package installed
