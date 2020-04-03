@@ -316,7 +316,6 @@ applications should use libnsl2 instead to gain IPv6 support.
 ##############################################################################
 %package devel
 Summary: Object files for development using standard C libraries.
-Requires(pre): %{name}-headers
 Requires: %{name}-headers = %{version}-%{release}
 Requires: %{name} = %{version}-%{release}
 Requires: libxcrypt-devel%{_isa} >= 4.0.0
@@ -358,10 +357,7 @@ which is highly discouraged.
 %package headers
 Summary: Header files for development using standard C libraries.
 Provides: %{name}-headers(%{_target_cpu})
-Requires(pre): kernel-headers
-# Uses 'rm' to remove problematic kernel headers.
-Requires(pre): coreutils
-Requires: kernel-headers >= 2.2.1, %{name} = %{version}-%{release}
+Requires: kernel-headers >= 3.2, %{name} = %{version}-%{release}
 BuildRequires: kernel-headers >= 3.2
 
 %description headers
@@ -1921,12 +1917,6 @@ local save_path = archive_path .. ".rpmsave"
 if posix.access(save_path) then
   posix.unlink(save_path)
 end
-
-%pre headers
-# this used to be a link and it is causing nightmares now
-if [ -L %{_prefix}/include/scsi ] ; then
-  rm -f %{_prefix}/include/scsi
-fi
 
 %pre -n nscd
 getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
