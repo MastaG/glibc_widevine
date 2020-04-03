@@ -74,7 +74,7 @@
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
 # code in userspace is considered a biarch arch.
-%define biarcharches %{ix86} x86_64 %{power64} s390 s390x
+%define biarcharches %{ix86} x86_64 s390 s390x
 ##############################################################################
 # If the debug information is split into two packages, the core debuginfo
 # package and the common debuginfo package then the arch should be listed
@@ -229,12 +229,8 @@ Conflicts: kernel < %{enablekernel}
 %ifarch %{arm}
 %define target %{_target_cpu}-redhat-linuxeabi
 %endif
-%ifarch %{power64}
 %ifarch ppc64le
 %define target ppc64le-redhat-linux
-%else
-%define target ppc64-redhat-linux
-%endif
 %endif
 
 # GNU make 4.0 introduced the -O option.
