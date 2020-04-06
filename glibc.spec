@@ -54,12 +54,6 @@
 %undefine with_docs
 %undefine with_valgrind
 %endif
-##############################################################################
-# Auxiliary arches are those arches that can be built in addition
-# to the core supported arches. You either install an auxarch or
-# you install the base arch, not both. You would do this in order
-# to provide a more optimized version of the package for your arch.
-%define auxarches athlon alphaev6
 
 # Only some architectures have static PIE support.
 %define pie_arches %{ix86} x86_64
@@ -521,10 +515,7 @@ Supplements: (glibc and (]]..suppl..[[))
 
 The glibc-langpack-]]..lang..[[ package includes the basic information required
 to support the ]]..langname..[[ language in your applications.
-%ifnarch %{auxarches}
 %files -f langpack-]]..lang..[[.filelist langpack-]]..lang..[[
-
-%endif
 ]]))
 end
 
@@ -559,9 +550,7 @@ Requires: %{name}-common = %{version}-%{release}
 This is a Meta package that is used to install minimal language packs.
 This package ensures you can use C, POSIX, or C.UTF-8 locales, but
 nothing else. It is designed for assembling a minimal system.
-%ifnarch %{auxarches}
 %files minimal-langpack
-%endif
 
 ##############################################################################
 # glibc "nscd" sub-package
@@ -754,7 +743,7 @@ diff -u %{SOURCE11} localedata/SUPPORTED
 # Build glibc...
 ##############################################################################
 %build
-# Log system information
+# Log osystem information
 uname -a
 LD_SHOW_AUXV=1 /bin/true
 cat /proc/cpuinfo
@@ -938,16 +927,12 @@ done
 # Build and install:
 make -j1 install_root=%{glibc_sysroot} install -C build-%{target}
 
-# If we are not building an auxiliary arch then install all of the supported
-# locales.
-%ifnarch %{auxarches}
 pushd build-%{target}
 # Do not use a parallel make here because the hardlink optimization in
 # localedef is not fully reproducible when running concurrently.
 make install_root=%{glibc_sysroot} \
 	install-locales -C ../localedata objdir=`pwd`
 popd
-%endif
 
 # install_different:
 #	Install all core libraries into DESTDIR/SUBDIR. Either the file is
@@ -1058,7 +1043,6 @@ rm -f %{glibc_sysroot}%{_infodir}/libc.info*
 # Create locale sub-package file lists
 ##############################################################################
 
-%ifnarch %{auxarches}
 olddir=`pwd`
 pushd %{glibc_sysroot}%{_prefix}/lib/locale
 rm -f locale-archive
@@ -1094,7 +1078,6 @@ do
 done
 popd
 mv  %{glibc_sysroot}%{_prefix}/lib/locale/*.filelist .
-%endif
 
 ##############################################################################
 # Install configuration files for services
@@ -1102,25 +1085,21 @@ mv  %{glibc_sysroot}%{_prefix}/lib/locale/*.filelist .
 
 install -p -m 644 nss/nsswitch.conf %{glibc_sysroot}/etc/nsswitch.conf
 
-%ifnarch %{auxarches}
 # This is for ncsd - in glibc 2.2
 install -m 644 nscd/nscd.conf %{glibc_sysroot}/etc
 mkdir -p %{glibc_sysroot}%{_tmpfilesdir}
 install -m 644 %{SOURCE1} %{buildroot}%{_tmpfilesdir}
 mkdir -p %{glibc_sysroot}/lib/systemd/system
 install -m 644 nscd/nscd.service nscd/nscd.socket %{glibc_sysroot}/lib/systemd/system
-%endif
 
 # Include ld.so.conf
 echo 'include ld.so.conf.d/*.conf' > %{glibc_sysroot}/etc/ld.so.conf
 truncate -s 0 %{glibc_sysroot}/etc/ld.so.cache
 chmod 644 %{glibc_sysroot}/etc/ld.so.conf
 mkdir -p %{glibc_sysroot}/etc/ld.so.conf.d
-%ifnarch %{auxarches}
 mkdir -p %{glibc_sysroot}/etc/sysconfig
 truncate -s 0 %{glibc_sysroot}/etc/sysconfig/nscd
 truncate -s 0 %{glibc_sysroot}/etc/gai.conf
-%endif
 
 # Include %{_libdir}/gconv/gconv-modules.cache
 truncate -s 0 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
@@ -1201,11 +1180,9 @@ popd
 rm -f %{glibc_sysroot}%{_infodir}/dir
 %endif
 
-%ifnarch %{auxarches}
 mkdir -p %{glibc_sysroot}/var/{db,run}/nscd
 touch %{glibc_sysroot}/var/{db,run}/nscd/{passwd,group,hosts,services}
 touch %{glibc_sysroot}/var/run/nscd/{socket,nscd.pid}
-%endif
 
 # Move libpcprofile.so and libmemusage.so into the proper library directory.
 # They can be moved without any real consequences because users would not use
@@ -1256,9 +1233,7 @@ ar cr %{glibc_sysroot}%{_prefix}/%{_lib}/libpthread_nonshared.a
 
 ##############################################################################
 # Beyond this point in the install process we no longer modify the set of
-# installed files, with one exception, for auxarches we cleanup the file list
-# at the end and remove files which we don't intend to ship. We need the file
-# list to effect a proper cleanup, and so it happens last.
+# installed files.
 ##############################################################################
 
 ##############################################################################
@@ -1663,22 +1638,6 @@ exclude_common_dirs debuginfo.filelist
 %endif
 
 ##############################################################################
-# Delete files that we do not intended to ship with the auxarch.
-# This is the only place where we touch the installed files after generating
-# the file lists.
-##############################################################################
-%ifarch %{auxarches}
-echo Cutting down the list of unpackaged files
-sed -e '/%%dir/d;/%%config/d;/%%verify/d;s/%%lang([^)]*) //;s#^/*##' \
-	common.filelist devel.filelist static.filelist headers.filelist \
-	utils.filelist nscd.filelist \
-%ifarch %{debuginfocommonarches}
-	debuginfocommon.filelist \
-%endif
-	| (cd %{glibc_sysroot}; xargs --no-run-if-empty rm -f 2> /dev/null || :)
-%endif
-
-##############################################################################
 # Run the glibc testsuite
 ##############################################################################
 %check
@@ -1977,7 +1936,6 @@ fi
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING.LIB LICENSES
 
-%ifnarch %{auxarches}
 %files -f common.filelist common
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
@@ -2024,7 +1982,6 @@ fi
 %attr(0600,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/db/nscd/hosts
 %attr(0600,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/db/nscd/services
 %ghost %config(missingok,noreplace) /etc/sysconfig/nscd
-%endif
 
 %files -f nss_db.filelist -n nss_db
 /var/db/Makefile
@@ -2038,9 +1995,7 @@ fi
 %if 0%{?_enable_debug_packages}
 %files debuginfo -f debuginfo.filelist
 %ifarch %{debuginfocommonarches}
-%ifnarch %{auxarches}
 %files debuginfo-common -f debuginfocommon.filelist
-%endif
 %endif
 %endif
 
