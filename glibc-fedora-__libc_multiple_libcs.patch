@@ -30,11 +30,11 @@ This patch needs to go upstream to get cleaned up, but has always involed
 analysis of the GNU/Hurd parts of the change and that stalled out, but
 perhaps with build-many-glibcs we can now test these changes more easily.
 
-Index: b/elf/dl-init.c
-===================================================================
+diff --git a/elf/dl-init.c b/elf/dl-init.c
+index 1234611a1c89532e..abd1913fb8de9caf 100644
 --- a/elf/dl-init.c
 +++ b/elf/dl-init.c
-@@ -119,8 +119,6 @@ _dl_init (struct link_map *main_map, int
+@@ -114,8 +114,6 @@ _dl_init (struct link_map *main_map, int argc, char **argv, char **env)
    while (i-- > 0)
      call_init (main_map->l_initfini[i], argc, argv, env);
  
@@ -43,11 +43,11 @@ Index: b/elf/dl-init.c
    _dl_starting_up = 0;
 -#endif
  }
-Index: b/elf/dl-support.c
-===================================================================
+diff --git a/elf/dl-support.c b/elf/dl-support.c
+index 7704c101c5a543a1..ffa235c78df8481f 100644
 --- a/elf/dl-support.c
 +++ b/elf/dl-support.c
-@@ -117,10 +117,8 @@ struct r_scope_elem _dl_initial_searchli
+@@ -120,10 +120,8 @@ struct r_scope_elem _dl_initial_searchlist =
      .r_nlist = 1,
    };
  
@@ -58,19 +58,19 @@ Index: b/elf/dl-support.c
  
  /* Random data provided by the kernel.  */
  void *_dl_random;
-Index: b/elf/rtld.c
-===================================================================
+diff --git a/elf/rtld.c b/elf/rtld.c
+index b2ea21c98b89831e..f3c37875f4f4dba7 100644
 --- a/elf/rtld.c
 +++ b/elf/rtld.c
-@@ -214,7 +214,6 @@ audit_list_iter_next (struct audit_list_
-   return iter->previous->name;
+@@ -298,7 +298,6 @@ audit_list_next (struct audit_list *list)
+     }
  }
  
 -#ifndef HAVE_INLINED_SYSCALLS
  /* Set nonzero during loading and initialization of executable and
     libraries, cleared before the executable's entry point runs.  This
     must not be initialized to nonzero, because the unused dynamic
-@@ -224,7 +223,6 @@ audit_list_iter_next (struct audit_list_
+@@ -308,7 +307,6 @@ audit_list_next (struct audit_list *list)
     never be called.  */
  int _dl_starting_up = 0;
  rtld_hidden_def (_dl_starting_up)
@@ -78,9 +78,9 @@ Index: b/elf/rtld.c
  
  /* This is the structure which defines all variables global to ld.so
     (except those which cannot be added for some reason).  */
-@@ -898,10 +896,8 @@ dl_main (const ElfW(Phdr) *phdr,
+@@ -1155,10 +1153,8 @@ dl_main (const ElfW(Phdr) *phdr,
    /* Process the environment variable which control the behaviour.  */
-   process_envvars (&mode);
+   process_envvars (&mode, &audit_list);
  
 -#ifndef HAVE_INLINED_SYSCALLS
    /* Set up a flag which tells we are just starting.  */

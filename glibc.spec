@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-307-g49c3c37651
+%define glibcsrcdir glibc-2.31.9000-343-gb1caa144c7
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,46 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 08 2020 Carlos O'Donell <carlos@redhat.com> - 2.31.9000-7
+- Auto-sync with upstream branch master,
+  commit b1caa144c74678097cada5a54eda2996bb459d8f.
+- Update mips libm-test-ulps
+- Update alpha libm-test-ulps
+- Update ia64 libm-test-ulps
+- Update sparc libm-test-ulps
+- Update arm libm-test-ulps
+- Update aarch64 libm-test-ulps
+- Updates to the shn_MM locale [BZ #25532]
+- powerpc: Update ULPs and xfail more ibm128 outputs
+- i386: Remove build support for GCC older than GCC 6
+- oc_FR locale: Fix spelling of April (bug 25639)
+- Update hppa libm-test-ulps
+- y2038: linux: Provide __mq_timedreceive_time64 implementation
+- y2038: linux: Provide __mq_timedsend_time64 implementation
+- y2038: include: Move struct __timespec64 definition to a separate file
+- malloc: ensure set_max_fast never stores zero [BZ #25733]
+- powerpc64le: enforce non-specific long double in .gnu.attributes section
+- powerpc64le: workaround ieee long double / _Float128 stdc++ bug
+- powerpc64le: Enforce -mabi=ibmlongdouble when -mfloat128 used
+- powerpc64le/multiarch: don't generate strong aliases for fmaf128-ppc64
+- ldbl-128ibm: simplify iscanonical.h
+- i386: Disable check_consistency for GCC 5 and above [BZ #25788]
+- Add IPPROTO_ETHERNET and IPPROTO_MPTCP from Linux 5.6 to netinet/in.h.
+- Update syscall lists for Linux 5.6.
+- elf: Implement DT_AUDIT, DT_DEPAUDIT support [BZ #24943]
+- elf: Simplify handling of lists of audit strings
+- support: Change xgetline to return 0 on EOF
+- nptl: Remove x86_64 cancellation assembly implementations [BZ #25765]
+- aarch64: update bits/hwcap.h
+- Add tests for Safe-Linking
+- S390: Regenerate ULPs.
+- sysv/alpha: Use generic __timeval32 and helpers
+- linux: Use long time_t for wait4/getrusage
+- resource: Add a __rusage64 struct
+- linux: Use long time_t __getitimer/__setitimer
+- sysv: Define __KERNEL_OLD_TIMEVAL_MATCHES_TIMEVAL64
+- math: Add inputs that yield larger errors for float type (x86_64)
+
 * Tue Mar 31 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-6
 - Auto-sync with upstream branch master,
   commit 49c3c37651e2d2ec4ff8ce21252bbbc08a9d6639.
