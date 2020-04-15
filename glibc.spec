@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 15 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-8
+- nsswitch.conf: don't add sss to shadow line
+
 * Wed Apr 08 2020 Carlos O'Donell <carlos@redhat.com> - 2.31.9000-7
 - Auto-sync with upstream branch master,
   commit b1caa144c74678097cada5a54eda2996bb459d8f.
