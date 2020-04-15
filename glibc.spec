@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-343-gb1caa144c7
+%define glibcsrcdir glibc-2.31.9000-350-g076f09afba
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,17 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 15 2020 Patsy Griffin <patsy@redhat.com> - 2.31.9000-9
+- Auto-sync with upstream branch master,
+  commit 076f09afbac1aa57756faa7a8feadb7936a724e4.
+- Linux: Remove <sys/sysctl.h> and the sysctl function
+- posix: Add wait4 test case
+- linux: wait4: Fix incorrect return value comparison
+- hurd: add mach_print function
+- x32: Properly pass long to syscall [BZ #25810]
+- Add GRND_INSECURE from Linux 5.6 to sys/random.h
+- Update kernel version to 5.6 in tst-mman-consts.py.
+
 * Wed Apr 15 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-8
 - nsswitch.conf: don't add sss to shadow line
 
