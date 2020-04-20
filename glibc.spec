@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-350-g076f09afba
+%define glibcsrcdir glibc-2.31.9000-358-g0798b8ecc8
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Apr 20 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-10
+- Auto-sync with upstream branch master,
+  commit 0798b8ecc8da8667362496c1217d18635106c609.
+- ARC: Update syscall-names.list for ARC specific syscalls
+- Revert "x86_64: Add SSE sfp-exceptions"
+- provide y2038 safe socket constants for default/asm-generic ABI
+- x86_64: Add SSE sfp-exceptions
+- Remove __NO_MATH_INLINES
+- i686: Add INTERNAL_SYSCALL_NCS 6 argument support
+- Reset converter state after second wchar_t output (Bug 25734)
+- Fix typo in posix/tst-fnmatch.input (Bug 25790)
+
 * Wed Apr 15 2020 Patsy Griffin <patsy@redhat.com> - 2.31.9000-9
 - Auto-sync with upstream branch master,
   commit 076f09afbac1aa57756faa7a8feadb7936a724e4.
