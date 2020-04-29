@@ -2007,7 +2007,7 @@ fi
 
 %changelog
 * Mon Apr 27 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-11
-- Introduce glibc-headers-x86, glibc-headers-s390 packages
+- Introduce glibc-headers-x86, glibc-headers-s390 packages (#1828332)
 - Remove the glibc-headers package
 
 * Mon Apr 20 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-10
