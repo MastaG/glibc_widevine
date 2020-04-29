@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -187,6 +187,14 @@ Provides: bundled(gnulib)
 
 Requires(pre): basesystem
 Requires: basesystem
+
+%ifarch %{ix86}
+# Automatically install the 32-bit variant if the 64-bit variant has
+# been installed.  This covers the case when glibc.i686 is installed
+# after nss_*.x86_64.  (See below for the other ordering.)
+Recommends: (nss_db(x86-32) if nss_db(x86-64))
+Recommends: (nss_hesiod(x86-32) if nss_hesiod(x86-64))
+%endif
 
 # This is for building auxiliary programs like memusage, nscd
 # For initial glibc bootstraps it can be commented out
@@ -586,6 +594,12 @@ performance with LDAP, and may help with DNS as well.
 %package -n nss_db
 Summary: Name Service Switch (NSS) module using hash-indexed files
 Requires: %{name}%{_isa} = %{version}-%{release}
+%ifarch x86_64
+# Automatically install the 32-bit variant if the 64-bit variant has
+# been installed.  This covers the case when glibc.i686 is installed
+# before nss_db.x86_64.  (See above for the other ordering.)
+Recommends: (nss_db(x86-32) if glibc(x86-32))
+%endif
 
 %description -n nss_db
 The nss_db Name Service Switch module uses hash-indexed files in /var/db
@@ -594,6 +608,12 @@ to speed up user, group, service, host name, and other NSS-based lookups.
 %package -n nss_hesiod
 Summary: Name Service Switch (NSS) module using Hesiod
 Requires: %{name}%{_isa} = %{version}-%{release}
+%ifarch x86_64
+# Automatically install the 32-bit variant if the 64-bit variant has
+# been installed.  This covers the case when glibc.i686 is installed
+# before nss_hesiod.x86_64.  (See above for the other ordering.)
+Recommends: (nss_hesiod(x86-32) if glibc(x86-32))
+%endif
 
 %description -n nss_hesiod
 The nss_hesiod Name Service Switch module uses the Domain Name System
@@ -2006,6 +2026,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Apr 29 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-12
+- nss_db.x86_64 should install nss_db.i686 if glibc.i686 is installed (#1807821)
+- Likewise for nss_hesiod.
+
 * Mon Apr 27 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-11
 - Introduce glibc-headers-x86, glibc-headers-s390 packages (#1828332)
 - Remove the glibc-headers package
