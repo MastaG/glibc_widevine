@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31-17-gab029a2801
+%define glibcsrcdir glibc-2.31-43-gc839175267
 %define glibcversion 2.31
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,33 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue May 19 2020 Florian Weimer <fweimer@redhat.com> - 2.31-3
+- Auto-sync with upstream branch release/2.31/master,
+  commit c839175267842bd9e20fdb6637c82f2790d3754f:
+- aarch64: fix strcpy and strnlen for big-endian (swbz#25824)
+- aarch64: Accept PLT calls to __getauxval within libc.so
+- x86-64: Use RDX_LP on __x86_shared_non_temporal_threshold [BZ #25966]
+- oc_FR locale: Fix spelling of April (swbz#25639)
+- oc_FR locale: Fix spelling of Thursday (swbz#25639)
+- Add a C wrapper for prctl (swbz#25896)
+- Add a C wrapper for prctl (swbz#25896)
+- powerpc: Rename argN to _argN in LOADARGS_N (swbz#25902)
+- Add C wrappers for process_vm_readv/process_vm_writev (swbz#25810)
+- Mark unsigned long arguments with U in more syscalls (swbz#25810)
+- Add a syscall test for (swbz#25810)
+- Add SYSCALL_ULONG_ARG_[12] to pass long to syscall (swbz#25810)
+- x32: Properly pass long to syscall (swbz#25810)
+- Fix build with GCC 10 when long double = double.
+- Add new file missed in previous hppa commit.
+- Fix data race in setting function descriptors during lazy binding on hppa.
+- nios2: delete sysdeps/unix/sysv/linux/nios2/kernel-features.h
+- mips: Fix bracktrace result for signal frames
+- stdlib: Move tst-system to tests-container
+- support/shell-container.c: Add builtin kill
+- support/shell-container.c: Add builtin exit
+- support/shell-container.c: Return 127 if execve fails
+- posix: Fix system error return value (swbz#25715)
+
 * Thu Mar 19 2020 Patsy Griffin <patsy@redhat.com> - 2.31-2
 - Auto-sync with upstream branch release/2.31/master,
   commit ab029a2801d4ddfeade8f64a6e46ee7e47fde710.
