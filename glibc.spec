@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-426-g978e8ac39f
+%define glibcsrcdir glibc-2.31.9000-513-ge52434a2e4
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2026,6 +2026,97 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 05 2020 Patsy Griffin <patsy@redhat.com> - 2.31.9000-14
+- Auto-sync with upstream branch master,
+  commit e52434a2e4d1105272daaef87678da950fbec73f.
+- benchtests: Restore the clock_gettime option
+- Update HP_TIMING_NOW for _ISOMAC in sysdeps/generic/hp-timing.h
+- Replace val with __val in TUNABLE_SET_VAL_IF_VALID_RANGE
+- support: Fix detecting hole support on >2KB-block filesystems
+- powerpc: Fix powerpc64le due a7a3435c9a
+- manual/jobs.texi: remove unused var from example code
+- powerpc/fpu: use generic fma functions
+- aarch/fpu: use generic builtins based math functions
+- ieee754: provide gcc builtins based generic fma functions
+- ieee754: provide gcc builtins based generic sqrt functions
+- Linux: Use __pthread_attr_setsigmask_internal for timer helper thread
+- nptl: Add pthread_attr_setsigmask_np, pthread_attr_getsigmask_np
+- nptl: Make pthread_attr_t dynamically extensible
+- nptl: Destroy the default thread attribute as part of freeres
+- nptl: Change type of __default_pthread_attr
+- nptl: Use __pthread_attr_setaffinity_np in pthread_getattr_np
+- nptl: Use __pthread_getattr_default_np in pthread_create
+- nptl: Add internal alias __pthread_getattr_default_np
+- htl: Fix gsync_wait symbol exposition
+- htl: Make pthread_cond_destroy wait for threads to be woken
+- htl: Enable more cond tests
+- tst-cond11: Fix build with _SC_MONOTONIC_CLOCK > 0
+- mbstowcs: Document, test, and fix null pointer dst semantics (Bug 25219)
+- build: Use FAIL_EXIT1 () on failure to exec child [BZ #23990]
+- manual: Fix backtraces code example [BZ #10441]
+- hurd: Fix fexecve
+- i386: Remove unused file sysdeps/unix/i386/sysdep.S
+- hurd: fix ptsname error when called on a non-tty
+- hurd: Fix fdopendir checking for directory type
+- i386: Remove NO_TLS_DIRECT_SEG_REFS handling
+- Hurd: Move <hurd/sigpreempt.h> internals into wrapper header
+- Hurd: Use __sigmask in favor of deprecated sigmask
+- hurd: Fix pselect atomicity
+- elf: Remove extra hwcap mechanism from ldconfig
+- elf: Do not read hwcaps from the vDSO in ld.so
+- linux: Use internal DIR locks when accessing filepos on telldir
+- Update i386 libm-test-ulps
+- htl: Add clock variants
+- signal: Deprecate additional legacy signal handling functions
+- elf: Turn _dl_printf, _dl_error_printf, _dl_fatal_printf into functions
+- x86: Update Intel Atom processor family optimization
+- elf.h: add aarch64 property definitions
+- elf.h: Add PT_GNU_PROPERTY
+- <libc-symbols.h>: Add libpthread hidden alias support
+- nptl: Use __pthread_attr_copy in pthread_setattr_default_np
+- nptl: Use __pthread_attr_copy in pthread_getattr_default_np (bug 25999)
+- nptl: Add __pthread_attr_copy for copying pthread_attr_t objects
+- nptl: Make __pthread_attr_init, __pthread_attr_destroy available internally
+- nptl: Move pthread_gettattr_np into libc
+- nptl: Move pthread_getaffinity_np into libc
+- nptl: Move pthread_attr_setaffinity_np into libc
+- nptl: Replace some stubs with the Linux implementation
+- Linux: Add missing handling of tai field to __ntp_gettime64
+- Mention GCC 10 attribute access.
+- y2038: Replace __clock_gettime with __clock_gettime64
+- manual: Add missing section and node for clockid_t wait functions
+- y2038: linux: Provide __ntp_gettimex64 implementation
+- y2038: linux: Provide __ntp_gettime64 implementation
+- y2038: Provide conversion helpers for struct __ntptimeval64
+- y2038: Introduce struct __ntptimeval64 - new internal glibc type
+- y2038: linux: Provide __adjtime64 implementation
+- y2038: linux: Provide ___adjtimex64 implementation
+- y2038: linux: Provide __clock_adjtime64 implementation
+- ldconfig: Default to the new format for ld.so.cache
+- nss_compat: internal_end*ent may clobber errno, hiding ERANGE [BZ #25976]
+- powerpc: Optimized rawmemchr for POWER9
+- x86: Add --enable-cet=permissive
+- Remove NO_CTORS_DTORS_SECTIONS macro
+- elf: Assert that objects are relocated before their constructors run
+- powerpc: Optimized stpcpy for POWER9
+- powerpc: Optimized strcpy for POWER9
+- x86: Move CET control to _dl_x86_feature_control [BZ #25887]
+- sunrpc/tst-udp-*: Fix timeout value
+- Linux: Remove remnants of the getcpu cache
+- Update timezone code from tzcode 2020a
+- aarch64: fix strcpy and strnlen for big-endian [BZ #25824]
+- locale: Add transliteration for Geresh, Gershayim (U+05F3, U+05F4)
+- string: Fix string/tst-memmove-overflow to compile with GCC 7
+- Add arch-syscall.h dependency for generating sysd-syscalls file
+- arm: XFAIL string/tst-memmove-overflow due to bug 25620
+- elf: Remove redundant add_to_global_resize_failure  call from dl_open_args
+- string: Add string/tst-memmove-overflow, a test case for bug 25620
+- support: Add support_blob_repeat_allocate_shared
+- nptl: wait for pending setxid request also in detached thread (bug 25942)
+- aarch64: Accept PLT calls to __getauxval within libc.so
+- Use unsigned constants for ICMP6 filters [BZ #22489]
+- Linux: Enhance glibcsyscalls.py to support listing system calls
+
 * Mon May 11 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-13
 - Auto-sync with upstream branch master,
   commit 978e8ac39f8ba2d694031e521511da1ae803ccfc.
