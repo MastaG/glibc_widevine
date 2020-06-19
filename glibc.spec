@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-513-ge52434a2e4
+%define glibcsrcdir glibc-2.31.9000-562-g27f8864bd4
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2026,6 +2026,59 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 19 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-15
+- Auto-sync with upstream branch master,
+  commit 27f8864bd41f0f1b61e8e947d9a030b1a0d23df9.
+- x86: Update F16C detection [BZ #26133]
+- Fix avx2 strncmp offset compare condition check [BZ #25933]
+- nptl: Remove now-spurious tst-cancelx9 references
+- x86_64: Use %xmmN with vpxor to clear a vector register
+- x86: Correct bit_cpu_CLFLUSHOPT [BZ #26128]
+- powerpc64le: refactor e_sqrtf128.c
+- Update syscall-names.list for Linux 5.7.
+- ieee754/dbl-64: Reduce the scope of temporary storage variables
+- manual: Add pthread_attr_setsigmask_np, pthread_attr_getsigmask_np
+- ld.so: Check for new cache format first and enhance corruption check
+- hurd: Fix __writev_nocancel_nostatus
+- hurd: Make send* cancellation points
+- htl: Enable more cancellation tests
+- hurd: Make write and pwrite64 cancellation points
+- htl: Fix cleanup support for IO locking
+- htl: Move cleanup stack to variable shared between libc and pthread
+- htl: initialize first and prevent from unloading
+- htl: Add noreturn attribute on __pthread_exit forward
+- hurd: Make recv* cancellation points
+- powerpc: Automatic CPU detection in preconfigure
+- Use Linux 5.7 in build-many-glibcs.py.
+- htl: Enable more cancel tests
+- htl: Fix linking static tests by factorizing the symbols list
+- Add "%d" support to _dl_debug_vdprintf
+- aarch64: MTE compatible strlen
+- aarch64: MTE compatible strchr
+- aarch64: MTE compatible strchrnul
+- AArch64: Merge Falkor memcpy and memmove implementations
+- hurd: document that gcc&gdb look at the trampoline code
+- pthread: Move back linking rules to nptl and htl
+- htl: Enable more tests
+- htl: Fix registration of atfork handlers in modules
+- htl: Fix tls initialization for already-created threads
+- hurd: Make read and pread64 cancellable
+- hurd: Fix unwinding over interruptible RPC
+- htl: Enable but XFAIL tst-flock2, tst-signal1, tst-signal2
+- hurd: XFAIL more tests that require setpshared support
+- hurd: Briefly document in xfails the topics of the bugzilla entries
+- htl: Enable more tests
+- htl: Add sem_clockwait support
+- htl: fix register-atfork ordering
+- hurd: Fix hang in _hurd_raise_signal from pthread_kill
+- hurd: Reject raising invalid signals
+- hurd: fix clearing SS_ONSTACK when longjmp-ing from sighandler
+- hurd: Add pointer guard support
+- hurd: Add stack guard support
+- dl-runtime: reloc_{offset,index} now functions arch overide'able
+- powerpc64le: add optimized strlen for P9
+- powerpc64le: use common fmaf128 implementation
+
 * Fri Jun 05 2020 Patsy Griffin <patsy@redhat.com> - 2.31.9000-14
 - Auto-sync with upstream branch master,
   commit e52434a2e4d1105272daaef87678da950fbec73f.
