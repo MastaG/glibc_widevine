@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-562-g27f8864bd4
+%define glibcsrcdir glibc-2.31.9000-582-gea04f02131
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2026,6 +2026,30 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 22 2020 DJ Delorie <dj@redhat.com> - 2.31.9000-16
+- Auto-sync with upstream branch master,
+  commit ea04f0213135b13d80f568ca2c4127c2ec112537.
+- aarch64: Remove fpu Makefile
+- m68k: Use sqrt{f} builtin for coldfire
+- arm: Use sqrt{f} builtin
+- riscv: Use sqrt{f} builtin
+- s390: Use sqrt{f} builtin
+- sparc: Use sqrt{f} builtin
+- mips: Use sqrt{f} builtin
+- alpha: Use builtin sqrt{f}
+- i386: Use builtin sqrtl
+- x86_64: Use builtin sqrt{f,l}
+- powerpc: Use sqrt{f} builtin
+- s390x: Use fma{f} builtin
+- aarch64: Use math-use-builtins for ceil{f}
+- math: Decompose math-use-builtins.h
+- hurd: Add mremap
+- ia64: Use generic exp10f
+- New exp10f version without SVID compat wrapper
+- i386: Use generic exp10f
+- math: Optimized generic exp10f with wrappers
+- benchtests: Add exp10f benchmark
+
 * Fri Jun 19 2020 Patsy Franklin <patsy@redhat.com> - 2.31.9000-15
 - Auto-sync with upstream branch master,
   commit 27f8864bd41f0f1b61e8e947d9a030b1a0d23df9.
