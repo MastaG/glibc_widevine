@@ -1,3 +1,388 @@
+* Mon Jun 24 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-30
+- Auto-sync with upstream branch master,
+  commit 2bd81b60d6ffdf7e0d22006d69f4b812b1c80513.
+- szl_PL locale: Spelling corrections (swbz 24652).
+- nl_{AW,NL}: Correct the thousands separator and grouping (swbz 23831).
+- Add missing VDSO_{NAME,HASH}_* macros and use them for PREPARE_VERSION_KNOWN
+- nptl: Convert various tests to use libsupport
+- support: Invent verbose_printf macro
+- support: Add xclock_now helper function.
+
+* Fri Jun 21 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-29
+- Auto-sync with upstream branch master,
+  commit 21cc130b78a4db9113fb6695e2b951e697662440:
+- During exit, skip wide buffer handling for legacy stdio handles (#1722216)
+- powerpc: add 'volatile' to asm
+- powerpc: Fix static-linked version of __ppc_get_timebase_freq (swbz#24640)
+- nl_AW locale: Correct the negative monetary format (swb#z24614)
+- Fix gcc 9 build errors for make xcheck. (swbz#24556)
+- dlfcn: Avoid one-element flexible array in Dl_serinfo (swbz#24166)
+- elf: Refuse to dlopen PIE objects (swbz#24323)
+- nl_NL locale: Correct the negative monetary format (swbz#24614)
+- powerpc: Refactor powerpc64 lround/lroundf/llround/llroundf
+- powerpc: refactor powerpc64 lrint/lrintf/llrint/llrintf
+
+* Mon Jun 17 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-28
+- Auto-sync with upstream branch master,
+  commit 48c3c1238925410b4e777dc94e2fde4cc9132d44.
+- Linux: Fix __glibc_has_include use for <sys/stat.h> and statx (#1721129)
+- <sys/cdefs.h>: Inhibit macro expansion for __glibc_has_include
+- Add IPV6_ROUTER_ALERT_ISOLATE from Linux 5.1 to bits/in.h
+- aarch64: handle STO_AARCH64_VARIANT_PCS
+- aarch64: add STO_AARCH64_VARIANT_PCS and DT_AARCH64_VARIANT_PCS
+- powerpc: Remove optimized finite
+- math: Use wordsize-64 version for finite
+- powerpc: Remove optimized isinf
+- math: Use wordsize-64 version for isinf
+- powerpc: Remove optimized isnan
+- math: Use wordsize-64 version for isnan
+- benchtests: Add isnan/isinf/isfinite benchmark
+- powerpc: copysign cleanup
+- powerpc: consolidate rint
+- libio: freopen of default streams crashes in old programs (swbz#24632)
+- Linux: Deprecate <sys/sysctl.h> and sysctl
+- <sys/stat.h>: Use Linux UAPI header for statx if available and useful
+  (#1721129)
+- <sys/cdefs.h>: Add __glibc_has_include macro
+- Improve performance of memmem
+- Improve performance of strstr
+- Benchmark strstr hard needles
+- Fix malloc tests build with GCC 10
+
+* Mon Jun 10 2019 Patsy Franklin <patsy@redhat.com> - 2.29.9000-27
+- Auto-sync with upstream branch master,
+  commit 51ea67d54882318c4fa5394c386f4816ddc22408.
+- powerpc: get_rounding_mode: utilize faster method to get rounding mode
+- riscv: Do not use __has_include__
+- powerpc: fegetexcept: utilize function instead of duplicating code
+- iconv: Use __twalk_r in __gconv_release_shlib
+- Fix iconv buffer handling with IGNORE error handler (swbz#18830)
+
+* Wed Jun  5 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-26
+- Restore /usr/lib/locale/locale-archive under its original name (#1716710)
+
+* Tue Jun  4 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-25
+- Add glibc version to locale-archive name (#1716710)
+
+* Mon Jun 03 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-24
+- Auto-sync with upstream branch master,
+  commit dc91a19e6f71e1523f4ac179191a29b2131d74bb:
+- Linux: Add oddly-named arm syscalls to syscall-names.list.
+- arm: Remove ioperm/iopl/inb/inw/inl/outb/outw/outl support.
+- Add INADDR_ALLSNOOPERS_GROUP from Linux 5.1 to netinet/in.h.
+
+* Sat Jun 01 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-23
+- Convert glibc_post_upgrade to lua.
+
+* Sat Jun 01 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-22
+- Remove support for filtering glibc-all-langpacks (#1715891)
+- Auto-sync with upstream branch master,
+  commit 9250e6610fdb0f3a6f238d2813e319a41fb7a810:
+- powerpc: Fix build failures with current GCC
+- Remove unused get_clockfreq files
+- powerpc: generic nearbyint/nearbyintf
+- tt_RU: Add lang_name (swbz#24370)
+- tt_RU: Fix orthographic mistakes in mon and abmon sections (swbz#24369)
+- Add IGMP_MRDISC_ADV from Linux 5.1 to netinet/igmp.h.
+
+* Mon May 27 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-21
+- Auto-sync with upstream branch master,
+  commit 85188d8211698d1a255f0aec6529546db5c56de3:
+- Remove support for PowerPC SPE extension
+- elf: Add tst-ldconfig-bad-aux-cache test
+- Add F_SEAL_FUTURE_WRITE from Linux 5.1 to bits/fcntl-linux.h
+- nss_dns: Check for proper A/AAAA address alignment
+
+* Tue May 21 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-20
+- Auto-sync with upstream branch master,
+  commit 46ae07324b1cd50fbf8f37a076d6babcfca7c510.
+- Improve string benchtest timing
+- sysvipc: Add missing bit of semtimedop s390 consolidation
+- wcsmbs: Fix data race in __wcsmbs_clone_conv [swbz #24584]
+- libio: Fix gconv-related memory leak [swbz #24583]
+- libio: Remove codecvt vtable [swbz #24588]
+- support: Expose sbindir as support_sbindir_prefix
+- support: Add missing EOL terminators on timespec
+- support: Correct confusing comment
+- sysvipc: Consolidate semtimedop s390
+- sysvipc: Fix compat msgctl (swbz#24570)
+- Add NT_ARM_PACA_KEYS and NT_ARM_PACG_KEYS from Linux 5.1 to elf.h.
+- Small tcache improvements
+- manual: Document O_DIRECTORY
+- Update kernel-features.h files for Linux 5.1.
+- nss_nis, nss_nisplus: Remove RES_USE_INET6 handling
+- nss_files: Remove RES_USE_INET6 from hosts processing
+- support: Report NULL blobs explicitly in TEST_COMPARE
+- dlfcn: Guard __dlerror_main_freeres with __libc_once_get (once) [swbz# 24476]
+- Add missing Changelog entry
+
+* Wed May 15 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-19
+- Auto-sync with upstream branch master,
+  commit 32ff397533715988c19cbf3675dcbd727ec13e18:
+- Fix crash in _IO_wfile_sync (#1710460)
+- nss: Turn __nss_database_lookup into a compatibility symbol
+- support: Add support_install_rootsbindir
+- iconv: Remove public declaration of __gconv_transliterate
+- Linux: Add the tgkill function
+- manual: Adjust twalk_r documentation.
+- elf: Fix tst-pldd for non-default --prefix and/or --bindir (swbz#24544)
+- support: Export bindir path on support_path
+- configure: Make --bindir effective
+- x86: Remove arch-specific low level lock implementation
+- nptl: Assume LLL_LOCK_INITIALIZER is 0
+- nptl: Small optimization for lowlevellock
+- Add single-thread.h header
+- locale: Update to Unicode 12.1.0 (swbz#24535)
+- malloc: Fix tcache count maximum (swbz#24531)
+- sem_close: Use __twalk_r
+- support: Fix timespec printf
+- nptl/tst-abstime: Use libsupport
+- nptl: Convert some rwlock tests to use libsupport
+- nptl: Use recent additions to libsupport in tst-sem5
+- nptl: Convert tst-cond11.c to use libsupport
+- support: Add timespec.h
+- Move nptl/tst-eintr1 to xtests (swbz#24537)
+- powerpc: trunc/truncf refactor
+- powerpc: round/roundf refactor
+- powerpc: floor/floorf refactor
+- support: Add xclock_gettime
+- malloc/tst-mallocfork2: Use process-shared barriers
+- Update syscall-names.list for Linux 5.1
+- Use GCC 9 in build-many-glibcs.py
+- aarch64: thunderx2 memmove performance improvements
+- misc/tst-tsearch: Additional explicit error checking
+- elf: Fix elf/tst-pldd with --enable-hardcoded-path-in-tests (swbz#24506)
+- misc: Add twalk_r function
+
+* Thu May 02 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-18
+- Auto-sync with upstream branch master,
+  commit 20aa5819586ac7ad11f711bab64feda307965191:
+- semaphore.h: Add nonnull attributes
+- powerpc: Remove power4 mpa optimization
+- powerpc: Refactor ceil/ceilf
+- Fix -O1 compilation errors with `__ddivl' and `__fdivl' [BZ #19444]
+- Make mktime etc. compatible with __time64_t
+
+* Fri Apr 26 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-17
+- Auto-sync with upstream branch master,
+  commit c57afec0a9b318bb691e0f5fa4e9681cf30df7a4:
+- Increase BIND_NOW coverage (#1702671)
+- Fix pldd hang (#1361689)
+- riscv: remove DL_RO_DYN_SECTION (swbz#24484)
+- locale: Add LOCPATH diagnostics to the locale program
+- Reduce benchtests time
+
+* Mon Apr 22 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-16
+- Auto-sync with upstream branch master,
+  commit 25f7a3c96116a9102df8bf7b04ef160faa32416d.
+- malloc: make malloc fail with requests larger than PTRDIFF_MAX (BZ#23741)
+- powerpc: Fix format issue from 3a16dd780eeba602
+- powerpc: fma using builtins
+- powerpc: Use generic fabs{f} implementations
+- mips: Remove rt_sigreturn usage on context function
+- powerpc: Remove rt_sigreturn usage on context function
+- support: Add support_capture_subprogram
+- stdlib/tst-secure-getenv: handle >64 groups
+
+* Mon Apr 15 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-15
+- Auto-sync with upstream branch master,
+  commit e3f454bac0f968216699ca405c127c858f0657c7:
+- nss_dns: Do not replace root domain with empty string
+- alloc_buffer: Return unqualified pointer type in alloc_buffer_next
+- malloc: Set and reset all hooks for tracing (swbz#16573)
+
+* Thu Apr 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-14
+- Run valgrind smoke test against the install tree
+
+* Thu Apr 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-13
+- Do not use --g-libs with find-debuginfo.sh; it breaks valgrind (#1698824)
+
+* Wed Apr 10 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-12
+- Strip debugging information from installed programs again (#1661510)
+
+* Tue Apr 09 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-11
+- Drop glibc-warning-fix.patch. Microbenchmark code fixed upstream.
+- Auto-sync with upstream branch master,
+  commit 648279f4af423c4783ec1dfa63cb7b46a7640217:
+- powerpc: Use generic wcscpy optimization
+- powerpc: Use generic wcschr optimization
+- powerpc: Use generic wcsrchr optimization
+- aarch64: thunderx2 memcpy implementation cleanup and streamlining
+- resolv: Remove support for RES_USE_INET6 and the inet6 option
+- resolv: Remove RES_INSECURE1, RES_INSECURE2
+
+* Thu Apr 04 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-10
+- Auto-sync with upstream branch master,
+  commit 8260f23616c1a2a4e609f989a195fba7690a42ca:
+- Fix strptime era handling, add more strftime tests [BZ #24394]
+- time/tst-strftime2.c: Make the file easier to maintain
+- time: Add tests for Minguo calendar [BZ #24293]
+- ja_JP locale: Add entry for the new Japanese era [BZ #22964]
+- Add Reiwa era tests to time/tst-strftime3.c
+
+* Mon Apr 01 2019 Arjun Shankar <arjun@redhat.com> - 2.29.9000-9
+- Auto-sync with upstream branch master,
+  commit 993e3107af67edefcfc79a62ae55f7b98aa5151e:
+- Add AArch64 HWCAPs from Linux 5.0
+- tt_RU: Fix orthographic mistakes in day and abday sections [BZ #24296]
+- iconv, localedef: avoid floating point rounding differences [BZ #24372]
+- Fix parentheses error in iconvconfig.c and ld-collate.c [BZ #24372]
+- S390: New configure check and hwcap values for new CPU architecture arch13
+- S390: Add memmove, strstr, and memmem ifunc variants for arch13
+- nptl: Remove pthread_clock_gettime pthread_clock_settime
+- linux: Assume clock_getres CLOCK_{PROCESS,THREAD}_CPUTIME_ID
+- Remove __get_clockfreq
+- Do not use HP_TIMING_NOW for random bits
+- hp-timing: Refactor rtld usage, add generic support
+- Add NT_ARM_PAC_MASK and NT_MIPS_MSA from Linux 5.0 to elf.h
+- Add UDP_GRO from Linux 5.0 to netinet/udp.h
+- nptl: Convert tst-sem5 & tst-sem13 to use libsupport
+- nptl/tst-rwlock14: Test pthread_rwlock_timedwrlock correctly
+- nss/tst-nss-files-alias-leak: add missing opening quote in printf
+- math: Enable some math builtins for clang
+- powerpc: Use __builtin_{mffs,mtfsf}
+- RISC-V: Fix `test' operand error with soft-float ABI being configured
+
+* Wed Mar 20 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-8
+- Add warnings and notes to /etc/nsswitch.conf and /etc/nscd.conf.
+
+* Mon Mar 18 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-7
+- Auto-sync with upstream branch master,
+  commit 78919d3886c9543279ec755a701e279c62b44164.
+
+* Thu Mar 14 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-6
+- Drop glibc-fedora-streams-rh436349.patch.  STREAMS was removed upstream.
+- Auto-sync with upstream branch master,
+  commit a0a0dc83173ce11ff45105fd32e5d14356cdfb9c:
+- Remove obsolete, never-implemented XSI STREAMS declarations
+- nss: Fix tst-nss-files-alias-truncated for default --as-needed linking
+- scripts/check-obsolete-constructs.py: Process all headers as UTF-8.
+- Use Linux 5.0 in build-many-glibcs.py.
+- hurd: Add no-op version of __res_enable_icmp [BZ #24047]
+- Move inttypes.h and stdint.h to stdlib.
+- Use a proper C tokenizer to implement the obsolete typedefs test.
+- Fix output of LD_SHOW_AUXV=1.
+
+* Wed Mar 13 2019 Florian Weimer <fweimer@redhat.com> - 2.29.9000-5
+- Drop glibc-rh1670028.patch, applied upstream
+- Auto-sync with upstream branch master,
+  commit 38b52865d4ccfee3647f27e969e539a4396a73b1:
+- elf: Add DF_1_KMOD, DF_1_WEAKFILTER, DF_1_NOCOMMON to <elf.h>
+- resolv: Enable full ICMP errors for UDP DNS sockets [BZ #24047]
+- C-SKY: add elf header definition for elfutils
+- C-SKY: mark lr as undefined to stop unwinding
+- C-SKY: remove user_regs definition
+- C-SKY: fix sigcontext miss match
+- Bug 24307: Update to Unicode 12.0.0
+- Break lines before not after operators, batch 4.
+- check-wrapper-headers test: Adjust Fortran include file directory
+- Fix location where math-vector-fortran.h is installed.
+
+* Wed Mar 06 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-4
+- Auto-sync with upstream branch master,
+  commit 0ddb7ea842abf63516b74d4b057c052afc6ba863.
+- nptl: Assume __ASSUME_FUTEX_CLOCK_REALTIME support
+- powerpc: Fix build of wcscpy with --disable-multi-arch
+- elf: Remove remnants of MAP_ANON emulation
+- S390: Increase function alignment to 16 bytes.
+- ja_JP: Change the offset for Taisho gan-nen from 2 to 1 [BZ #24162]
+- ldbl-opt: Reuse test cases from misc/ that check long double
+- ldbl-opt: Add error and error_at_line (bug 23984)
+- ldbl-opt: Add err, errx, verr, verrx, warn, warnx, vwarn, and vwarnx (bug 23984)
+- ldbl-opt: Reuse argp tests that print long double
+- ldbl-opt: Add argp_error and argp_failure (bug 23983)
+- elf/tst-big-note: Improve accuracy of test [BZ #20419]
+- S390: Fix introduction of __wcscpy and weak wcscpy symbols.
+- __netlink_assert_response: Add more __libc_fatal newlines [BZ #20271]
+- Add more spaces before '('.
+- elf: Add tests with a local IFUNC resolver [BZ #23937]
+- elf/Makefile: Run IFUNC tests if binutils supports IFUNC
+- powerpc: Fix linknamespace introduced by 4d8015639a75
+- hurd: Add renameat2 support for RENAME_NOREPLACE
+- Fix -Wempty-body warnings in Hurd-specific code.
+- Add some spaces before '('.
+- wcsmbs: optimize wcsnlen
+- wcsmbs: optimize wcsncpy
+- wcsmbs: optimize wcsncat
+- wcsmbs: optimize wcscpy
+- wcsmbs: optimize wcscat
+- wcsmbs: optimize wcpncpy
+- wcsmbs: optimize wcpcpy
+- Break further lines before not after operators.
+- Add and move fall-through comments in system-specific code.
+
+* Fri Mar 1 2019 DJ Delorie <dj@redhat.com> - 2.29.9000-3
+- Add .gdb_index to debug information (rhbz#1680765)
+
+* Wed Feb 27 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-2
+- Fix build failure related to microbenchmarks.
+
+* Tue Feb 26 2019 Carlos O'Donell <carlos@redhat.com> - 2.29.9000-1
+- Auto-sync with upstream branch master,
+  commit e0cb7b6131ee5f2dca2938069b8b9590304e6f6b:
+- nss_files: Fix /etc/aliases null pointer dereference (swbz#24059)
+- regex: fix read overrun (swbz#24114)
+- libio: use stdout in puts and putchar, etc (swbz#24051)
+- aarch64: Add AmpereComputing emag to tunable cpu list
+- aarch64: Optimized memset specific to AmpereComputing emag
+- aarch64: Optimized memchr specific to AmpereComputing emag
+- Require GCC 6.2 or later to build glibc
+- manual: Document lack of conformance of sched_* functions (swbz#14829)
+- libio: Use stdin consistently for input functions (swbz#24153)
+- x86-64 memcmp: Use unsigned Jcc instructions on size (swbz#24155)
+- Fix handling of collating elements in fnmatch (swbz#17396,swbz#16976)
+- arm: Use "nr" constraint for Systemtap probes (swbz#24164)
+- Fix alignment of TLS variables for tls variant TLS_TCB_AT_TP (swbz#23403)
+- Add compiler barriers for pthread_mutex_trylock (swbz#24180)
+- rt: Turn forwards from librt to libc into compat symbols (swbz#24194)
+- Linux: Add gettid system call wrapper (swbz#6399)
+- nptl: Avoid fork handler lock for async-signal-safe fork (swbz#24161)
+- elf: Ignore LD_AUDIT interfaces if la_version returns 0 (swbz#24122)
+- nptl: Reinstate pthread_timedjoin_np as a cancellation point (swbz#24215)
+- nptl: Fix invalid Systemtap probe in pthread_join (swbz#24211)
+
+* Tue Feb 19 2019 Florian Weimer <fweimer@redhat.com> - 2.29-8
+- Drop glibc-rh1674280.patch.  Different fix applied upstream.  (#1674280)
+- Auto-sync with upstream branch release/2.29/master,
+  commit 067fc32968b601493f4b247a3ac00caeea3f3d61:
+- nptl: Fix invalid Systemtap probe in pthread_join (#1674280)
+
+* Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-7
+- Hotfix for invalid Systemtap probe in pthread_join (#1674280)
+
+* Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-6
+- Remove LRA bug on POWER workaround, fixed in gcc-9.0.1-0.4.fc30 (#1673018)
+
+* Mon Feb 11 2019 Florian Weimer <fweimer@redhat.com> - 2.29-5
+- Auto-sync with upstream branch release/2.29/master,
+  commit c096b008d2671028c21ac8cf01f18a2083e73c44:
+- nptl: Avoid fork handler lock for async-signal-safe fork (swbz#24161)
+- nptl: Add compiler barriers in pthread_mutex_trylock (swbz#24180)
+
+* Thu Feb  7 2019 Florian Weimer <fweimer@redhat.com> - 2.29-4
+- Work around LRA hang on ppc64le (#1673018)
+
+* Wed Feb 06 2019 Florian Weimer <fweimer@redhat.com> - 2.29-3
+- Auto-sync with upstream branch release/2.29/master,
+  commit 2de15ac95713a238dc258eb8977ecdfca811fc19:
+- arm: Use "nr" constraint for Systemtap probes (#1196181)
+
+* Fri Feb  1 2019 Florian Weimer <fweimer@redhat.com> - 2.29-2
+- Eliminate %%glibcrelease macro.
+- Switch to regular Release: pattern.
+
+* Thu Jan 31 2019 Carlos O'Donell <carlos@redhat.com> - 2.29-1
+- Auto-sync with upstream branch release/2.29/master,
+  commit 86013ef5cea322b8f4b9c22f230c22cce369e947.
+- nptl: Fix pthread_rwlock_try*lock stalls (swbz#23844)
+
+* Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
+* Mon Jan 28 2019 DJ Delorie <dj@redhat.com> - 2.28.9000-37
+- Auto-sync with upstream branch master,
+  commit e1e47c912a8e557508362715f7468091def3ec4f.
+- Update translations.
 * Mon Jan 28 2019 Florian Weimer <fweimer@redhat.com> - 2.28.9000-36
 - resolv: Enable full ICMP error reporting in stub resolver (#1670028)
 
@@ -1227,7 +1612,6 @@
 - Update DNS RR type definitions (swbz#20593)
 - CVE-2015-5180: resolv: Fix crash with internal QTYPE (#1249603)
 - sunrpc: Always obtain AF_INET addresses from NSS (swbz#20964)
-
 
 * Mon Dec 26 2016 Florian Weimer <fweimer@redhat.com> - 2.24.90-26
 - Auto-sync with upstream master,
