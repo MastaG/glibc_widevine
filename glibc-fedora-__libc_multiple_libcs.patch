@@ -31,10 +31,10 @@ analysis of the GNU/Hurd parts of the change and that stalled out, but
 perhaps with build-many-glibcs we can now test these changes more easily.
 
 diff --git a/elf/dl-init.c b/elf/dl-init.c
-index 1234611a1c89532e..abd1913fb8de9caf 100644
+index 518824e8a5826314..66c395474a57c1fd 100644
 --- a/elf/dl-init.c
 +++ b/elf/dl-init.c
-@@ -114,8 +114,6 @@ _dl_init (struct link_map *main_map, int argc, char **argv, char **env)
+@@ -120,8 +120,6 @@ _dl_init (struct link_map *main_map, int argc, char **argv, char **env)
    while (i-- > 0)
      call_init (main_map->l_initfini[i], argc, argv, env);
  
@@ -59,18 +59,18 @@ index 7704c101c5a543a1..ffa235c78df8481f 100644
  /* Random data provided by the kernel.  */
  void *_dl_random;
 diff --git a/elf/rtld.c b/elf/rtld.c
-index b2ea21c98b89831e..f3c37875f4f4dba7 100644
+index 5b882163fae5ea8a..f93adf017c9d2110 100644
 --- a/elf/rtld.c
 +++ b/elf/rtld.c
-@@ -298,7 +298,6 @@ audit_list_next (struct audit_list *list)
-     }
+@@ -316,7 +316,6 @@ audit_list_count (struct audit_list *list)
+   return naudit;
  }
  
 -#ifndef HAVE_INLINED_SYSCALLS
  /* Set nonzero during loading and initialization of executable and
     libraries, cleared before the executable's entry point runs.  This
     must not be initialized to nonzero, because the unused dynamic
-@@ -308,7 +307,6 @@ audit_list_next (struct audit_list *list)
+@@ -326,7 +325,6 @@ audit_list_count (struct audit_list *list)
     never be called.  */
  int _dl_starting_up = 0;
  rtld_hidden_def (_dl_starting_up)
@@ -78,7 +78,7 @@ index b2ea21c98b89831e..f3c37875f4f4dba7 100644
  
  /* This is the structure which defines all variables global to ld.so
     (except those which cannot be added for some reason).  */
-@@ -1155,10 +1153,8 @@ dl_main (const ElfW(Phdr) *phdr,
+@@ -1178,10 +1176,8 @@ dl_main (const ElfW(Phdr) *phdr,
    /* Process the environment variable which control the behaviour.  */
    process_envvars (&mode, &audit_list);
  

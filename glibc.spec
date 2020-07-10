@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-624-gc6aac3bf36
+%define glibcsrcdir glibc-2.31.9000-683-gffb17e7ba3
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -922,15 +922,6 @@ build
 # Remove existing file lists.
 find . -type f -name '*.filelist' -exec rm -rf {} \;
 
-# Ensure the permissions of errlist.c do not change.  When the file is
-# regenerated the Makefile sets the permissions to 444. We set it to 644
-# to match what comes out of git. The tarball of the git archive won't have
-# correct permissions because git doesn't track all of the permissions
-# accurately (see git-cache-meta if you need that). We also set it to 644 to
-# match pre-existing rpms. We do this *after* the build because the build
-# might regenerate the file and set the permissions to 444.
-chmod 644 sysdeps/gnu/errlist.c
-
 # Reload compiler and build options that were used during %%build.
 GCC=`cat Gcc`
 
@@ -1150,7 +1141,7 @@ rm -rf %{glibc_sysroot}%{_prefix}/share/zoneinfo
 # which is to at least keep the timestamp consistent. The choice of using
 # SOURCE0 is arbitrary.
 touch -r %{SOURCE0} %{glibc_sysroot}/etc/ld.so.conf
-touch -r sunrpc/etc.rpc %{glibc_sysroot}/etc/rpc
+touch -r inet/etc.rpc %{glibc_sysroot}/etc/rpc
 
 # Lastly copy some additional documentation for the packages.
 rm -rf documentation
@@ -2026,6 +2017,70 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jul 09 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-18
+- Auto-sync with upstream branch master,
+  commit ffb17e7ba3a5ba9632cee97330b325072fbe41dd:
+- rtld: Avoid using up static TLS surplus for optimizations [BZ #25051]
+- rtld: Account static TLS surplus for audit modules
+- rtld: Add rtld.nns tunable for the number of supported namespaces
+- Remove --enable-obsolete-nsl configure flag
+- Move non-deprecated RPC-related functions from sunrpc to inet
+- aarch64: add NEWS entry about branch protection support
+- aarch64: redefine RETURN_ADDRESS to strip PAC
+- aarch64: fix pac-ret support in _mcount
+- aarch64: Add pac-ret support to assembly files
+- aarch64: configure check for pac-ret code generation
+- aarch64: ensure objects are BTI compatible
+- aarch64: enable BTI at runtime
+- aarch64: fix RTLD_START for BTI
+- aarch64: fix swapcontext for BTI
+- aarch64: Add BTI support to assembly files
+- aarch64: Rename place holder .S files to .c
+- aarch64: configure test for BTI support
+- Rewrite abi-note.S in C.
+- rtld: Clean up PT_NOTE and add PT_GNU_PROPERTY handling
+- string: Move tst-strsignal tst-strerror to tests-container
+- string: Fix prototype mismatch in sigabbrev_np, __sigdescr_np
+- arm: CVE-2020-6096: Fix multiarch memcpy for negative length (#1820332)
+- arm: CVE-2020-6096: fix memcpy and memmove for negative length (#1820332)
+- sunrpc: Remove hidden aliases for global data symbols (bug 26210)
+- hurd: Fix strerror not setting errno
+- tst-strsignal: fix checking for RT signals support
+- hurd: Evaluate fd before entering the critical section
+- CVE-2016-10228: Rewrite iconv option parsing (#1428292)
+- nss: Remove cryptographic key support from nss_files, nss_nis, nss_nisplus
+- sunrpc: Do not export getrpcport by default
+- sunrpc: Do not export key handling hooks by default
+- sunrpc: Turn clnt_sperrno into a libc_hidden_nolink_sunrpc symbol
+- string: Add strerrorname_np and strerrordesc_np
+- string: Add sigabbrev_np and sigdescr_np
+- string: Add strerror_l on test-strerror-errno
+- string: Add strerror, strerror_r, and strerror_l test
+- string: Add strsignal test
+- string: Simplify strerror_r
+- string: Use tls-internal on strerror_l
+- string: Implement strerror in terms of strerror_l
+- string: Remove old TLS usage on strsignal
+- linux: Fix __NSIG_WORDS and add __NSIG_BYTES
+- signal: Move sys_errlist to a compat symbol
+- signal: Move sys_siglist to a compat symbol
+- signal: Add signum-{generic,arch}.h
+- Remove most vfprintf width/precision-dependent allocations (bug 14231, bug 26211).
+- elf: Do not signal LA_ACT_CONSISTENT for an empty namespace [BZ #26076]
+- Fix stringop-overflow errors from gcc 10 in iconv.
+- x86: Add thresholds for "rep movsb/stosb" to tunables
+- Use C2x return value from getpayload of non-NaN (bug 26073).
+- x86: Detect Extended Feature Disable (XFD)
+- x86: Correct bit_cpu_CLFSH [BZ #26208]
+- manual: Document __libc_single_threaded
+- Add the __libc_single_threaded variable
+- Linux: rseq registration tests
+- Linux: Use rseq in sched_getcpu if available
+- Linux: Perform rseq registration at C startup and thread creation
+- tst-cancel4: deal with ENOSYS errors
+- manual: Show copyright information not just in the printed manual
+
+
 * Thu Jul 02 2020 Carlos O'Donell <carlos@redhat.com> - 2.31.9000-17
 - Auto-sync with upstream branch master,
   commit c6aac3bf3663709cdefde5f5d5e9e875d607be5e.
