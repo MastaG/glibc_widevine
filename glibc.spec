@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -167,6 +167,7 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
+Patch30: glibc-rseq-disable.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2017,6 +2018,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jul 10 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-19
+- Disable rseq registration by default to help Firefox (#1855729)
+
 * Thu Jul 09 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-18
 - Auto-sync with upstream branch master,
   commit ffb17e7ba3a5ba9632cee97330b325072fbe41dd:
