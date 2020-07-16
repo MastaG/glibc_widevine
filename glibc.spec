@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31-43-gc839175267
+%define glibcsrcdir glibc-2.31-48-g64246fccaf
 %define glibcversion 2.31
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 15 2020 Patsy Griffin <patsy@redhat.com> - 2.31-4
+- Auto-sync with upstream branch release/2.31/master,
+  commit 64246fccafc221cc15a8b70710a9d47a60653c0d.
+- arm: CVE-2020-6096: Fix multiarch memcpy for negative length [BZ #25620]
+- arm: CVE-2020-6096: fix memcpy and memmove for negative length [BZ #25620]
+- NEWS: Mention BZ 25933 fix
+- Fix avx2 strncmp offset compare condition check [BZ #25933]
+- nss_compat: internal_end*ent may clobber errno, hiding ERANGE [BZ #25976]
+
 * Tue May 19 2020 Florian Weimer <fweimer@redhat.com> - 2.31-3
 - Auto-sync with upstream branch release/2.31/master,
   commit c839175267842bd9e20fdb6637c82f2790d3754f:
