@@ -5,16 +5,15 @@ Date:   Mon Sep 2 12:40:38 2019 +0200
     Add misc/tst-mntent-autofs, testing autofs "ignore" filtering
 
 diff --git a/misc/Makefile b/misc/Makefile
-index 032f28fc38e5a4e1..afb8b023e87edfe2 100644
+index 060dd856b8ebd7a0..da0df8a42998123f 100644
 --- a/misc/Makefile
 +++ b/misc/Makefile
-@@ -86,7 +86,8 @@ tests := tst-dirname tst-tsearch tst-fdset tst-mntent tst-hsearch \
- 	 tst-mntent-blank-corrupt tst-mntent-blank-passno bug18240 \
+@@ -87,7 +87,7 @@ tests := tst-dirname tst-tsearch tst-fdset tst-mntent tst-hsearch \
  	 tst-preadvwritev tst-preadvwritev64 tst-makedev tst-empty \
  	 tst-preadvwritev2 tst-preadvwritev64v2 tst-warn-wide \
--	 tst-ldbl-warn tst-ldbl-error tst-dbl-efgcvt tst-ldbl-efgcvt
-+	 tst-ldbl-warn tst-ldbl-error tst-dbl-efgcvt tst-ldbl-efgcvt \
-+	 tst-mntent-autofs
+ 	 tst-ldbl-warn tst-ldbl-error tst-dbl-efgcvt tst-ldbl-efgcvt \
+-	 tst-syscalls
++	 tst-syscalls tst-mntent-autofs
  
  # Tests which need libdl.
  ifeq (yes,$(build-shared))

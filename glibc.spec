@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.30-46-gfb266e65cc
+%define glibcsrcdir glibc-2.30-73-gd59630f995
 %define glibcversion 2.30
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2035,6 +2035,37 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jul 16 2020 Patsy Griffin <patsy@redhat.com> - 2.30-12
+- Auto-sync with upstream branch release/2.30/master,
+  commit d59630f9959b0bb8991964758ab854ff4378b20d.
+- arm: CVE-2020-6096: Fix multiarch memcpy for negative length [BZ #25620]
+- arm: CVE-2020-6096: fix memcpy and memmove for negative length [BZ #25620]
+- NEWS: Mention BZ 25933 fix
+- Fix avx2 strncmp offset compare condition check [BZ #25933]
+- nss_compat: internal_end*ent may clobber errno, hiding ERANGE [BZ #25976]
+- NEWS: Merge two bug lists in the glibc 2.30.1 section
+- NEWS: Mention fixes for BZ 25810/25896/25902/25966
+- x86-64: Use RDX_LP on __x86_shared_non_temporal_threshold [BZ #25966]
+- Add a C wrapper for prctl [BZ #25896]
+- powerpc: Rename argN to _argN in LOADARGS_N [BZ #25902]
+- Add C wrappers for process_vm_readv/process_vm_writev [BZ #25810]
+- Mark unsigned long arguments with U in more syscalls [BZ #25810]
+- Add a syscall test for [BZ #25810]
+- Add SYSCALL_ULONG_ARG_[12] to pass long to syscall [BZ #25810]
+- x32: Properly pass long to syscall [BZ #25810]
+- Add new file missed in previous hppa commit.
+- Fix data race in setting function descriptors during lazy binding on hppa.
+- stdlib: Move tst-system to tests-container
+- support/shell-container.c: Add builtin kill
+- support/shell-container.c: Add builtin exit
+- support/shell-container.c: Return 127 if execve fails
+- Add NEWS entry for CVE-2020-1751 (bug 25423)
+- posix: Fix system error return value [BZ #25715]
+- sparc: Move sigreturn stub to assembly
+- arm: Fix softp-fp Implies (BZ #25635)
+- i386: Use comdat instead of .gnu.linkonce for i386 setup pic register (BZ #20543)
+- Add NEWS entry for CVE-2020-1752 (bug 25414)
+
 * Mon Mar 23 2020 Patsy Franklin <patsy@redhat.com> - 2.30-11
 - Auto-sync with upstream branch release/2.30/master,
   commit fb266e65ccf6fd674e05352ceb5f12d60889b92d.
