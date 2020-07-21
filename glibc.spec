@@ -2023,7 +2023,7 @@ fi
 - Add glibc-deprecated-selinux-makedb.patch and
   glibc-deprecated-selinux-nscd.patch to work around libselinux API
   deprecations.
-- Drop glibc-rseq-disable.patch; rseq support removed upstream.
+- Drop glibc-rseq-disable.patch; rseq support removed upstream.  (#1855729)
 - Auto-sync with upstream branch master,
   commit ec2f1fddf29053957d061dfe310f106388472a4f:
 - libio: Remove __libc_readline_unlocked
