@@ -168,6 +168,8 @@ Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-rseq-disable.patch
+Patch31: glibc-deprecated-selinux-makedb.patch
+Patch32: glibc-deprecated-selinux-nscd.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
