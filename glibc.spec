@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-683-gffb17e7ba3
+%define glibcsrcdir glibc-2.31.9000-746-gec2f1fddf2
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -167,9 +167,8 @@ Patch17: glibc-cs-path.patch
 Patch18: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
-Patch30: glibc-rseq-disable.patch
-Patch31: glibc-deprecated-selinux-makedb.patch
-Patch32: glibc-deprecated-selinux-nscd.patch
+Patch30: glibc-deprecated-selinux-makedb.patch
+Patch31: glibc-deprecated-selinux-nscd.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2020,6 +2019,77 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jul 21 2020 Arjun Shankar <arjun@redhat.com> - 2.31.9000-20
+- Add glibc-deprecated-selinux-makedb.patch and
+  glibc-deprecated-selinux-nscd.patch to work around libselinux API
+  deprecations.
+- Drop glibc-rseq-disable.patch; rseq support removed upstream.
+- Auto-sync with upstream branch master,
+  commit ec2f1fddf29053957d061dfe310f106388472a4f:
+- libio: Remove __libc_readline_unlocked
+- shadow: Implement fgetspent_r using __nss_fgetent_r
+- pwd: Implement fgetpwent_r using __nss_fgetent_r
+- gshadow: Implement fgetsgent_r using __nss_fgetent_r (bug 20338)
+- grp: Implement fgetgrent_r using __nss_fgetent_r
+- nss: Add __nss_fgetent_r
+- libio: Add fseterr_unlocked for internal use
+- nss_files: Use generic result pointer in parse_line
+- nss_files: Consolidate line parse declarations in <nss_files.h>
+- nss_compat: Do not use mmap to read database files (bug 26258)
+- nss_files: Consolidate file opening in __nss_files_fopen
+- Update powerpc-nofpu libm-test-ulps.
+- Use MPFR 4.1.0 in build-many-glibcs.py.
+- elf: Change TLS static surplus default back to 1664
+- hurd: Fix longjmp check for sigstate
+- hurd: Fix longjmp early in initialization
+- manual: New signal and errno string functions are AS-safe
+- AArch64: Improve strlen_asimd performance (bug 25824)
+- Move <rpc/netdb.h> from sunrpc to inet
+- en_US: Minimize changes to date_fmt (Bug 25923)
+- Linux: Remove rseq support
+- manual: Use Unicode instead HTML entities for characters (bug 19737)
+- Add NEWS entry for CVE-2020-6096 (bug 25620)
+- arm: remove string/tst-memmove-overflow XFAIL
+- AArch64: Rename IS_ARES to IS_NEOVERSE_N1
+- AArch64: Add optimized Q-register memcpy
+- AArch64: Align ENTRY to a cacheline
+- Correct timespec implementation [BZ #26232]
+- Remove --enable-obsolete-rpc configure flag
+- hurd: Fix build-many-glibcs.py
+- x86: Support usable check for all CPU features
+- string: Make tst-strerror/tst-strsignal unsupported if msgfmt is not installed
+- malloc: Deprecate more hook-related functionality
+- elf: Support at least 32-byte alignment in static dlopen
+- x86: Remove __ASSEMBLER__ check in init-arch.h
+- x86: Remove the unused __x86_prefetchw
+- Documentation for ARC port
+- build-many-glibcs.py: Enable ARC builds
+- ARC: Build Infrastructure
+- ARC: ABI lists
+- ARC: Linux Startup and Dynamic Loading
+- ARC: Linux ABI
+- ARC: Linux Syscall Interface
+- ARC: hardware floating point support
+- ARC: math soft float support
+- ARC: Atomics and Locking primitives
+- ARC: Thread Local Storage support
+- ARC: startup and dynamic linking code
+- ARC: ABI Implementation
+- Fix time/tst-cpuclock1 intermitent failures
+- powerpc64: Fix calls when r2 is not used [BZ #26173]
+- Add NEWS entry for Update to Unicode 13.0.0 [BZ #25819]
+- Update i686 libm-test-ulps
+- Fix memory leak in __printf_fp_l (bug 26215).
+- Fix double free in __printf_fp_l (bug 26214).
+- linux: Fix syscall list generation instructions
+- sysv: linux: Add 64-bit time_t variant for shmctl
+- sysvipc: Remove the linux shm-pad.h file
+- sysvipc: Split out linux struct shmid_ds
+- sysv: linux: Add 64-bit time_t variant for msgctl
+- sysvipc: Remove the linux msq-pad.h file
+- sysvipc: Split out linux struct semid_ds
+- sysv: linux: Add 64-bit time_t variant for semctl
+
 * Fri Jul 10 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-19
 - Disable rseq registration by default to help Firefox (#1855729)
 
