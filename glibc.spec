@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -894,7 +894,7 @@ build()
 		--disable-crypt ||
 		{ cat config.log; false; }
 
-	make %{?_smp_mflags} -O -r %{glibc_make_flags}
+	%make_build -r %{glibc_make_flags}
 	popd
 }
 
@@ -1665,7 +1665,7 @@ run_tests () {
   # This hides a test suite build failure, which should be fatal.  We
   # check "Summary of test results:" below to verify that all tests
   # were built and run.
-  make %{?_smp_mflags} -O check |& tee rpmbuild.check.log >&2
+  %make_build check |& tee rpmbuild.check.log >&2
   test -n tests.sum
   if ! grep -q '^Summary of test results:$' rpmbuild.check.log ; then
     echo "FAIL: test suite build of target: $(basename "$(pwd)")" >& 2
@@ -2019,6 +2019,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 22 2020 Carlos O'Donell <carlos@redhat.com> - 2.31.9000-21
+- Use make macros
+- https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
+
 * Tue Jul 21 2020 Arjun Shankar <arjun@redhat.com> - 2.31.9000-20
 - Add glibc-deprecated-selinux-makedb.patch and
   glibc-deprecated-selinux-nscd.patch to work around libselinux API
