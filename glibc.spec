@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -820,6 +820,7 @@ rpm_inherit_flags \
 	"-march=z13" \
 	"-march=z14" \
 	"-march=zEC12" \
+	"-mbranch-protection=standard" \
 	"-mfpmath=sse" \
 	"-msse2" \
 	"-mstackrealign" \
@@ -2019,6 +2020,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 29 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-23
+- Inherit -mbranch-protection=standard from redhat-rpm-config (for aarch64)
+
 * Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org>
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
