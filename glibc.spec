@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31.9000-746-gec2f1fddf2
+%define glibcsrcdir glibc-2.31.9000-759-g7f1a08cff8
 %define glibcversion 2.31.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 23%{?dist}
+Release: 24%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,23 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jul 31 2020 Patsy Griffin <patsy@redhat.com> - 2.31.9000-24
+- Auto-sync with upstream branch master,
+  commit 7f1a08cff82255cd4252a2c75fd65b80a6a170bf.
+- Move NEWS entry for CVE-2020-1751 to the 2.31 section
+- NEWS: Deprecate weak libpthread symbols for single-threaded checks
+- NEWS: Deprecate nss_hesiod
+- nptl: Zero-extend arguments to SETXID syscalls [BZ #26248]
+- Use binutils 2.35 branch in build-many-glibcs.py.
+- aarch64: Use future HWCAP2_MTE in ifunc resolver
+- Update x86-64 libm-test-ulps
+- aarch64: Respect p_flags when protecting code with PROT_BTI
+- Disable warnings due to deprecated libselinux symbols used by nss and nscd
+- Regenerate INSTALL for ARC port updates.
+- Update libc.pot for 2.32 release.
+- powerpc: Fix POWER10 selection
+- powerpc64le: guarantee a .gnu.attributes section [BZ #26220]
+
 * Wed Jul 29 2020 Florian Weimer <fweimer@redhat.com> - 2.31.9000-23
 - Inherit -mbranch-protection=standard from redhat-rpm-config (for aarch64)
 
