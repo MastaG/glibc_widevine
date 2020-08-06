@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.31.9000-759-g7f1a08cff8
-%define glibcversion 2.31.9000
+%define glibcsrcdir glibc-2.32
+%define glibcversion 2.32
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 1%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,21 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Aug 06 2020 Arjun Shankar <arjun@redhat.com> - 2.32-1
+- Auto-sync with upstream branch release/2.32/master,
+  commit 3de512be7ea6053255afed6154db9ee31d4e557a:
+- Prepare for glibc 2.32 release.
+- Regenerate configure scripts.
+- Update NEWS with bugs.
+- Update translations.
+- Don't mix linker error messages into edited scripts
+- benchtests/README update.
+- RISC-V: Update lp64d libm-test-ulps according to HiFive Unleashed
+- aarch64: update NEWS about branch protection
+- Add NEWS entry for CVE-2016-10228 (bug 19519)
+- powerpc: Fix incorrect cache line size load in memset (bug 26332)
+- Update Nios II libm-test-ulps file.
+
 * Fri Jul 31 2020 Patsy Griffin <patsy@redhat.com> - 2.31.9000-24
 - Auto-sync with upstream branch master,
   commit 7f1a08cff82255cd4252a2c75fd65b80a6a170bf.
