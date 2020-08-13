@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.32
-%define glibcversion 2.32
+%define glibcsrcdir glibc-2.32.9000-22-g0be0845b7a
+%define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -2020,6 +2020,33 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Aug 12 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-1
+- Auto-sync with upstream branch master,
+  commit 0be0845b7a674dbfb996f66cd03d675f0f6028dc:
+- S390: Regenerate ULPs.
+- manual: Fix sigdescr_np and sigabbrev_np return type (BZ #26343)
+- math: Update x86_64 ulps
+- math: Regenerate auto-libm-test-out-j0
+- manual: Put the istrerrorname_np and strerrordesc_np return type in braces
+- Linux: Use faccessat2 to implement faccessat (bug 18683)
+- manual: Fix strerrorname_np and strerrordesc_np return type (BZ #26343)
+- math: Fix inaccuracy of j0f for x >= 2^127 when sin(x)+cos(x) is tiny
+- Update syscall lists for Linux 5.8.
+- Use Linux 5.8 in build-many-glibcs.py.
+- htl: Enable tst-cancelx?[45]
+- tst-cancel4: Make blocking on write more portable
+- hurd: Add missing hidden def
+- hurd: Rework sbrk
+- hurd: Implement basic sched_get/setscheduler
+- x86: Rename Intel CPU feature names
+- manual: Fix some @code/@var formatting glitches chapter Date And Time
+- Copy regex_internal.h from Gnulib
+- Copy regex BITSET_WORD_BITS porting from Gnulib
+- Sync regex.h from Gnulib
+- Sync mktime.c from Gnulib
+- Sync intprops.h from Gnulib
+- Open master branch for glibc 2.33 development.
+
 * Thu Aug 06 2020 Arjun Shankar <arjun@redhat.com> - 2.32-1
 - Auto-sync with upstream branch release/2.32/master,
   commit 3de512be7ea6053255afed6154db9ee31d4e557a:
