@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-22-g0be0845b7a
+%define glibcsrcdir glibc-2.32.9000-27-gcb7e7a5ca1
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Aug 17 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-2
+- Auto-sync with upstream branch master,
+  commit cb7e7a5ca1d6d25d59bc038bdc09630e507c41e5.
+- nptl: Handle NULL abstime [BZ #26394]
+- Update build-many-glibcs.py for binutils ia64 obsoletion.
+- Update kernel version to 5.8 in tst-mman-consts.py.
+- y2038: nptl: Convert pthread_{clock|timed}join_np to support 64 bit time
+- aarch64: update ulps.
+
 * Wed Aug 12 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-1
 - Auto-sync with upstream branch master,
   commit 0be0845b7a674dbfb996f66cd03d675f0f6028dc:
