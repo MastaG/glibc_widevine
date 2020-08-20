@@ -1,0 +1,25 @@
+With older systemd-nspawn the faccessat2 syscall was denied but
+instead of returning ENOSYS it returned EPERM. This has since
+been corrected in upstream systemd-nsapwn, but with older builders
+that may have older nspawn the Fedora Rawhide glibc should fall
+back to faccessat when it sees ENOSYS *or* EPERM. This is a
+Fedora Rawhide-only patch that should be removed before the next
+release.
+
+diff --git a/sysdeps/unix/sysv/linux/faccessat.c b/sysdeps/unix/sysv/linux/faccessat.c
+index 56cb6dcc8b4d58d3..5de75032bbc93a2c 100644
+--- a/sysdeps/unix/sysv/linux/faccessat.c
++++ b/sysdeps/unix/sysv/linux/faccessat.c
+@@ -34,7 +34,11 @@ faccessat (int fd, const char *file, int mode, int flag)
+ #if __ASSUME_FACCESSAT2
+   return ret;
+ #else
+-  if (ret == 0 || errno != ENOSYS)
++  /* Fedora-specific workaround:
++     As a workround for a broken systemd-nspawn that returns
++     EPERM when a syscall is not allowed instead of ENOSYS
++     we must check for EPERM here and fall back to faccessat.  */
++  if (ret == 0 || !(errno == ENOSYS || errno == EPERM))
+     return ret;
+ 
+   if (flag & ~(AT_SYMLINK_NOFOLLOW | AT_EACCESS))

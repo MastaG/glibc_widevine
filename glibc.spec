@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -169,6 +169,7 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+Patch32: glibc-rhbz1869030-faccessat2-eperm.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2019,6 +2020,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Aug 20 2020 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-4
+- Support building glibc in a mock chroot using older systemd-nspawn (#1869030).
+
 * Tue Aug 18 2020 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-3
 - Suggest installing minimal localization e.g. C, POSIX, C.UTF-8.
 
