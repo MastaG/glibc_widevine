@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -293,14 +293,13 @@ BuildRequires: libidn2
 # For language packs we have glibc require a virtual dependency
 # "glibc-langpack" wich gives us at least one installed langpack.
 # If no langpack providing 'glibc-langpack' was installed you'd
-# get all of them, and that would make the transition from a
-# system without langpacks smoother (you'd get all the locales
-# installed). You would then trim that list, and the trimmed list
-# is preserved. One problem is you can't have "no" locales installed,
-# in that case we offer a "glibc-minimal-langpack" sub-pakcage for
-# this purpose.
+# get language-neutral support e.g. C, POSIX, and C.UTF-8 locales.
+# In the past we used to install the glibc-all-langpacks by default
+# but we no longer do this to minimize container and VM sizes.
+# Today you must actively use the language packs infrastructure to
+# install language support.
 Requires: glibc-langpack = %{version}-%{release}
-Suggests: glibc-all-langpacks = %{version}-%{release}
+Suggests: glibc-minimal-langpack = %{version}-%{release}
 
 %description
 The glibc package contains standard libraries which are used by
@@ -2020,6 +2019,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Aug 18 2020 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-3
+- Suggest installing minimal localization e.g. C, POSIX, C.UTF-8.
+
 * Mon Aug 17 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-2
 - Auto-sync with upstream branch master,
   commit cb7e7a5ca1d6d25d59bc038bdc09630e507c41e5.
