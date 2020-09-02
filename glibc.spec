@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-27-gcb7e7a5ca1
+%define glibcsrcdir glibc-2.32.9000-79-g86a912c863
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -155,7 +155,6 @@ Patch3: glibc-rh697421.patch
 Patch4: glibc-fedora-linux-tcsetattr.patch
 Patch5: glibc-rh741105.patch
 Patch6: glibc-fedora-localedef.patch
-Patch7: glibc-fedora-nis-rh188246.patch
 Patch8: glibc-fedora-manual-dircategory.patch
 Patch9: glibc-rh827510.patch
 Patch12: glibc-rh819430.patch
@@ -2020,6 +2019,62 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Sep 02 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-5
+- Auto-sync with upstream branch master,
+  commit 86a912c8634f581ea42ec6973553dde7f058cfbf.
+- Update i686 ulps.
+- Use LFS readdir in generic POSIX getcwd [BZ# 22899]
+- linux: Remove __ASSUME_ATFCTS
+- Sync getcwd with gnulib
+- x86-64: Fix FMA4 detection in ifunc [BZ #26534]
+- y2038: nptl: Convert pthread_cond_{clock|timed}wait to support 64 bit time
+- malloc: Fix mallinfo deprecation declaration
+- x32: Add <fixup-asm-unistd.h> and regenerate arch-syscall.h
+- Add mallinfo2 function that support sizes >= 4GB.
+- Remove obsolete default/nss code
+- AArch64: Improve backwards memmove performance
+- Add RISC-V 32-bit target to build-many-glibcs.py
+- Documentation for the RISC-V 32-bit port
+- RISC-V: Build infrastructure for 32-bit port
+- RISC-V: Add rv32 path to RTLDLIST in ldd
+- riscv32: Specify the arch_minimum_kernel as 5.4
+- RISC-V: Fix llrint and llround missing exceptions on RV32
+- RISC-V: Add the RV32 libm-test-ulps
+- RISC-V: Add 32-bit ABI lists
+- RISC-V: Add hard float support for 32-bit CPUs
+- RISC-V: Support the 32-bit ABI implementation
+- RISC-V: Add arch-syscall.h for RV32
+- RISC-V: Add path of library directories for the 32-bit
+- RISC-V: Support dynamic loader for the 32-bit
+- RISC-V: Add support for 32-bit vDSO calls
+- RISC-V: Use 64-bit-time syscall numbers with the 32-bit port
+- RISC-V: Cleanup some of the sysdep.h code
+- RISC-V: Use 64-bit time_t and off_t for RV32 and RV64
+- io/lockf: Include bits/types.h before __OFF_T_MATCHES_OFF64_T check
+- elf/tst-libc_dlvsym: Add a TEST_COMPAT around some symbol tests
+- hurd: define BSD 4.3 ioctls only under __USE_MISC
+- string: test strncasecmp and strncpy near page boundaries
+- linux: Simplify utimensat
+- linux: Simplify timerfd_settime
+- linux: Simplify timer_gettime
+- linux: Simplify sched_rr_get_interval
+- linux: Simplify ppoll
+- linux: Simplify mq_timedsend
+- linux: Simplify mq_timedreceive
+- linux: Simplify clock_settime
+- linux: Simplify clock_nanosleep
+- linux: Simplify clock_gettime
+- linux: Simplify clock_adjtime
+- linux: Add helper function to optimize 64-bit time_t fallback support
+- S390: Sync HWCAP names with kernel by adding aliases [BZ #25971]
+- [vcstocl] Import ProjectQuirks from its own file
+- build-many-glibcs.py: Add a s390x -O3 glibc variant.
+- Fix namespace violation in stdio.h and sys/stat.h if build with optimization. [BZ #26376]
+- Add C2x BOOL_MAX and BOOL_WIDTH to limits.h.
+- Use MPC 1.2.0 in build-many-glibcs.py.
+- Add new STATX_* constants from Linux 5.8 to bits/statx-generic.h.
+- Correct locking and cancellation cleanup in syslog functions (bug 26100)
+
 * Thu Aug 20 2020 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-4
 - Support building glibc in a mock chroot using older systemd-nspawn (#1869030).
 
