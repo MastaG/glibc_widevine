@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-79-g86a912c863
+%define glibcsrcdir glibc-2.32.9000-84-ge74b61c09a
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2019,6 +2019,15 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Sep 08 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-6
+- Auto-sync with upstream branch master,
+  commit e74b61c09a2a2ab52153e731225ccba5078659b1.
+- Disable -Wstringop-overread for some string tests
+- string: Fix GCC 11 `-Werror=stringop-overread' error
+- C11 threads: Fix inaccuracies in testsuite
+- elf.h: Add aarch64 bti/pac dynamic tag constants
+- x86: Set CPU usable feature bits conservatively [BZ #26552]
+
 * Wed Sep 02 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-5
 - Auto-sync with upstream branch master,
   commit 86a912c8634f581ea42ec6973553dde7f058cfbf.
