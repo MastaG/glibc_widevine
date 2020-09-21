@@ -9,11 +9,12 @@ file. This is the wrong fix for this problem and should be dropped.
 The correct solution is to mark debuginfo files as new types of
 ELF files.
 
+
 diff --git a/elf/dl-load.c b/elf/dl-load.c
-index 24e2819345995bd9..007121144e71d9cf 100644
+index 646c5dca40efcc9b..1f44ea3744f139f3 100644
 --- a/elf/dl-load.c
 +++ b/elf/dl-load.c
-@@ -880,6 +880,18 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
+@@ -952,6 +952,18 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
       in this information for the executable in case of an explicit
       loader invocation.  */
    struct r_file_id id;
@@ -32,7 +33,7 @@ index 24e2819345995bd9..007121144e71d9cf 100644
    if (mode & __RTLD_OPENEXEC)
      {
        assert (nsid == LM_ID_BASE);
-@@ -887,16 +899,6 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
+@@ -959,16 +971,6 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
      }
    else
      {
@@ -49,7 +50,7 @@ index 24e2819345995bd9..007121144e71d9cf 100644
        /* Look again to see if the real name matched another already loaded.  */
        for (l = GL(dl_ns)[nsid]._ns_loaded; l != NULL; l = l->l_next)
  	if (!l->l_removed && _dl_file_id_match_p (&l->l_file_id, &id))
-@@ -1074,6 +1076,16 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
+@@ -1147,6 +1149,16 @@ _dl_map_object_from_fd (const char *name, const char *origname, int fd,
  		= N_("ELF load command address/offset not properly aligned");
  	      goto call_lose;
  	    }
@@ -67,7 +68,7 @@ index 24e2819345995bd9..007121144e71d9cf 100644
  	  struct loadcmd *c = &loadcmds[nloadcmds++];
  	  c->mapstart = ALIGN_DOWN (ph->p_vaddr, GLRO(dl_pagesize));
 diff --git a/sysdeps/generic/dl-fileid.h b/sysdeps/generic/dl-fileid.h
-index 6310d46c2a6efc60..209580b6c0b8524b 100644
+index 459328d28c62c8e1..5070580b1b0cc629 100644
 --- a/sysdeps/generic/dl-fileid.h
 +++ b/sysdeps/generic/dl-fileid.h
 @@ -29,7 +29,8 @@ struct r_file_id
@@ -81,7 +82,7 @@ index 6310d46c2a6efc60..209580b6c0b8524b 100644
    return true;
  }
 diff --git a/sysdeps/posix/dl-fileid.h b/sysdeps/posix/dl-fileid.h
-index ae88a350788a5999..baa17b90a292a4d9 100644
+index b3c8166701650b8b..cd862f511e6e3e94 100644
 --- a/sysdeps/posix/dl-fileid.h
 +++ b/sysdeps/posix/dl-fileid.h
 @@ -27,18 +27,16 @@ struct r_file_id
@@ -97,8 +98,8 @@ index ae88a350788a5999..baa17b90a292a4d9 100644
  {
 -  struct stat64 st;
 -
--  if (__glibc_unlikely (__fxstat64 (_STAT_VER, fd, &st) < 0))
-+  if (__glibc_unlikely (__fxstat64 (_STAT_VER, fd, st) < 0))
+-  if (__glibc_unlikely (__fstat64 (fd, &st) < 0))
++  if (__glibc_unlikely (__fstat64 (fd, st) < 0))
      return false;
  
 -  id->dev = st.st_dev;

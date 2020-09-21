@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-84-ge74b61c09a
+%define glibcsrcdir glibc-2.32.9000-117-gcdf645427d
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -169,6 +169,7 @@ Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
 Patch32: glibc-rhbz1869030-faccessat2-eperm.patch
+Patch33: glibc-fix-float128-benchtests.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2019,6 +2020,46 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Sep 21 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-7
+- Adjust glibc-rh741105.patch.
+- Add glibc-fix-float128-benchtests.patch to allow building on armv7hl.
+- Auto-sync with upstream branch master,
+  commit cdf645427d176197b82f44308a5e131d69fb53ad:
+- Update mallinfo2 ABI, and test
+- Allow memset local PLT reference for RISC-V.
+- powerpc: fix ifunc implementation list for POWER9 strlen and stpcpy
+- nscd: bump GC cycle during cache pruning (bug 26130)
+- x86: Use HAS_CPU_FEATURE with IBT and SHSTK [BZ #26625]
+- <sys/platform/x86.h>: Add Intel Key Locker support
+- Fix handling of collating symbols in fnmatch (bug 26620)
+- pselect.c: Pass a pointer to SYSCALL_CANCEL [BZ #26606]
+- y2038: nptl: Convert sem_{clock|timed}wait to support 64 bit time
+- hurd: Add __x86_get_cpu_features to ld.abilist
+- x86: Install <sys/platform/x86.h> [BZ #26124]
+- linux: Add time64 pselect support
+- linux: Add time64 semtimedop support
+- linux: Add ppoll time64 optimization
+- linux: Simplify clock_getres
+- Update sparc libm-test-ulps
+- Remove internal usage of extensible stat functions
+- Linux: Consolidate xmknod
+- linux: Consolidate fxstatat{64}
+- linux: Consolidate fxstat{64}
+- linux: Consolidate lxstat{64}
+- linux: Consolidate xstat{64}
+- linux: Define STAT64_IS_KERNEL_STAT64
+- linux: Always define STAT_IS_KERNEL_STAT
+- Update powerpc libm-test-ulps
+- benchtests: Add "workload" traces for sinf128
+- benchtests: Add "workload" traces for sinf
+- benchtests: Add "workload" traces for sin
+- benchtests: Add "workload" traces for powf128
+- benchtests: Add "workload" traces for pow
+- benchtests: Add "workload" traces for expf128
+- benchtests: Add "workload" traces for exp
+- nptl: futex: Provide correct indentation for part of
+  __futex_abstimed_wait_cancelable64
+
 * Tue Sep 08 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-6
 - Auto-sync with upstream branch master,
   commit e74b61c09a2a2ab52153e731225ccba5078659b1.

@@ -1,0 +1,70 @@
+commit 7b7338cd82c8d39993644768752cc656f65adc20
+Author: Arjun Shankar <arjun@redhat.com>
+Date:   Sat Sep 19 00:42:26 2020 +0200
+
+    benchtests: Run _Float128 tests only on architectures that support it
+    
+    __float128 is a non-standard name and is not available on some architectures
+    (like aarch64 or s390x) even though they may support the standard _Float128
+    type.  Other architectures (like armv7) don't support quad-precision
+    floating-point operations at all.
+    
+    This commit replaces benchtests references to __float128 with _Float128 and
+    runs the corresponding tests only on architectures that support it.
+
+diff --git a/benchtests/Makefile b/benchtests/Makefile
+index 3095076055f3c47e..922e2a94b13c4b3c 100644
+--- a/benchtests/Makefile
++++ b/benchtests/Makefile
+@@ -25,7 +25,11 @@ bench-math := acos acosh asin asinh atan atanh cos cosh exp exp2 log log2 \
+ 	      modf pow rint sin sincos sinh sqrt tan tanh fmin fmax fminf \
+ 	      fmaxf powf trunc truncf roundeven roundevenf expf exp2f logf \
+ 	      log2f sincosf sinf cosf isnan isinf isfinite hypot logb logbf \
+-	      exp10f expf128 powf128 sinf128
++	      exp10f
++
++ifneq (,$(filter yes,$(float128-fcts) $(float128-alias-fcts)))
++bench-math += expf128 powf128 sinf128
++endif
+ 
+ bench-pthread := pthread_once thread_create
+ 
+diff --git a/benchtests/expf128-inputs b/benchtests/expf128-inputs
+index 5b36f8672a0049f9..5dc0f4e49ba7db48 100644
+--- a/benchtests/expf128-inputs
++++ b/benchtests/expf128-inputs
+@@ -1,6 +1,6 @@
+ ## includes: math.h
+-## args: __float128
+-## ret: __float128
++## args: _Float128
++## ret: _Float128
+ # Random inputs in [-10,10]
+ ## name: workload-random.wrf
+ 0x4.e6f9d6da10d9a422942a89cdfa1p+0L
+diff --git a/benchtests/powf128-inputs b/benchtests/powf128-inputs
+index 7cbabafff6e058c4..6826266ad58c2196 100644
+--- a/benchtests/powf128-inputs
++++ b/benchtests/powf128-inputs
+@@ -1,6 +1,6 @@
+ ## includes: math.h
+-## args: __float128:__float128
+-## ret: __float128
++## args: _Float128:_Float128
++## ret: _Float128
+ # Random inputs in [-10,10] such that x and y are not both negative
+ ## name: workload-random.wrf
+ 0x8.130b31ed5288656428a29cead83p+0L, -0x6.e7ead09b7877a118813b50cfb3c8p+0L
+diff --git a/benchtests/sinf128-inputs b/benchtests/sinf128-inputs
+index 9aaf3124131a0439..01b75336800c1e24 100644
+--- a/benchtests/sinf128-inputs
++++ b/benchtests/sinf128-inputs
+@@ -1,6 +1,6 @@
+ ## includes: math.h
+-## args: __float128
+-## ret: __float128
++## args: _Float128
++## ret: _Float128
+ # Random inputs in [-10,10]
+ ## name: workload-random.wrf
+ 0x4.e6f9d6da10d9a422942a89cdfa1p+0
