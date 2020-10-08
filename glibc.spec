@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-117-gcdf645427d
+%define glibcsrcdir glibc-2.32.9000-165-g72d36ffd7d
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -169,7 +169,6 @@ Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
 Patch32: glibc-rhbz1869030-faccessat2-eperm.patch
-Patch33: glibc-fix-float128-benchtests.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2020,6 +2019,60 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Oct 08 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-8
+- Drop glibc-fix-float128-benchtests.patch; applied upstream.
+- Auto-sync with upstream branch master,
+  commit 72d36ffd7db55ae599f4c77feb0eae25a0f3714e:
+- elf: Implement __rtld_malloc_is_complete
+- __vfscanf_internal: fix aliasing violation (bug 26690)
+- Revert "Fix missing redirects in testsuite targets"
+- nptl: Add missing cancellation flags on futex_internal and pselect32
+- elf: Implement _dl_write
+- elf: Do not search HWCAP subdirectories in statically linked binaries
+- Linux: Require properly configured /dev/pts for PTYs
+- Linux: unlockpt needs to fail with EINVAL, not ENOTTY (bug 26053)
+- login/tst-grantpt: Convert to support framework, more error checking
+- posix: Fix -Warray-bounds instances building timer_create [BZ #26687]
+- Replace Minumum/minumum with Minimum/minimum
+- Optimize scripts/merge-test-results.sh
+- Fix GCC 11 -Warray-parameter warning for __sigsetjmp (bug 26647)
+- manual: Fix typo
+- y2038: nptl: Convert pthread_rwlock_{clock|timed}{rd|wr}lock to support 64
+  bit time
+- Y2038: nptl: Provide futex_abstimed_wait64 supporting 64 bit time
+- sysvipc: Return EINVAL for invalid msgctl commands
+- sysvipc: Fix IPC_INFO and MSG_INFO handling [BZ #26639]
+- sysvipc: Return EINVAL for invalid semctl commands
+- sysvipc: Fix SEM_STAT_ANY kernel argument pass [BZ #26637]
+- aarch64: enforce >=64K guard size [BZ #26691]
+- sysvipc: Fix semtimedop for Linux < 5.1 for 64-bit ABI
+- nptl: futex: Move __NR_futex_time64 alias to beginning of futex-internal.h
+- nptl: Provide proper spelling for 32 bit version of futex_abstimed_wait
+- string: Fix strerrorname_np return value [BZ #26555]
+- Set tunable value as well as min/max values
+- ld.so: add an --argv0 option [BZ #16124]
+- Reversing calculation of __x86_shared_non_temporal_threshold
+- linux: Add time64 recvmmsg support
+- linux: Add time64 support for nanosleep
+- linux: Consolidate utimes
+- linux: Use 64-bit time_t syscall on clock_getcputclockid
+- linux: Add time64 sigtimedwait support
+- linux: Add time64 select support
+- nptl: Fix __futex_abstimed_wait_cancellable32
+- sysvipc: Fix semtimeop for !__ASSUME_DIRECT_SYSVIPC_SYSCALLS
+- hurd: add ST_RELATIME
+- intl: Handle translation output codesets with suffixes [BZ #26383]
+- bench-strcmp.c: Add workloads on page boundary
+- bench-strncmp.c: Add workloads on page boundary
+- strcmp: Add a testcase for page boundary
+- strncmp: Add a testcase for page boundary [BZ #25933]
+- Set locale related environment variables in debugglibc.sh
+- benchtests: Run _Float128 tests only on architectures that support it
+- powerpc: Protect dl_powerpc_cpu_features on INIT_ARCH() [BZ #26615]
+- x86: Harden printf against non-normal long double values (bug 26649)
+- x86: Use one ldbl2mpn.c file for both i386 and x86_64
+- Define __THROW to noexcept for C++11 and later
+
 * Mon Sep 21 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-7
 - Adjust glibc-rh741105.patch.
 - Add glibc-fix-float128-benchtests.patch to allow building on armv7hl.
