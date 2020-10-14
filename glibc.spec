@@ -27,8 +27,12 @@
 %bcond_without benchtests
 # Default: Not bootstrapping.
 %bcond_with bootstrap
-# Default: Enable using -Werror
+# Default: Enable using -Werror (except for ELN).
+%if 0%{?rhel} > 0
+%bcond_with werror
+%else
 %bcond_without werror
+%endif
 # Default: Always build documentation.
 %bcond_without docs
 
@@ -96,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2253,6 +2257,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Oct 14 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-10
+- Disable -Werror on ELN (#1888246)
+
 * Wed Oct 14 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-9
 - Make glibc.spec self-contained (#1887097)
 
