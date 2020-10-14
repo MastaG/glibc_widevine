@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -130,20 +130,9 @@ Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.xz
 Source1: nscd.conf
 Source2: bench.mk
 Source3: glibc-bench-compare
-# A copy of localedata/SUPPORTED in the Source0 tarball.  The
-# SUPPORTED file is used below to generate the list of locale
-# packages, using a Lua snippet.
-# When the upstream SUPPORTED is out of sync with our copy, the
-# prep phase will fail and you will need to update the local
-# copy.
-Source11: SUPPORTED
+Source11: parse-SUPPORTED.py
 # Include in the source RPM for reference.
 Source12: ChangeLog.old
-# Provide ISO language code to name translation using Python's
-# langtable. The langtable data is maintained by the Fedora
-# i18n team and is a harmonization of CLDR and glibc lang_name
-# data in a more accessible API (also used by Anaconda).
-Source13: convnames.py
 
 ##############################################################################
 # Patches:
@@ -238,7 +227,6 @@ BuildRequires: systemd
 # distributions, python3 does not actually install /usr/bin/python3,
 # so we also depend on python3-devel.
 BuildRequires: python3 python3-devel
-BuildRequires: python3dist(langtable)
 
 # This GCC version is needed for -fstack-clash-protection support.
 BuildRequires: gcc >= 7.2.1-6
@@ -432,84 +420,331 @@ If you are building custom locales you will most likely use
 these sources as the basis for your new locale.
 
 %{lua:
--- Array of languages (ISO-639 codes).
-local languages = {}
--- Dictionary from language codes (as in the languages array) to arrays
--- of regions.
-local supplements = {}
-do
-   -- Parse the SUPPORTED file.  Eliminate duplicates.
-   local lang_region_seen = {}
-   for line in io.lines(rpm.expand("%{SOURCE11}")) do
-      -- Match lines which contain a language (eo) or language/region
-      -- (en_US) strings.
-      local lang_region = string.match(line, "^([a-z][^/@.]+)")
-      if lang_region ~= nil then
-	 if lang_region_seen[lang_region] == nil then
-	    lang_region_seen[lang_region] = true
+-- To make lua-mode happy: '
 
-	    -- Split language/region pair.
-	    local lang, region = string.match(lang_region, "^(.+)_(.+)")
-	    if lang == nil then
-	       -- Region is missing, use only the language.
-	       lang = lang_region
-	    end
-	    local suppl = supplements[lang]
-	    if suppl == nil then
-	       suppl = {}
-	       supplements[lang] = suppl
-	       -- New language not seen before.
-	       languages[#languages + 1] = lang
-	    end
-	    if region ~= nil then
-	       -- New region because of the check against
-	       -- lang_region_seen above.
-	       suppl[#suppl + 1] = region
-	    end
+-- List of supported locales.  This is used to generate the langpack
+-- subpackages below.  This table needs adjustments if the set of
+-- glibc locales changes.  "code" is the glibc code for the language
+-- (before the "_".  "name" is the English translation of the language
+-- name (for use in subpackage descriptions).  "regions" is a table of
+-- variant specifiers (after the "_", excluding "@" and "."
+-- variants/charset specifiers).  The table must be sorted by the code
+-- field, and the regions table must be sorted as well.
+--
+-- English translations of language names can be obtained using (for
+-- the "aa" language in this example):
+--
+-- python3 -c 'import langtable; print(langtable.language_name("aa", languageIdQuery="en"))'
+
+local locales =  {
+  { code="aa", name="Afar", regions={ "DJ", "ER", "ET" } },
+  { code="af", name="Afrikaans", regions={ "ZA" } },
+  { code="agr", name="Aguaruna", regions={ "PE" } },
+  { code="ak", name="Akan", regions={ "GH" } },
+  { code="am", name="Amharic", regions={ "ET" } },
+  { code="an", name="Aragonese", regions={ "ES" } },
+  { code="anp", name="Angika", regions={ "IN" } },
+  {
+    code="ar",
+    name="Arabic",
+    regions={
+      "AE",
+      "BH",
+      "DZ",
+      "EG",
+      "IN",
+      "IQ",
+      "JO",
+      "KW",
+      "LB",
+      "LY",
+      "MA",
+      "OM",
+      "QA",
+      "SA",
+      "SD",
+      "SS",
+      "SY",
+      "TN",
+      "YE" 
+    } 
+  },
+  { code="as", name="Assamese", regions={ "IN" } },
+  { code="ast", name="Asturian", regions={ "ES" } },
+  { code="ayc", name="Southern Aymara", regions={ "PE" } },
+  { code="az", name="Azerbaijani", regions={ "AZ", "IR" } },
+  { code="be", name="Belarusian", regions={ "BY" } },
+  { code="bem", name="Bemba", regions={ "ZM" } },
+  { code="ber", name="Berber", regions={ "DZ", "MA" } },
+  { code="bg", name="Bulgarian", regions={ "BG" } },
+  { code="bhb", name="Bhili", regions={ "IN" } },
+  { code="bho", name="Bhojpuri", regions={ "IN", "NP" } },
+  { code="bi", name="Bislama", regions={ "VU" } },
+  { code="bn", name="Bangla", regions={ "BD", "IN" } },
+  { code="bo", name="Tibetan", regions={ "CN", "IN" } },
+  { code="br", name="Breton", regions={ "FR" } },
+  { code="brx", name="Bodo", regions={ "IN" } },
+  { code="bs", name="Bosnian", regions={ "BA" } },
+  { code="byn", name="Blin", regions={ "ER" } },
+  { code="ca", name="Catalan", regions={ "AD", "ES", "FR", "IT" } },
+  { code="ce", name="Chechen", regions={ "RU" } },
+  { code="chr", name="Cherokee", regions={ "US" } },
+  { code="ckb", name="Central Kurdish", regions={ "IQ" } },
+  { code="cmn", name="Mandarin Chinese", regions={ "TW" } },
+  { code="crh", name="Crimean Turkish", regions={ "UA" } },
+  { code="cs", name="Czech", regions={ "CZ" } },
+  { code="csb", name="Kashubian", regions={ "PL" } },
+  { code="cv", name="Chuvash", regions={ "RU" } },
+  { code="cy", name="Welsh", regions={ "GB" } },
+  { code="da", name="Danish", regions={ "DK" } },
+  {
+    code="de",
+    name="German",
+    regions={ "AT", "BE", "CH", "DE", "IT", "LI", "LU" } 
+  },
+  { code="doi", name="Dogri", regions={ "IN" } },
+  { code="dsb", name="Lower Sorbian", regions={ "DE" } },
+  { code="dv", name="Divehi", regions={ "MV" } },
+  { code="dz", name="Dzongkha", regions={ "BT" } },
+  { code="el", name="Greek", regions={ "CY", "GR" } },
+  {
+    code="en",
+    name="English",
+    regions={
+      "AG",
+      "AU",
+      "BW",
+      "CA",
+      "DK",
+      "GB",
+      "HK",
+      "IE",
+      "IL",
+      "IN",
+      "NG",
+      "NZ",
+      "PH",
+      "SC",
+      "SG",
+      "US",
+      "ZA",
+      "ZM",
+      "ZW" 
+    } 
+  },
+  { code="eo", name="Esperanto", regions={} },
+  {
+    code="es",
+    name="Spanish",
+    regions={
+      "AR",
+      "BO",
+      "CL",
+      "CO",
+      "CR",
+      "CU",
+      "DO",
+      "EC",
+      "ES",
+      "GT",
+      "HN",
+      "MX",
+      "NI",
+      "PA",
+      "PE",
+      "PR",
+      "PY",
+      "SV",
+      "US",
+      "UY",
+      "VE" 
+    } 
+  },
+  { code="et", name="Estonian", regions={ "EE" } },
+  { code="eu", name="Basque", regions={ "ES" } },
+  { code="fa", name="Persian", regions={ "IR" } },
+  { code="ff", name="Fulah", regions={ "SN" } },
+  { code="fi", name="Finnish", regions={ "FI" } },
+  { code="fil", name="Filipino", regions={ "PH" } },
+  { code="fo", name="Faroese", regions={ "FO" } },
+  { code="fr", name="French", regions={ "BE", "CA", "CH", "FR", "LU" } },
+  { code="fur", name="Friulian", regions={ "IT" } },
+  { code="fy", name="Western Frisian", regions={ "DE", "NL" } },
+  { code="ga", name="Irish", regions={ "IE" } },
+  { code="gd", name="Scottish Gaelic", regions={ "GB" } },
+  { code="gez", name="Geez", regions={ "ER", "ET" } },
+  { code="gl", name="Galician", regions={ "ES" } },
+  { code="gu", name="Gujarati", regions={ "IN" } },
+  { code="gv", name="Manx", regions={ "GB" } },
+  { code="ha", name="Hausa", regions={ "NG" } },
+  { code="hak", name="Hakka Chinese", regions={ "TW" } },
+  { code="he", name="Hebrew", regions={ "IL" } },
+  { code="hi", name="Hindi", regions={ "IN" } },
+  { code="hif", name="Fiji Hindi", regions={ "FJ" } },
+  { code="hne", name="Chhattisgarhi", regions={ "IN" } },
+  { code="hr", name="Croatian", regions={ "HR" } },
+  { code="hsb", name="Upper Sorbian", regions={ "DE" } },
+  { code="ht", name="Haitian Creole", regions={ "HT" } },
+  { code="hu", name="Hungarian", regions={ "HU" } },
+  { code="hy", name="Armenian", regions={ "AM" } },
+  { code="ia", name="Interlingua", regions={ "FR" } },
+  { code="id", name="Indonesian", regions={ "ID" } },
+  { code="ig", name="Igbo", regions={ "NG" } },
+  { code="ik", name="Inupiaq", regions={ "CA" } },
+  { code="is", name="Icelandic", regions={ "IS" } },
+  { code="it", name="Italian", regions={ "CH", "IT" } },
+  { code="iu", name="Inuktitut", regions={ "CA" } },
+  { code="ja", name="Japanese", regions={ "JP" } },
+  { code="ka", name="Georgian", regions={ "GE" } },
+  { code="kab", name="Kabyle", regions={ "DZ" } },
+  { code="kk", name="Kazakh", regions={ "KZ" } },
+  { code="kl", name="Kalaallisut", regions={ "GL" } },
+  { code="km", name="Khmer", regions={ "KH" } },
+  { code="kn", name="Kannada", regions={ "IN" } },
+  { code="ko", name="Korean", regions={ "KR" } },
+  { code="kok", name="Konkani", regions={ "IN" } },
+  { code="ks", name="Kashmiri", regions={ "IN" } },
+  { code="ku", name="Kurdish", regions={ "TR" } },
+  { code="kw", name="Cornish", regions={ "GB" } },
+  { code="ky", name="Kyrgyz", regions={ "KG" } },
+  { code="lb", name="Luxembourgish", regions={ "LU" } },
+  { code="lg", name="Ganda", regions={ "UG" } },
+  { code="li", name="Limburgish", regions={ "BE", "NL" } },
+  { code="lij", name="Ligurian", regions={ "IT" } },
+  { code="ln", name="Lingala", regions={ "CD" } },
+  { code="lo", name="Lao", regions={ "LA" } },
+  { code="lt", name="Lithuanian", regions={ "LT" } },
+  { code="lv", name="Latvian", regions={ "LV" } },
+  { code="lzh", name="Literary Chinese", regions={ "TW" } },
+  { code="mag", name="Magahi", regions={ "IN" } },
+  { code="mai", name="Maithili", regions={ "IN", "NP" } },
+  { code="mfe", name="Morisyen", regions={ "MU" } },
+  { code="mg", name="Malagasy", regions={ "MG" } },
+  { code="mhr", name="Meadow Mari", regions={ "RU" } },
+  { code="mi", name="Maori", regions={ "NZ" } },
+  { code="miq", name="Miskito", regions={ "NI" } },
+  { code="mjw", name="Karbi", regions={ "IN" } },
+  { code="mk", name="Macedonian", regions={ "MK" } },
+  { code="ml", name="Malayalam", regions={ "IN" } },
+  { code="mn", name="Mongolian", regions={ "MN" } },
+  { code="mni", name="Manipuri", regions={ "IN" } },
+  { code="mnw", name="Mon", regions={ "MM" } },
+  { code="mr", name="Marathi", regions={ "IN" } },
+  { code="ms", name="Malay", regions={ "MY" } },
+  { code="mt", name="Maltese", regions={ "MT" } },
+  { code="my", name="Burmese", regions={ "MM" } },
+  { code="nan", name="Min Nan Chinese", regions={ "TW" } },
+  { code="nb", name="Norwegian Bokmål", regions={ "NO" } },
+  { code="nds", name="Low German", regions={ "DE", "NL" } },
+  { code="ne", name="Nepali", regions={ "NP" } },
+  { code="nhn", name="Tlaxcala-Puebla Nahuatl", regions={ "MX" } },
+  { code="niu", name="Niuean", regions={ "NU", "NZ" } },
+  { code="nl", name="Dutch", regions={ "AW", "BE", "NL" } },
+  { code="nn", name="Norwegian Nynorsk", regions={ "NO" } },
+  { code="nr", name="South Ndebele", regions={ "ZA" } },
+  { code="nso", name="Northern Sotho", regions={ "ZA" } },
+  { code="oc", name="Occitan", regions={ "FR" } },
+  { code="om", name="Oromo", regions={ "ET", "KE" } },
+  { code="or", name="Odia", regions={ "IN" } },
+  { code="os", name="Ossetic", regions={ "RU" } },
+  { code="pa", name="Punjabi", regions={ "IN", "PK" } },
+  { code="pap", name="Papiamento", regions={ "AW", "CW" } },
+  { code="pl", name="Polish", regions={ "PL" } },
+  { code="ps", name="Pashto", regions={ "AF" } },
+  { code="pt", name="Portuguese", regions={ "BR", "PT" } },
+  { code="quz", name="Cusco Quechua", regions={ "PE" } },
+  { code="raj", name="Rajasthani", regions={ "IN" } },
+  { code="ro", name="Romanian", regions={ "RO" } },
+  { code="ru", name="Russian", regions={ "RU", "UA" } },
+  { code="rw", name="Kinyarwanda", regions={ "RW" } },
+  { code="sa", name="Sanskrit", regions={ "IN" } },
+  { code="sah", name="Sakha", regions={ "RU" } },
+  { code="sat", name="Santali", regions={ "IN" } },
+  { code="sc", name="Sardinian", regions={ "IT" } },
+  { code="sd", name="Sindhi", regions={ "IN" } },
+  { code="se", name="Northern Sami", regions={ "NO" } },
+  { code="sgs", name="Samogitian", regions={ "LT" } },
+  { code="shn", name="Shan", regions={ "MM" } },
+  { code="shs", name="Shuswap", regions={ "CA" } },
+  { code="si", name="Sinhala", regions={ "LK" } },
+  { code="sid", name="Sidamo", regions={ "ET" } },
+  { code="sk", name="Slovak", regions={ "SK" } },
+  { code="sl", name="Slovenian", regions={ "SI" } },
+  { code="sm", name="Samoan", regions={ "WS" } },
+  { code="so", name="Somali", regions={ "DJ", "ET", "KE", "SO" } },
+  { code="sq", name="Albanian", regions={ "AL", "MK" } },
+  { code="sr", name="Serbian", regions={ "ME", "RS" } },
+  { code="ss", name="Swati", regions={ "ZA" } },
+  { code="st", name="Southern Sotho", regions={ "ZA" } },
+  { code="sv", name="Swedish", regions={ "FI", "SE" } },
+  { code="sw", name="Swahili", regions={ "KE", "TZ" } },
+  { code="szl", name="Silesian", regions={ "PL" } },
+  { code="ta", name="Tamil", regions={ "IN", "LK" } },
+  { code="tcy", name="Tulu", regions={ "IN" } },
+  { code="te", name="Telugu", regions={ "IN" } },
+  { code="tg", name="Tajik", regions={ "TJ" } },
+  { code="th", name="Thai", regions={ "TH" } },
+  { code="the", name="Chitwania Tharu", regions={ "NP" } },
+  { code="ti", name="Tigrinya", regions={ "ER", "ET" } },
+  { code="tig", name="Tigre", regions={ "ER" } },
+  { code="tk", name="Turkmen", regions={ "TM" } },
+  { code="tl", name="Tagalog", regions={ "PH" } },
+  { code="tn", name="Tswana", regions={ "ZA" } },
+  { code="to", name="Tongan", regions={ "TO" } },
+  { code="tpi", name="Tok Pisin", regions={ "PG" } },
+  { code="tr", name="Turkish", regions={ "CY", "TR" } },
+  { code="ts", name="Tsonga", regions={ "ZA" } },
+  { code="tt", name="Tatar", regions={ "RU" } },
+  { code="ug", name="Uyghur", regions={ "CN" } },
+  { code="uk", name="Ukrainian", regions={ "UA" } },
+  { code="unm", name="Unami language", regions={ "US" } },
+  { code="ur", name="Urdu", regions={ "IN", "PK" } },
+  { code="uz", name="Uzbek", regions={ "UZ" } },
+  { code="ve", name="Venda", regions={ "ZA" } },
+  { code="vi", name="Vietnamese", regions={ "VN" } },
+  { code="wa", name="Walloon", regions={ "BE" } },
+  { code="wae", name="Walser", regions={ "CH" } },
+  { code="wal", name="Wolaytta", regions={ "ET" } },
+  { code="wo", name="Wolof", regions={ "SN" } },
+  { code="xh", name="Xhosa", regions={ "ZA" } },
+  { code="yi", name="Yiddish", regions={ "US" } },
+  { code="yo", name="Yoruba", regions={ "NG" } },
+  { code="yue", name="Cantonese", regions={ "HK" } },
+  { code="yuw", name="Yau", regions={ "PG" } },
+  { code="zh", name="Mandarin Chinese", regions={ "CN", "HK", "SG", "TW" } },
+  { code="zu", name="Zulu", regions={ "ZA" } } 
+}
+
+-- Prints a list of LANGUAGE "_" REGION pairs.  The output is expected
+-- to be identical to parse-SUPPORTED.py.  Called from the %%prep section.
+function print_locale_pairs()
+   for i = 1, #locales do
+      local locale = locales[i]
+      if #locale.regions == 0 then
+	 print(locale.code .. "\n")
+      else
+	 for j = 1, #locale.regions do
+	    print(locale.code .. "_" .. locale.regions[j] .. "\n")
 	 end
       end
    end
-   -- Sort for determinism.
-   table.sort(languages)
-   for _, supples in pairs(supplements) do
-      table.sort(supplements)
-   end
 end
 
--- Compute the language names
-local langnames = {}
-local python3 = io.open('/usr/bin/python3', 'r')
-if python3 then
-   python3:close()
-   local args = table.concat(languages, ' ')
-   local file = io.popen(rpm.expand("%{SOURCE13}") .. ' ' .. args)
-   while true do
-       line = file:read()
-       if line == nil then break end
-       langnames[#langnames + 1] = line
-   end
-   file:close()
-else
-   for i = 1, #languages do
-      langnames[#langnames + 1] = languages[i]
-   end
-end
-
--- Compute the Supplements: list for a language, based on the regions.
-local function compute_supplements(lang)
+local function compute_supplements(locale)
+   local lang = locale.code
+   local regions = locale.regions
    result = "langpacks-core-" .. lang
-   regions = supplements[lang]
-   if regions ~= nil then
-      for i = 1, #regions do
-	 result = result .. " or langpacks-core-" .. lang .. "_" .. regions[i]
-      end
+   for i = 1, #regions do
+      result = result .. " or langpacks-core-" .. lang .. "_" .. regions[i]
    end
    return result
 end
 
 -- Emit the definition of a language pack package.
-local function lang_package(lang, langname)
-   local suppl = compute_supplements(lang)
+local function lang_package(locale)
+   local lang = locale.code
+   local langname = locale.name
+   local suppl = compute_supplements(locale)
    print(rpm.expand([[
 
 %package langpack-]]..lang..[[
@@ -528,8 +763,8 @@ to support the ]]..langname..[[ language in your applications.
 ]]))
 end
 
-for i = 1, #languages do
-   lang_package(languages[i], langnames[i])
+for i = 1, #locales do
+   lang_package(locales[i])
 end
 }
 
@@ -748,17 +983,16 @@ touch `find . -name configure`
 # Ensure *-kw.h files are current to prevent regenerating them.
 touch locale/programs/*-kw.h
 
-# Verify that our copy of localedata/SUPPORTED matches the glibc
-# version.
-#
-# The separate file copy is used by the Lua parser above.
-# Patches or new upstream versions may change the list of locales,
-# which changes the set of langpacks we need to build.  Verify the
-# differences then update the copy of SUPPORTED.  This approach has
-# two purposes: (a) avoid spurious changes to the set of langpacks,
-# and (b) the Lua snippet can use a fully patched-up version
-# of the localedata/SUPPORTED file.
-diff -u %{SOURCE11} localedata/SUPPORTED
+# Verify that our locales table is compatible with the locales table
+# in the spec file.
+set +x
+echo '%{lua: print_locale_pairs()}' > localedata/SUPPORTED.spec
+set -x
+python3 %{SOURCE11} localedata/SUPPORTED > localedata/SUPPORTED.glibc
+diff -u \
+  --label "spec file" localedata/SUPPORTED.spec \
+  --label "glibc localedata/SUPPORTED" localedata/SUPPORTED.glibc
+rm localedata/SUPPORTED.spec localedata/SUPPORTED.glibc
 
 ##############################################################################
 # Build glibc...
@@ -2019,6 +2253,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Oct 14 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-9
+- Make glibc.spec self-contained (#1887097)
+
 * Thu Oct 08 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-8
 - Drop glibc-fix-float128-benchtests.patch; applied upstream.
 - Auto-sync with upstream branch master,
