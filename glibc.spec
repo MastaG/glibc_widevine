@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-165-g72d36ffd7d
+%define glibcsrcdir glibc-2.32.9000-224-g0f09154c64
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2257,6 +2257,69 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Oct 18 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-11
+- Auto-sync with upstream branch master,
+  commit 0f09154c64005e78b61484ae87b5ea2028051ea0.
+- x86: Initialize CPU info via IFUNC relocation [BZ 26203]
+- Add NEWS entry for ftime compatibility move
+- support: Add create_temp_file_in_dir
+- linux: Add __readdir_unlocked
+- linux: Simplify opendir buffer allocation
+- linux: Move posix dir implementations to Linux
+- linux: Add 64-bit time_t support for wait3
+- Move ftime to a compatibility symbol
+- linux: Fix time64 support for futimesat
+- linux: Use INTERNAL_SYSCALL on fstatat{64}
+- shm tests: Append PID to names passed to shm_open [BZ #26737]
+- sysvipc: Fix tst-sysvshm-linux on x32
+- x86/CET: Update vfork to prevent child return
+- resolv: Serialize processing in resolv/tst-resolv-txnid-collision
+- statfs: add missing f_flags assignment
+- y2038: Remove not used __fstatat_time64 define
+- y2038: nptl: Convert pthread_mutex_{clock|timed}lock to support 64 bit
+- sysvipc: Return EINVAL for invalid shmctl commands
+- sysvipc: Fix IPC_INFO and SHM_INFO handling [BZ #26636]
+- AArch64: Use __memcpy_simd on Neoverse N2/V1
+- resolv: Handle transaction ID collisions in parallel queries (bug 26600)
+- support: Provide a way to clear the RA bit in DNS server responses
+- support: Provide a way to reorder responses within the DNS test server
+- Add missing stat/mknod symbol on libc.abilist some ABIs
+- manual: correct the spelling of "MALLOC_PERTURB_" [BZ #23015]
+- manual: replace an obsolete collation example with a valid one
+- rtld: fix typo in comment
+- elf: Add missing <dl-procinfo.h> header to elf/dl-usage.c
+- hurd: support clock_gettime(CLOCK_PROCESS/THREAD_CPUTIME_ID)
+- linux: Move xmknod{at} to compat symbols
+- linux: Add {f}stat{at} y2038 support
+- linux: Move {f}xstat{at} to compat symbols
+- linux: Disentangle fstatat from fxstatat
+- linux: Implement {l}fstat{at} in terms of fstatat
+- linux: Move the struct stat{64} to struct_stat.h
+- Remove mknod wrapper functions, move them to symbols
+- Remove stat wrapper functions, move them to exported symbols
+- <sys/platform/x86.h>: Add FSRCS/FSRS/FZLRM support
+- <sys/platform/x86.h>: Add Intel HRESET support
+- <sys/platform/x86.h>: Add AVX-VNNI support
+- <sys/platform/x86.h>: Add AVX512_FP16 support
+- <sys/platform/x86.h>: Add Intel UINTR support
+- elf: Do not pass GLRO(dl_platform), GLRO(dl_platformlen) to _dl_important_hwcaps
+- elf: Enhance ld.so --help to print HWCAP subdirectories
+- elf: Add library search path information to ld.so --help
+- sunrpc: Adjust RPC function declarations to match Sun's (bug 26686]
+- Avoid GCC 11 -Warray-parameter warnings [BZ #26686].
+- elf: Make __rtld_env_path_list and __rtld_search_dirs global variables
+- elf: Print the full name of the dynamic loader in the ld.so help message
+- elf: Use the term "program interpreter" in the ld.so help message
+- scripts/update-copyrights: Update csu/version.c, elf/dl-usage.c
+- elf: Implement ld.so --version
+- nptl: Add missing cancellation flags on lockf
+- Update mips64 libm-test-ulps
+- Update alpha libm-test-ulps
+- elf: Implement ld.so --help
+- elf: Record whether paths come from LD_LIBRARY_PATH or --library-path
+- elf: Move ld.so error/help output to _dl_usage
+- elf: Extract command-line/environment variables state from rtld.c
+
 * Wed Oct 14 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-10
 - Disable -Werror on ELN (#1888246)
 

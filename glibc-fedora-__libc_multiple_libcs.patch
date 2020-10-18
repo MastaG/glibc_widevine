@@ -44,7 +44,7 @@ index 518824e8a5826314..66c395474a57c1fd 100644
 -#endif
  }
 diff --git a/elf/dl-support.c b/elf/dl-support.c
-index 7704c101c5a543a1..ffa235c78df8481f 100644
+index afbc94df5435a7d7..e894f98e97641cef 100644
 --- a/elf/dl-support.c
 +++ b/elf/dl-support.c
 @@ -120,10 +120,8 @@ struct r_scope_elem _dl_initial_searchlist =
@@ -59,18 +59,18 @@ index 7704c101c5a543a1..ffa235c78df8481f 100644
  /* Random data provided by the kernel.  */
  void *_dl_random;
 diff --git a/elf/rtld.c b/elf/rtld.c
-index 5b882163fae5ea8a..f93adf017c9d2110 100644
+index 5d117d0d2c5902c1..3c4bb5605234409d 100644
 --- a/elf/rtld.c
 +++ b/elf/rtld.c
-@@ -316,7 +316,6 @@ audit_list_count (struct audit_list *list)
-   return naudit;
+@@ -294,7 +294,6 @@ dl_main_state_init (struct dl_main_state *state)
+   state->version_info = false;
  }
  
 -#ifndef HAVE_INLINED_SYSCALLS
  /* Set nonzero during loading and initialization of executable and
     libraries, cleared before the executable's entry point runs.  This
     must not be initialized to nonzero, because the unused dynamic
-@@ -326,7 +325,6 @@ audit_list_count (struct audit_list *list)
+@@ -304,7 +303,6 @@ dl_main_state_init (struct dl_main_state *state)
     never be called.  */
  int _dl_starting_up = 0;
  rtld_hidden_def (_dl_starting_up)
@@ -78,14 +78,14 @@ index 5b882163fae5ea8a..f93adf017c9d2110 100644
  
  /* This is the structure which defines all variables global to ld.so
     (except those which cannot be added for some reason).  */
-@@ -1178,10 +1176,8 @@ dl_main (const ElfW(Phdr) *phdr,
+@@ -1146,10 +1144,8 @@ dl_main (const ElfW(Phdr) *phdr,
    /* Process the environment variable which control the behaviour.  */
-   process_envvars (&mode, &audit_list);
+   process_envvars (&state);
  
 -#ifndef HAVE_INLINED_SYSCALLS
    /* Set up a flag which tells we are just starting.  */
    _dl_starting_up = 1;
 -#endif
  
+   const char *ld_so_name = _dl_argv[0];
    if (*user_entry == (ElfW(Addr)) ENTRY_POINT)
-     {
