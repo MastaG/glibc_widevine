@@ -1056,6 +1056,7 @@ rpm_inherit_flags \
 	"-march=x86-64" \
 	"-march=z13" \
 	"-march=z14" \
+	"-march=z15" \
 	"-march=zEC12" \
 	"-mbranch-protection=standard" \
 	"-mfpmath=sse" \
@@ -1064,6 +1065,7 @@ rpm_inherit_flags \
 	"-mtune=generic" \
 	"-mtune=z13" \
 	"-mtune=z14" \
+	"-mtune=z15" \
 	"-mtune=zEC12" \
 	"-specs=/usr/lib/rpm/redhat/redhat-annobin-cc1" \
 
