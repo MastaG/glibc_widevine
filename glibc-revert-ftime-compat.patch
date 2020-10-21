@@ -1,0 +1,232 @@
+From a4ef8877d0f9739378655e683cc013a29c4ab82b Mon Sep 17 00:00:00 2001
+From: Siddhesh Poyarekar <siddhesh@sourceware.org>
+Date: Wed, 21 Oct 2020 14:55:29 +0530
+Subject: [PATCH] Revert "Move ftime to a compatibility symbol"
+
+This reverts commit 14633d3e568eb9770a7e5046eff257113e0453fb.
+---
+ include/sys/timeb.h                           |  1 +
+ .../unix/sysv/linux/riscv/rv32/libc.abilist   |  1 +
+ time/Makefile                                 |  5 +-
+ time/ftime.c                                  | 19 +-----
+ time/sys/timeb.h                              | 44 ++++++++++++++
+ time/tst-ftime.c                              | 59 +++++++++----------
+ 6 files changed, 79 insertions(+), 50 deletions(-)
+ create mode 100644 include/sys/timeb.h
+ create mode 100644 time/sys/timeb.h
+
+diff --git a/include/sys/timeb.h b/include/sys/timeb.h
+new file mode 100644
+index 0000000000..9f4509c35e
+--- /dev/null
++++ b/include/sys/timeb.h
+@@ -0,0 +1 @@
++#include <time/sys/timeb.h>
+diff --git a/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist b/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist
+index d984c02492..60a74a5ac3 100644
+--- a/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist
++++ b/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist
+@@ -805,6 +805,7 @@ GLIBC_2.33 fsync F
+ GLIBC_2.33 ftell F
+ GLIBC_2.33 ftello F
+ GLIBC_2.33 ftello64 F
++GLIBC_2.33 ftime F
+ GLIBC_2.33 ftok F
+ GLIBC_2.33 ftruncate F
+ GLIBC_2.33 ftruncate64 F
+diff --git a/time/Makefile b/time/Makefile
+index ab8fb3303b..a4fb13d6a3 100644
+--- a/time/Makefile
++++ b/time/Makefile
+@@ -22,7 +22,7 @@ subdir	:= time
+ 
+ include ../Makeconfig
+ 
+-headers := time.h sys/time.h bits/time.h				\
++headers := time.h sys/time.h sys/timeb.h bits/time.h			\
+ 	   bits/types/clockid_t.h bits/types/clock_t.h			\
+ 	   bits/types/struct_itimerspec.h				\
+ 	   bits/types/struct_timespec.h bits/types/struct_timeval.h	\
+@@ -45,10 +45,9 @@ aux :=	    era alt_digit lc-time-cleanup
+ tests	:= test_time clocktest tst-posixtz tst-strptime tst_wcsftime \
+ 	   tst-getdate tst-mktime tst-mktime2 tst-ftime_l tst-strftime \
+ 	   tst-mktime3 tst-strptime2 bug-asctime bug-asctime_r bug-mktime1 \
+-	   tst-strptime3 bug-getdate1 tst-strptime-whitespace \
++	   tst-strptime3 bug-getdate1 tst-strptime-whitespace tst-ftime \
+ 	   tst-tzname tst-y2039 bug-mktime4 tst-strftime2 tst-strftime3 \
+ 	   tst-clock tst-clock2 tst-clock_nanosleep tst-cpuclock1
+-tests-internal := tst-ftime
+ 
+ include ../Rules
+ 
+diff --git a/time/ftime.c b/time/ftime.c
+index be3295ef76..93f485bbf7 100644
+--- a/time/ftime.c
++++ b/time/ftime.c
+@@ -16,23 +16,11 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT (libc, GLIBC_2_0, GLIBC_2_33)
+-
++#include <sys/timeb.h>
+ #include <time.h>
+ 
+-struct timeb
+-  {
+-    time_t time;		/* Seconds since epoch, as from `time'.  */
+-    unsigned short int millitm;	/* Additional milliseconds.  */
+-    short int timezone;		/* Minutes west of GMT.  */
+-    short int dstflag;		/* Nonzero if Daylight Savings Time used.  */
+-  };
+-
+ int
+-attribute_compat_text_section
+-__ftime (struct timeb *timebuf)
++ftime (struct timeb *timebuf)
+ {
+   struct timespec ts;
+   __clock_gettime (CLOCK_REALTIME, &ts);
+@@ -43,6 +31,3 @@ __ftime (struct timeb *timebuf)
+   timebuf->dstflag = 0;
+   return 0;
+ }
+-
+-compat_symbol (libc, __ftime, ftime, GLIBC_2_0);
+-#endif
+diff --git a/time/sys/timeb.h b/time/sys/timeb.h
+new file mode 100644
+index 0000000000..641c333450
+--- /dev/null
++++ b/time/sys/timeb.h
+@@ -0,0 +1,44 @@
++/* Copyright (C) 1994-2020 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#ifndef _SYS_TIMEB_H
++#define _SYS_TIMEB_H	1
++
++#include <features.h>
++
++#include <bits/types/time_t.h>
++
++__BEGIN_DECLS
++
++/* Structure returned by the `ftime' function.  */
++
++struct timeb
++  {
++    time_t time;		/* Seconds since epoch, as from `time'.  */
++    unsigned short int millitm;	/* Additional milliseconds.  */
++    short int timezone;		/* Minutes west of GMT.  */
++    short int dstflag;		/* Nonzero if Daylight Savings Time used.  */
++  };
++
++/* Fill in TIMEBUF with information about the current time.  */
++
++extern int ftime (struct timeb *__timebuf)
++  __nonnull ((1)) __attribute_deprecated__;
++
++__END_DECLS
++
++#endif	/* sys/timeb.h */
+diff --git a/time/tst-ftime.c b/time/tst-ftime.c
+index 6978feb0f1..08916c0c65 100644
+--- a/time/tst-ftime.c
++++ b/time/tst-ftime.c
+@@ -16,23 +16,9 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-
+-#include <shlib-compat.h>
+-#if TEST_COMPAT (libc, GLIBC_2_0, GLIBC_2_33)
+-#include <time.h>
+-#include <support/check.h>
+-
+-compat_symbol_reference (libc, ftime, ftime, GLIBC_2_0);
+-
+-struct timeb
+-  {
+-    time_t time;
+-    unsigned short int millitm;
+-    short int timezone;
+-    short int dstflag;
+-  };
+-
+-extern int ftime (struct timeb *__timebuf);
++#include <sys/timeb.h>
++#include <stdio.h>
++#include <libc-diag.h>
+ 
+ static int
+ do_test (void)
+@@ -44,23 +30,36 @@ do_test (void)
+     {
+       prev = curr;
+ 
+-      /* ftime was deprecated on 2.31 and removed on 2.33.  */
+-      TEST_COMPARE (ftime (&curr), 0);
+-      TEST_VERIFY_EXIT (curr.time >= prev.time);
+-      if (curr.time == prev.time)
+-	TEST_VERIFY_EXIT (curr.millitm >= prev.millitm);
++      /* ftime was deprecated on 2.31.  */
++      DIAG_PUSH_NEEDS_COMMENT;
++      DIAG_IGNORE_NEEDS_COMMENT (4.9, "-Wdeprecated-declarations");
++
++      if (ftime (&curr))
++        {
++          printf ("ftime returned an error\n");
++          return 1;
++        }
++
++      DIAG_POP_NEEDS_COMMENT;
++
++      if (curr.time < prev.time)
++        {
++          printf ("ftime's time flowed backwards\n");
++          return 1;
++        }
++
++      if (curr.time == prev.time
++          && curr.millitm < prev.millitm)
++        {
++          printf ("ftime's millitm flowed backwards\n");
++          return 1;
++        }
+ 
+       if (curr.time > prev.time)
+         sec ++;
+     }
+   return 0;
+ }
+-#else
+-static int
+-do_test (void)
+-{
+-  return EXIT_UNSUPPORTED;
+-}
+-#endif
+ 
+-#include <support/test-driver.c>
++#define TEST_FUNCTION do_test ()
++#include "../test-skeleton.c"
+-- 
+2.26.2
+

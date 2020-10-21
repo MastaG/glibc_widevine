@@ -163,6 +163,8 @@ Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
 Patch32: glibc-rhbz1869030-faccessat2-eperm.patch
 Patch33: glibc-revert-fxstat-compat.patch
+Patch34: glibc-revert-mknod-compat.patch
+Patch35: glibc-revert-ftime-compat.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2261,7 +2263,9 @@ fi
 
 %changelog
 * Wed Oct 21 2020 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.32.9000-12
-- Revert __fxstat64 symbol removal.
+- Revert __xstat64 symbol removal.
+- Revert xmknod* symbol removal.
+- Revert ftime symbol removal.
 
 * Sun Oct 18 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-11
 - Auto-sync with upstream branch master,
