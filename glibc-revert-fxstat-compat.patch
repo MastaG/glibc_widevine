@@ -1,0 +1,667 @@
+From d28b30ba10c1c7da38392e1759ae141d107f3640 Mon Sep 17 00:00:00 2001
+From: Siddhesh Poyarekar <siddhesh@sourceware.org>
+Date: Wed, 21 Oct 2020 14:20:17 +0530
+Subject: [PATCH] Revert "linux: Move {f}xstat{at} to compat symbols"
+
+This reverts commit 20b39d59467b0c1d858e89ded8b0cebe55e22f60.
+---
+ sysdeps/unix/sysv/linux/alpha/fxstat64.c      | 12 +----------
+ sysdeps/unix/sysv/linux/alpha/fxstatat64.c    |  9 +-------
+ sysdeps/unix/sysv/linux/alpha/lxstat64.c      | 12 +----------
+ sysdeps/unix/sysv/linux/alpha/xstat64.c       | 12 +----------
+ sysdeps/unix/sysv/linux/fxstat.c              |  8 -------
+ sysdeps/unix/sysv/linux/fxstat64.c            | 14 ++++---------
+ sysdeps/unix/sysv/linux/fxstatat.c            |  8 -------
+ sysdeps/unix/sysv/linux/fxstatat64.c          | 12 +----------
+ sysdeps/unix/sysv/linux/lxstat.c              |  8 -------
+ sysdeps/unix/sysv/linux/lxstat64.c            | 21 +++++++------------
+ sysdeps/unix/sysv/linux/mips/fxstat.c         |  8 -------
+ sysdeps/unix/sysv/linux/mips/lxstat.c         |  8 -------
+ .../unix/sysv/linux/mips/mips64/fxstat64.c    |  8 -------
+ .../unix/sysv/linux/mips/mips64/fxstatat.c    |  8 -------
+ .../unix/sysv/linux/mips/mips64/fxstatat64.c  |  8 -------
+ .../unix/sysv/linux/mips/mips64/lxstat64.c    |  8 -------
+ sysdeps/unix/sysv/linux/mips/mips64/xstat64.c |  9 +-------
+ sysdeps/unix/sysv/linux/mips/xstat.c          |  8 -------
+ .../unix/sysv/linux/riscv/rv32/libc.abilist   |  8 +++++++
+ sysdeps/unix/sysv/linux/xstat.c               |  8 -------
+ sysdeps/unix/sysv/linux/xstat64.c             | 15 +++++--------
+ 21 files changed, 31 insertions(+), 181 deletions(-)
+
+diff --git a/sysdeps/unix/sysv/linux/alpha/fxstat64.c b/sysdeps/unix/sysv/linux/alpha/fxstat64.c
+index bcfb55050c..9d6b8eca32 100644
+--- a/sysdeps/unix/sysv/linux/alpha/fxstat64.c
++++ b/sysdeps/unix/sysv/linux/alpha/fxstat64.c
+@@ -22,11 +22,9 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __fxstat64 (int vers, int fd, struct stat64 *buf)
+ {
+   switch (vers)
+@@ -44,12 +42,4 @@ __fxstat64 (int vers, int fd, struct stat64 *buf)
+       }
+     }
+ }
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+-strong_alias (__fxstat64, __fxstat_compat)
+-compat_symbol (libc, __fxstat_compat, __fxstat, GLIBC_2_0);
+-#endif
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_33)
+-compat_symbol (libc, __fxstat64, __fxstat64, GLIBC_2_1);
+-#endif
++strong_alias (__fxstat64, __fxstat);
+diff --git a/sysdeps/unix/sysv/linux/alpha/fxstatat64.c b/sysdeps/unix/sysv/linux/alpha/fxstatat64.c
+index fa3074eeca..997fb87ac6 100644
+--- a/sysdeps/unix/sysv/linux/alpha/fxstatat64.c
++++ b/sysdeps/unix/sysv/linux/alpha/fxstatat64.c
+@@ -22,18 +22,11 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+ 
+-#if SHLIB_COMPAT(libc, GLIBC_2_4, GLIBC_2_33)
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __fxstatat64 (int vers, int fd, const char *file, struct stat64 *st, int flag)
+ {
+   return INLINE_SYSCALL_CALL (fstatat64, fd, file, st, flag);
+ }
+-strong_alias (__fxstatat64, __fxstatat_compat)
+-compat_symbol (libc, __fxstatat_compat, __fxstatat, GLIBC_2_4);
+-
+-compat_symbol (libc, __fxstatat64, __fxstatat64, GLIBC_2_4);
+-#endif
++strong_alias (__fxstatat64, __fxstatat);
+diff --git a/sysdeps/unix/sysv/linux/alpha/lxstat64.c b/sysdeps/unix/sysv/linux/alpha/lxstat64.c
+index 7424b2f621..38f132f15e 100644
+--- a/sysdeps/unix/sysv/linux/alpha/lxstat64.c
++++ b/sysdeps/unix/sysv/linux/alpha/lxstat64.c
+@@ -23,11 +23,9 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __lxstat64 (int vers, const char *name, struct stat64 *buf)
+ {
+   switch (vers)
+@@ -45,12 +43,4 @@ __lxstat64 (int vers, const char *name, struct stat64 *buf)
+       }
+     }
+ }
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+-strong_alias (__lxstat64, __lxstat_compat)
+-compat_symbol (libc, __lxstat_compat, __lxstat, GLIBC_2_0);
+-#endif
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_33)
+-compat_symbol (libc, __lxstat64, __lxstat64, GLIBC_2_1);
+-#endif
++weak_alias (__lxstat64, __lxstat);
+diff --git a/sysdeps/unix/sysv/linux/alpha/xstat64.c b/sysdeps/unix/sysv/linux/alpha/xstat64.c
+index 59f7ddae7f..c856c95dc5 100644
+--- a/sysdeps/unix/sysv/linux/alpha/xstat64.c
++++ b/sysdeps/unix/sysv/linux/alpha/xstat64.c
+@@ -23,11 +23,9 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __xstat64 (int vers, const char *name, struct stat64 *buf)
+ {
+   switch (vers)
+@@ -45,12 +43,4 @@ __xstat64 (int vers, const char *name, struct stat64 *buf)
+       }
+     }
+ }
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+-strong_alias (__xstat64, __xstat_compat)
+-compat_symbol (libc, __xstat_compat, __xstat, GLIBC_2_0);
+-#endif
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_33)
+-compat_symbol (libc, __xstat64, __xstat64, GLIBC_2_1);
+-#endif
++weak_alias (__xstat64, __xstat);
+diff --git a/sysdeps/unix/sysv/linux/fxstat.c b/sysdeps/unix/sysv/linux/fxstat.c
+index 649bb95252..f78497ea92 100644
+--- a/sysdeps/unix/sysv/linux/fxstat.c
++++ b/sysdeps/unix/sysv/linux/fxstat.c
+@@ -24,13 +24,9 @@
+ #if !XSTAT_IS_XSTAT64
+ # include <xstatconv.h>
+ # include <xstatover.h>
+-# include <shlib-compat.h>
+-
+-# if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+ 
+ /* Get information about the file FD in BUF.  */
+ int
+-attribute_compat_text_section
+ __fxstat (int vers, int fd, struct stat *buf)
+ {
+   switch (vers)
+@@ -61,8 +57,4 @@ __fxstat (int vers, int fd, struct stat *buf)
+       }
+     }
+ }
+-
+-compat_symbol (libc, __fxstat, __fxstat, GLIBC_2_0);
+-# endif /* SHLIB_COMPAT  */
+-
+ #endif /* XSTAT_IS_XSTAT64  */
+diff --git a/sysdeps/unix/sysv/linux/fxstat64.c b/sysdeps/unix/sysv/linux/fxstat64.c
+index 4bd926bf01..dd7b752873 100644
+--- a/sysdeps/unix/sysv/linux/fxstat64.c
++++ b/sysdeps/unix/sysv/linux/fxstat64.c
+@@ -24,14 +24,10 @@
+ #include <sysdep.h>
+ #include <xstatconv.h>
+ #include <statx_cp.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+ 
+ /* Get information about the file FD in BUF.  */
+ 
+ int
+-attribute_compat_text_section
+ ___fxstat64 (int vers, int fd, struct stat64 *buf)
+ {
+ #if XSTAT_IS_XSTAT64
+@@ -67,18 +63,16 @@ ___fxstat64 (int vers, int fd, struct stat64 *buf)
+ #endif /* XSTAT_IS_XSTAT64  */
+ }
+ 
++#include <shlib-compat.h>
++
+ #if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_2)
+-compat_symbol (libc, ___fxstat64, __fxstat64, GLIBC_2_2);
++versioned_symbol (libc, ___fxstat64, __fxstat64, GLIBC_2_2);
+ strong_alias (___fxstat64, __old__fxstat64)
+ compat_symbol (libc, __old__fxstat64, __fxstat64, GLIBC_2_1);
+ #else
+ strong_alias (___fxstat64, __fxstat64)
+-compat_symbol (libc, ___fxstat64, __fxstat64, GLIBC_2_2);
+ #endif
+ 
+ #if XSTAT_IS_XSTAT64
+-strong_alias (___fxstat64, __fxstat_compat)
+-compat_symbol (libc, __fxstat_compat, __fxstat, GLIBC_2_2);
++strong_alias (__fxstat64, __fxstat);
+ #endif
+-
+-#endif /* SHLIB_COMPAT  */
+diff --git a/sysdeps/unix/sysv/linux/fxstatat.c b/sysdeps/unix/sysv/linux/fxstatat.c
+index 2083e18eac..1a60fc10e3 100644
+--- a/sysdeps/unix/sysv/linux/fxstatat.c
++++ b/sysdeps/unix/sysv/linux/fxstatat.c
+@@ -24,13 +24,9 @@
+ #if !XSTAT_IS_XSTAT64
+ # include <xstatconv.h>
+ # include <xstatover.h>
+-# include <shlib-compat.h>
+-
+-# if SHLIB_COMPAT(libc, GLIBC_2_4, GLIBC_2_33)
+ 
+ /* Get information about the file FD in BUF.  */
+ int
+-attribute_compat_text_section
+ __fxstatat (int vers, int fd, const char *file, struct stat *st, int flag)
+ {
+ #if STAT_IS_KERNEL_STAT
+@@ -50,8 +46,4 @@ __fxstatat (int vers, int fd, const char *file, struct stat *st, int flag)
+   return r ?: __xstat32_conv (vers, &st64, st);
+ #endif
+ }
+-
+-compat_symbol (libc, __fxstatat, __fxstatat, GLIBC_2_4);
+-# endif /* SHLIB_COMPAT  */
+-
+ #endif /* XSTAT_IS_XSTAT64  */
+diff --git a/sysdeps/unix/sysv/linux/fxstatat64.c b/sysdeps/unix/sysv/linux/fxstatat64.c
+index 8a505451d9..7fe034809c 100644
+--- a/sysdeps/unix/sysv/linux/fxstatat64.c
++++ b/sysdeps/unix/sysv/linux/fxstatat64.c
+@@ -24,14 +24,10 @@
+ #include <sysdep.h>
+ #include <xstatconv.h>
+ #include <statx_cp.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_4, GLIBC_2_33)
+ 
+ /* Get information about the file FD in BUF.  */
+ 
+ int
+-attribute_compat_text_section
+ __fxstatat64 (int vers, int fd, const char *file, struct stat64 *st, int flag)
+ {
+ #if XSTAT_IS_XSTAT64
+@@ -65,12 +61,6 @@ __fxstatat64 (int vers, int fd, const char *file, struct stat64 *st, int flag)
+ #endif
+   return INLINE_SYSCALL_ERROR_RETURN_VALUE (EINVAL);
+ }
+-
+-compat_symbol (libc, __fxstatat64, __fxstatat64, GLIBC_2_4);
+-
+ #if XSTAT_IS_XSTAT64
+-strong_alias (__fxstatat64, __fxstatat_compat)
+-compat_symbol (libc, __fxstatat_compat, __fxstatat, GLIBC_2_4);
++strong_alias (__fxstatat64, __fxstatat);
+ #endif
+-
+-#endif /* SHLIB_COMPAT(libc, GLIBC_2_4, GLIBC_2_33)  */
+diff --git a/sysdeps/unix/sysv/linux/lxstat.c b/sysdeps/unix/sysv/linux/lxstat.c
+index 913618eab9..9e7e02d298 100644
+--- a/sysdeps/unix/sysv/linux/lxstat.c
++++ b/sysdeps/unix/sysv/linux/lxstat.c
+@@ -20,17 +20,13 @@
+ #include <fcntl.h>
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+-#include <shlib-compat.h>
+ 
+ #if !XSTAT_IS_XSTAT64
+ # include <xstatconv.h>
+ # include <xstatover.h>
+ 
+-# if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+-
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __lxstat (int vers, const char *name, struct stat *buf)
+ {
+   switch (vers)
+@@ -62,8 +58,4 @@ __lxstat (int vers, const char *name, struct stat *buf)
+       }
+     }
+ }
+-
+-compat_symbol (libc, __lxstat, __lxstat, GLIBC_2_0);
+-# endif /* SHLIB_COMPAT  */
+-
+ #endif /* XSTAT_IS_XSTAT64  */
+diff --git a/sysdeps/unix/sysv/linux/lxstat64.c b/sysdeps/unix/sysv/linux/lxstat64.c
+index 277b54b305..2b06133bf3 100644
+--- a/sysdeps/unix/sysv/linux/lxstat64.c
++++ b/sysdeps/unix/sysv/linux/lxstat64.c
+@@ -24,14 +24,10 @@
+ #include <sysdep.h>
+ #include <xstatconv.h>
+ #include <statx_cp.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ 
+ int
+-attribute_compat_text_section
+ ___lxstat64 (int vers, const char *name, struct stat64 *buf)
+ {
+ #if XSTAT_IS_XSTAT64
+@@ -84,18 +80,17 @@ ___lxstat64 (int vers, const char *name, struct stat64 *buf)
+   return INLINE_SYSCALL_ERROR_RETURN_VALUE (EINVAL);
+ }
+ 
++#if XSTAT_IS_XSTAT64
++weak_alias (___lxstat64, __lxstat);
++weak_alias (___lxstat64, __GI___lxstat);
++#endif
++
++#include <shlib-compat.h>
++
+ #if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_2)
+-compat_symbol (libc, ___lxstat64, __lxstat64, GLIBC_2_2);
++versioned_symbol (libc, ___lxstat64, __lxstat64, GLIBC_2_2);
+ strong_alias (___lxstat64, __old__lxstat64)
+ compat_symbol (libc, __old__lxstat64, __lxstat64, GLIBC_2_1);
+ #else
+ strong_alias (___lxstat64, __lxstat64);
+-compat_symbol (libc, ___lxstat64, __lxstat64, GLIBC_2_2);
+ #endif
+-
+-#if XSTAT_IS_XSTAT64
+-strong_alias (___lxstat64,__lxstat_compat)
+-compat_symbol (libc, __lxstat_compat, __lxstat, GLIBC_2_2);
+-#endif
+-
+-#endif /* SHLIB_COMPAT  */
+diff --git a/sysdeps/unix/sysv/linux/mips/fxstat.c b/sysdeps/unix/sysv/linux/mips/fxstat.c
+index cb9f656628..4585c2362b 100644
+--- a/sysdeps/unix/sysv/linux/mips/fxstat.c
++++ b/sysdeps/unix/sysv/linux/mips/fxstat.c
+@@ -21,13 +21,9 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __fxstat (int vers, int fd, struct stat *buf)
+ {
+   switch (vers)
+@@ -43,7 +39,3 @@ __fxstat (int vers, int fd, struct stat *buf)
+       }
+     }
+ }
+-
+-compat_symbol (libc, __fxstat, __fxstat, GLIBC_2_0);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/lxstat.c b/sysdeps/unix/sysv/linux/mips/lxstat.c
+index ebd05cca50..62a3b15b32 100644
+--- a/sysdeps/unix/sysv/linux/mips/lxstat.c
++++ b/sysdeps/unix/sysv/linux/mips/lxstat.c
+@@ -21,13 +21,9 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __lxstat (int vers, const char *name, struct stat *buf)
+ {
+   switch (vers)
+@@ -43,7 +39,3 @@ __lxstat (int vers, const char *name, struct stat *buf)
+       }
+     }
+ }
+-
+-compat_symbol (libc, __lxstat, __lxstat, GLIBC_2_0);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/fxstat64.c b/sysdeps/unix/sysv/linux/mips/mips64/fxstat64.c
+index 855c650814..e6c1cacd4b 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/fxstat64.c
++++ b/sysdeps/unix/sysv/linux/mips/mips64/fxstat64.c
+@@ -20,14 +20,10 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_2, GLIBC_2_33)
+ 
+ /* Get information about the file FD in BUF.  */
+ 
+ int
+-attribute_compat_text_section
+ __fxstat64 (int vers, int fd, struct stat64 *buf)
+ {
+   struct kernel_stat kbuf;
+@@ -35,7 +31,3 @@ __fxstat64 (int vers, int fd, struct stat64 *buf)
+   return r ?: __xstat64_conv (vers, &kbuf, buf);
+ 
+ }
+-
+-compat_symbol (libc, __fxstat64, __fxstat64, GLIBC_2_2);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/fxstatat.c b/sysdeps/unix/sysv/linux/mips/mips64/fxstatat.c
+index 1c1fbb02c2..e384dbab8b 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/fxstatat.c
++++ b/sysdeps/unix/sysv/linux/mips/mips64/fxstatat.c
+@@ -21,20 +21,12 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_4, GLIBC_2_33)
+ 
+ /* Get information about the file FD in BUF.  */
+ int
+-attribute_compat_text_section
+ __fxstatat (int vers, int fd, const char *file, struct stat *st, int flag)
+ {
+   struct kernel_stat kst;
+   int r = INLINE_SYSCALL_CALL (newfstatat, fd, file, &kst, flag);
+   return r ?: __xstat_conv (vers, &kst, st);
+ }
+-
+-compat_symbol (libc, __fxstatat, __fxstatat, GLIBC_2_4);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/fxstatat64.c b/sysdeps/unix/sysv/linux/mips/mips64/fxstatat64.c
+index f40a2c5aa8..cfd172d301 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/fxstatat64.c
++++ b/sysdeps/unix/sysv/linux/mips/mips64/fxstatat64.c
+@@ -19,14 +19,10 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_4, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ 
+ int
+-attribute_compat_text_section
+ __fxstatat64 (int vers, int fd, const char *file, struct stat64 *st, int flag)
+ {
+   if (vers == _STAT_VER_LINUX)
+@@ -37,7 +33,3 @@ __fxstatat64 (int vers, int fd, const char *file, struct stat64 *st, int flag)
+     }
+   return INLINE_SYSCALL_ERROR_RETURN_VALUE (EINVAL);
+ }
+-
+-compat_symbol (libc, __fxstatat64, __fxstatat64, GLIBC_2_4);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/lxstat64.c b/sysdeps/unix/sysv/linux/mips/mips64/lxstat64.c
+index 752c5284a7..0f3934f8c8 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/lxstat64.c
++++ b/sysdeps/unix/sysv/linux/mips/mips64/lxstat64.c
+@@ -20,20 +20,12 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_2, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __lxstat64 (int vers, const char *name, struct stat64 *buf)
+ {
+   struct kernel_stat kbuf;
+   int r = INLINE_SYSCALL_CALL (lstat, name, &kbuf);
+   return r ?: __xstat64_conv (vers, &kbuf, buf);
+ }
+-
+-compat_symbol (libc, __lxstat64, __lxstat64, GLIBC_2_2);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/xstat64.c b/sysdeps/unix/sysv/linux/mips/mips64/xstat64.c
+index a620ba2f1f..64d2952276 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/xstat64.c
++++ b/sysdeps/unix/sysv/linux/mips/mips64/xstat64.c
+@@ -20,20 +20,13 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_2, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
++
+ int
+-attribute_compat_text_section
+ __xstat64 (int vers, const char *name, struct stat64 *buf)
+ {
+   struct kernel_stat kbuf;
+   int r = INLINE_SYSCALL_CALL (stat, name, &kbuf);
+   return r ?: __xstat64_conv (vers, &kbuf, buf);
+ }
+-
+-compat_symbol (libc, __xstat64, __xstat64, GLIBC_2_2);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/mips/xstat.c b/sysdeps/unix/sysv/linux/mips/xstat.c
+index 0748a3422d..d6ff5ccbe0 100644
+--- a/sysdeps/unix/sysv/linux/mips/xstat.c
++++ b/sysdeps/unix/sysv/linux/mips/xstat.c
+@@ -21,13 +21,9 @@
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+ #include <xstatconv.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __xstat (int vers, const char *name, struct stat *buf)
+ {
+   switch (vers)
+@@ -43,7 +39,3 @@ __xstat (int vers, const char *name, struct stat *buf)
+       }
+     }
+ }
+-
+-compat_symbol (libc, __xstat, __xstat, GLIBC_2_0);
+-
+-#endif
+diff --git a/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist b/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist
+index 66459efdba..365a6b17cf 100644
+--- a/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist
++++ b/sysdeps/unix/sysv/linux/riscv/rv32/libc.abilist
+@@ -201,6 +201,10 @@ GLIBC_2.33 __fsetlocking F
+ GLIBC_2.33 __fwprintf_chk F
+ GLIBC_2.33 __fwritable F
+ GLIBC_2.33 __fwriting F
++GLIBC_2.33 __fxstat F
++GLIBC_2.33 __fxstat64 F
++GLIBC_2.33 __fxstatat F
++GLIBC_2.33 __fxstatat64 F
+ GLIBC_2.33 __getauxval F
+ GLIBC_2.33 __getcwd_chk F
+ GLIBC_2.33 __getdelim F
+@@ -283,6 +287,8 @@ GLIBC_2.33 __libc_start_main F
+ GLIBC_2.33 __libc_valloc F
+ GLIBC_2.33 __longjmp_chk F
+ GLIBC_2.33 __lseek F
++GLIBC_2.33 __lxstat F
++GLIBC_2.33 __lxstat64 F
+ GLIBC_2.33 __malloc_hook D 0x4
+ GLIBC_2.33 __mbrlen F
+ GLIBC_2.33 __mbrtowc F
+@@ -481,6 +487,8 @@ GLIBC_2.33 __wunderflow F
+ GLIBC_2.33 __xpg_basename F
+ GLIBC_2.33 __xpg_sigpause F
+ GLIBC_2.33 __xpg_strerror_r F
++GLIBC_2.33 __xstat F
++GLIBC_2.33 __xstat64 F
+ GLIBC_2.33 _dl_mcount_wrapper F
+ GLIBC_2.33 _dl_mcount_wrapper_check F
+ GLIBC_2.33 _environ D 0x4
+diff --git a/sysdeps/unix/sysv/linux/xstat.c b/sysdeps/unix/sysv/linux/xstat.c
+index 3eb2d8c51b..a971e8cf6a 100644
+--- a/sysdeps/unix/sysv/linux/xstat.c
++++ b/sysdeps/unix/sysv/linux/xstat.c
+@@ -20,17 +20,13 @@
+ #include <fcntl.h>
+ #include <kernel_stat.h>
+ #include <sysdep.h>
+-#include <shlib-compat.h>
+ 
+ #if !XSTAT_IS_XSTAT64
+ # include <xstatconv.h>
+ # include <xstatover.h>
+ 
+-# if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+-
+ /* Get information about the file NAME in BUF.  */
+ int
+-attribute_compat_text_section
+ __xstat (int vers, const char *name, struct stat *buf)
+ {
+   switch (vers)
+@@ -61,8 +57,4 @@ __xstat (int vers, const char *name, struct stat *buf)
+       }
+     }
+ }
+-
+-compat_symbol (libc, __xstat, __xstat, GLIBC_2_0);
+-# endif /* SHLIB_COMPAT  */
+-
+ #endif /* XSTAT_IS_XSTAT64  */
+diff --git a/sysdeps/unix/sysv/linux/xstat64.c b/sysdeps/unix/sysv/linux/xstat64.c
+index dd4f808c7a..9d368d5841 100644
+--- a/sysdeps/unix/sysv/linux/xstat64.c
++++ b/sysdeps/unix/sysv/linux/xstat64.c
+@@ -24,14 +24,10 @@
+ #include <sysdep.h>
+ #include <xstatconv.h>
+ #include <statx_cp.h>
+-#include <shlib-compat.h>
+-
+-#if SHLIB_COMPAT(libc, GLIBC_2_0, GLIBC_2_33)
+ 
+ /* Get information about the file NAME in BUF.  */
+ 
+ int
+-attribute_compat_text_section
+ ___xstat64 (int vers, const char *name, struct stat64 *buf)
+ {
+ #if XSTAT_IS_XSTAT64
+@@ -82,17 +78,16 @@ ___xstat64 (int vers, const char *name, struct stat64 *buf)
+ }
+ 
+ #if XSTAT_IS_XSTAT64
+-strong_alias (___xstat64, __xstat_compat)
+-compat_symbol (libc, __xstat_compat, __xstat, GLIBC_2_2);
++weak_alias (___xstat64, __xstat);
++weak_alias (___xstat64, __GI___xstat);
+ #endif
+ 
++#include <shlib-compat.h>
++
+ #if SHLIB_COMPAT(libc, GLIBC_2_1, GLIBC_2_2)
+-compat_symbol (libc, ___xstat64, __xstat64, GLIBC_2_2);
++versioned_symbol (libc, ___xstat64, __xstat64, GLIBC_2_2);
+ strong_alias (___xstat64, __old__xstat64)
+ compat_symbol (libc, __old__xstat64, __xstat64, GLIBC_2_1);
+ #else
+ strong_alias (___xstat64, __xstat64)
+-compat_symbol (libc, ___xstat64, __xstat64, GLIBC_2_2);
+ #endif
+-
+-#endif /* SHLIB_COMPAT  */
+-- 
+2.26.2
+

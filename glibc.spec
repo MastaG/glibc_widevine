@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -162,6 +162,7 @@ Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
 Patch32: glibc-rhbz1869030-faccessat2-eperm.patch
+Patch33: glibc-revert-fxstat-compat.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2259,6 +2260,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Oct 21 2020 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.32.9000-12
+- Revert __fxstat64 symbol removal.
+
 * Sun Oct 18 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-11
 - Auto-sync with upstream branch master,
   commit 0f09154c64005e78b61484ae87b5ea2028051ea0.
