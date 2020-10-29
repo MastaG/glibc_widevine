@@ -1999,7 +1999,13 @@ end
 
 %post -p <lua>
 -- We use lua's posix.exec because there may be no shell that we can
--- run during glibc upgrade.
+-- run during glibc upgrade.  We used to implement much of %%post as a
+-- C program, but from an overall maintenance perspective the lua in
+-- the spec file was simpler and safer given the operations required.
+-- All lua code will be ignored by rpm-ostree; see:
+-- https://github.com/projectatomic/rpm-ostree/pull/1869
+-- If we add new lua actions to the %%post code we should coordinate
+-- with rpm-ostree and ensure that their glibc install is functional.
 function post_exec (program, ...)
   local pid = posix.fork ()
   if pid == 0 then
