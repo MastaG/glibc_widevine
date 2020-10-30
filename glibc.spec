@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -278,6 +278,9 @@ BuildRequires: glibc-static
 
 # libidn2 (but not libidn2-devel) is needed for testing AI_IDN/NI_IDN.
 BuildRequires: libidn2
+
+# The testsuite runs mtrace, which is a perl script
+BuildRequires: perl-interpreter
 %endif
 %endif
 
@@ -2268,6 +2271,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Oct 29 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-13
+- Add BuildRequires for perl (malloc/mtrace) if running the testsuite.
+
 * Wed Oct 21 2020 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.32.9000-12
 - Revert __xstat64 symbol removal.
 - Revert xmknod* symbol removal.
