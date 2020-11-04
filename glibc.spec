@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-224-g0f09154c64
+%define glibcsrcdir glibc-2.32.9000-261-ge156dabc76
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -164,7 +164,6 @@ Patch31: glibc-deprecated-selinux-nscd.patch
 Patch32: glibc-rhbz1869030-faccessat2-eperm.patch
 Patch33: glibc-revert-fxstat-compat.patch
 Patch34: glibc-revert-mknod-compat.patch
-Patch35: glibc-revert-ftime-compat.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2271,6 +2270,48 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 03 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-14
+- Auto-sync with upstream branch master,
+  commit e156dabc766d6f6f99ce9402999eae380a3ec1f2.
+- aarch64: Add variant PCS lazy binding test [BZ #26798]
+- aarch64: Fix DT_AARCH64_VARIANT_PCS handling [BZ #26798]
+- hurd: Correct 'ethenet' spelling
+- Avoid -Wstringop-overflow warning in pthread_cleanup_push macros
+- Disable spurious -Warray-bounds for ypclnt.c (bug 26687)
+- Do not use array parameter to new_composite_name (bug 26726)
+- Disable spurious -Wstringop-overflow for setjmp/longjmp (bug 26647)
+- malloc debug: fix compile error when enable macro MALLOC_DEBUG > 1
+- tst-tcfree2: adjust coding style.
+- elf: In ldconfig, extract the new_sub_entry function from search_dir
+- Use MPC 1.2.1 in build-many-glibcs.py.
+- Argument Syntax: Use "option", @option, and @command.
+- elf: Unify old and new format cache handling code in ld.so
+- x86: Restore processing of cache size tunables in init_cacheinfo
+- Make elf.h header self contained.
+- x86: Optimizing memcpy for AMD Zen architecture.
+- Hurd: Fix ftime build
+- Add IP_RECVERR_RFC4884 and IPV6_RECVERR_RFC4884 from Linux 5.9.
+- misc: Add internal __getauxval2 function
+- Remove NEWS entry about ftime removal
+- time: Add 64-bit time_t support for ftime
+- Reinstate ftime and add deprecate message on ftime usage
+- Update kernel version to 5.9 in tst-mman-consts.py.
+- Amend grammar and add a description
+- Fix typo in NEWS file
+- Remove timing related checks of time/tst-cpuclock1
+- Update syscall lists for Linux 5.9.
+- Use Linux 5.9 in build-many-glibcs.py.
+- Reword description of SXID_* tunable properties
+- New benchtest: pthread locks
+- y2038: nptl: Provide __futex_clock_wait_bitset64 to support 64 bit bitset
+- C-SKY: Make dynamic linker's name compitable with the older gcc.
+- Revert "C-SKY:Fix dynamic linker's name when mfloat-abi=softfp."
+- Move vtimes to a compatibility symbol
+- y2038: linux: Provide __time64 implementation
+- rt: Fix typos in comments in <aio.h>
+- C-SKY:Fix dynamic linker's name when mfloat-abi=softfp.
+- Drop the glibc-revert-ftime-compat.patch.
+
 * Thu Oct 29 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-13
 - Add BuildRequires for perl (malloc/mtrace) if running the testsuite.
 
