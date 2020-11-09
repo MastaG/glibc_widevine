@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-261-ge156dabc76
+%define glibcsrcdir glibc-2.32.9000-270-g75a193b761
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2270,6 +2270,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Nov 09 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-15
+- Auto-sync with upstream branch master,
+  commit 75a193b7611bade31a150dfcc528b973e3d46231.
+- linux: Allow adjtime with NULL argument [BZ #26833]
+- aarch64: Add unwind information to _start (bug 26853)
+- bsd unlockpt: unlockpt needs to fail with EINVAL, not ENOTTY
+- Rearrange bsd_getpt vs bsd_openpt and implement posix_openpt on BSD
+- Remove __warndecl
+- Remove __warn_memset_zero_len [BZ #25399]
+- iconv: Accept redundant shift sequences in IBM1364 [BZ #26224]
+- msg: Remove redundant #include <sys/msg.h> header
+- tst-setuid1-static-ENV: Add $(common-objpfx)nss [BZ #26820]
+
 * Tue Nov 03 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-14
 - Auto-sync with upstream branch master,
   commit e156dabc766d6f6f99ce9402999eae380a3ec1f2.
