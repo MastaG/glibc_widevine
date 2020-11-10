@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32
+%define glibcsrcdir glibc-2.32-20-g5c36293f06
 %define glibcversion 2.32
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,30 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Nov 10 2020 Patsy Griffin <patsy@redhat.com> - 2.32-2
+- Auto-sync with upstream branch release/2.32/master,
+  commit 5c36293f067d2af16e4eb9f9465be36f346ea6d0.
+- resolv: Serialize processing in resolv/tst-resolv-txnid-collision
+- resolv: Handle transaction ID collisions in parallel queries (bug 26600)
+- support: Provide a way to clear the RA bit in DNS server responses
+- support: Provide a way to reorder responses within the DNS test server
+- Remove __warndecl
+- Remove __warn_memset_zero_len [BZ #25399]
+- aarch64: Add unwind information to _start (bug 26853)
+- aarch64: Fix DT_AARCH64_VARIANT_PCS handling [BZ #26798]
+- x86: Optimizing memcpy for AMD Zen architecture.
+- Reversing calculation of __x86_shared_non_temporal_threshold
+- sysvipc: Fix IPC_INFO and SHM_INFO handling [BZ #26636]
+- sysvipc: Fix IPC_INFO and MSG_INFO handling [BZ #26639]
+- sysvipc: Fix SEM_STAT_ANY kernel argument pass [BZ #26637]
+- AArch64: Use __memcpy_simd on Neoverse N2/V1
+- AArch64: Improve backwards memmove performance
+- Set version.h RELEASE to "stable" (Bug 26700)
+- string: Fix strerrorname_np return value [BZ #26555]
+- intl: Handle translation output codesets with suffixes [BZ #26383]
+- NEWS: Update for [BZ #26534] fix
+- x86-64: Fix FMA4 detection in ifunc [BZ #26534]
+
 * Thu Aug 06 2020 Arjun Shankar <arjun@redhat.com> - 2.32-1
 - Auto-sync with upstream branch release/2.32/master,
   commit 3de512be7ea6053255afed6154db9ee31d4e557a:
