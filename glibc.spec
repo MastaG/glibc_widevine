@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 16%{?dist}
+Release: 17%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1395,12 +1395,6 @@ mkdir documentation
 cp timezone/README documentation/README.timezone
 cp posix/gai.conf documentation/
 
-%ifarch s390x
-# Compatibility symlink
-mkdir -p %{glibc_sysroot}/lib
-ln -sf /%{_lib}/ld64.so.1 %{glibc_sysroot}/lib/ld64.so.1
-%endif
-
 %if %{with benchtests}
 # Build benchmark binaries.  Ignore the output of the benchmark runs.
 pushd build-%{target}
@@ -2181,9 +2175,6 @@ fi
 %if %{buildpower9}
 %dir /%{_lib}/power9
 %endif
-%ifarch s390x
-/lib/ld64.so.1
-%endif
 %verify(not md5 size mtime) %config(noreplace) /etc/nsswitch.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/ld.so.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/rpc
@@ -2269,6 +2260,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Nov 26 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-17
+- s390x: Do not rewrite program interpreter symlink (make install is enough)
+
 * Tue Nov 10 2020 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-16
 - Remove the work around for systemd-nspawn (#1869030).
 
