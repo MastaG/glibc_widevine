@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-270-g75a193b761
+%define glibcsrcdir glibc-2.32.9000-366-g4c38c1a229
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -161,8 +161,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch33: glibc-revert-fxstat-compat.patch
-Patch34: glibc-revert-mknod-compat.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2260,6 +2258,108 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Dec 04 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-18
+- Drop glibc-revert-fxstat-compat.patch; applied upstream.
+- Drop glibc-revert-mknod-compat.patch; applied upstream.
+- Auto-sync with upstream branch master,
+  commit 4c38c1a229bc3628269ad98bd7e8d31d118d91f6:
+- powerpc64le: Add glibc-hwcaps support
+- x86: Adjust tst-cpu-features-supports.c for GCC 11
+- x86: Set RDRAND usable if CPU supports RDRAND
+- elf: Add missing <stddef.h> header to elf/dl-hwcaps.h
+- lowlevellock-futex: Remove not used macros
+- futex: Remove not used futex_reltimed_wait{_cancelable}
+- y2038: Convert gai_suspend to support 64 bit time
+- symbols: Add defines for libanl's libanl_hidden_{def|proto}
+- x86_64: Add glibc-hwcaps support
+- elf: Add glibc-hwcaps subdirectory support to ld.so cache processing
+- elf: Process glibc-hwcaps subdirectories in ldconfig
+- elf: Implement tail merging of strings in ldconfig
+- elf: Implement a string table for ldconfig, with tail merging
+- elf: Add extension mechanism to ld.so.cache
+- elf: Add endianness markup to ld.so.cache (bug 27008)
+- elf: Add glibc-hwcaps support for LD_LIBRARY_PATH
+- elf: Synchronize <elf.h> section header flags with binutils
+- x86: Fix THREAD_SELF definition to avoid ld.so crash (bug 27004)
+- htl: Add hidden def for __pthread_create/detach
+- manual: Clarify File Access Modes section and add O_PATH
+- htl: Add missing symbols
+- Revert "linux: Move xmknod{at} to compat symbols"
+- Revert "linux: Move {f}xstat{at} to compat symbols"
+- elf.h: Fix spelling of EM_TILE64 comment
+- nptl: Fix __futex_clocklock64 return error check [BZ #26964]
+- powerpc64le: ifunc select *f128 routines in multiarch mode
+- y2038: Convert aio_suspend to support 64 bit time
+- Fix typo in NEWS file
+- nptl: Add EOVERFLOW checks for futex calls
+- nptl: Fix PTHREAD_PRIO_PROTECT timed lock
+- sh: Add sh4 fpu Implies folder
+- io: nftw/ftw: Fix stack overflow with large nopenfd [BZ #26353]
+- elf: Introduce enum opt_format in the ldconfig implementation
+- support: Add support_copy_file
+- NEWS entry for commit b4f020c9b408fb3d1d3d4901c4a71839145f8791
+- timezone: Change zdump installation to bin directory
+- nptl: Return EINVAL for invalid clock for pthread_clockjoin_np
+- nptl: Return EINVAL for pthread_mutex_clocklock/PI with CLOCK_MONOTONIC [BZ #26801]
+- nptl: Replace lll_futex_wake with futex-internal.h
+- nptl: Replace lll_futex_supported_clockid with futex-internal.h
+- nptl: Replace lll_futex_{timed_}wait by futex-internal.h
+- nptl: Replace lll_timedwait with __futex_abstimed_wait64
+- nptl: Replace __futex_clocklock_wait64 with __futex_abstimed_wait64
+- nptl: Remove _futex_clock_wait_bitset64
+- nptl: Consolidate __futex_abstimed_wait_{cancelable}64
+- nptl: Extend __futex_abstimed_wait_cancelable64 comment
+- nptl: Remove clockwait_tid
+- nptl: Remove futex_wait_cancelable
+- nptl: Remove unused internal futex functions
+- Mark mtrace tests UNSUPPORTED if bug-ga2.mtrace or tst-leaks2.mtrace are missing
+- elf: Fix uninitialized variable for _dl_write
+- powerpc: Make PT_THREAD_POINTER available to assembly code
+- Use libnss_files.so for tests posix/bug-ga2 and resolv/tst-leaks2 [BZ #26821]
+- hurd report-wait: Fix stpcpy usage
+- hurd S_msg_report_wait: Fix detecting fd ports
+- hurd S_msg_report_wait: Fix reporting ports
+- hurd: Fix strcpy calls
+- hurd: Fix _S_msg_get/set_env_variable prototype
+- hurd: Enable using ifunc
+- Add {,sysdep-}ld-library-path make variable
+- nptl: Move stack list variables into _rtld_global
+- hurd: let _dl_argv and __libc_stack_end be relro
+- hurd: Remove some remnants of cthreads
+- nanosleep: Pass NULL when rem == NULL on ports with __TIMESIZE != 64
+- y2038: Convert thrd_sleep to support 64 bit time
+- y2038: Convert mtx_timedlock to support 64 bit time
+- y2038: Convert cnd_timedwait to support 64 bit time
+- hurd: Drop CLOCK_MONOTONIC change which slipped in
+- hurd: make ptsname fail with ENOTTY on non-master-pty
+- mach: Add missing assert.h include
+- hurd: break relocation loop between libc.so and lib{mach,hurd}user.so
+- Remove obsolete defines for HPUX support from fcntl.h and update O_NONBLOCK.
+- Remove tls.h inclusion from internal errno.h
+- nptl: Eliminate <smp.h> and __is_smp
+- powerpc: Eliminate UP macro conditionals
+- x86: Remove UP macro.  Define LOCK_PREFIX unconditionally.
+- alpha: Remove UP preprocessor conditionals
+- hurd: Make sure signals get started
+- hurd: initialize libpthread before starting the signal thread
+- hurd: Make _hurd_libc_proc_init idempotent
+- powerpc: Add optimized stpncpy for POWER9
+- powerpc: Add optimized strncpy for POWER9
+- Don't use nested function in test-ffs
+- Use __builtin___stpncpy_chk when available
+- tests: Remove NULL check for an array
+- hurd: Move {,f,l}xstat{,at} and xmknod{at} to compat symbols
+- hurd: Notify the proc server later during initialization
+- htl: Initialize later
+- htl: Keep thread signals blocked during its initialization
+- htl: Fix spurious symbols in namespaces
+- Use O_CLOEXEC in sysconf [BZ #26791]
+- struct _Unwind_Exception alignment should not depend on compiler flags
+- hurd: keep only required PLTs in ld.so
+- hurd: Add missing startup calls
+- riscv: Get cache information through sysconf
+- RISC-V: Add _dl_start_user.
+
 * Thu Nov 26 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-17
 - s390x: Do not rewrite program interpreter symlink (make install is enough)
 
