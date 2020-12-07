@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-366-g4c38c1a229
+%define glibcsrcdir glibc-2.32.9000-374-g088e962537
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2258,6 +2258,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Dec 07 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-19
+- Auto-sync with upstream branch master,
+  commit 088e9625378f25607acff3daf7a79cbdee497043:
+- x86: Rename readelflib.c
+- nsswitch: use new internal API (callers)
+- nsswitch: user new internal API (tests)
+- nsswitch: use new internal API (core)
+- nss: Implement <nss_database.h>
+- <nss_action.h>: New abstraction for combining NSS modules and NSS actions
+- nss: Introduce <nss_module.h>
+- Add scripts/move-symbol-to-libc.py
+
 * Fri Dec 04 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-18
 - Drop glibc-revert-fxstat-compat.patch; applied upstream.
 - Drop glibc-revert-mknod-compat.patch; applied upstream.
