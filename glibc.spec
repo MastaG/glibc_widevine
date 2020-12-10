@@ -100,7 +100,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -161,6 +161,9 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+
+# Temporary until official patch is committed upstream
+Patch99: glibc-rh1906066.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2258,6 +2261,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Dec 09 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-20
+- nsswitch: handle missing actions properly (temporary fix for 1906066)
+
 * Mon Dec 07 2020 Arjun Shankar <arjun@redhat.com> - 2.32.9000-19
 - Auto-sync with upstream branch master,
   commit 088e9625378f25607acff3daf7a79cbdee497043:
