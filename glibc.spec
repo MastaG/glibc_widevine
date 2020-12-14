@@ -27,12 +27,8 @@
 %bcond_without benchtests
 # Default: Not bootstrapping.
 %bcond_with bootstrap
-# Default: Enable using -Werror (except for ELN).
-%if 0%{?rhel} > 0
-%bcond_with werror
-%else
+# Default: Enable using -Werror
 %bcond_without werror
-%endif
 # Default: Always build documentation.
 %bcond_without docs
 
@@ -100,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2261,6 +2257,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Dec 14 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-21
+- Re-enable -Werror everywhere (#1888246)
+
 * Wed Dec 09 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-20
 - nsswitch: handle missing actions properly (temporary fix for 1906066)
 
