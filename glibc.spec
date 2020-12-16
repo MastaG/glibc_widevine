@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1408,7 +1408,6 @@ cp benchtests/scripts/import_bench.py %{glibc_sysroot}%{_prefix}/libexec/glibc-b
 cp benchtests/scripts/validate_benchout.py %{glibc_sysroot}%{_prefix}/libexec/glibc-benchtests/
 %endif
 
-%if 0%{?_enable_debug_packages}
 # The #line directives gperf generates do not give the proper
 # file name relative to the build directory.
 pushd locale
@@ -1793,6 +1792,7 @@ echo "%{_libdir}/libpthread_nonshared.a" >> compat-libpthread-nonshared.filelist
 # glibc-debuginfocommon, and glibc-debuginfo
 ###############################################################################
 
+%if 0%{?_enable_debug_packages}
 find_debuginfo_args='--strict-build-id -g -i'
 %ifarch %{debuginfocommonarches}
 find_debuginfo_args="$find_debuginfo_args \
@@ -1962,6 +1962,7 @@ run_ldso="$(find %{glibc_sysroot}/%{_lib}/ld-*.so -type f | LC_ALL=C sort | head
 # (even if we do not perform the valgrind test).
 LD_SHOW_AUXV=1 $run_ldso /bin/true
 
+%if 0%{?_enable_debug_packages}
 # Finally, check if valgrind runs with the new glibc.
 # We want to fail building if valgrind is not able to run with this glibc so
 # that we can then coordinate with valgrind to get it fixed before we update
@@ -1972,6 +1973,7 @@ $run_ldso /usr/bin/valgrind --error-exitcode=1 \
 # true --help performs some memory allocations.
 $run_ldso /usr/bin/valgrind --error-exitcode=1 \
 	$run_ldso /usr/bin/true --help >/dev/null
+%endif
 %endif
 
 %endif
@@ -2253,6 +2255,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Dec 16 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-23
+- Fix conditionals for _enable_debug_packages and benchtests [BZ #1902514]
+
 * Tue Dec 15 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-22
 - Auto-sync with upstream branch master,
   commit 4d0985543f479a6f421d4d8a9e0d1dc71c9c2c53.
