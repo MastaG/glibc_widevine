@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-374-g088e962537
+%define glibcsrcdir glibc-2.32.9000-409-g4d0985543f
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 21%{?dist}
+Release: 22%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -142,7 +142,6 @@ Source12: ChangeLog.old
 Patch1: glibc-fedora-nscd.patch
 Patch3: glibc-rh697421.patch
 Patch4: glibc-fedora-linux-tcsetattr.patch
-Patch5: glibc-rh741105.patch
 Patch6: glibc-fedora-localedef.patch
 Patch8: glibc-fedora-manual-dircategory.patch
 Patch9: glibc-rh827510.patch
@@ -157,9 +156,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-
-# Temporary until official patch is committed upstream
-Patch99: glibc-rh1906066.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2257,6 +2253,46 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Dec 15 2020 Patsy Griffin <patsy@redhat.com> - 2.32.9000-22
+- Auto-sync with upstream branch master,
+  commit 4d0985543f479a6f421d4d8a9e0d1dc71c9c2c53.
+- elf: Record libc.so link map when it is the main program (bug 20972)
+- Use GMP 6.2.1 in build-many-glibcs.py.
+- aarch64: remove the strlen_asimd symbol
+- aarch64: fix static PIE start code for BTI [BZ #27068]
+- elf: Fix failure handling in _dl_map_object_from_fd
+- elf: inline lose for error handling
+- Remove strtoimax, strtoumax, wcstoimax, wcstoumax inlines
+- nsswitch: handle missing actions properly
+- x86: Remove the default REP MOVSB threshold tunable value [BZ #27061]
+- elf.h: Remove SHF_GNU_BUILD_NOTE.
+- elf.h: fix spelling typos in comments
+- Fix spelling and grammar in several comments
+- malloc: Detect infinite-loop in _int_free when freeing tcache [BZ#27052]
+- elf: Fix dl-load.c
+- elf: Include libc.so.6 as main program in dependency sort (bug 20972)
+- support: Add support_slibdir_prefix variable
+- aarch64: Use mmap to add PROT_BTI instead of mprotect [BZ #26831]
+- elf: Pass the fd to note processing
+- elf: Move note processing after l_phdr is updated
+- aarch64: align address for BTI protection [BZ #26988]
+- aarch64: Fix missing BTI protection from dependencies [BZ #26926]
+- Fix linknamespace errors in nss_database.c if build with -Os.
+- treewide: fix incorrect spelling of indices in comments
+- linux: Consolidate brk implementation
+- elf: Include <sys/param.h> in cache.c
+- s390x: Add glibc-hwcaps support
+- elf: Fix run-time dependencies of tst-dlopen-fail-2
+- Handle out-of-memory case in svc_tcp.c/svc_unix.c:rendezvous_request.
+- elf: Fix incorrect comparison in sort_priorities_by_name
+- S390: Derive float_t from FLT_EVAL_METHOD
+- Fix parsing of /sys/devices/system/cpu/online (bug 25859)
+- Make strtoimax, strtoumax, wcstoimax, wcstoumax into aliases
+- Fixed typos in "NEWS for version 2.32"
+- Add NEWS entry for CVE-2020-29562 (BZ #26923)
+- iconv: Fix incorrect UCS4 inner loop bounds (BZ#26923)
+- Drop glibc-rh1906066 and glibc-rh741105 patches fixed by sync.
+
 * Mon Dec 14 2020 Florian Weimer <fweimer@redhat.com> - 2.32.9000-21
 - Re-enable -Werror everywhere (#1888246)
 
