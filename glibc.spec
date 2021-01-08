@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-409-g4d0985543f
+%define glibcsrcdir glibc-2.32.9000-497-g3ec5d83d2a
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -27,8 +27,8 @@
 %bcond_without benchtests
 # Default: Not bootstrapping.
 %bcond_with bootstrap
-# Default: Enable using -Werror
-%bcond_without werror
+# Default: Disable -Werror due to GCC PR98512.
+%bcond_with werror
 # Default: Always build documentation.
 %bcond_without docs
 
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 23%{?dist}
+Release: 24%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -147,7 +147,6 @@ Patch8: glibc-fedora-manual-dircategory.patch
 Patch9: glibc-rh827510.patch
 Patch12: glibc-rh819430.patch
 Patch13: glibc-fedora-localedata-rh61908.patch
-Patch14: glibc-fedora-__libc_multiple_libcs.patch
 Patch15: glibc-rh1070416.patch
 Patch16: glibc-nscd-sysconfig.patch
 Patch17: glibc-cs-path.patch
@@ -2255,6 +2254,102 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jan 04 2021 Florian Weimer <fweimer@redhat.com> - 2.32.9000-24
+- Drop glibc-fedora-__libc_multiple_libcs.patch.  Replaced by upstream's
+  __libc_initial flag.
+- Adjust glibc-rh819430.patch to upstream's gnulib merge of fnmatch.
+- Disable -Werror again due to GCC PR98512.
+- Auto-sync with upstream branch master,
+  commit 3ec5d83d2a237d39e7fd6ef7a0bc8ac4c171a4a5:
+- x86-64: Avoid rep movsb with short distance [BZ #27130]
+- aarch64: fix stack missing after sp is updated
+- nptl: Remove set*id, set*gid files which are not built
+- Drop nan-pseudo-number.h usage from tests
+- posix: Sync fnmatch with gnulib
+- Sync flexmember.h with gnulib
+- Sync intprops.h with gnulib
+- posix: Sync glob code with gnulib
+- posix: Sync regex code with gnulib
+- Move generic nan-pseudo-number.h to ldbl-96
+- Sync FDL from https://www.gnu.org/licenses/fdl-1.3.texi
+- Sync move-if-change from Gnulib
+- Update automatically-generated copyright dates
+- Update copyright dates not handled by scripts/update-copyrights.
+- Update copyright dates with scripts/update-copyrights
+- aarch64: use PTR_ARG and SIZE_ARG instead of DELOUSE
+- nonstring: Enable __FORTIFY_LEVEL=3
+- string: Enable __FORTIFY_LEVEL=3
+- Introduce _FORTIFY_SOURCE=3
+- Warn on unsupported fortification levels
+- powerpc: Use scv instruction on clone when available
+- powerpc: Runtime selection between sc and scv for syscalls
+- malloc: preserve errno on mcheck hooks [BZ #17924]
+- x86 long double: Add tests for pseudo normal numbers
+- x86 long double: Consider pseudo numbers as signaling
+- io: Remove xmknod{at} implementations
+- io: Remove xstat implementations
+- free: preserve errno [BZ#17924]
+- hurd: Accept including hurd/version.h
+- hurd: Add WSTOPPED/WCONTINUED/WEXITED/WNOWAIT support [BZ #23091]
+- support: Make support_process_state_wait wait less
+- hurd: set sigaction for signal preemptors in arch-independent file
+- hurd: Fix spawni SPAWN_XFLAGS_TRY_SHELL with empty argv
+- hurd: Try shell in posix_spawn* only in compat mode
+- Remove _ISOMAC check from <cpu-features.h>
+- x86: Remove the duplicated CPU_FEATURE_CPU_P
+- Partially revert 681900d29683722b1cb0a8e565a0585846ec5a61
+- x86 long double: Support pseudo numbers in isnanl
+- x86 long double: Support pseudo numbers in fpclassifyl
+- MTE: Do not pad size in realloc_check
+- tests-mcheck: New variable to run tests with MALLOC_CHECK_=3
+- elf: Account for glibc-hwcaps/ prefix in _dl_important_hwcaps
+- misc: Use __ferror_unlocked instead of ferror
+- s390x: Regenerate ulps
+- powerpc: Regenerate ulps
+- addmntent: Remove unbounded alloca usage from getmntent [BZ#27083]
+- <sys/platform/x86.h>: Add Intel LAM support
+- i386: Regenerate ulps
+- aarch64: update ulps.
+- aarch64: Add aarch64-specific files for memory tagging support
+- aarch64: Add sysv specific enabling code for memory tagging
+- linux: Add compatibility definitions to sys/prctl.h for MTE
+- malloc: Basic support for memory tagging in the malloc() family
+- elf: Add a tunable to control use of tagged memory
+- config: Allow memory tagging to be enabled when configuring glibc
+- alpha: Remove anonymous union in struct stat [BZ #27042]
+- add inputs to auto-libm-test-in yielding larger errors (binary64, x86_64)
+- m68k: fix clobbering a5 in setjmp() [BZ #24202]
+- iconv add iconv_close before the function returned with bad value.
+- iconv: use iconv_close after iconv_open
+- Fix buffer overrun in EUC-KR conversion module (bz #24973)
+- hurd: Make trampoline fill siginfo ss_sp from sc_uesp
+- Hurd: make sigstates hold a reference on thread ports
+- profil-counter: Add missing SIGINFO case
+- hurd: implement SA_SIGINFO signal handlers.
+- hurd: Fix ELF_MACHINE_USER_ADDRESS_MASK value
+- hurd: Note when the vm_map kernel bug was fixed
+- hurd: Also turn KERN_INVALID_ADDRESS to EINVAL
+- ieee754: Remove unused __sin32 and __cos32
+- ieee754: Remove slow paths from asin and acos
+- getenv: Move call to strlen to the branch it's used in.
+- Update kernel version to 5.10 in tst-mman-consts.py.
+- s390x: Require GCC 7.1 or later to build glibc.
+- malloc: Use __libc_initial to detect an inner libc
+- Replace __libc_multiple_libcs with __libc_initial flag
+- {nptl,htl}/semaphoreP.h: clean up
+- htl: Get sem_open/sem_close/sem_unlink support [BZ #25524]
+- pthread: Move semaphore initialization for open to semaphoreP.h
+- Mark __libc_freeres_fn as used [BZ #27002]
+- Update syscall lists for Linux 5.10.
+- htl: Add pshared semaphore support
+- hurd: Add LLL_PRIVATE and LLL_SHARED
+- hurd: Add __libc_open and __libc_close
+- htl: Add futex-internal.h
+- hurd: Add __lll_abstimed_wait_intr
+- hurd: make lll_* take a variable instead of a ptr
+- hurd: Rename LLL_INITIALIZER to LLL_LOCK_INITIALIZER
+- Use Linux 5.10 in build-many-glibcs.py.
+
 * Wed Dec 16 2020 DJ Delorie <dj@redhat.com> - 2.32.9000-23
 - Fix conditionals for _enable_debug_packages and benchtests [BZ #1902514]
 
