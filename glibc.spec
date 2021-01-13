@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-497-g3ec5d83d2a
+%define glibcsrcdir glibc-2.32.9000-533-gcf12900645
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 25%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2254,6 +2254,46 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jan 13 2021 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-25
+- Auto-sync with upstream branch master,
+  commit cf1290064598def8dfeddec3d86d98495aee1fba:
+- Use the right argument code in unnormal tests
+- ldconfig/x86: Store ISA level in cache and aux cache
+- elf: work around a gcc bug in elf_get_dynamic_info
+- x86: Set header.feature_1 in TCB for always-on CET [BZ #27177]
+- posix: consume less entropy on tempname
+- Makerules: Do not require startup files for format.lds probe object
+- install: Replace scripts/output-format.sed with objdump -f [BZ #26559]
+- math: Add BZ#18980 fix back on dbl-64 cosh
+- posix: Sync tempname with gnulib [BZ #26648]
+- posix: Fix return value of system if shell can not be executed [BZ #27053]
+- support: Add xchmod wrapper
+- Update STATX_ATTR_DAX value from Linux 5.10.
+- riscv: Initialize $gp before resolving the IRELATIVE relocation
+- riscv: support GNU indirect function
+- posix: Correct attribute access mode on readlinkat [BZ #27024].
+-  Add xfchmod to libsupport
+- Add xchdir to libsupport.
+- POSIX locale: Fix typo in comment
+- ARC: Regenerate ulps
+- mntent: Use __putc_unlocked instead of fputc_unlocked
+- aarch64: define PI_STATIC_AND_HIDDEN
+- Update NEWS for CVE-2019-25013.
+- x86: Support GNU_PROPERTY_X86_ISA_1_V[234] marker [BZ #26717]
+- Remove dbl-64/wordsize-64 (part 2)
+- Remove dbl-64/wordsize-64
+- Add SEGV_MTEAERR and SEGV_MTESERR from Linux 5.10.
+- support: Add support_small_thread_stack_size
+- stdlib: Sync canonicalize with gnulib [BZ #10635] [BZ #26592] [BZ #26341] [BZ #24970]
+- malloc: Add scratch_buffer_dupfree
+- Import filename.h from gnulib
+- Import idx.h from gnulib
+- alpha: Provide wait4 for static library [BZ #27150]
+- aarch64: push the set of rules before falling into slow path
+- nptl: Fix comment typo in pthread_cond_wait.c
+- x86: Check IFUNC definition in unrelocated executable [BZ #20019]
+- hurd: Fix mmap(!MAP_FIXED) on bogus address
+
 * Mon Jan 04 2021 Florian Weimer <fweimer@redhat.com> - 2.32.9000-24
 - Drop glibc-fedora-__libc_multiple_libcs.patch.  Replaced by upstream's
   __libc_initial flag.
