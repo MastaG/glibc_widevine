@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 25%{?dist}
+Release: 26%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -798,9 +798,22 @@ nothing else. It is designed for assembling a minimal system.
 
 ##############################################################################
 # glibc "nscd" sub-package
+#
+# Deprecated in Fedora 34 and planned for removal in Fedora 35.
+#
+# systemd-resolved is now enabled by default for DNS caching in Fedora, and
+# sssd is capable of caching the remaining named services that nscd handles.
+# It is therefore time to retire nscd in Fedora and move to more modern named
+# services caches.
+#
+# For details, see:
+# bug 1905135: https://fedoraproject.org/wiki/Changes/DeprecateNSCD
+# bug 1905142: https://fedoraproject.org/wiki/Changes/RemoveNSCD
 ##############################################################################
 %package -n nscd
 Summary: A Name Service Caching Daemon (nscd).
+# Fedora 35 is planned for release on Oct 26 2021, with nscd removed
+Provides: deprecated() = 20211026
 Requires: %{name} = %{version}-%{release}
 %if %{without bootstrap}
 Requires: libselinux >= 1.17.10-1
@@ -2254,6 +2267,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jan 14 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-26
+- Deprecate nscd (#1905135)
+- https://fedoraproject.org/wiki/Changes/DeprecateNSCD
+
 * Wed Jan 13 2021 Carlos O'Donell <carlos@redhat.com> - 2.32.9000-25
 - Auto-sync with upstream branch master,
   commit cf1290064598def8dfeddec3d86d98495aee1fba:
