@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31-48-g64246fccaf
+%define glibcsrcdir glibc-2.31-73-gaf316e4627
 %define glibcversion 2.31
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,35 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jan 13 2021 Patsy Griffin <patsy@redhat.com> - 2.31-5
+- Auto-sync with upstream branch release/2.31/master,
+  commit af316e4627ea2069c0f690e926e04d92f802f054.
+- x86: Check IFUNC definition in unrelocated executable [BZ #20019]
+- x86: Set header.feature_1 in TCB for always-on CET [BZ #27177]
+- x86-64: Avoid rep movsb with short distance [BZ #27130]
+- Fix buffer overrun in EUC-KR conversion module (bz #24973)
+- Add NEWS entry for CVE-2020-29562 (BZ #26923)
+- iconv: Fix incorrect UCS4 inner loop bounds (BZ#26923)
+- tests-mcheck: New variable to run tests with MALLOC_CHECK_=3
+- iconv: Accept redundant shift sequences in IBM1364 [BZ #26224]
+- sh: Add sh4 fpu Implies folder
+- aarch64: Fix DT_AARCH64_VARIANT_PCS handling [BZ #26798]
+- x86: Optimizing memcpy for AMD Zen architecture.
+- Reversing calculation of __x86_shared_non_temporal_threshold
+- AArch64: Use __memcpy_simd on Neoverse N2/V1
+- [AArch64] Improve integer memcpy
+- AArch64: Rename IS_ARES to IS_NEOVERSE_N1
+- AArch64: Improve backwards memmove performance
+- AArch64: Add optimized Q-register memcpy
+- AArch64: Align ENTRY to a cacheline
+- intl: Handle translation output codesets with suffixes [BZ #26383]
+- Add NEWS entry for CVE-2016-10228 (bug 19519)
+- Rewrite iconv option parsing [BZ #19519]
+- powerpc: Fix incorrect cache line size load in memset (bug 26332)
+- nptl: Zero-extend arguments to SETXID syscalls [BZ #26248]
+- Disable warnings due to deprecated libselinux symbols used by nss and nscd
+- Add NEWS entry for CVE-2020-6096 (bug 25620)
+
 * Wed Jul 15 2020 Patsy Griffin <patsy@redhat.com> - 2.31-4
 - Auto-sync with upstream branch release/2.31/master,
   commit 64246fccafc221cc15a8b70710a9d47a60653c0d.
