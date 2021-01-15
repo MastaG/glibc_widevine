@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32-20-g5c36293f06
+%define glibcsrcdir glibc-2.32-29-g4c619b3eed
 %define glibcversion 2.32
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jan 15 2021 Patsy Griffin <patsy@redhat.com> - 2.32-3
+- Auto-sync with upstream branch release/2.32/master,
+  commit 4c619b3eed558172198790f842740abb9af1989d.
+- x86: Check IFUNC definition in unrelocated executable [BZ #20019]
+- x86: Set header.feature_1 in TCB for always-on CET [BZ #27177]
+- Update for [BZ #27130] fix
+- x86-64: Avoid rep movsb with short distance [BZ #27130]
+- Fix buffer overrun in EUC-KR conversion module (bz #24973)
+- tests-mcheck: New variable to run tests with MALLOC_CHECK_=3
+- iconv: Accept redundant shift sequences in IBM1364 [BZ #26224]
+- sh: Add sh4 fpu Implies folder
+- struct _Unwind_Exception alignment should not depend on compiler flags
+
 * Tue Nov 10 2020 Patsy Griffin <patsy@redhat.com> - 2.32-2
 - Auto-sync with upstream branch release/2.32/master,
   commit 5c36293f067d2af16e4eb9f9465be36f346ea6d0.
