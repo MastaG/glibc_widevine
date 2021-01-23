@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 26%{?dist}
+Release: 27%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -190,11 +190,6 @@ Recommends: (nss_hesiod(x86-32) if nss_hesiod(x86-64))
 BuildRequires: gd-devel libpng-devel zlib-devel
 %endif
 %if %{with docs}
-# Removing texinfo will cause check-safety.sh test to fail because it seems to
-# trigger documentation generation based on dependencies.  We need to fix this
-# upstream in some way that doesn't depend on generating docs to validate the
-# texinfo.  I expect it's simply the wrong dependency for that target.
-BuildRequires: texinfo >= 5.0
 %endif
 %if %{without bootstrap}
 BuildRequires: libselinux-devel >= 1.33.4-3
@@ -340,6 +335,26 @@ executables.
 
 Install glibc-devel if you are going to develop programs which will
 use the standard C libraries.
+
+##############################################################################
+# glibc "doc" sub-package
+##############################################################################
+%if %{with docs}
+%package doc
+Summary: Documentation for GNU libc
+BuildArch: noarch
+Requires: %{name} = %{version}-%{release}
+
+# Removing texinfo will cause check-safety.sh test to fail because it seems to
+# trigger documentation generation based on dependencies.  We need to fix this
+# upstream in some way that doesn't depend on generating docs to validate the
+# texinfo.  I expect it's simply the wrong dependency for that target.
+BuildRequires: texinfo >= 5.0
+
+%description doc
+The glibc-doc package contains The GNU C Library Reference Manual in info
+format.  Additional package documentation is also provided.
+%endif
 
 ##############################################################################
 # glibc "static" sub-package
@@ -1296,6 +1311,9 @@ fi
 # Compress all of the info files.
 gzip -9nvf %{glibc_sysroot}%{_infodir}/libc*
 
+# Copy the debugger interface documentation over to the right location
+mkdir -p %{glibc_sysroot}%{_docdir}/glibc
+cp elf/rtld-debugger-interface.txt %{glibc_sysroot}%{_docdir}/glibc
 %else
 rm -f %{glibc_sysroot}%{_infodir}/dir
 rm -f %{glibc_sysroot}%{_infodir}/libc.info*
@@ -1393,12 +1411,6 @@ rm -rf %{glibc_sysroot}%{_prefix}/share/zoneinfo
 # SOURCE0 is arbitrary.
 touch -r %{SOURCE0} %{glibc_sysroot}/etc/ld.so.conf
 touch -r inet/etc.rpc %{glibc_sysroot}/etc/rpc
-
-# Lastly copy some additional documentation for the packages.
-rm -rf documentation
-mkdir documentation
-cp timezone/README documentation/README.timezone
-cp posix/gai.conf documentation/
 
 %if %{with benchtests}
 # Build benchmark binaries.  Ignore the output of the benchmark runs.
@@ -1508,6 +1520,8 @@ ar cr %{glibc_sysroot}%{_prefix}/%{_lib}/libpthread_nonshared.a
 #	- Files for the nscd subpackage.
 # * devel.filelist
 #	- Files for the devel subpackage.
+# * doc.filelist
+#	- Files for the documentation subpackage.
 # * headers.filelist
 #	- Files for the headers subpackage.
 # * static.filelist
@@ -1536,6 +1550,7 @@ touch common.filelist
 touch utils.filelist
 touch nscd.filelist
 touch devel.filelist
+touch doc.filelist
 touch headers.filelist
 touch static.filelist
 touch libnsl.filelist
@@ -1645,15 +1660,10 @@ grep -e "libmemusage.so" -e "libpcprofile.so" master.filelist >> glibc.filelist
 # glibc-devel
 ###############################################################################
 
-%if %{with docs}
-# Put the info files into the devel file list, but exclude the generated dir.
-grep '%{_infodir}' master.filelist | grep -v '%{_infodir}/dir' > devel.filelist
-%endif
-
 # Put some static files into the devel package.
 grep '%{_libdir}/lib.*\.a' master.filelist \
   | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
-  >> devel.filelist
+  > devel.filelist
 
 # Put all of the object files and *.so (not the versioned ones) into the
 # devel package.
@@ -1666,6 +1676,16 @@ sed -i -e '\,libmemusage.so,d' \
 	-e '\,libpcprofile.so,d' \
 	-e '\,/libnss_[a-z]*\.so$,d' \
 	devel.filelist
+
+###############################################################################
+# glibc-doc
+###############################################################################
+
+%if %{with docs}
+# Put the info files into the doc file list, but exclude the generated dir.
+grep '%{_infodir}' master.filelist | grep -v '%{_infodir}/dir' > doc.filelist
+grep '%{_docdir}' master.filelist >> doc.filelist
+%endif
 
 ###############################################################################
 # glibc-headers
@@ -1717,12 +1737,14 @@ grep '%{_prefix}/sbin' master.filelist \
 # multilib-independent.
 # Exceptions:
 # - The actual share directory, not owned by us.
-# - The info files which go in devel, and the info directory.
+# - The info files which go into doc, and the info directory.
+# - All documentation files, which go into doc.
 grep '%{_prefix}/share' master.filelist \
 	| grep -v \
 	-e '%{_prefix}/share/info/libc.info.*' \
 	-e '%%dir %{prefix}/share/info' \
 	-e '%%dir %{prefix}/share' \
+	-e '%{_docdir}' \
 	>> common.filelist
 
 ###############################################################################
@@ -2192,7 +2214,6 @@ fi
 %attr(0600,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/cache/ldconfig/aux-cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/ld.so.cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/gai.conf
-%doc README NEWS INSTALL elf/rtld-debugger-interface.txt
 # If rpm doesn't support %license, then use %doc instead.
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING.LIB LICENSES
@@ -2201,8 +2222,6 @@ fi
 %dir %{_prefix}/lib/locale
 %dir %{_prefix}/lib/locale/C.utf8
 %{_prefix}/lib/locale/C.utf8/*
-%doc documentation/README.timezone
-%doc documentation/gai.conf
 
 %files all-langpacks
 %{_prefix}/lib/locale/locale-archive
@@ -2216,6 +2235,10 @@ fi
 %{_prefix}/share/i18n/charmaps/*
 
 %files -f devel.filelist devel
+
+%if %{with docs}
+%files -f doc.filelist doc
+%endif
 
 %files -f static.filelist static
 
@@ -2267,6 +2290,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sat Jan 23 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-27
+- Introduce new glibc-doc.noarch subpackage (#1346925)
+- Move the reference manual info pages from glibc-devel to glibc-doc
+- Move debugger interface documentation from glibc to glibc-doc
+- Remove unnecessary README, INSTALL, NEWS files from glibc
+- Remove unnecessary README.timezone and gai.conf files from glibc-common
+
 * Thu Jan 14 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-26
 - Deprecate nscd (#1905135)
 - https://fedoraproject.org/wiki/Changes/DeprecateNSCD
