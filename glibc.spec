@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-533-gcf12900645
+%define glibcsrcdir glibc-2.32.9000-572-g3725ee39db
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 28%{?dist}
+Release: 29%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2290,6 +2290,49 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jan 26 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-29
+- Auto-sync with upstream branch master,
+  commit 3725ee39dbd4d7c17fc276b3ea4248cc16e4b522:
+- benchtests: Do not build bench-timing-type with MODULE_NAME=libc
+- aarch64: Fix the list of tested IFUNC variants [BZ #26818]
+- Update INSTALL with package versions that are known to work
+- aarch64: Move and update the definition of MTE_ENABLED
+- Fix misplaced const
+- Update C-SKY libm-test-ulps
+- manual: Correct argument order in mount examples [BZ #27207]
+- linux: mips: Fix getdents64 fallback on mips64-n32
+- x86: Properly match CPU features in /proc/cpuinfo [BZ #27222]
+- x86-64: Update tst-glibc-hwcaps-2.c for x86-64 baseline
+- powerpc64: Select POWER9 machine for the scv instruction
+- x86: Check ifunc resolver with CPU_FEATURE_USABLE [BZ #27072]
+- Revert "linux: Move {f}xstat{at} to compat symbols" for static build
+- aarch64: revert memcpy optimze for kunpeng to avoid performance degradation
+- Make libc symbols hidden in static PIE
+- csu: Move static pie self relocation later [BZ #27072]
+- Use hidden visibility for early static PIE code
+- csu: Avoid weak ref for __ehdr_start in static PIE
+- configure: Check for static PIE support
+- elf: Avoid RELATIVE relocs in __tunables_init
+- elf: Make the tunable struct definition internal only
+- <sys/platform/x86.h>: Remove the C preprocessor magic
+- posix: Fix fnmatch.c on bootstrap
+- stdlib: Add testcase for BZ #26241
+- posix: Fix regex_internal.h on bootstrap
+- Use <startup.h> in __libc_init_secure
+- elf: Avoid RELATIVE relocation for _dl_sysinfo
+- libmvec: Add extra-test-objs to test-extras
+- Hurd: Add rtld-strncpy-c.c
+- Update MIPS libm-test-ulps.
+- Update arm libm-test-ulps.
+- Update powerpc-nofpu libm-test-ulps.
+- Update hppa libm-test-ulps
+- ARC: nofpu: Regenerate ulps
+- ld.so: Add --list-tunables to print tunable values
+- math/test-tgmath2: Fix fabs failure when no long double
+- x86: Move x86 processor cache info to cpu_features
+- Fix x86 build with --enable-tunable=no
+- ifuncmain6pie: Remove the circular IFUNC dependency [BZ #20019]
+
 * Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2.32.9000-28
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
