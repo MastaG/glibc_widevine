@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32.9000-572-g3725ee39db
+%define glibcsrcdir glibc-2.32.9000-573-gdf359a25ba
 %define glibcversion 2.32.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -2290,9 +2290,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
-* Tue Jan 26 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-29
+* Wed Jan 27 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-29
 - Auto-sync with upstream branch master,
-  commit 3725ee39dbd4d7c17fc276b3ea4248cc16e4b522:
+  commit df359a25ba6f6bda06104229fbfe284c1fb30915:
+- Revert "Make libc symbols hidden in static PIE" [BZ #27237]
 - benchtests: Do not build bench-timing-type with MODULE_NAME=libc
 - aarch64: Fix the list of tested IFUNC variants [BZ #26818]
 - Update INSTALL with package versions that are known to work
