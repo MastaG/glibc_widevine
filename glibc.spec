@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32-29-g4c619b3eed
+%define glibcsrcdir glibc-2.32-37-g760e1d2878
 %define glibcversion 2.32
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Feb 02 2021 Patsy Griffin <patsy@redhat.com> - 2.32-4
+- Auto-sync with upstream branch release/2.32/master,
+  commit 760e1d287825fa91d4d5a0cc921340c740d803e2.
+- gconv: Fix assertion failure in ISO-2022-JP-3 module (bug 27256)
+- aarch64: fix static PIE start code for BTI [BZ #27068]
+- __vfscanf_internal: fix aliasing violation (bug 26690)
+- aarch64: Use mmap to add PROT_BTI instead of mprotect [BZ #26831]
+- elf: Pass the fd to note processing
+- elf: Move note processing after l_phdr is updated
+- aarch64: align address for BTI protection [BZ #26988]
+- aarch64: Fix missing BTI protection from dependencies [BZ #26926]
+
 * Fri Jan 15 2021 Patsy Griffin <patsy@redhat.com> - 2.32-3
 - Auto-sync with upstream branch release/2.32/master,
   commit 4c619b3eed558172198790f842740abb9af1989d.
