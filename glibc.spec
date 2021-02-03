@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.31-73-gaf316e4627
+%define glibcsrcdir glibc-2.31-74-gd0c84d22b6
 %define glibcversion 2.31
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -87,7 +87,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2041,6 +2041,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Feb 03 2021 Patsy Griffin <patsy@redhat.com> - 2.31-6
+- Auto-sync with upstream branch release/2.31/master,
+  commit d0c84d22b6a67f85a1eed3b93aef30e6953294b5.
+- gconv: Fix assertion failure in ISO-2022-JP-3 module (bug 27256)
+
 * Wed Jan 13 2021 Patsy Griffin <patsy@redhat.com> - 2.31-5
 - Auto-sync with upstream branch release/2.31/master,
   commit af316e4627ea2069c0f690e926e04d92f802f054.
