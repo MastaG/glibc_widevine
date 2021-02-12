@@ -2290,7 +2290,7 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
-* Fri Feb 12 2021 Florian Weimer <fweimer@redhat.com> - 2.32.9000-30
+* Fri Feb 12 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-1
 - Auto-sync with upstream branch master,
   commit 228f30ab4724d4087d5f52018873fde22efea6e2:
 - tunables: Disallow negative values for some tunables
