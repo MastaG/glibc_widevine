@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.32.9000-573-gdf359a25ba
-%define glibcversion 2.32.9000
+%define glibcsrcdir glibc-2.33.9000-48-g228f30ab47
+%define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 29%{?dist}
+Release: 30%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2288,8 +2288,81 @@ fi
 %endif
 
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
+- tunables: Disallow negative values for some tunables
+- x86: Use SIZE_MAX instead of (long int)-1 for tunable range value
+- tunables: Simplify TUNABLE_SET interface
+- setrlimit/getrlimit: Use __nonnull to avoid null pointer
+- benchtests: Updated json bench-variant attribute
+- regex: stop using alloca
+- regexec: remove alloca usage in build_trtable
+- regex: remove alloca usage on regex set_regs
+- malloc: Sync dynarray with gnulib
+- misc: Sync cdefs.h with gnulib
+- linux: Fix __sem_check_add_mapping search_sem
+- linux: Fix __sem_check_add_mapping name length
+- Add more ptrace constants for AArch64 and PowerPC.
+- strchr: Add additional benchmarks and tests
+- x86-64: Refactor and improve performance of strchr-avx2.S
+- pthread: Remove alloca usage from __sem_check_add_mapping
+- pthread: Refactor semaphore code
+- linux: Require /dev/shm as the shared memory file system
+- sunrpc: Fix typo in xdr_string comment
+- tst: Provide test for ppoll
+- tst: Provide test for timerfd related functions
+- x86: Add PTWRITE feature detection [BZ #27346]
+- nsswitch: return result when nss database is locked [BZ #27343]
+- printf: Add smoke tests for long double
+- Add NT_ARM_TAGGED_ADDR_CTRL from Linux 5.10 to elf.h.
+- argp: Avoid undefined behaviour when invoking qsort().
+- argp: Improve comments.
+- argp: Don't pass invalid arguments to isspace, isalnum, isalpha, isdigit.
+- argp: Don't rely on undefined behaviour of _tolower().
+- argp: fix pointer-subtraction bug
+- Use binutils 2.36 branch in build-many-glibcs.py.
+- manual: Correct description of ENTRY [BZ #17183]
+- nptl: Remove private futex optimization [BZ #27304]
+- stdio-common: Add a few double formatting tests [BZ #27245]
+-  posix/tst-rfc3484: Fix compile failure linking to local __stat64
+- i686: Regenerate ULPs
+- tst-rtld-list-tunables.sh: Unset glibc tunables
+- linux: Remove shmmax check from tst-sysvshm-linux
+- x86: Adding an upper bound for Enhanced REP MOVSB.
+- Fix version.h for glibc 2.34 development
+- Add MS_NOSYMFOLLOW from Linux 5.10 to <sys/mount.h>.
+- Move _SC_MINSIGSTKSZ/_SC_SIGSTKSZ entry in NEWS
+- libSegFault: Fix printing signal number [BZ #27249]
+- hurd TIOCFLUSH: fix fixing argument
+- sysconf: Add _SC_MINSIGSTKSZ/_SC_SIGSTKSZ [BZ #20305]
+- hurd TIOCFLUSH: Cope BSD 4.1 semantic
+- tst-mallinfo2.c: Remove useless trailing semicolon for macro
+- elf: Replace a --defsym trick with an object file to be compatible with LLD
+- Open master branch for glibc 2.34 development
+- Prepare for glibc 2.33 release
+- Update NEWS with bugs
+- Update translations
+- NEWS: Fix typo in CVE-2021-3326 entry
+- elf: Fix tests that rely on ld.so.cache for cross-compiling
+- NEWS: Mention CVE-2021-3326 (iconv assertion with ISO-20220-JP-3)
+- NEWS: Add entry for glibc-hwcaps and deprecate legacy hwcaps
+- x86: Properly set usable CET feature bits [BZ #26625]
+- Update translations
+- Update libc.pot for 2.33 release
+- Update ia64 libm-test-ulps
+- sh: Update libm-tests-ulps
+- ia64: Fix brk call on statup
+- Update sparc libm-test-ulps
+- Update alpha libm-test-ulps
+- powerpc64: Workaround sigtramp vdso return call
+- Fix nss/tst-reload2 for systems without PATH_MAX
+- nsswitch: do not reload if "/" changes
+- elf: Limit tst-prelink-cmp target archs
+- CVE-2021-3326: gconv: Fix assertion failure in ISO-2022-JP-3 module (#1921917)
 
 %changelog
+* Fri Feb 12 2021 Florian Weimer <fweimer@redhat.com> - 2.32.9000-30
+- Auto-sync with upstream branch master,
+  commit 228f30ab4724d4087d5f52018873fde22efea6e2:
+
 * Wed Jan 27 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-29
 - Auto-sync with upstream branch master,
   commit df359a25ba6f6bda06104229fbfe284c1fb30915:
