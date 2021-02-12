@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 30%{?dist}
+Release: 1%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2288,6 +2288,11 @@ fi
 %endif
 
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
+
+%changelog
+* Fri Feb 12 2021 Florian Weimer <fweimer@redhat.com> - 2.32.9000-30
+- Auto-sync with upstream branch master,
+  commit 228f30ab4724d4087d5f52018873fde22efea6e2:
 - tunables: Disallow negative values for some tunables
 - x86: Use SIZE_MAX instead of (long int)-1 for tunable range value
 - tunables: Simplify TUNABLE_SET interface
@@ -2357,11 +2362,6 @@ fi
 - nsswitch: do not reload if "/" changes
 - elf: Limit tst-prelink-cmp target archs
 - CVE-2021-3326: gconv: Fix assertion failure in ISO-2022-JP-3 module (#1921917)
-
-%changelog
-* Fri Feb 12 2021 Florian Weimer <fweimer@redhat.com> - 2.32.9000-30
-- Auto-sync with upstream branch master,
-  commit 228f30ab4724d4087d5f52018873fde22efea6e2:
 
 * Wed Jan 27 2021 Arjun Shankar <arjun@redhat.com> - 2.32.9000-29
 - Auto-sync with upstream branch master,
