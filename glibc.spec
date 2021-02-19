@@ -27,8 +27,8 @@
 %bcond_without benchtests
 # Default: Not bootstrapping.
 %bcond_with bootstrap
-# Default: Disable -Werror due to GCC PR98512.
-%bcond_with werror
+# Default: Treat warnings as errors.
+%bcond_without werror
 # Default: Always build documentation.
 %bcond_without docs
 
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -155,6 +155,12 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+Patch32: glibc-upstream-2.33-1.patch
+Patch33: glibc-upstream-2.33-2.patch
+Patch34: glibc-upstream-2.33-3.patch
+Patch35: glibc-upstream-2.33-4.patch
+Patch36: glibc-upstream-2.33-5.patch
+Patch37: glibc-upstream-2.33-6.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2290,6 +2296,17 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Feb 19 2021 Florian Weimer <fweimer@redhat.com> - 2.33-2
+- Re-enable -Werror; GCC PR 98512 workaround applied upstream
+- Import patches from the upstream glibc 2.33 branch, up to commit
+  8d4241b8976273513e72cc1c5f6b1af3e11f0792.
+- string: Work around GCC PR 98512 in rawmemchr
+- S390: Add new hwcap values.
+- tunables: Disallow negative values for some tunables
+- x86: Use SIZE_MAX instead of (long int)-1 for tunable range value
+- tunables: Simplify TUNABLE_SET interface
+- nsswitch: return result when nss database is locked [BZ #27343]
+
 * Mon Feb 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33-1
 - Switch to glibc 2.33 upstream release tarball
 
