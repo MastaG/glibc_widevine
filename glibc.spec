@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-48-g228f30ab47
+%define glibcsrcdir glibc-2.33.9000-73-ge9e7f24543
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2290,6 +2290,35 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Feb 21 2021 Carlos O'Donell <carlos@redhat.com> - 2.33.9000-2
+- Auto-sync with upstream branch master,
+  commit e9e7f24543e6d1b0a31641f144697e261df6ccd7:
+- configure: Replace obsolete AC_TRY_LINK with AC_LINK_IFELSE
+- configure: Remove obsolete AC_CHECK_TOOL_PREFIX
+- configure: Replace obsoleted AC_HELP_STRING with AS_HELP_STRING
+- Update syscall lists for Linux 5.11.
+- Correct hppa EFD_NONBLOCK, IN_NONBLOCK, SFD_NONBLOCK and TFD_NONBLOCK defines.
+- string: Work around GCC PR 98512 in rawmemchr
+- tst: time: Provide Y2038 tests for mktime (tst-mktime4.c)
+- tst: Provide test for difftime
+- tst: Provide test for ctime
+- tst: Provide test for sched_rr_get_interval
+- S390: Add new hwcap values.
+- aarch64: Fix sys/ptrace.h if linux headers are included
+- elf: Do not copy vDSO soname when setting up link map
+- x86: Remove the extra space between "# endif"
+- hurd: Fix fstatfs build failure
+- linux: Remove stat-check.c
+- linux: Remove overflow.h
+- linux: Consolidate internal_statvfs
+- linux: Consolidate statvfs implementations
+- linux: Consolidate fstatvfs implementations
+- linux: Consolidate statfs implementations
+- linux: Consolidate fstatfs implementations
+- linux: Set LFS statfs as default
+- linux: Set default kernel_stat.h to LFS
+- linux: Fix STATFS_IS_STATFS64 definition
+
 * Fri Feb 12 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-1
 - Auto-sync with upstream branch master,
   commit 228f30ab4724d4087d5f52018873fde22efea6e2:
