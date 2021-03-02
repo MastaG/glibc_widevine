@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -161,6 +161,9 @@ Patch34: glibc-upstream-2.33-3.patch
 Patch35: glibc-upstream-2.33-4.patch
 Patch36: glibc-upstream-2.33-5.patch
 Patch37: glibc-upstream-2.33-6.patch
+Patch38: glibc-upstream-2.33-7.patch
+Patch39: glibc-upstream-2.33-8.patch
+Patch40: glibc-upstream-2.33-9.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2296,6 +2299,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Mar  2 2021 Florian Weimer <fweimer@redhat.com> - 2.33-3
+- Import patches from the upstream glibc 2.33 branch, up to commit
+  71b2463f6178a6097532dcfe8948bffbe2376dfb.
+- x86: Add CPU-specific diagnostics to ld.so --list-diagnostics
+- x86: Automate generation of PREFERRED_FEATURE_INDEX_1 bitfield
+- ld.so: Implement the --list-diagnostics option
+
 * Fri Feb 19 2021 Florian Weimer <fweimer@redhat.com> - 2.33-2
 - Re-enable -Werror; GCC PR 98512 workaround applied upstream
 - Import patches from the upstream glibc 2.33 branch, up to commit
