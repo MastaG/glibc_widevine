@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-73-ge9e7f24543
+%define glibcsrcdir glibc-2.33.9000-114-gf01a61e138
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -145,7 +145,6 @@ Patch4: glibc-fedora-linux-tcsetattr.patch
 Patch6: glibc-fedora-localedef.patch
 Patch8: glibc-fedora-manual-dircategory.patch
 Patch9: glibc-rh827510.patch
-Patch12: glibc-rh819430.patch
 Patch13: glibc-fedora-localedata-rh61908.patch
 Patch15: glibc-rh1070416.patch
 Patch16: glibc-nscd-sysconfig.patch
@@ -2290,6 +2289,52 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Mar 03 2021 Arjun Shankar <arjun@redhat.com> - 2.33.9000-3
+- Drop glibc-rh819430.patch; fixed upstream.
+- Auto-sync with upstream branch master,
+  commit f01a61e13872109b3b233158ab664364bd1879bc:
+- i386: Regenerate ulps
+- x86: Add CPU-specific diagnostics to ld.so --list-diagnostics
+- x86: Automate generation of PREFERRED_FEATURE_INDEX_1 bitfield
+- ld.so: Implement the --list-diagnostics option
+- powerpc: Update libm-test-ulps
+- tst: Add test for utimes
+- tst: Add test for utime
+- tst: Add test for futimens
+- nptl: __libc_cleanup_push/__libc_cleanup_pop require -fexceptions
+- elf: Build __dl_iterate_phdr with unwinding support [BZ #27498]
+- nptl: Use <unwind-link.h> for accessing the libgcc_s unwinder
+- Implement _Unwind_Resume in libc on top of <unwind-link.h>
+- Move sysdeps/gnu/unwind-resume.c to sysdeps/generic/unwind-resume.c
+- __frame_state_for: Use <unwind-link.h> for unwinder access
+- sparc: Implement backtrace on top <unwind-link.h>
+- m68k: Implement backtrace on top of <unwind-link.h>
+- i386: Implement backtrace on top of <unwind-link.h>
+- arm: Implement backtrace on top of <unwind-link.h>
+- backtrace: Implement on top of <unwind-link.h>
+- Implement <unwind-link.h> for dynamically loading the libgcc_s unwinder
+- Correct buffer end pointer in IO_wdefault_doallocate (BZ #26874)
+- aarch64: update ulps.
+- Add inputs that generate larger error bounds
+- Reduce the statically linked startup code [BZ #23323]
+- posix: Falling back to non wide mode in case of encoding error [BZ #14185]
+- nptl: Move elision implementations into libc
+- NEWS: Add missing bug closures
+- added rt to malloc/Depend [BZ #27132]
+- x86: Use x86/nptl/pthreaddef.h
+- nptl: Move futex-internal into libc
+- nptl: Move lowlevellock into libc [BZ #15648]
+- nptl: Move futex-internal.c into main nptl directory
+- nptl: Reformat Versions
+- nptl: Split libpthread-routines into one routine per line
+- x86: Remove unused variables for raw cache sizes from cacheinfo.h
+- Use Linux 5.11 in build-many-glibcs.py.
+- <bits/platform/x86.h>: Correct x86_cpu_TBM
+- x86_64/clone.S: Upate comments
+- i386/clone.S: Remove redundant EBX load
+- aarch64: Remove the unused __read_tp symbol
+- build-many-glibcs.py: Use make -O for more consistent log output
+
 * Sun Feb 21 2021 Carlos O'Donell <carlos@redhat.com> - 2.33.9000-2
 - Auto-sync with upstream branch master,
   commit e9e7f24543e6d1b0a31641f144697e261df6ccd7:
