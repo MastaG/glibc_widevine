@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -164,6 +164,7 @@ Patch37: glibc-upstream-2.33-6.patch
 Patch38: glibc-upstream-2.33-7.patch
 Patch39: glibc-upstream-2.33-8.patch
 Patch40: glibc-upstream-2.33-9.patch
+Patch41: glibc-upstream-2.33-10.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2299,6 +2300,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Mar  4 2021 Florian Weimer <fweimer@redhat.com> - 2.33-4
+- Import patch from the upstream glibc 2.33 branch, up to commit
+  3e880d733753183696d1a81c34caef3a9add2b0c.
+- nss: Re-enable NSS module loading after chroot [BZ #27389]
+
 * Tue Mar  2 2021 Florian Weimer <fweimer@redhat.com> - 2.33-3
 - Import patches from the upstream glibc 2.33 branch, up to commit
   71b2463f6178a6097532dcfe8948bffbe2376dfb.
