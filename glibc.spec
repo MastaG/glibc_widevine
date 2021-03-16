@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -165,6 +165,15 @@ Patch38: glibc-upstream-2.33-7.patch
 Patch39: glibc-upstream-2.33-8.patch
 Patch40: glibc-upstream-2.33-9.patch
 Patch41: glibc-upstream-2.33-10.patch
+Patch42: glibc-upstream-2.33-11.patch
+Patch43: glibc-upstream-2.33-12.patch
+Patch44: glibc-upstream-2.33-13.patch
+Patch45: glibc-upstream-2.33-14.patch
+Patch46: glibc-upstream-2.33-15.patch
+Patch47: glibc-upstream-2.33-16.patch
+Patch48: glibc-upstream-2.33-17.patch
+Patch49: glibc-upstream-2.33-18.patch
+Patch50: glibc-upstream-2.33-19.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2300,6 +2309,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Mar 16 2021 Florian Weimer <fweimer@redhat.com> - 2.33-5
+- Import patches from the upstream glibc 2.33 branch, up to commit
+  db32fc27e7bdfb5468200a94e9152bcc1c971d25:
+- test-container: Always copy test-specific support files [BZ #27537]
+- nptl: Remove private futex optimization [BZ #27304]
+- pthread_once hangs when init routine throws an exception [BZ #18435]
+- elf: ld.so --help calls _dl_init_paths without a main map (#1609351)
+- elf: Always set l in _dl_init_paths (bug 23462)
+- x86: Handle _SC_LEVEL1_ICACHE_LINESIZE [BZ #27444]
+- io: Return EBAFD for negative file descriptor on fstat (BZ #27559)
+- nscd: Fix double free in netgroupcache [BZ #27462]
+- x86: Set minimum x86-64 level marker [BZ #27318]
+
 * Thu Mar  4 2021 Florian Weimer <fweimer@redhat.com> - 2.33-4
 - Import patch from the upstream glibc 2.33 branch, up to commit
   3e880d733753183696d1a81c34caef3a9add2b0c.
