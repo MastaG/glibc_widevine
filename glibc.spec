@@ -1119,6 +1119,9 @@ build()
 %if %{with bootstrap}
 		--without-selinux \
 %endif
+%ifarch aarch64
+		--enable-memory-tagging \
+%endif
 		--disable-crypt ||
 		{ cat config.log; false; }
 
