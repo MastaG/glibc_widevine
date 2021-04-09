@@ -1074,18 +1074,29 @@ rpm_inherit_flags \
 	"-m31" \
 	"-m32" \
 	"-m64" \
+	"-march=armv8-a+lse" \
+	"-march=armv8.1-a" \
 	"-march=haswell" \
 	"-march=i686" \
 	"-march=x86-64" \
+	"-march=x86-64-v2" \
+	"-march=x86-64-v3" \
+	"-march=x86-64-v4" \
 	"-march=z13" \
 	"-march=z14" \
 	"-march=z15" \
 	"-march=zEC12" \
 	"-mbranch-protection=standard" \
+	"-mcpu=power10" \
+	"-mcpu=power8" \
+	"-mcpu=power9" \
 	"-mfpmath=sse" \
 	"-msse2" \
 	"-mstackrealign" \
 	"-mtune=generic" \
+	"-mtune=power10" \
+	"-mtune=power8" \
+	"-mtune=power9" \
 	"-mtune=z13" \
 	"-mtune=z14" \
 	"-mtune=z15" \
