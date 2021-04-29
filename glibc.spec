@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 5%{?dist}
+Release: 6%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1232,14 +1232,14 @@ done
 %endif
 
 # Build and install:
-make -j1 install_root=%{glibc_sysroot} install -C build-%{target}
-
 pushd build-%{target}
-# Do not use a parallel make here because the hardlink optimization in
-# localedef is not fully reproducible when running concurrently.
-make install_root=%{glibc_sysroot} \
+%make_build install_root=%{glibc_sysroot} install
+%make_build install_root=%{glibc_sysroot} \
 	install-locales -C ../localedata objdir=`pwd`
 popd
+# Locale creation may produce different groups of hardlinks in an
+# unpredictable manner.  Re-grouping makes those differences go away.
+hardlink %{glibc_sysroot}/usr/lib/locale
 
 # install_different:
 #	Install all core libraries into DESTDIR/SUBDIR. Either the file is
@@ -2320,6 +2320,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Apr 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33-6
+- Switch back to parallel locale generation during build
+
 * Tue Mar 16 2021 Florian Weimer <fweimer@redhat.com> - 2.33-5
 - Import patches from the upstream glibc 2.33 branch, up to commit
   db32fc27e7bdfb5468200a94e9152bcc1c971d25:
