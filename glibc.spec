@@ -85,12 +85,6 @@
 %endif
 
 ##############################################################################
-# If the debug information is split into two packages, the core debuginfo
-# package and the common debuginfo package then the arch should be listed
-# here. If the arch is not listed here then a single core debuginfo package
-# will be created for the architecture.
-%define debuginfocommonarches %{biarcharches} alpha alphaev6
-##############################################################################
 # %%package glibc - The GNU C Library (glibc) core package.
 ##############################################################################
 Summary: The GNU libc libraries
@@ -130,9 +124,24 @@ Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.xz
 Source1: nscd.conf
 Source2: bench.mk
 Source3: glibc-bench-compare
+Source10: wrap-find-debuginfo.sh
 Source11: parse-SUPPORTED.py
 # Include in the source RPM for reference.
 Source12: ChangeLog.old
+
+######################################################################
+# Activate the wrapper script for debuginfo generation, by rewriting
+# the definition of __debug_install_post.
+%{lua:
+local wrapper = rpm.expand("%{SOURCE10}")
+local ldso = rpm.expand("%{glibc_sysroot}/%{_lib}/ld-%{VERSION}.so")
+local original = rpm.expand("%{macrobody:__debug_install_post}")
+-- Strip leading newline.  It confuses the macro redefinition.
+-- Avoid embedded newlines that confuse the macro definition.
+original = original:match("^%s*(.-)%s*$"):gsub("\\\n", "")
+rpm.define("__debug_install_post bash " .. wrapper
+  .. " " .. ldso .. " " .. original)
+}
 
 ##############################################################################
 # Patches:
@@ -283,11 +292,6 @@ BuildRequires: binutils >= 2.30-17
 
 # Earlier releases have broken support for IRELATIVE relocations
 Conflicts: prelink < 0.4.2
-
-%if 0%{?_enable_debug_packages}
-BuildRequires: elfutils >= 0.72
-BuildRequires: rpm >= 4.2-0.56
-%endif
 
 %if %{without bootstrap}
 %if %{with testsuite}
@@ -952,59 +956,6 @@ which can be helpful during program debugging.
 
 If unsure if you need this, don't install this package.
 
-##############################################################################
-# glibc core "debuginfo" sub-package
-##############################################################################
-%if 0%{?_enable_debug_packages}
-%define debug_package %{nil}
-%define __debug_install_post %{nil}
-%global __debug_package 1
-# Disable thew new features that glibc packages don't use.
-%undefine _debugsource_packages
-%undefine _debuginfo_subpackages
-%undefine _unique_debug_names
-%undefine _unique_debug_srcs
-
-%package debuginfo
-Summary: Debug information for package %{name}
-AutoReqProv: no
-%ifarch %{debuginfocommonarches}
-Requires: glibc-debuginfo-common = %{version}-%{release}
-%else
-%ifarch %{ix86} %{sparc}
-Obsoletes: glibc-debuginfo-common
-%endif
-%endif
-
-%description debuginfo
-This package provides debug information for package %{name}.
-Debug information is useful when developing applications that use this
-package or when debugging this package.
-
-This package also contains static standard C libraries with
-debugging information.  You need this only if you want to step into
-C library routines during debugging programs statically linked against
-one or more of the standard C libraries.
-To use this debugging information, you need to link binaries
-with -static -L%{_prefix}/lib/debug%{_libdir} compiler options.
-
-##############################################################################
-# glibc common "debuginfo-common" sub-package
-##############################################################################
-%ifarch %{debuginfocommonarches}
-
-%package debuginfo-common
-Summary: Debug information for package %{name}
-AutoReqProv: no
-
-%description debuginfo-common
-This package provides debug information for package %{name}.
-Debug information is useful when developing applications that use this
-package or when debugging this package.
-
-%endif
-%endif
-
 %if %{with benchtests}
 %package benchtests
 Summary: Benchmarking binaries and scripts for %{name}
@@ -1436,21 +1387,6 @@ truncate -s 0 %{glibc_sysroot}/etc/gai.conf
 truncate -s 0 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
 chmod 644 %{glibc_sysroot}%{_libdir}/gconv/gconv-modules.cache
 
-##############################################################################
-# Install debug copies of unstripped static libraries
-# - This step must be last in order to capture any additional static
-#   archives we might have added.
-##############################################################################
-
-# If we are building a debug package then copy all of the static archives
-# into the debug directory to keep them as unstripped copies.
-%if 0%{?_enable_debug_packages}
-mkdir -p %{glibc_sysroot}%{_prefix}/lib/debug%{_libdir}
-cp -a %{glibc_sysroot}%{_libdir}/*.a \
-	%{glibc_sysroot}%{_prefix}/lib/debug%{_libdir}/
-rm -f %{glibc_sysroot}%{_prefix}/lib/debug%{_libdir}/*_p.a
-%endif
-
 # Remove any zoneinfo files; they are maintained by tzdata.
 rm -rf %{glibc_sysroot}%{_prefix}/share/zoneinfo
 
@@ -1586,11 +1522,6 @@ ar cr %{glibc_sysroot}%{_prefix}/%{_lib}/libpthread_nonshared.a
 #       - File list with the .so symbolic links for NSS packages.
 # * compat-libpthread-nonshared.filelist.
 #	- File list for compat-libpthread-nonshared subpackage.
-# * debuginfo.filelist
-#	- Files for the glibc debuginfo package.
-# * debuginfocommon.filelist
-#	- Files for the glibc common debuginfo package.
-#
 
 # Create the main file lists. This way we can append to any one of them later
 # wihtout having to create it. Note these are removed at the start of the
@@ -1609,8 +1540,6 @@ touch nss_db.filelist
 touch nss_hesiod.filelist
 touch nss-devel.filelist
 touch compat-libpthread-nonshared.filelist
-touch debuginfo.filelist
-touch debuginfocommon.filelist
 
 ###############################################################################
 # Master file list, excluding a few things.
@@ -1872,99 +1801,6 @@ echo "%{_prefix}/libexec/glibc-benchtests/validate_benchout.py*" >> benchtests.f
 # compat-libpthread-nonshared
 ###############################################################################
 echo "%{_libdir}/libpthread_nonshared.a" >> compat-libpthread-nonshared.filelist
-
-###############################################################################
-# glibc-debuginfocommon, and glibc-debuginfo
-###############################################################################
-
-%if 0%{?_enable_debug_packages}
-find_debuginfo_args='--strict-build-id -g -i'
-%ifarch %{debuginfocommonarches}
-find_debuginfo_args="$find_debuginfo_args \
-	-l common.filelist \
-	-l utils.filelist \
-	-l nscd.filelist \
-	-p '.*/(sbin|libexec)/.*' \
-	-o debuginfocommon.filelist \
-	-l nss_db.filelist -l nss_hesiod.filelist \
-	-l libnsl.filelist -l glibc.filelist \
-%if %{with benchtests}
-	-l benchtests.filelist
-%endif
-	"
-%endif
-
-/usr/lib/rpm/find-debuginfo.sh $find_debuginfo_args -o debuginfo.filelist
-
-# List all of the *.a archives in the debug directory.
-list_debug_archives()
-{
-	local dir=%{_prefix}/lib/debug%{_libdir}
-	find %{glibc_sysroot}$dir -name "*.a" -printf "$dir/%%P\n"
-}
-
-%ifarch %{debuginfocommonarches}
-
-# Remove the source files from the common package debuginfo.
-sed -i '\#^%{glibc_sysroot}%{_prefix}/src/debug/#d' debuginfocommon.filelist
-
-# Create a list of all of the source files we copied to the debug directory.
-find %{glibc_sysroot}%{_prefix}/src/debug \
-     \( -type d -printf '%%%%dir ' \) , \
-     -printf '%{_prefix}/src/debug/%%P\n' > debuginfocommon.sources
-
-%ifarch %{biarcharches}
-
-# Add the source files to the core debuginfo package.
-cat debuginfocommon.sources >> debuginfo.filelist
-
-%else
-
-%ifarch %{ix86}
-%define basearch i686
-%endif
-%ifarch sparc sparcv9
-%define basearch sparc
-%endif
-
-# The auxarches get only these few source files.
-auxarches_debugsources=\
-'/(generic|linux|%{basearch}|nptl(_db)?)/|/%{glibcsrcdir}/build|/dl-osinfo\.h'
-
-# Place the source files into the core debuginfo pakcage.
-egrep "$auxarches_debugsources" debuginfocommon.sources >> debuginfo.filelist
-
-# Remove the source files from the common debuginfo package.
-egrep -v "$auxarches_debugsources" \
-  debuginfocommon.sources >> debuginfocommon.filelist
-
-%endif
-
-# Add the list of *.a archives in the debug directory to
-# the common debuginfo package.
-list_debug_archives >> debuginfocommon.filelist
-
-%endif
-
-# Remove some common directories from the common package debuginfo so that we
-# don't end up owning them.
-exclude_common_dirs()
-{
-	exclude_dirs="%{_prefix}/src/debug"
-	exclude_dirs="$exclude_dirs $(echo %{_prefix}/lib/debug{,/%{_lib},/bin,/sbin})"
-	exclude_dirs="$exclude_dirs $(echo %{_prefix}/lib/debug%{_prefix}{,/%{_lib},/libexec,/bin,/sbin})"
-
-	for d in $(echo $exclude_dirs | sed 's/ /\n/g'); do
-		sed -i "\|^%%dir $d/\?$|d" $1
-	done
-}
-
-%ifarch %{debuginfocommonarches}
-exclude_common_dirs debuginfocommon.filelist
-%endif
-exclude_common_dirs debuginfo.filelist
-
-%endif
 
 ##############################################################################
 # Run the glibc testsuite
@@ -2326,13 +2162,6 @@ fi
 
 %files -f libnsl.filelist -n libnsl
 /%{_lib}/libnsl.so.1
-
-%if 0%{?_enable_debug_packages}
-%files debuginfo -f debuginfo.filelist
-%ifarch %{debuginfocommonarches}
-%files debuginfo-common -f debuginfocommon.filelist
-%endif
-%endif
 
 %if %{with benchtests}
 %files benchtests -f benchtests.filelist
