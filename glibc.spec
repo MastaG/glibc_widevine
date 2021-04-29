@@ -104,7 +104,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1222,14 +1222,14 @@ done
 %endif
 
 # Build and install:
-make -j1 install_root=%{glibc_sysroot} install -C build-%{target}
-
 pushd build-%{target}
-# Do not use a parallel make here because the hardlink optimization in
-# localedef is not fully reproducible when running concurrently.
-make install_root=%{glibc_sysroot} \
+%make_build install_root=%{glibc_sysroot} install
+%make_build install_root=%{glibc_sysroot} \
 	install-locales -C ../localedata objdir=`pwd`
 popd
+# Locale creation may produce different groups of hardlinks in an
+# unpredictable manner.  Re-grouping makes those differences go away.
+hardlink %{glibc_sysroot}/usr/lib/locale
 
 # install_different:
 #	Install all core libraries into DESTDIR/SUBDIR. Either the file is
@@ -2310,6 +2310,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu May  6 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-5
+- Build locales in parallel again
+
 * Tue May  4 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-4
 - Various changes to get glibc building again, using selected upstream
   backports.
