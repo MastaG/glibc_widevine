@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -174,6 +174,27 @@ Patch47: glibc-upstream-2.33-16.patch
 Patch48: glibc-upstream-2.33-17.patch
 Patch49: glibc-upstream-2.33-18.patch
 Patch50: glibc-upstream-2.33-19.patch
+Patch51: glibc-upstream-2.33-20.patch
+Patch52: glibc-upstream-2.33-21.patch
+Patch53: glibc-upstream-2.33-22.patch
+Patch54: glibc-upstream-2.33-23.patch
+Patch55: glibc-upstream-2.33-24.patch
+Patch56: glibc-upstream-2.33-25.patch
+Patch57: glibc-upstream-2.33-26.patch
+Patch58: glibc-upstream-2.33-27.patch
+Patch59: glibc-upstream-2.33-28.patch
+Patch60: glibc-upstream-2.33-29.patch
+Patch61: glibc-upstream-2.33-30.patch
+Patch62: glibc-upstream-2.33-31.patch
+Patch63: glibc-upstream-2.33-32.patch
+Patch64: glibc-upstream-2.33-33.patch
+Patch65: glibc-upstream-2.33-34.patch
+Patch66: glibc-upstream-2.33-35.patch
+Patch67: glibc-upstream-2.33-36.patch
+Patch68: glibc-upstream-2.33-37.patch
+Patch69: glibc-upstream-2.33-38.patch
+Patch70: glibc-upstream-2.33-39.patch
+Patch71: glibc-upstream-2.33-40.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2320,6 +2341,31 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Apr 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33-7
+- Import patches from the upstream glibc 2.33 branch, up to commit
+  3f5080aedd164c1f92a53552dd3e0b82ac6d2bd3:
+- S390: Also check vector support in memmove ifunc-selector [BZ #27511]
+- malloc: Fix a realloc crash with heap tagging [BZ 27468]
+- Update Nios II libm-test-ulps.
+- tst: Provide test for select
+- misc: Fix tst-select timeout handling (BZ#27648)
+- libsupport: Add support_select_modifies_timeout
+- libsupport: Add support_select_normalizes_timeout
+- linux: Normalize and return timeout on select (BZ #27651)
+- linux: always update select timeout (BZ #27706)
+- tunables: Fix comparison of tunable values
+- support: Typo and formatting fixes
+- support: Pass environ to child process
+- support: Add capability to fork an sgid child
+- tst-env-setuid: Use support_capture_subprogram_self_sgid
+- Enhance setuid-tunables test
+- Fix SXID_ERASE behavior in setuid programs (BZ #27471)
+- Remove PR_TAGGED_ADDR_ENABLE from sys/prctl.h
+- x86: tst-cpu-features-supports.c: Update AMX check
+- nptl_db: Support different libpthread/ld.so load orders (bug 27744)
+- nptl: Check for compatible GDB in nptl/tst-pthread-gdb-attach
+- nptl: Do not build nptl/tst-pthread-gdb-attach as PIE
+
 * Fri Apr 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33-6
 - Switch back to parallel locale generation during build
 

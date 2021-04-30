@@ -1,0 +1,96 @@
+commit 3e9ca60a580e2b6854cd5314ebb0866a1f387ca8
+Author: Adhemerval Zanella <adhemerval.zanella@linaro.org>
+Date:   Thu Apr 8 07:39:32 2021 -0300
+
+    linux: always update select timeout (BZ #27706)
+    
+    The timeout should be updated even on failure for time64 support.
+    
+    Checked on i686-linux-gnu.
+    
+    (cherry-pick from commit cedbf6d5f3f70ca911176de87d6e453eeab4b7a1)
+
+diff --git a/misc/tst-select.c b/misc/tst-select.c
+index 534105b50020fa44..52aa26651f612701 100644
+--- a/misc/tst-select.c
++++ b/misc/tst-select.c
+@@ -23,6 +23,7 @@
+ #include <support/timespec.h>
+ #include <support/xunistd.h>
+ #include <support/xtime.h>
++#include <support/xsignal.h>
+ 
+ struct child_args
+ {
+@@ -30,6 +31,12 @@ struct child_args
+   struct timeval tmo;
+ };
+ 
++static void
++alarm_handler (int signum)
++{
++  /* Do nothing.  */
++}
++
+ static void
+ do_test_child (void *clousure)
+ {
+@@ -59,6 +66,22 @@ do_test_child (void *clousure)
+   xwrite (args->fds[1][1], "foo", 3);
+ }
+ 
++static void
++do_test_child_alarm (void *clousure)
++{
++  struct sigaction act = { .sa_handler = alarm_handler };
++  xsigaction (SIGALRM, &act, NULL);
++  alarm (1);
++
++  struct timeval tv = { .tv_sec = 10, .tv_usec = 0 };
++  int r = select (0, NULL, NULL, NULL, &tv);
++  TEST_COMPARE (r, -1);
++  TEST_COMPARE (errno, EINTR);
++
++  if (support_select_modifies_timeout ())
++    TEST_VERIFY (tv.tv_sec < 10);
++}
++
+ static int
+ do_test (void)
+ {
+@@ -98,6 +121,13 @@ do_test (void)
+   xclose (args.fds[0][0]);
+   xclose (args.fds[1][1]);
+ 
++  {
++    struct support_capture_subprocess result;
++    result = support_capture_subprocess (do_test_child_alarm, NULL);
++    support_capture_subprocess_check (&result, "tst-select-child", 0,
++				      sc_allow_none);
++  }
++
+   {
+     fd_set rfds;
+     FD_ZERO (&rfds);
+diff --git a/sysdeps/unix/sysv/linux/select.c b/sysdeps/unix/sysv/linux/select.c
+index 3b67ff44765ededf..dc16a816ed9e5f9b 100644
+--- a/sysdeps/unix/sysv/linux/select.c
++++ b/sysdeps/unix/sysv/linux/select.c
+@@ -107,7 +107,7 @@ __select64 (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
+   r = SYSCALL_CANCEL (pselect6, nfds, readfds, writefds, exceptfds, pts32,
+ 		      NULL);
+ # endif
+-  if (r >= 0 && timeout != NULL)
++  if (timeout != NULL)
+     *timeout = valid_timespec_to_timeval64 (ts32);
+ #endif
+ 
+@@ -128,7 +128,7 @@ __select (int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
+       ptv64 = &tv64;
+     }
+   int r = __select64 (nfds, readfds, writefds, exceptfds, ptv64);
+-  if (r >= 0 && timeout != NULL)
++  if (timeout != NULL)
+     /* The remanining timeout will be always less the input TIMEOUT.  */
+     *timeout = valid_timeval64_to_timeval (tv64);
+   return r;
