@@ -27,8 +27,8 @@
 %bcond_without benchtests
 # Default: Not bootstrapping.
 %bcond_with bootstrap
-# Default: Disable -Werror due to GCC PR98512.
-%bcond_with werror
+# Default: Enable using -Werror
+%bcond_without werror
 # Default: Always build documentation.
 %bcond_without docs
 
@@ -65,6 +65,14 @@
 %define buildpower9 0
 %endif
 
+# The annobin annotations cause binutils to produce broken ARM EABI
+# unwinding information.  Symptom is a hang/test failure for
+# malloc/tst-malloc-stats-cancellation.  See
+# <https://bugzilla.redhat.com/show_bug.cgi?id=1951492>.
+%ifarch armv7hl
+%undefine _annotated_build
+%endif
+
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
 # code in userspace is considered a biarch arch.
@@ -96,7 +104,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -154,6 +162,8 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+Patch32: glibc-upstream-amx-detection.patch
+Patch33: glibc-upstream-malloc-test-hang.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2300,6 +2310,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue May  4 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-4
+- Various changes to get glibc building again, using selected upstream
+  backports.
+- Re-enable -Werror by default.
+- This release introduces __libc_start_main@@GLIBC_2.34, so binaries
+  are not compatible with glibc 2.33.  Building binaries against this
+  glibc version is not recommended because of the partial libpthread
+  transition.
+- glibc-upstream-amx-detection.patch: Fix build failure after GCC 11.1 update.
+- glibc-upstream-malloc-test-hang.patch: Avoid test hang due to
+  annobin/binutils bug (#1951492)
+
 * Wed Mar 03 2021 Arjun Shankar <arjun@redhat.com> - 2.33.9000-3
 - Drop glibc-rh819430.patch; fixed upstream.
 - Auto-sync with upstream branch master,
