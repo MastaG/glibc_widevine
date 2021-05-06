@@ -90,7 +90,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2170,6 +2170,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu May  6 2021 Florian Weimer <fweimer@redhat.com> - 2.33-8
+- Use distribution mechanism for debuginfo (#1661510, #1886295, #1905611)
+
 * Fri Apr 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33-7
 - Import patches from the upstream glibc 2.33 branch, up to commit
   3f5080aedd164c1f92a53552dd3e0b82ac6d2bd3:
