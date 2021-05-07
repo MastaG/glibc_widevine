@@ -83,7 +83,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -197,6 +197,9 @@ Patch68: glibc-upstream-2.33-37.patch
 Patch69: glibc-upstream-2.33-38.patch
 Patch70: glibc-upstream-2.33-39.patch
 Patch71: glibc-upstream-2.33-40.patch
+Patch72: glibc-cpu-check-1.patch
+Patch73: glibc-cpu-check-2.patch
+Patch74: glibc-cpu-check-3.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2138,6 +2141,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri May  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-10
+- Downstream-only patches for CPU detection on ppc64le, s390x
+
 * Fri May  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-9
 - Remove spec file support for power9 multilib (not used on Fedora)
 
