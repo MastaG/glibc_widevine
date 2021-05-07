@@ -58,13 +58,6 @@
 # Only some architectures have static PIE support.
 %define pie_arches %{ix86} x86_64
 
-# Build the POWER9 runtime on POWER, but only for downstream.
-%ifarch ppc64le
-%define buildpower9 0%{?rhel} > 0
-%else
-%define buildpower9 0
-%endif
-
 ##############################################################################
 # Any architecture/kernel combination that supports running 32-bit and 64-bit
 # code in userspace is considered a biarch arch.
@@ -90,7 +83,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1167,15 +1160,6 @@ build()
 # Default set of compiler options.
 build
 
-%if %{buildpower9}
-(
-  GCC="$GCC -mcpu=power9 -mtune=power9"
-  GXX="$GXX -mcpu=power9 -mtune=power9"
-  core_with_options="--with-cpu=power9"
-  build power9
-)
-%endif
-
 ##############################################################################
 # Install glibc...
 ##############################################################################
@@ -1259,12 +1243,6 @@ install_different()
 		ln -sf $libbaseso $dlib
 	done
 }
-
-%if %{buildpower9}
-pushd build-%{target}-power9
-install_different "$RPM_BUILD_ROOT/%{_lib}" power9 ..
-popd
-%endif
 
 ##############################################################################
 # Remove the files we don't want to distribute
@@ -1857,15 +1835,6 @@ pushd build-%{target}
 run_tests
 popd
 
-%if %{buildpower9}
-echo ====================TESTING -mcpu=power9=============
-pushd build-%{target}-power9
-run_tests
-popd
-%endif
-
-
-
 echo ====================TESTING END=====================
 PLTCMD='/^Relocation section .*\(\.rela\?\.plt\|\.rela\.IA_64\.pltoff\)/,/^$/p'
 echo ====================PLT RELOCS LD.SO================
@@ -1960,7 +1929,9 @@ local remove_dirs = { "%{_libdir}/i686",
 		      "%{_libdir}/i686/nosegneg",
 		      "%{_libdir}/power6",
 		      "%{_libdir}/power7",
-		      "%{_libdir}/power8" }
+		      "%{_libdir}/power8",
+		      "%{_libdir}/power9",
+		    }
 
 -- Walk all the directories with files we need to remove...
 for _, rdir in ipairs (remove_dirs) do
@@ -2088,9 +2059,6 @@ fi
 
 %files -f glibc.filelist
 %dir %{_prefix}/%{_lib}/audit
-%if %{buildpower9}
-%dir /%{_lib}/power9
-%endif
 %verify(not md5 size mtime) %config(noreplace) /etc/nsswitch.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/ld.so.conf
 %verify(not md5 size mtime) %config(noreplace) /etc/rpc
@@ -2170,6 +2138,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri May  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-9
+- Remove spec file support for power9 multilib (not used on Fedora)
+
 * Thu May  6 2021 Florian Weimer <fweimer@redhat.com> - 2.33-8
 - Use distribution mechanism for debuginfo (#1661510, #1886295, #1905611)
 
