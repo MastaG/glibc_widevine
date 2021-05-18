@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32-37-g760e1d2878
+%define glibcsrcdir glibc-2.32-46-g1799ac8eab
 %define glibcversion 2.32
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -96,7 +96,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 4%{?dist}
+Release: 5%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2020,6 +2020,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue May 18 2021 Arjun Shankar <arjun@redhat.com> - 2.32-5
+- Auto-sync with upstream branch release/2.32/master,
+  commit 1799ac8eabe87acd7b1ef7c3a483171489563482:
+- support: Typo and formatting fixes
+- support: Pass environ to child process
+- Fix SXID_ERASE behavior in setuid programs (BZ #27471)
+- Enhance setuid-tunables test
+- tst-env-setuid: Use support_capture_subprogram_self_sgid
+- support: Add capability to fork an sgid child
+- S390: Also check vector support in memmove ifunc-selector [BZ #27511]
+- powerpc64: Workaround sigtramp vdso return call
+- nscd: Fix double free in netgroupcache [BZ #27462]
+
 * Tue Feb 02 2021 Patsy Griffin <patsy@redhat.com> - 2.32-4
 - Auto-sync with upstream branch release/2.32/master,
   commit 760e1d287825fa91d4d5a0cc921340c740d803e2.
