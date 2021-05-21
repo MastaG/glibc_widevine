@@ -83,7 +83,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1153,6 +1153,11 @@ build()
 %if %{with bootstrap}
 		--without-selinux \
 %endif
+%ifarch aarch64
+%if 0%{?rhel} > 0
+		--enable-memory-tagging \
+%endif
+%endif
 		--disable-crypt ||
 		{ cat config.log; false; }
 
@@ -2141,6 +2146,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri May 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33-12
+- aarch64: Enable optional memory tagging support (downstream only)
+
 * Fri May  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-11
 - Trim changelog
 
