@@ -91,7 +91,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2110,6 +2110,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri May 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-7
+- aarch64: Enable optional memory tagging support
+
 * Tue May 11 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-6
 - Use distribution mechanism for debuginfo (#1661510, #1886295, #1905611)
 
