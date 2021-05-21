@@ -67,14 +67,20 @@
 # not biarch.
 %ifarch %{biarcharches}
 %define need_headers_package 1
+%if 0%{?rhel} > 0
+%define headers_package_name glibc-headers
+%else
 %ifarch %{ix86} x86_64
 %define headers_package_name glibc-headers-x86
 %endif
 %ifarch s390 s390x
 %define headers_package_name glibc-headers-s390
 %endif
+%dnl !rhel
+%endif
 %else
 %define need_headers_package 0
+%dnl !biarcharches
 %endif
 
 ##############################################################################
@@ -83,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -360,10 +366,12 @@ BuildRequires: kernel-headers >= 3.2
 %if %{need_headers_package}
 Requires: %{headers_package_name} = %{version}-%{release}
 %endif
+%if !(0%{?rhel} > 0 && %{need_headers_package})
 # For backwards compatibility, when the glibc-headers package existed.
 Provides: glibc-headers = %{version}-%{release}
 Provides: glibc-headers(%{_target_cpu})
 Obsoletes: glibc-headers < %{version}-%{release}
+%endif
 
 %description devel
 The glibc-devel package contains the object files necessary
@@ -421,8 +429,14 @@ which is highly discouraged.
 %if %{need_headers_package}
 %package -n %{headers_package_name}
 Summary: Additional internal header files for glibc-devel.
-BuildArch: noarch
 Requires: %{name} = %{version}-%{release}
+%if 0%{?rhel} > 0
+Provides: %{name}-headers(%{_target_cpu})
+Obsoletes: glibc-headers-x86 < %{version}-%{release}
+Obsoletes: glibc-headers-s390 < %{version}-%{release}
+%else
+BuildArch: noarch
+%endif
 
 %description -n %{headers_package_name}
 The %{headers_package_name} package contains the architecture-specific
@@ -2146,6 +2160,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri May 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33-13
+- Switch back to a unified glibc-headers package for downstream (#1940686)
+
 * Fri May 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33-12
 - aarch64: Enable optional memory tagging support (downstream only)
 
