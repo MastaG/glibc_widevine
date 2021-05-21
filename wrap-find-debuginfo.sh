@@ -13,6 +13,13 @@ set -ex
 
 ldso_tmp="$(mktemp)"
 
+# Prefer a separately installed debugedit over the RPM-integrated one.
+if command -v debugedit >/dev/null ; then
+    debugedit=debugedit
+else
+    debugedit=/usr/lib/rpm/debugedit
+fi
+
 cleanup () {
     rm -f "$ldso_tmp"
 }
@@ -56,8 +63,7 @@ while true ; do
     esac
 done
 debug_base_name=${last_arg:-$RPM_BUILD_ROOT}
-/usr/lib/rpm/debugedit -b "$debug_base_name" -d "$debug_dest_name" -n \
-		       $ldso_path
+$debugedit -b "$debug_base_name" -d "$debug_dest_name" -n $ldso_path
 
 # Apply single-file DWARF optimization.
 dwz $ldso_path
