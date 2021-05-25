@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-114-gf01a61e138
+%define glibcsrcdir glibc-2.33.9000-642-gac0353af81
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 8%{?dist}
+Release: 9%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -170,8 +170,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch32: glibc-upstream-amx-detection.patch
-Patch33: glibc-upstream-malloc-test-hang.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1412,22 +1410,6 @@ mv -f %{glibc_sysroot}/%{_lib}/lib{pcprofile,memusage}.so \
 # Strip all of the installed object files.
 strip -g %{glibc_sysroot}%{_libdir}/*.o
 
-###############################################################################
-# Rebuild libpthread.a using --whole-archive to ensure all of libpthread
-# is included in a static link. This prevents any problems when linking
-# statically, using parts of libpthread, and other necessary parts not
-# being included. Upstream has decided that this is the wrong approach to
-# this problem and that the full set of dependencies should be resolved
-# such that static linking works and produces the most minimally sized
-# static application possible.
-###############################################################################
-pushd %{glibc_sysroot}%{_prefix}/%{_lib}/
-$GCC -r -nostdlib -o libpthread.o -Wl,--whole-archive ./libpthread.a
-rm libpthread.a
-ar rcs libpthread.a libpthread.o
-rm libpthread.o
-popd
-
 # The xtrace and memusage scripts have hard-coded paths that need to be
 # translated to a correct set of paths using the $LIB token which is
 # dynamically translated by ld.so as the default lib directory.
@@ -1604,9 +1586,14 @@ grep -e "libmemusage.so" -e "libpcprofile.so" master.filelist >> glibc.filelist
 # glibc-devel
 ###############################################################################
 
-# Put some static files into the devel package.
+# Static libraries that land in glibc-devel, not glibc-static.
+devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\)\.a$'
+# Static libraries neither in glibc-devel nor in glibc-static.
+other_static_library_pattern='/libpthread_nonshared\.a'
+
 grep '%{_libdir}/lib.*\.a' master.filelist \
-  | grep '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
+  | grep "$devel_static_library_pattern" \
+  | grep -v "$other_static_library_pattern" \
   > devel.filelist
 
 # Put all of the object files and *.so (not the versioned ones) into the
@@ -1659,7 +1646,8 @@ grep '%{_prefix}/include' < master.filelist >> devel.filelist
 
 # Put the rest of the static files into the static package.
 grep '%{_libdir}/lib.*\.a' < master.filelist \
-  | grep -v '/lib\(\(c\|pthread\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\)\.a$' \
+  | grep -v "$devel_static_library_pattern" \
+  | grep -v "$other_static_library_pattern" \
   > static.filelist
 
 ###############################################################################
@@ -2124,6 +2112,18 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue May 25 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-9
+- Auto-sync with upstream branch master,
+  commit ac0353af81a23535f517586a5d04427120a157ac.
+- This removes libpthread as a separate shared object.  New programs
+  will depend on the GLIBC_2.34 symbol version.  Upstream development
+  brings in the following noteworthy bug fixes:
+- ppc64le: scv ABI error handling fails to check IS_ERR_VALUE (#1962971)
+- CVE-2021-27645 glibc: Use-after-free in addgetnetgrentX function in
+  netgroupcache.c (#1932590)
+- Linking the main program with jemalloc causes sysconf to deadlock in
+  audit mode (#1909920)
+
 * Fri May 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-8
 - Switch back to a unified glibc-headers package for downstream (#1940686)
 
