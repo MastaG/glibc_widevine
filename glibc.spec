@@ -89,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -206,6 +206,7 @@ Patch71: glibc-upstream-2.33-40.patch
 Patch72: glibc-cpu-check-1.patch
 Patch73: glibc-cpu-check-2.patch
 Patch74: glibc-cpu-check-3.patch
+Patch75: glibc-upstream-2.33-41.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2160,6 +2161,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue May 25 2021 Florian Weimer <fweimer@redhat.com> - 2.33-14
+- Import commit 0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4 from the
+  glibc 2.33 branch:
+- ppc64le: scv ABI error handling fails to check IS_ERR_VALUE (#1962971)
+
 * Fri May 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33-13
 - Switch back to a unified glibc-headers package for downstream (#1940686)
 
