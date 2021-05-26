@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 9%{?dist}
+Release: 10%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -170,6 +170,7 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+Patch32: glibc-sigsetxid-sa_onstack.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2112,6 +2113,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed May 26 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-10
+- nptl: Install SIGSETXID handler with SA_ONSTACK [BZ #27914]
+
 * Tue May 25 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-9
 - Auto-sync with upstream branch master,
   commit ac0353af81a23535f517586a5d04427120a157ac.
