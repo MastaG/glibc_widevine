@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-642-gac0353af81
+%define glibcsrcdir glibc-2.33.9000-655-g271ec55d0a
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 10%{?dist}
+Release: 11%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -170,7 +170,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch32: glibc-sigsetxid-sa_onstack.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2113,6 +2112,24 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon May 31 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-11
+- glibc-sigsetxid-sa_onstack.patch was applied upstream
+- Auto-sync with upstream branch master,
+  commit 271ec55d0ae795f03d92e3aa61bff69a31a19e3a:
+- support: Do not build xpthread_attr_setaffinity_np for hurd
+- nptl: Add pthread_attr_setaffinity_np failure test
+- support: Add xpthread_attr_setaffinity_np wrapper
+- nptl: Move createthread to pthread_create
+- nptl: Move Linux createthread to nptl
+- nptl: Install SIGSETXID handler with SA_ONSTACK [BZ #27914]
+- aarch64: Added optimized memset for A64FX
+- aarch64: Added optimized memcpy and memmove for A64FX
+- benchtests: Fixed bench-memcpy-random: buf1: mprotect failed
+- aarch64: Added Vector Length Set test helper script
+- aarch64: define BTI_C and BTI_J macros as NOP unless HAVE_AARCH64_BTI
+- config: Added HAVE_AARCH64_SVE_ASM for aarch64
+- tst-mallinfo2.c: Use correct multiple for total variable
+
 * Wed May 26 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-10
 - nptl: Install SIGSETXID handler with SA_ONSTACK [BZ #27914]
 
