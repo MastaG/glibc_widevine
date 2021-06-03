@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-655-g271ec55d0a
+%define glibcsrcdir glibc-2.33.9000-679-g466c1ea15f
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 11%{?dist}
+Release: 12%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1587,7 +1587,7 @@ grep -e "libmemusage.so" -e "libpcprofile.so" master.filelist >> glibc.filelist
 ###############################################################################
 
 # Static libraries that land in glibc-devel, not glibc-static.
-devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\)\.a$'
+devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\)\.a$'
 # Static libraries neither in glibc-devel nor in glibc-static.
 other_static_library_pattern='/libpthread_nonshared\.a'
 
@@ -2112,6 +2112,36 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun 03 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-12
+- libdl is no longer  a separate shared object.
+- CVE-2021-33574: Use-after-free via mq_notify (#1965410)
+- Auto-sync with upstream branch master,
+  commit 466c1ea15f461edb8e3ffaf5d86d708876343bbf:
+- dlfcn: Rework static dlopen hooks
+- dlfcn: Eliminate GLIBC_PRIVATE dependency from tststatic2
+- dlfcn: Cleanups after -ldl is no longer required
+- dlfcn: Move dlopen into libc
+- dlfcn: Move dlvsym into libc
+- dlfcn: Move dlinfo into libc
+- dlfcn: Move dladdr1 into libc
+- dlfcn: Move dlmopen into libc
+- dlfcn: Move dlsym into libc
+- dlfcn: Move dladdr into libc
+- dlfcn: Move dlclose into libc
+- Improve test coverage of strlen function
+- fix typo
+- dlfcn: Move dlerror into libc
+- Add libc ABI extension kludge for baseline-violating libdl symbols
+- scripts/versions.awk: Add local: * to all version nodes
+- Add missing symbols to Version files
+- Fix use of __pthread_attr_copy in mq_notify (bug 27896)
+- Use __pthread_attr_copy in mq_notify (bug 27896)
+- Update floating-point feature test macro handling for C2X
+- stdio-common: Remove _IO_vfwscanf
+- aarch64: align stack in clone [BZ #27939]
+- powerpc: Optimized memcmp for power10
+- x86-64: Align child stack to 16 bytes [BZ #27902]
+
 * Mon May 31 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-11
 - glibc-sigsetxid-sa_onstack.patch was applied upstream
 - Auto-sync with upstream branch master,
