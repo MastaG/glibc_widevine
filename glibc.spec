@@ -89,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -207,6 +207,7 @@ Patch72: glibc-cpu-check-1.patch
 Patch73: glibc-cpu-check-2.patch
 Patch74: glibc-cpu-check-3.patch
 Patch75: glibc-upstream-2.33-41.patch
+Patch76: glibc-upstream-2.33-42.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2161,6 +2162,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun  9 2021 Florian Weimer <fweimer@redhat.com> - 2.33-15
+- Fix process termination if NSS is used after dlmopen (swbz#15271, swbz#27646)
+
 * Tue May 25 2021 Florian Weimer <fweimer@redhat.com> - 2.33-14
 - Import commit 0ef0e6de7fdfa18328b09ba2afb4f0112d4bdab4 from the
   glibc 2.33 branch:
