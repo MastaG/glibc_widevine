@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.32-46-g1799ac8eab
+%define glibcsrcdir glibc-2.32-48-g16949aeaa0
 %define glibcversion 2.32
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -90,7 +90,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 6%{?dist}
+Release: 7%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1849,6 +1849,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 11 2021 Arjun Shankar <arjun@redhat.com> - 2.32-7
+- Auto-sync with upstream branch release/2.32/master,
+  commit 16949aeaa078b5994a333980d7a6cd5705d5e1f7:
+- Fix use of __pthread_attr_copy in mq_notify (bug 27896)
+- Use __pthread_attr_copy in mq_notify (bug 27896)
+
 * Wed May 19 2021 Arjun Shankar <arjun@redhat.com> - 2.32-6
 - Use distribution mechanism for debuginfo (#1661510, #1886295, #1905611)
 
