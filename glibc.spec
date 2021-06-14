@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-679-g466c1ea15f
+%define glibcsrcdir glibc-2.33.9000-701-gebae2f5a6f
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 12%{?dist}
+Release: 13%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -156,7 +156,6 @@ rpm.define("__debug_install_post bash " .. wrapper
 # - For new patches follow template.patch format.
 ##############################################################################
 Patch1: glibc-fedora-nscd.patch
-Patch3: glibc-rh697421.patch
 Patch4: glibc-fedora-linux-tcsetattr.patch
 Patch6: glibc-fedora-localedef.patch
 Patch8: glibc-fedora-manual-dircategory.patch
@@ -170,6 +169,8 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+Patch32: glibc-gconv-modules-revert.patch
+Patch33: glibc-rh697421.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -293,6 +294,10 @@ BuildRequires: perl-interpreter
 # install language support.
 Requires: glibc-langpack = %{version}-%{release}
 Suggests: glibc-minimal-langpack = %{version}-%{release}
+
+# Suggest extra gconv modules so that they are installed by default but can be
+# removed if needed to build a minimal OS image.
+Recommends: glibc-gconv-extra = %{version}-%{release}
 
 %description
 The glibc package contains standard libraries which are used by
@@ -828,6 +833,14 @@ This is a Meta package that is used to install minimal language packs.
 This package ensures you can use C, POSIX, or C.UTF-8 locales, but
 nothing else. It is designed for assembling a minimal system.
 %files minimal-langpack
+
+# Infrequently used iconv converter modules.
+%package gconv-extra
+Summary: All iconv converter modules for %{name}.
+Requires: %{name} = %{version}-%{release}
+Requires: %{name}-common = %{version}-%{release}
+%description gconv-extra
+This package contains all iconv converter modules built in %{name}.
 
 ##############################################################################
 # glibc "nscd" sub-package
@@ -1476,6 +1489,7 @@ touch master.filelist
 touch glibc.filelist
 touch common.filelist
 touch utils.filelist
+touch gconv.filelist
 touch nscd.filelist
 touch devel.filelist
 touch doc.filelist
@@ -1497,7 +1511,7 @@ touch compat-libpthread-nonshared.filelist
   find %{glibc_sysroot} \( -type f -o -type l \) \
        \( \
 	 -name etc -printf "%%%%config " -o \
-	 -name gconv-modules \
+	 -name gconv-modules* \
 	 -printf "%%%%verify(not md5 size mtime) %%%%config(noreplace) " -o \
 	 -name gconv-modules.cache \
 	 -printf "%%%%verify(not md5 size mtime) " \
@@ -1551,6 +1565,7 @@ chmod 0444 master.filelist
 # - All the libnss files (we add back the ones we want later).
 # - All bench test binaries.
 # - The aux-cache, since it's handled specially in the files section.
+# - Extra gconv modules.  We add the required modules later.
 cat master.filelist \
 	| grep -v \
 	-e '%{_infodir}' \
@@ -1559,6 +1574,8 @@ cat master.filelist \
 	-e '%{_libdir}/lib.*\.a' \
         -e '%{_libdir}/.*\.o' \
 	-e '%{_libdir}/lib.*\.so' \
+	-e '%{_libdir}/gconv/.*\.so$' \
+	-e '%{_libdir}/gconv/gconv-modules.d/gconv-modules-extra\.conf$' \
 	-e 'nscd' \
 	-e '%{_prefix}/bin' \
 	-e '%{_prefix}/lib/locale' \
@@ -1581,6 +1598,33 @@ for module in compat files dns; do
 	>> glibc.filelist
 done
 grep -e "libmemusage.so" -e "libpcprofile.so" master.filelist >> glibc.filelist
+
+###############################################################################
+# glibc-gconv-extra
+###############################################################################
+
+grep -e "gconv-modules-extra.conf" master.filelist > gconv.filelist
+
+# Put the essential gconv modules into the main package.
+GconvBaseModules="ANSI_X3.110 ISO8859-15 ISO8859-1 CP1252"
+GconvBaseModules="$GconvBaseModules UNICODE UTF-16 UTF-32 UTF-7"
+%ifarch s390 s390x
+GconvBaseModules="$GconvBaseModules ISO-8859-1_CP037_Z900 UTF8_UTF16_Z9"
+GconvBaseModules="$GconvBaseModules UTF16_UTF32_Z9 UTF8_UTF32_Z9"
+%endif
+GconvAllModules=$(cat master.filelist |
+                 sed -n 's|%{_libdir}/gconv/\(.*\)\.so|\1|p')
+
+# Put the base modules into glibc and the rest into glibc-gconv-extra
+for conv in $GconvAllModules; do
+    if echo $GconvBaseModules | grep -q $conv; then
+	grep -E -e "%{_libdir}/gconv/$conv.so$" \
+	    master.filelist >> glibc.filelist
+    else
+	grep -E -e "%{_libdir}/gconv/$conv.so$" \
+	    master.filelist >> gconv.filelist
+    fi
+done
 
 ###############################################################################
 # glibc-devel
@@ -2013,6 +2057,16 @@ if posix.access(save_path) then
   posix.unlink(save_path)
 end
 
+%post gconv-extra
+iconv_dir=%{_libdir}/gconv
+%{_prefix}/sbin/iconvconfig -o "$iconv_dir/gconv-modules.cache" --nostdlib \
+    $iconv_dir
+
+%postun gconv-extra
+iconv_dir=%{_libdir}/gconv
+%{_prefix}/sbin/iconvconfig -o "$iconv_dir/gconv-modules.cache" --nostdlib \
+    $iconv_dir
+
 %pre -n nscd
 getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
 getent passwd nscd >/dev/null ||
@@ -2077,6 +2131,8 @@ fi
 
 %files -f utils.filelist utils
 
+%files -f gconv.filelist gconv-extra
+
 %files -f nscd.filelist -n nscd
 %config(noreplace) /etc/nscd.conf
 %dir %attr(0755,root,root) /var/run/nscd
@@ -2112,6 +2168,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 14 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-13
+- Auto-sync with upstream branch master,
+  commit ebae2f5a6f971a8f0b6c99e00f9c45ef7433924a.
+- Revert gconv configuration file name to gconv-modules.
+
 * Thu Jun 03 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-12
 - libdl is no longer  a separate shared object.
 - CVE-2021-33574: Use-after-free via mq_notify (#1965410)
