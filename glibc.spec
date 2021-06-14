@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 13%{?dist}
+Release: 14%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -839,6 +839,13 @@ nothing else. It is designed for assembling a minimal system.
 Summary: All iconv converter modules for %{name}.
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
+%ifarch x86_64
+# Automatically install the 32-bit variant if the 64-bit variant has
+# been installed.  This covers the case when glibc.i686 is installed
+# before glibc-gconv-extra.x86_64.  (See above for the other ordering.)
+Recommends: (glibc-gconv-extra(x86-32) if glibc(x86-32))
+%endif
+
 %description gconv-extra
 This package contains all iconv converter modules built in %{name}.
 
@@ -2168,6 +2175,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 14 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-14
+- Add a conditional dependency for glibc-gconv-extra.i686 in x86_64.
+
 * Mon Jun 14 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-13
 - Auto-sync with upstream branch master,
   commit ebae2f5a6f971a8f0b6c99e00f9c45ef7433924a.
