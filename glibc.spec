@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 15%{?dist}
+Release: 16%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2186,6 +2186,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jun 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-16
+- Preserve some symbols in libc.so.6's symtab (#1965374)
+
 * Tue Jun 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-15
 - Install shared objects under their ABI names, avoiding symlinks (#1652867)
 
