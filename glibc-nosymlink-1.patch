@@ -1,0 +1,31 @@
+Patch series proposed upstream:
+
+  <https://sourceware.org/pipermail/libc-alpha/2021-June/127473.html>
+
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Jun 9 14:12:46 2021 +0200
+
+    nptl_db: Install libthread_db under a regular implementation name
+    
+    Currently, the name is always libthread_db-1.0.so.  It does not change
+    with the glibc version, like the other libraries.
+    
+    GDB hard-codes libthread_db.so.1 (the soname), so this change does not
+    affect loading libthread_db.
+    
+    Tested on x86_64-linux-gnu, in an environment where the nptl GDB tests
+    actually run.
+
+diff --git a/nptl_db/Makefile b/nptl_db/Makefile
+index ea721c1dcfce6e7b..1f79c018a1f9fe19 100644
+--- a/nptl_db/Makefile
++++ b/nptl_db/Makefile
+@@ -21,8 +21,6 @@ subdir          := nptl_db
+ 
+ include ../Makeconfig
+ 
+-nptl_db-version = 1.0
+-
+ extra-libs = libthread_db
+ extra-libs-others := $(extra-libs)
+ 

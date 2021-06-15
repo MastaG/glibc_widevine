@@ -2,11 +2,12 @@
 # Wrapper script for find-debuginfo.sh
 #
 # Usage:
-#  wrap-find-debuginfo.sh LDSO-PATH SCRIPT-PATH SCRIPT-ARGS...
+#  wrap-find-debuginfo.sh SYSROOT-PATH SCRIPT-PATH SCRIPT-ARGS...
 #
-# The wrapper saves the original versions of the file at LDSO-PATH,
+# The wrapper saves the original version of ld.so found in SYSROOT-PATH,
 # invokes SCRIPT-PATH with SCRIPT-ARGS, and then restores the
-# LDSO-PATH file.  As a result, LDSO-PATH has unchanged debuginfo even
+# LDSO-PATH file, followed by note merging and DWZ compression.
+# As a result, ld.so has (mostly) unchanged debuginfo even
 # after debuginfo extraction.
 
 set -ex
@@ -25,10 +26,22 @@ cleanup () {
 }
 trap cleanup 0
 
-ldso_path="$1"
+sysroot_path="$1"
 shift
 script_path="$1"
 shift
+
+# See ldso_path setting in glibc.spec.
+ldso_path=
+for ldso_candidate in `find "$sysroot_path" -regextype posix-extended \
+  -regex '.*/ld(-.*|64|)\.so\.[0-9]+$' -type f` ; do
+    if test -z "$ldso_path" ; then
+	ldso_path="$ldso_candidate"
+    else
+	echo "error: multiple ld.so candidates: $ldso_path, $ldso_candidate"
+	exit 1
+    fi
+done
 
 # Preserve the original file.
 cp "$ldso_path" "$ldso_tmp"

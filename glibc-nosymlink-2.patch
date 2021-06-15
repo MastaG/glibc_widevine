@@ -1,0 +1,78 @@
+Patch series proposed upstream:
+
+  <https://sourceware.org/pipermail/libc-alpha/2021-June/127473.html>
+
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Wed Jun 9 14:12:46 2021 +0200
+
+    Makerules: Remove lib-version, $(subdir-version)
+    
+    Also clarify that the “versioned” term refers to the soname, not the glibc
+    version (which also ends up in the installed file name).
+    
+    I verified on x86_64-linux-gnu that “make install” produces the same
+    files.
+
+diff --git a/Makerules b/Makerules
+index ca9885436e15784b..d3f29d0b8991efc7 100644
+--- a/Makerules
++++ b/Makerules
+@@ -982,22 +982,21 @@ install-lib.so := $(filter %.so,$(install-lib:%_pic.a=%.so))
+ install-lib := $(filter-out %.so %_pic.a,$(install-lib))
+ 
+ ifeq (yes,$(build-shared))
+-# Find which .so's have versions.
++# Find which .so's have a version number in their soname.
+ versioned := $(strip $(foreach so,$(install-lib.so),\
+ 			       $(patsubst %,$(so),$($(so)-version))))
+ 
+ install-lib.so-versioned := $(filter $(versioned), $(install-lib.so))
+ install-lib.so-unversioned := $(filter-out $(versioned), $(install-lib.so))
+ 
+-# For versioned libraries, we install three files:
++# For libraries whose soname have version numbers, we install three files:
+ #	$(inst_libdir)/libfoo.so	-- for linking, symlink or ld script
+ #	$(inst_slibdir)/libfoo.so.NN	-- for loading by SONAME, symlink
+ #	$(inst_slibdir)/libfoo-X.Y.Z.so -- the real shared object file
+-lib-version := $(firstword $($(subdir)-version) $(version))
+ install-lib-nosubdir: $(install-lib.so-unversioned:%=$(inst_slibdir)/%) \
+ 		      $(foreach L,$(install-lib.so-versioned),\
+ 				$(inst_libdir)/$L \
+-				$(inst_slibdir)/$(L:.so=)-$(lib-version).so \
++				$(inst_slibdir)/$(L:.so=)-$(version).so \
+ 				$(inst_slibdir)/$L$($L-version))
+ 
+ # Install all the unversioned shared libraries.
+@@ -1125,7 +1124,6 @@ include $(o-iterator)
+ 
+ generated += $(foreach o,$(versioned),$o$($o-version))
+ 
+-ifeq (,$($(subdir)-version))
+ define o-iterator-doit
+ $(inst_slibdir)/$o$($o-version): $(inst_slibdir)/$(o:.so=)-$(version).so \
+ 				 $(+force);
+@@ -1140,23 +1138,7 @@ $(inst_slibdir)/$(o:.so=)-$(version).so: $(objpfx)$o $(+force);
+ endef
+ object-suffixes-left := $(versioned)
+ include $(o-iterator)
+-else
+-define o-iterator-doit
+-$(inst_slibdir)/$o$($o-version): \
+-  $(inst_slibdir)/$(o:.so=)-$($(subdir)-version).so $(+force);
+-	$$(make-shlib-link)
+-endef
+-object-suffixes-left := $(versioned)
+-include $(o-iterator)
+-
+-define o-iterator-doit
+-$(inst_slibdir)/$(o:.so=)-$($(subdir)-version).so: $(objpfx)$o $(+force);
+-	$$(do-install-program)
+-endef
+-object-suffixes-left := $(versioned)
+-include $(o-iterator)
+-endif
+-endif
++endif # ifneq (,$(versioned))
+ 
+ define do-install-so
+ $(do-install-program)

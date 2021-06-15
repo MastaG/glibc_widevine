@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 14%{?dist}
+Release: 15%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -141,13 +141,13 @@ Source12: ChangeLog.old
 # the definition of __debug_install_post.
 %{lua:
 local wrapper = rpm.expand("%{SOURCE10}")
-local ldso = rpm.expand("%{glibc_sysroot}/%{_lib}/ld-%{VERSION}.so")
+local sysroot = rpm.expand("%{glibc_sysroot}")
 local original = rpm.expand("%{macrobody:__debug_install_post}")
 -- Strip leading newline.  It confuses the macro redefinition.
 -- Avoid embedded newlines that confuse the macro definition.
 original = original:match("^%s*(.-)%s*$"):gsub("\\\n", "")
 rpm.define("__debug_install_post bash " .. wrapper
-  .. " " .. ldso .. " " .. original)
+  .. " " .. sysroot .. " " .. original)
 }
 
 ##############################################################################
@@ -171,6 +171,10 @@ Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
 Patch32: glibc-gconv-modules-revert.patch
 Patch33: glibc-rh697421.patch
+Patch34: glibc-nosymlink-1.patch
+Patch35: glibc-nosymlink-2.patch
+Patch36: glibc-nosymlink-3.patch
+Patch37: glibc-nosymlink-4.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1759,7 +1763,7 @@ EOF
 # Move the NSS-related files to the NSS subpackages.  Be careful not
 # to pick up .debug files, and the -devel symbolic links.
 for module in db hesiod; do
-  grep -E "/libnss_$module(\.so\.[0-9.]+|-[0-9.]+\.so)$" \
+  grep -E "/libnss_$module\\.so\\.[0-9.]+\$" \
     master.filelist > nss_$module.filelist
 done
 grep -E "%{_prefix}/bin/makedb$" master.filelist >> nss_db.filelist
@@ -1777,7 +1781,7 @@ grep '/libnss_[a-z]*\.so$' master.filelist > nss-devel.filelist
 ###############################################################################
 
 # Prepare the libnsl-related file lists.
-grep '/libnsl-[0-9.]*.so$' master.filelist > libnsl.filelist
+grep -E '/libnsl\.so\.[0-9]+$' master.filelist > libnsl.filelist
 test $(wc -l < libnsl.filelist) -eq 1
 
 %if %{with benchtests}
@@ -1870,8 +1874,10 @@ echo ====================PLT RELOCS END==================
 
 # Obtain a way to run the dynamic loader.  Avoid matching the symbolic
 # link and then pick the first loader (although there should be only
-# one).
-run_ldso="$(find %{glibc_sysroot}/%{_lib}/ld-*.so -type f | LC_ALL=C sort | head -n1) --library-path %{glibc_sysroot}/%{_lib}"
+# one).  See wrap-find-debuginfo.sh.
+ldso_path="$(find %{glibc_sysroot}/ -regextype posix-extended \
+  -regex '.*/ld(-.*|64|)\.so\.[0-9]+$' -type f | LC_ALL=C sort | head -n1)"
+run_ldso="$ldso_path --library-path %{glibc_sysroot}/%{_lib}"
 
 # Show the auxiliary vector as seen by the new library
 # (even if we do not perform the valgrind test).
@@ -1937,12 +1943,17 @@ install_libs = { "anl", "BrokenLocale", "c", "dl", "m", "mvec",
 
 -- We are going to remove these libraries. Generally speaking we remove
 -- all core libraries in the multilib directory.
--- We employ a tight match where X.Y is in [2.0,9.9*], so we would 
+-- For the versioned install names, the version are [2.0,9.9*], so we
 -- match "libc-2.0.so" and so on up to "libc-9.9*".
+-- For the unversioned install names, we match the library plus ".so."
+-- followed by digests.
 remove_regexps = {}
 for i = 1, #install_libs do
+  -- Versioned install name.
   remove_regexps[i] = ("lib" .. install_libs[i]
                        .. "%%-[2-9]%%.[0-9]+%%.so$")
+  -- Unversioned install name.
+  remove_regexps[i] = ("lib" .. install_libs[i] .. "%%.so%.[0-9]+$")
 end
 
 -- Two exceptions:
@@ -2175,6 +2186,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jun 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-15
+- Install shared objects under their ABI names, avoiding symlinks (#1652867)
+
 * Mon Jun 14 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-14
 - Add a conditional dependency for glibc-gconv-extra.i686 in x86_64.
 
