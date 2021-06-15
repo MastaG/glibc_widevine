@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-701-gebae2f5a6f
+%define glibcsrcdir glibc-2.33.9000-728-gaa9a7f6296
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 16%{?dist}
+Release: 17%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -169,7 +169,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch32: glibc-gconv-modules-revert.patch
 Patch33: glibc-rh697421.patch
 Patch34: glibc-nosymlink-1.patch
 Patch35: glibc-nosymlink-2.patch
@@ -2186,6 +2185,38 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jun 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-17
+- Dropped glibc-gconv-modules-revert.patch, applied upstream.
+- Auto-sync with upstream branch master,
+  commit aa9a7f629632c9180de89632d4f2c1e6039f7781:
+- nptl: Export _pthread_cleanup_push, _pthread_cleanup_pop again
+- s390x: Align child stack while clone. [BZ #27968]
+- y2038: Add test coverage
+- libsupport: Add 64-bit time_t support for stat functions
+- libsupport: Add 64-bit time_t support for time functions
+- io: Add ftw64 with 64-bit time_t support
+- io: Add fts64 with 64-bit time_t support
+- posix: Add glob64 with 64-bit time_t support
+- y2038: Add support for 64-bit time on legacy ABIs
+- time: Add 64-bit time support for getdate
+- y2038: Add __USE_TIME_BITS64 support for socket-constants.h
+- y2038: Use a common definition for shmid_ds
+- y2038: Use a common definition for semid_ds
+- y2038: Use a common definition for msqid_ds
+- y2038: Use a common definition for stat
+- y2038: linux: Add __USE_TIME_BITS64 support for struct timex
+- y2038: Add __USE_TIME_BITS64 support for struct utimbuf
+- y2038: Add __USE_TIME_BITS64 support for struct timespec
+- y2038: Add __USE_TIME_BITS64 support for struct timeval
+- y2038: Add __USE_TIME_BITS64 support for time_t
+- linux: Add recvvmsg fallback for 64-bit time_t SO_TIMESTAMP{NS}
+- linux: Add fallback for 64-bit time_t SO_TIMESTAMP{NS}
+- linux: Add fallback for 64-bit time_t SO_{RCV,SND}TIMEO
+- linux: s390: Add libanl.abilist in s390 and s390x
+- linux: mips: Split libanl.abilist in n32 and n64
+- linux: mips: Split librt.abilist in n32 and n64
+- Reinstate gconv-modules as the default configuration file
+
 * Tue Jun 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-16
 - Preserve some symbols in libc.so.6's symtab (#1965374)
 
