@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2185,6 +2185,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun 16 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-18
+- Rebuild against rawhide gcc
+
 * Tue Jun 15 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-17
 - Dropped glibc-gconv-modules-revert.patch, applied upstream.
 - Auto-sync with upstream branch master,
