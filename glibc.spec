@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 21%{?dist}
+Release: 22%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -178,6 +178,7 @@ Patch34: glibc-nosymlink-1.patch
 Patch35: glibc-nosymlink-2.patch
 Patch36: glibc-nosymlink-3.patch
 Patch37: glibc-nosymlink-4.patch
+Patch38: glibc-libthread_db-dynsym.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2189,6 +2190,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-22
+- Export libthread_db symbols under GLBIC_PRIVATE (#1965374)
+
 * Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-21
 - Redo the crafted libc.so.6 symbol table for valgrind (#1965374)
 
