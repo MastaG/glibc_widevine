@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -169,7 +169,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch33: glibc-rh697421.patch
 Patch34: glibc-nosymlink-1.patch
 Patch35: glibc-nosymlink-2.patch
 Patch36: glibc-nosymlink-3.patch
@@ -2185,6 +2184,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-19
+- Drop glibc-rh697421.patch: The ISO-10646-UCS-2// alias for UTF-8 is incorrect
+  (#1972520)
+
 * Wed Jun 16 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-18
 - Rebuild against rawhide gcc
 
