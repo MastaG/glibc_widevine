@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 20%{?dist}
+Release: 21%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -149,6 +149,11 @@ original = original:match("^%s*(.-)%s*$"):gsub("\\\n", "")
 rpm.define("__debug_install_post bash " .. wrapper
   .. " " .. sysroot .. " " .. original)
 }
+
+# The wrapper script relies on the fact that debugedit does not change
+# build IDs.
+%define _no_recompute_build_ids 1
+%undefine _unique_build_ids
 
 ##############################################################################
 # Patches:
@@ -2184,6 +2189,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-21
+- Redo the crafted libc.so.6 symbol table for valgrind (#1965374)
+
 * Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-20
 - Remove .symtab from libc.so.6 again (#1965374)
 
