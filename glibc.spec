@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2184,6 +2184,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-20
+- Remove .symtab from libc.so.6 again (#1965374)
+
 * Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-19
 - Drop glibc-rh697421.patch: The ISO-10646-UCS-2// alias for UTF-8 is incorrect
   (#1972520)
