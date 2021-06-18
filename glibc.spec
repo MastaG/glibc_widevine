@@ -89,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 17%{?dist}
+Release: 18%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -215,6 +215,7 @@ Patch75: glibc-upstream-2.33-41.patch
 Patch76: glibc-upstream-2.33-42.patch
 Patch77: glibc-upstream-2.33-43.patch
 Patch78: glibc-upstream-2.33-44.patch
+Patch79: glibc-upstream-2.33-45.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2169,6 +2170,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 18 2021 Florian Weimer <fweimer@redhat.com> - 2.33-18
+- Another fix for NSS after dlopen (swbz#27646)
+
 * Fri Jun 18 2021 Florian Weimer <fweimer@redhat.com> - 2.33-17
 - Add valgrind support symbols to libc.so.6's symtab (#1965374)
 
