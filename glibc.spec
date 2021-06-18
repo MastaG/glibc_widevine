@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 22%{?dist}
+Release: 23%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -823,6 +823,11 @@ Summary: All language packs for %{name}.
 Requires: %{name} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
 Provides: %{name}-langpack = %{version}-%{release}
+# In RPM spec files, BuildRequires: glibc-all-langpacks is used to
+# indicate that a full set of locales is needed.  Use
+# redhat-rpm-config as a marker for a buildroot configuration, and
+# unconditionally pull in glibc-gconv-extra in that case.
+Requires: (glibc-gconv-extra if redhat-rpm-config)
 %description all-langpacks
 
 # No %files, this is an empty package. The C/POSIX and
@@ -2190,6 +2195,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jun 18 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-23
+- Make glibc-all-langpacks require glibc-gconv-extra in buildroots (#1973663)
+
 * Thu Jun 17 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-22
 - Export libthread_db symbols under GLBIC_PRIVATE (#1965374)
 
