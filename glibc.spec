@@ -90,7 +90,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 7%{?dist}
+Release: 8%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -145,14 +145,19 @@ Source13: convnames.py
 # the definition of __debug_install_post.
 %{lua:
 local wrapper = rpm.expand("%{SOURCE10}")
-local ldso = rpm.expand("%{glibc_sysroot}/%{_lib}/ld-%{VERSION}.so")
+local sysroot = rpm.expand("%{glibc_sysroot}")
 local original = rpm.expand("%{macrobody:__debug_install_post}")
 -- Strip leading newline.  It confuses the macro redefinition.
 -- Avoid embedded newlines that confuse the macro definition.
 original = original:match("^%s*(.-)%s*$"):gsub("\\\n", "")
 rpm.define("__debug_install_post bash " .. wrapper
-  .. " " .. ldso .. " " .. original)
+  .. " " .. sysroot .. " " .. original)
 }
+
+# The wrapper script relies on the fact that debugedit does not change
+# build IDs.
+%define _no_recompute_build_ids 1
+%undefine _unique_build_ids
 
 ##############################################################################
 # Patches:
@@ -1849,6 +1854,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 21 2021 Florian Weimer <fweimer@redhat.com> - 2.32-8
+- Add valgrind support symbols to libc.so.6's symtab (#1965374)
+
 * Fri Jun 11 2021 Arjun Shankar <arjun@redhat.com> - 2.32-7
 - Auto-sync with upstream branch release/2.32/master,
   commit 16949aeaa078b5994a333980d7a6cd5705d5e1f7:
