@@ -6,6 +6,6 @@ srpm:
 	mkdir -p /builddir/build/SPECS
 	mv glibc.spec /builddir/build/SPECS/
 	mv * /builddir/build/SOURCES/
-	cd /builddir/build/SPECS
+	cp /builddir/build/SPECS/glibc.spec .
 	rpmbuild -bs glibc.spec
 	cp /builddir/build/SRPMS/* $(outdir)/
