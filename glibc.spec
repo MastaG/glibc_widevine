@@ -97,7 +97,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 24%{?dist}
+Release: 25%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -179,6 +179,7 @@ Patch35: glibc-nosymlink-2.patch
 Patch36: glibc-nosymlink-3.patch
 Patch37: glibc-nosymlink-4.patch
 Patch38: glibc-libthread_db-dynsym.patch
+Patch39: glibc-revert-dtv-gap-reuse.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2182,6 +2183,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jun 24 2021 Carlos O'Donell <carlos@redhat.com> - 2.33.9000-25
+- Fix thread local storage corruption (#1974970)
+
 * Tue Jun 22 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-24
 - Strengthen dependency on glibc-gconv-extra.
 
