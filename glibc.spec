@@ -89,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 99%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -216,6 +216,8 @@ Patch76: glibc-upstream-2.33-42.patch
 Patch77: glibc-upstream-2.33-43.patch
 Patch78: glibc-upstream-2.33-44.patch
 Patch79: glibc-upstream-2.33-45.patch
+Patch80: glibc-add-support-for-SHT_RELR-sections.patch
+Patch81: glibc-tls-libwidevinecdm.so-since-4.10.2252.0-has-TLS-with.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
