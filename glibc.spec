@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 28%{?dist}
+Release: 29%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -195,6 +195,7 @@ Patch35: glibc-nosymlink-2.patch
 Patch36: glibc-nosymlink-3.patch
 Patch37: glibc-nosymlink-4.patch
 Patch38: glibc-libthread_db-dynsym.patch
+Patch39: glibc-iconvconfig-corruption.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2212,6 +2213,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-29
+- Apply emergency patch to fix iconvconfig corruption
+
 * Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-28
 - Adjust glibc.req so that egrep does not cause eu-readelf to fail
 
