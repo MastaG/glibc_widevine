@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 27%{?dist}
+Release: 28%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2212,6 +2212,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-28
+- Adjust glibc.req so that egrep does not cause eu-readelf to fail
+
 * Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-27
 - Drop glibc-revert-dtv-gap-reuse.patch, applied upstream.
 - Auto-sync with upstream branch master,

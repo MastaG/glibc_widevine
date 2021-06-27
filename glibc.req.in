@@ -28,8 +28,10 @@ eu-elfclassify --loadable --file --stdin --print | while read path; do
     if $searching; then
 	# Undefined symbols within latest, under-development
 	# (changing) symbol versions trigger the versioned RPM
-	# dependency.
-	if eu-readelf -s "$path" | egrep -q '\sUNDEF\s.*@''@SYMVER@(\s|$)'
+	# dependency.  Do not use "egrep -q" to keep reading from the
+	# pipe, avoiding a spurious EPIPE error in eu-readelf.
+	if eu-readelf -s "$path" \
+		| egrep '\sUNDEF\s.*@''@SYMVER@(\s|$)' >/dev/null
 	then
 	    echo 'glibc >= @VERSION@-@RELEASE@'
 	    # Stop searching after the first match, but keep reading from
