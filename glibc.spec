@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-728-gaa9a7f6296
+%define glibcsrcdir glibc-2.33.9000-805-g2c16cb88a6
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 26%{?dist}
+Release: 27%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -195,7 +195,6 @@ Patch35: glibc-nosymlink-2.patch
 Patch36: glibc-nosymlink-3.patch
 Patch37: glibc-nosymlink-4.patch
 Patch38: glibc-libthread_db-dynsym.patch
-Patch39: glibc-revert-dtv-gap-reuse.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2213,6 +2212,88 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-27
+- Drop glibc-revert-dtv-gap-reuse.patch, applied upstream.
+- Auto-sync with upstream branch master,
+  commit 2c16cb88a6e5ace0fb7cedca86860ea7bde522a7:
+- Linux: Move timer helper routines from librt to libc
+- Linux: Move mq_unlink from librt to libc
+- Linux: Move mq_send, mq_timedsend, __mq_timedsend_time64 to libc
+- Linux: Move mq_receive, mq_timedreceive, __mq_timedreceive_time64 to libc
+- Linux: Move mq_open, __mq_open_2 from librt to libc
+- Linux: Move mq_notify from librt to libc
+- Linux: Move mq_getattr from librt to libc
+- Linux: Move mq_setattr from librt to libc
+- Linux: Move mq_close from librt to libc
+- Linux: Move lio_listio, lio_listio64 from librt to libc
+- rt: Rework lio_listio implementation
+- Linux: Move aio_write, aio_write64 into libc
+- Linux: Move aio_suspend, aio_suspend64, __aio_suspend_time64 to libc
+- Linux: Move aio_return, aio_return64 into libc
+- Linux: Move aio_read, aio_read64 into libc
+- Linux: Move aio_fsync, aio_fsync64 into libc
+- Linux: Move aio_error, aio_error64 into libc
+- Linux: Move aio_cancel, aio_cancel64 into libc
+- Linux: Move aio_init from librt into libc
+- support: Fix xclone build failures on ia64 and hppa
+- elf: Disable most of TLS modid gaps processing [BZ #27135]
+- elf: Fix glibc-hwcaps priorities with cache flags mismatches [BZ #27046]
+- * NEWS: Clarify _TIME_BITS change.
+- x86: Remove unnecessary overflow check from wcsnlen-sse4_1.S
+- String: Add three more overflow tests cases to test-strnlen.c
+- Consolidate pthread_atfork
+- posix: Do not clobber errno by atfork handlers
+- posix: Consolidate fork implementation
+- support: Add xclone
+- x86: Fix tst-cpu-features-cpuinfo on Ryzen 9 (BZ #27873)
+- x86: Copy IBT and SHSTK usable only if CET is enabled
+- x86: Fix overflow bug in wcsnlen-sse4_1 and wcsnlen-avx2 [BZ #27974]
+- x86: Fix overflow bug with wmemchr-sse2 and wmemchr-avx2 [BZ #27974]
+- String: Add overflow tests for strnlen, memchr, and strncat [BZ #27974]
+- x86-64: Add wcslen optimize for sse4.1
+- x86-64: Move strlen.S to multiarch/strlen-vec.S
+- hurd: Fix build after 52a5fe70a2
+- nptl: Use SA_RESTART for SIGCANCEL handler
+- doc: _TIME_BITS defaults may change
+- More mcheck -> malloc-check refactoring
+- Add NEWS item for gconv-modules.d change
+- Handle DT_UNKNOWN in gconv-modules.d
+- iconvconfig: Use common gconv module parsing function
+- gconv_conf: Split out configuration file processing
+- gconv_conf: Remove unused variables
+- iconv: Remove alloca use in gconv-modules configuration parsing
+- Remove unsused symbols from nptl/Versions
+- linux: Only use 64-bit syscall if required for clock_nanosleep
+- linux: Only use 64-bit syscall if required for internal futex
+- linux: Only use 64-bit syscall if required for utimensat family
+- linux: Only use 64-bit syscall if required for sigtimedwait
+- linux: Only use 64-bit syscall if required for mq_timedsend
+- linux: Only use 64-bit syscall if required for mq_timedreceive
+- linux: Only use 64-bit syscall if required for timerfd_settime
+- linux: Only use 64-bit syscall if required for semtimedop
+- linux: timerfd_gettime minor cleanup
+- linux: Remove time64-support
+- linux: Remove supports_time64 () from clock_gettime
+- linux: Remove supports_time64 () from clock_getres
+- linux: Only use 64-bit syscall if required for select
+- linux: Only use 64-bit syscall if required for pselect
+- linux: Only use 64-bit syscall if required for ppoll
+- support: Add support_create_timer
+- Use 64 bit time_t stat internally
+- malloc: Drop __malloc_initialized from Versions
+- tst-mcheck: Rename to tst-malloc-check
+- Add hidden prototypes for fsync, fdatasync
+- nptl: Move pthreadP.h into sysdeps directory
+- rt: Move generic implementation from sysdeps/pthread to rt
+- rt: Move shm_unlink into libc
+- rt: Move shm_open into libc
+- rt: Replace generic stub of shm_unlink with the posix version
+- rt: Replace generic stub of shm_open with the posix version
+- Fix librt-routines-var issues for !PTHREAD_IN_LIBC
+- rt: Lexicographically sort Versions file; librt-routines in Makefile
+- elf: Use _dl_catch_error from base namespace in dl-libc.c [BZ #27646]
+- Makeconfig: Fix time64-compat.mk target
+
 * Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-26
 - Add automatic requires if building against glibc development snapshots
 

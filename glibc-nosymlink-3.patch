@@ -11,16 +11,18 @@ Date:   Wed Jun 9 14:12:46 2021 +0200
     test ensures that the official names of libc.so, ld.so, and their
     versioned names are recognized.
 
+
 diff --git a/elf/Makefile b/elf/Makefile
-index 5c47daee12505a47..1751f5ec6772eceb 100644
+index 38d08e03b8979a81..62f7e8a22544ab9d 100644
 --- a/elf/Makefile
 +++ b/elf/Makefile
-@@ -223,7 +223,7 @@ tests += restest1 preloadtest loadfail multiload origtest resolvfail \
+@@ -223,7 +223,8 @@ tests += restest1 preloadtest loadfail multiload origtest resolvfail \
  	 tst-single_threaded tst-single_threaded-pthread \
  	 tst-tls-ie tst-tls-ie-dlmopen argv0test \
  	 tst-glibc-hwcaps tst-glibc-hwcaps-prepend tst-glibc-hwcaps-mask \
--	 tst-tls20 tst-tls21 tst-dlmopen-dlerror
-+	 tst-tls20 tst-tls21 tst-dlmopen-dlerror tst-dl-is_dso
+-	 tst-tls20 tst-tls21 tst-dlmopen-dlerror tst-dlmopen-gethostbyname
++	 tst-tls20 tst-tls21 tst-dlmopen-dlerror tst-dlmopen-gethostbyname \
++	 tst-dl-is_dso
  #	 reldep9
  tests-internal += loadtest unload unload2 circleload1 \
  	 neededtest neededtest2 neededtest3 neededtest4 \
