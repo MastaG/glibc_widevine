@@ -8,8 +8,22 @@
 # gzip -9 $(git describe --match 'glibc-*').tar
 #
 # glibc_release_url is only defined when we have a release tarball.
+# Conversly, glibc_autorequires is set for development snapshots, where
+# dependencies based on symbol versions are inaccurate.
 %{lua: if string.match(rpm.expand("%glibcsrcdir"), "^glibc%-[0-9.]+$") then
-  rpm.define("glibc_release_url https://ftp.gnu.org/gnu/glibc/") end}
+    rpm.define("glibc_release_url https://ftp.gnu.org/gnu/glibc/")
+  end
+  local major, minor = string.match(rpm.expand("%glibcversion"),
+                                    "^([0-9]+)%.([0-9]+)%.9000$")
+  if major and minor then
+    rpm.define("glibc_autorequires 1")
+    -- The minor version in a .9000 development version lags the actual
+    -- symbol version by one.
+    local symver = "GLIBC_" .. major .. "." .. (minor + 1)
+    rpm.define("glibc_autorequires_symver " .. symver)
+  else
+    rpm.define("glibc_autorequires 0")
+  end}
 ##############################################################################
 # We support the following options:
 # --with/--without,
@@ -97,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 25%{?dist}
+Release: 26%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -131,6 +145,8 @@ Source0: %{?glibc_release_url}%{glibcsrcdir}.tar.xz
 Source1: nscd.conf
 Source2: bench.mk
 Source3: glibc-bench-compare
+Source4: glibc.req.in
+Source5: glibc.attr
 Source10: wrap-find-debuginfo.sh
 Source11: parse-SUPPORTED.py
 # Include in the source RPM for reference.
@@ -1660,6 +1676,16 @@ sed -i -e '\,libmemusage.so,d' \
 	-e '\,/libnss_[a-z]*\.so$,d' \
 	devel.filelist
 
+%if %{glibc_autorequires}
+mkdir -p %{glibc_sysroot}/%{_rpmconfigdir} %{glibc_sysroot}/%{_fileattrsdir}
+sed < %{SOURCE4} \
+    -e s/@VERSION@/%{version}/ \
+    -e s/@RELEASE@/%{release}/ \
+    -e s/@SYMVER@/%{glibc_autorequires_symver}/ \
+    > %{glibc_sysroot}/%{_rpmconfigdir}/glibc.req
+cp %{SOURCE5} %{glibc_sysroot}/%{_fileattrsdir}/glibc.attr
+%endif
+
 ###############################################################################
 # glibc-doc
 ###############################################################################
@@ -2133,6 +2159,10 @@ fi
 %{_prefix}/share/i18n/charmaps/*
 
 %files -f devel.filelist devel
+%if %{glibc_autorequires}
+%attr(0755,root,root) %{_rpmconfigdir}/glibc.req
+%{_fileattrsdir}/glibc.attr
+%endif
 
 %if %{with docs}
 %files -f doc.filelist doc
@@ -2183,6 +2213,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-26
+- Add automatic requires if building against glibc development snapshots
+
 * Thu Jun 24 2021 Carlos O'Donell <carlos@redhat.com> - 2.33.9000-25
 - Fix thread local storage corruption (#1974970)
 
