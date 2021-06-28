@@ -76,42 +76,18 @@ objcopy --merge-notes "$libc_path"
 
 # libc.so.6: Reduce to valuable symbols.  Eliminate file symbols,
 # annobin symbols, and symbols used by the glibc build to implement
-# hidden aliases (__EI_* and __GI_*).  Preserve __GI_* symbols used by
-# valgrind interceptors.  (Debuginfo is gone after this, so no need to
-# optimize it.)
+# hidden aliases (__EI_*).  We would also like to remove __GI_*
+# symbols, but even listing them explicitly (as in -K __GI_strlen)
+# still causes strip to remove them, so there is no filtering of
+# __GI_* here.  (Debuginfo is gone after this, so no need to optimize
+# it.)
 strip -w \
     -K '*' \
     -K '!*.c' \
     -K '!*.os' \
     -K '!.annobin_*' \
     -K '!__EI_*' \
-    -K '!__GI_*' \
     -K '!__PRETTY_FUNCTION__*' \
-    -K __GI___rawmemchr \
-    -K __GI___strcasecmp_l \
-    -K __GI___strncasecmp_l \
-    -K __GI_memchr \
-    -K __GI_memcmp \
-    -K __GI_memcpy \
-    -K __GI_memmove \
-    -K __GI_mempcpy \
-    -K __GI_stpcpy \
-    -K __GI_strcasecmp \
-    -K __GI_strcasecmp_l \
-    -K __GI_strcat \
-    -K __GI_strchr \
-    -K __GI_strcmp \
-    -K __GI_strcpy \
-    -K __GI_strcspn \
-    -K __GI_strlen \
-    -K __GI_strncasecmp \
-    -K __GI_strncasecmp_l \
-    -K __GI_strncmp \
-    -K __GI_strncpy \
-    -K __GI_strnlen \
-    -K __GI_strrchr \
-    -K __GI_wcsnlen \
-    -K __GI_wmemchr \
     "$libc_path"
 
 # ld.so: Rewrite the source file paths to match the extracted
