@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-805-g2c16cb88a6
+%define glibcsrcdir glibc-2.33.9000-826-gdd45734e32
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 32%{?dist}
+Release: 33%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -190,14 +190,7 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch34: glibc-nosymlink-1.patch
-Patch35: glibc-nosymlink-2.patch
-Patch36: glibc-nosymlink-3.patch
-Patch37: glibc-nosymlink-4.patch
-Patch39: glibc-iconvconfig-corruption.patch
-Patch40: glibc-libthread_db-dynsym-1.patch
-Patch41: glibc-libthread_db-dynsym-2.patch
-Patch42: glibc-libthread_db-dynsym-3.patch
+Patch32: glibc-s390x-roundeven.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2215,6 +2208,33 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-33
+- Dropped patches glibc-nosymlink-*.patch, glibc-iconvconfig-corruption.patch,
+  glibc-libthread_db-dynsym-*.patch; applied upstream.
+- Auto-sync with upstream branch master,
+  commit dd45734e322a03287d34d8af9b7da7b35cfddb8e:
+- nptl: Add glibc.pthread.stack_cache_size tunable
+- nptl: Export libthread_db-used symbols under GLIBC_PRIVATE
+- nptl: Rename nptl_version to __nptl_version
+- nptl_db: Clean up main/rtld variable handling
+- arm: align stack in clone [BZ 28020]
+- Linux: Cleanups after librt move
+- Linux: Move timer_settime, __timer_settime64 from librt to libc
+- Linux: Move timer_gettime, __timer_gettime64 from librt to libc
+- Linux: Move timer_getoverrun from librt to libc
+- Linux: Move timer_create, timer_delete from librt to libc
+- Linux: Define TIMER_T_WAS_INT_COMPAT in kernel-posix-timers.h
+- Install shared objects under their ABI names
+- elf: Generalize name-based DSO recognition in ldconfig
+- Makerules: Remove lib-version, $(subdir-version)
+- nptl_db: Install libthread_db under a regular implementation name
+- iconvconfig: Fix multiple issues
+- wordexp: handle overflow in positional parameter number (bug 28011)
+- Update math: redirect roundeven function
+- Use GCC builtins for roundeven functions if desired.
+- x86_64: roundeven with sse4.1 support
+- math: redirect roundeven function
+
 * Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-32
 - Switch to new version of libthread_db .dynsym patch
 
