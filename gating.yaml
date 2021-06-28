@@ -1,3 +1,4 @@
+# recipients: glibc-bugzilla
 --- !Policy
 product_versions:
   - fedora-*
