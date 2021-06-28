@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 33%{?dist}
+Release: 34%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1650,7 +1650,7 @@ done
 ###############################################################################
 
 # Static libraries that land in glibc-devel, not glibc-static.
-devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\)\.a$'
+devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\|rt\)\.a$'
 # Static libraries neither in glibc-devel nor in glibc-static.
 other_static_library_pattern='/libpthread_nonshared\.a'
 
@@ -2208,6 +2208,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-34
+- Move librt.a to glibc-devel (#1977058)
+
 * Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-33
 - Dropped patches glibc-nosymlink-*.patch, glibc-iconvconfig-corruption.patch,
   glibc-libthread_db-dynsym-*.patch; applied upstream.
