@@ -1,16 +1,21 @@
+Upstream submission:
+
+  <https://sourceware.org/pipermail/libc-alpha/2021-June/128163.html>
+
 Author: Florian Weimer <fweimer@redhat.com>
-Date:   Thu Jun 17 19:23:00 2021 +0200
+Date:   Mon Jun 28 10:24:33 2021 +0200
 
     nptl: Export libthread_db-used symbols under GLIBC_PRIVATE
     
     This allows distributions to strip debugging information from
     libc.so.6 without impacting the debugging experience.
     
-    nptl_version had to be renamed to __nptl_version to avoid
-    namespace issues.
+    The commit also enhances the checks in nptl/db-symbols.awk to cover
+    both the _thread_db_* descriptor symbols and the actual symbols
+    themselves.
 
 diff --git a/nptl/Versions b/nptl/Versions
-index 62bb939d54..c03ed92848 100644
+index e4fae73c0b9fae0c..060d8d5dec2be29c 100644
 --- a/nptl/Versions
 +++ b/nptl/Versions
 @@ -403,10 +403,14 @@ libc {
@@ -28,12 +33,14 @@ index 62bb939d54..c03ed92848 100644
      __pthread_attr_copy;
      __pthread_attr_destroy;
      __pthread_attr_init;
-@@ -430,6 +434,58 @@ libc {
+@@ -430,6 +434,60 @@ libc {
      __pthread_unwind;
      __sched_fifo_max_prio;
      __sched_fifo_min_prio;
 +    _thread_db___nptl_last_event;
++    _thread_db___nptl_nthreads;
 +    _thread_db___nptl_rtld_global;
++    _thread_db___pthread_keys;
 +    _thread_db_const_thread_area;
 +    _thread_db_dtv_dtv;
 +    _thread_db_dtv_slotinfo_gen;
@@ -88,7 +95,7 @@ index 62bb939d54..c03ed92848 100644
  }
  
 diff --git a/nptl/pthread_create.c b/nptl/pthread_create.c
-index 3f017f1e26..d1b6817a81 100644
+index 3f017f1e26c0d107..d1b6817a81b21ef1 100644
 --- a/nptl/pthread_create.c
 +++ b/nptl/pthread_create.c
 @@ -43,21 +43,24 @@
@@ -122,10 +129,10 @@ index 3f017f1e26..d1b6817a81 100644
  /* This performs the initialization necessary when going from
     single-threaded to multi-threaded mode for the first time.  */
 diff --git a/nptl_db/Makefile b/nptl_db/Makefile
-index ea721c1dcf..4cc51c0e7b 100644
+index 1f79c018a1f9fe19..c04aa6140acff337 100644
 --- a/nptl_db/Makefile
 +++ b/nptl_db/Makefile
-@@ -57,7 +57,7 @@ include ../Rules
+@@ -55,7 +55,7 @@ include ../Rules
  
  $(objpfx)db-symbols.out: $(objpfx)db-symbols.v.i \
  			 $(common-objpfx)libc.so
@@ -135,10 +142,32 @@ index ea721c1dcf..4cc51c0e7b 100644
  
  $(objpfx)db-symbols.v.i: db-symbols.awk
 diff --git a/nptl_db/db-symbols.awk b/nptl_db/db-symbols.awk
-index 6f326cf379..2033f95e38 100644
+index ef1d91b167998d3d..a9289b4686a02dd2 100644
 --- a/nptl_db/db-symbols.awk
 +++ b/nptl_db/db-symbols.awk
-@@ -13,7 +13,7 @@ BEGIN {
+@@ -1,7 +1,8 @@
+-# This script processes the output of 'readelf -W -s' on the libpthread.so
++# This script processes the output of 'readelf -W -D -s' on the libc.so
+ # we've just built.  It checks for all the symbols used in td_symbol_list.
+ 
+ BEGIN {
++# This processes the _thread_db_* names.
+ %define DB_MAIN_VARIABLE(name) /* Nothing. */
+ %define DB_MAIN_SYMBOL(name) /* Nothing. */
+ %define DB_MAIN_ARRAY_VARIABLE(name) /* Nothing. */
+@@ -9,10 +10,19 @@ BEGIN {
+ %define DB_LOOKUP_NAME_TH_UNIQUE(idx, name)	th_unique[STRINGIFY (name)] = 1;
+ %include "db-symbols.h"
+ 
++# And this processes the symbol names themselves.
++%define DB_STRUCT(...) /* Nothing.  */
++%define DB_STRUCT_FIELD(...) /* Nothing.  */
++%define DB_STRUCT_FLEXIBLE_ARRAY(...) /* Nothing.  */
++%define DB_SYMBOL(name) required[STRINGIFY (name)] = 1;
++%define DB_FUNCTION(name) required[STRINGIFY (name)] = 1;
++%define DB_VARIABLE(name) required[STRINGIFY (name)] = 1;
++%include "structs.def"
++
     in_symtab = 0;
  }
  
@@ -147,7 +176,7 @@ index 6f326cf379..2033f95e38 100644
  NF == 0 { in_symtab=0; next }
  
  !in_symtab { next }
-@@ -24,6 +24,7 @@ END {
+@@ -23,6 +33,7 @@ END {
    status = 0;
  
    for (s in required) {
@@ -155,7 +184,7 @@ index 6f326cf379..2033f95e38 100644
      if (s in seen) print s, "ok";
      else {
        status = 1;
-@@ -33,6 +34,7 @@ END {
+@@ -32,6 +43,7 @@ END {
  
    any = "";
    for (s in th_unique) {
@@ -163,29 +192,3 @@ index 6f326cf379..2033f95e38 100644
      if (s in seen) {
        any = s;
        break;
-diff --git a/nptl_db/structs.def b/nptl_db/structs.def
-index 6a726f207e..e2e51acc39 100644
---- a/nptl_db/structs.def
-+++ b/nptl_db/structs.def
-@@ -77,7 +77,7 @@ DB_STRUCT (td_eventbuf_t)
- DB_STRUCT_FIELD (td_eventbuf_t, eventnum)
- DB_STRUCT_FIELD (td_eventbuf_t, eventdata)
- 
--DB_SYMBOL (nptl_version)
-+DB_SYMBOL (__nptl_version)
- DB_MAIN_SYMBOL (__nptl_create_event)
- DB_MAIN_SYMBOL (__nptl_death_event)
- DB_SYMBOL (__nptl_threads_events)
-diff --git a/nptl_db/td_ta_new.c b/nptl_db/td_ta_new.c
-index 501d922ea2..eeca29d5a0 100644
---- a/nptl_db/td_ta_new.c
-+++ b/nptl_db/td_ta_new.c
-@@ -39,7 +39,7 @@ td_ta_new (struct ps_prochandle *ps, td_thragent_t **ta)
-   LOG ("td_ta_new");
- 
-   /* Check whether the versions match.  */
--  if (td_lookup (ps, SYM_nptl_version, &versaddr) != PS_OK)
-+  if (td_lookup (ps, SYM___nptl_version, &versaddr) != PS_OK)
-     return TD_NOLIBTHREAD;
-   if (ps_pdread (ps, versaddr, versbuf, sizeof (versbuf)) != PS_OK)
-     return TD_ERR;

@@ -1,0 +1,37 @@
+Upstream submission:
+
+  <https://sourceware.org/pipermail/libc-alpha/2021-June/128163.html>
+
+Author: Florian Weimer <fweimer@redhat.com>
+Date:   Mon Jun 28 10:25:21 2021 +0200
+
+    nptl: Rename nptl_version to __nptl_version
+    
+    This prepares it for exporting as a dynamic symbol.
+
+diff --git a/nptl_db/structs.def b/nptl_db/structs.def
+index fb7bb9367d7c01ec..248ecf43358dd7ae 100644
+--- a/nptl_db/structs.def
++++ b/nptl_db/structs.def
+@@ -73,7 +73,7 @@ DB_STRUCT (td_eventbuf_t)
+ DB_STRUCT_FIELD (td_eventbuf_t, eventnum)
+ DB_STRUCT_FIELD (td_eventbuf_t, eventdata)
+ 
+-DB_SYMBOL (nptl_version)
++DB_SYMBOL (__nptl_version)
+ DB_SYMBOL (__nptl_create_event)
+ DB_SYMBOL (__nptl_death_event)
+ DB_SYMBOL (__nptl_threads_events)
+diff --git a/nptl_db/td_ta_new.c b/nptl_db/td_ta_new.c
+index 501d922ea269f703..eeca29d5a0f7be9f 100644
+--- a/nptl_db/td_ta_new.c
++++ b/nptl_db/td_ta_new.c
+@@ -39,7 +39,7 @@ td_ta_new (struct ps_prochandle *ps, td_thragent_t **ta)
+   LOG ("td_ta_new");
+ 
+   /* Check whether the versions match.  */
+-  if (td_lookup (ps, SYM_nptl_version, &versaddr) != PS_OK)
++  if (td_lookup (ps, SYM___nptl_version, &versaddr) != PS_OK)
+     return TD_NOLIBTHREAD;
+   if (ps_pdread (ps, versaddr, versbuf, sizeof (versbuf)) != PS_OK)
+     return TD_ERR;

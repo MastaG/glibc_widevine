@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 31%{?dist}
+Release: 32%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -194,8 +194,10 @@ Patch34: glibc-nosymlink-1.patch
 Patch35: glibc-nosymlink-2.patch
 Patch36: glibc-nosymlink-3.patch
 Patch37: glibc-nosymlink-4.patch
-Patch38: glibc-libthread_db-dynsym.patch
 Patch39: glibc-iconvconfig-corruption.patch
+Patch40: glibc-libthread_db-dynsym-1.patch
+Patch41: glibc-libthread_db-dynsym-2.patch
+Patch42: glibc-libthread_db-dynsym-3.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2213,6 +2215,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-32
+- Switch to new version of libthread_db .dynsym patch
+
 * Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-31
 - Further .symtab adjustment: Keep all __GI_* symbols (#1975859)
 
