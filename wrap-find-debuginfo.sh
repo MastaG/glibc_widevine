@@ -11,7 +11,7 @@
 # after debuginfo extraction.
 #
 # For libc.so.6, a set of strategic symbols is preserved in .symtab
-# that are frequently used in valgrind suppressions.
+# that are frequently used in valgrind suppressions and elsewhere.
 
 set -ex
 
@@ -74,10 +74,19 @@ cp "$libc_tmp" "$libc_path"
 objcopy --merge-notes "$ldso_path"
 objcopy --merge-notes "$libc_path"
 
-# libc.so.6: Reduce to strategic symbols needed by valgrind.
-# pthread_create is needed to trigger loading of libthread_db in GDB.
-# (Debuginfo is gone after this, so no need to optimize it.)
-strip \
+# libc.so.6: Reduce to valuable symbols.  Eliminate file symbols,
+# annobin symbols, and symbols used by the glibc build to implement
+# hidden aliases (__EI_* and __GI_*).  Preserve __GI_* symbols used by
+# valgrind interceptors.  (Debuginfo is gone after this, so no need to
+# optimize it.)
+strip -w \
+    -K '*' \
+    -K '!*.c' \
+    -K '!*.os' \
+    -K '!.annobin_*' \
+    -K '!__EI_*' \
+    -K '!__GI_*' \
+    -K '!__PRETTY_FUNCTION__*' \
     -K __GI___rawmemchr \
     -K __GI___strcasecmp_l \
     -K __GI___strncasecmp_l \
@@ -103,33 +112,6 @@ strip \
     -K __GI_strrchr \
     -K __GI_wcsnlen \
     -K __GI_wmemchr \
-    -K __memcmp_sse2 \
-    -K __memcmp_sse4_1 \
-    -K __memcpy_avx_unaligned_erms \
-    -K __memcpy_chk \
-    -K __memcpy_sse2 \
-    -K __memmove_chk \
-    -K __stpcpy_chk \
-    -K __stpcpy_sse2 \
-    -K __stpcpy_sse2_unaligned \
-    -K __strchr_sse2 \
-    -K __strchr_sse2_no_bsf \
-    -K __strcmp_sse2 \
-    -K __strcmp_sse42 \
-    -K __strcpy_chk \
-    -K __strlen_sse2 \
-    -K __strlen_sse2_no_bsf \
-    -K __strlen_sse42 \
-    -K __strncmp_sse2 \
-    -K __strncmp_sse42 \
-    -K __strncpy_sse2 \
-    -K __strncpy_sse2_unaligned \
-    -K __strrchr_sse2 \
-    -K __strrchr_sse2_no_bsf \
-    -K __strrchr_sse42 \
-    -K __strstr_sse2 \
-    -K __strstr_sse42 \
-    -K pthread_create \
     "$libc_path"
 
 # ld.so: Rewrite the source file paths to match the extracted
