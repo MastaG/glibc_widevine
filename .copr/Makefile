@@ -1,4 +1,5 @@
 srpm:
+	dnf --refresh -y upgrade
 	dnf install -y rpmdevtools dnf-plugins-core
 	dnf build-dep -y glibc
 	spectool -g -R glibc.spec
