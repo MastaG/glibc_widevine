@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-826-gdd45734e32
+%define glibcsrcdir glibc-2.33.9000-834-g734c60ebb6
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 34%{?dist}
+Release: 35%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -190,7 +190,6 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch32: glibc-s390x-roundeven.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -1650,7 +1649,7 @@ done
 ###############################################################################
 
 # Static libraries that land in glibc-devel, not glibc-static.
-devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\|rt\)\.a$'
+devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\|rt\|util\)\.a$'
 # Static libraries neither in glibc-devel nor in glibc-static.
 other_static_library_pattern='/libpthread_nonshared\.a'
 
@@ -2208,6 +2207,20 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-35
+- Drop glibc-s390x-roundeven.patch, applied upstream.
+- Move libutil.a into glibc-devel.
+- Auto-sync with upstream branch master,
+  commit 734c60ebb607086ad6d67b2544d6b7baba72a652:
+- login: Move libutil into libc
+- login: Rework hidden prototypes for __setutent, __utmpname, __endutent
+- login: Hidden prototypes for _getpt, __ptsname_r, grantpt, unlockpt
+- nptl_db: Re-use the ELF-to-abilist converter for ABI checking
+- Add RFC 8335 Definitions from Linux 5.13
+- nss: Fix NSS_DECLARE_MODULE_FUNCTIONS handling of _nss_*_endnetgrent
+- s390x: Update math: redirect roundeven function
+- posix: Add _Fork [BZ #4737]
+
 * Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-34
 - Move librt.a to glibc-devel (#1977058)
 
