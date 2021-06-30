@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-834-g734c60ebb6
+%define glibcsrcdir glibc-2.33.9000-836-geb68d7d23c
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 35%{?dist}
+Release: 36%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2207,6 +2207,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jun 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-36
+- Auto-sync with upstream branch master,
+  commit eb68d7d23cc411acdf68a60f194343a6774d6194:
+- Linux: Avoid calling malloc indirectly from __get_nprocs (#1975693)
+- Use Linux 5.13 in build-many-glibcs.py
+
 * Wed Jun 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-35
 - Drop glibc-s390x-roundeven.patch, applied upstream.
 - Move libutil.a into glibc-devel.
