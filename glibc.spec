@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-836-geb68d7d23c
+%define glibcsrcdir glibc-2.33.9000-853-g91fb0f17a5
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 36%{?dist}
+Release: 37%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1649,7 +1649,7 @@ done
 ###############################################################################
 
 # Static libraries that land in glibc-devel, not glibc-static.
-devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\|rt\|util\)\.a$'
+devel_static_library_pattern='/lib\(\(c\|nldbl\|mvec\)_nonshared\|g\|ieee\|mcheck\|pthread\|dl\|rt\|util\|anl\)\.a$'
 # Static libraries neither in glibc-devel nor in glibc-static.
 other_static_library_pattern='/libpthread_nonshared\.a'
 
@@ -2207,6 +2207,28 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 05 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-37
+- Move libanl.a into glibc-devel.
+- Auto-sync with upstream branch master,
+  commit 91fb0f17a5779da6e7877eb74119a83dbe8bf167:
+- hooks.c: Remove incorrect comment
+- mtrace: Add attribute nocommon to mallwatch
+- Move glibc.malloc.check implementation into its own file
+- mtrace: Deprecate mallwatch and tr_break
+- Drop source dependencies on hooks.c and arena.c
+- malloc: Initiate tcache shutdown even without allocations [BZ #28028]
+- Add mcheck tests to malloc
+- iconvconfig: Use the public feof_unlocked
+- resolv: Move libanl into libc (if libpthread is in libc)
+- powerpc: optimize strcpy/stpcpy for POWER9/10
+- soft-fp: Add __extendhfxf2 and __truncxfhf2
+- x86: Check RTM_ALWAYS_ABORT for RTM [BZ #28033]
+- Update syscall lists for Linux 5.13
+- s390: Fix MEMCHR_Z900_G5 ifunc-variant if n>=0x80000000 [BZ #28024]
+- Fix extra PLT reference in libc.so due to __glob64_time64 if build with gcc 7.5 on 32bit.
+- AArch64: Add hp-timing.h
+- AArch64: Improve strnlen performance
+
 * Wed Jun 30 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-36
 - Auto-sync with upstream branch master,
   commit eb68d7d23cc411acdf68a60f194343a6774d6194:
