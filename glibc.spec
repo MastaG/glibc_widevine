@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-853-g91fb0f17a5
+%define glibcsrcdir glibc-2.33.9000-855-g832f50be6c
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 37%{?dist}
+Release: 38%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2207,6 +2207,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jul 06 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-38
+- Auto-sync with upstream branch master,
+  commit 832f50be6c9c010e46180d14126bbb81f35e808c:
+- linux: Check for null value msghdr struct before use
+- elf: Call free from base namespace on error in dl-libc.c [BZ #27646]
+
 * Mon Jul 05 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-37
 - Move libanl.a into glibc-devel.
 - Auto-sync with upstream branch master,
