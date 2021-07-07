@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-855-g832f50be6c
+%define glibcsrcdir glibc-2.33.9000-866-g7a5db2e82f
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 38%{?dist}
+Release: 39%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2207,6 +2207,22 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 07 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-39
+- Auto-sync with upstream branch master,
+  commit 7a5db2e82fbb6c3a6e3fdae02b7166c5d0e8c7a8:
+- elf: Clean up GLIBC_PRIVATE exports of internal libdl symbols
+- nptl: Reduce the GLIBC_PRIVATE ABI
+- nptl: Remove GLIBC_2.34 versions of __pthread_mutex_lock,
+  __pthread_mutex_unlock
+- nptl: Use internal low-level lock type for !IS_IN (libc)
+- glibc.malloc.check: Fix nit in documentation
+- Exclude tst-realloc from tests-mcheck
+- linux: Fix setsockopt fallback
+- linux: Use the expected size for SO_TIMESTAMP{NS} convertion
+- linux: Consolidate Linux setsockopt implementation
+- linux: Consolidate Linux getsockopt implementation
+- manual: fix description for preadv()
+
 * Tue Jul 06 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-38
 - Auto-sync with upstream branch master,
   commit 832f50be6c9c010e46180d14126bbb81f35e808c:
