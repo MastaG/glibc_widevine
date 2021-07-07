@@ -2171,7 +2171,7 @@ fi
 
 %changelog
 * Wed Jul  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-19
-- Preserve .symtab in libc.so.6 and the main shared objects (#1975859)
+- Preserve .symtab in libc.so.6 and the main shared objects (#1975895)
 
 * Fri Jun 18 2021 Florian Weimer <fweimer@redhat.com> - 2.33-18
 - Another fix for NSS after dlopen (swbz#27646)
