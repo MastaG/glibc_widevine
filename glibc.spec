@@ -89,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 18%{?dist}
+Release: 19%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2170,6 +2170,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-19
+- Preserve .symtab in libc.so.6 and the main shared objects (#1975859)
+
 * Fri Jun 18 2021 Florian Weimer <fweimer@redhat.com> - 2.33-18
 - Another fix for NSS after dlopen (swbz#27646)
 
