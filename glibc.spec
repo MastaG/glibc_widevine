@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33
+%define glibcsrcdir glibc-2.33-46-gedfd11197e
 %define glibcversion 2.33
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -89,7 +89,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 19%{?dist}
+Release: 20%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -168,54 +168,9 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
-Patch32: glibc-upstream-2.33-1.patch
-Patch33: glibc-upstream-2.33-2.patch
-Patch34: glibc-upstream-2.33-3.patch
-Patch35: glibc-upstream-2.33-4.patch
-Patch36: glibc-upstream-2.33-5.patch
-Patch37: glibc-upstream-2.33-6.patch
-Patch38: glibc-upstream-2.33-7.patch
-Patch39: glibc-upstream-2.33-8.patch
-Patch40: glibc-upstream-2.33-9.patch
-Patch41: glibc-upstream-2.33-10.patch
-Patch42: glibc-upstream-2.33-11.patch
-Patch43: glibc-upstream-2.33-12.patch
-Patch44: glibc-upstream-2.33-13.patch
-Patch45: glibc-upstream-2.33-14.patch
-Patch46: glibc-upstream-2.33-15.patch
-Patch47: glibc-upstream-2.33-16.patch
-Patch48: glibc-upstream-2.33-17.patch
-Patch49: glibc-upstream-2.33-18.patch
-Patch50: glibc-upstream-2.33-19.patch
-Patch51: glibc-upstream-2.33-20.patch
-Patch52: glibc-upstream-2.33-21.patch
-Patch53: glibc-upstream-2.33-22.patch
-Patch54: glibc-upstream-2.33-23.patch
-Patch55: glibc-upstream-2.33-24.patch
-Patch56: glibc-upstream-2.33-25.patch
-Patch57: glibc-upstream-2.33-26.patch
-Patch58: glibc-upstream-2.33-27.patch
-Patch59: glibc-upstream-2.33-28.patch
-Patch60: glibc-upstream-2.33-29.patch
-Patch61: glibc-upstream-2.33-30.patch
-Patch62: glibc-upstream-2.33-31.patch
-Patch63: glibc-upstream-2.33-32.patch
-Patch64: glibc-upstream-2.33-33.patch
-Patch65: glibc-upstream-2.33-34.patch
-Patch66: glibc-upstream-2.33-35.patch
-Patch67: glibc-upstream-2.33-36.patch
-Patch68: glibc-upstream-2.33-37.patch
-Patch69: glibc-upstream-2.33-38.patch
-Patch70: glibc-upstream-2.33-39.patch
-Patch71: glibc-upstream-2.33-40.patch
 Patch72: glibc-cpu-check-1.patch
 Patch73: glibc-cpu-check-2.patch
 Patch74: glibc-cpu-check-3.patch
-Patch75: glibc-upstream-2.33-41.patch
-Patch76: glibc-upstream-2.33-42.patch
-Patch77: glibc-upstream-2.33-43.patch
-Patch78: glibc-upstream-2.33-44.patch
-Patch79: glibc-upstream-2.33-45.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
@@ -2170,6 +2125,11 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sun Jul 11 2021 Patsy Griffin <patsy@redhat.com> - 2.33-20
+- Auto-sync with upstream branch release/2.33/master,
+  commit edfd11197ecf3629bbb4b66c5814da09a61a7f9f.
+- wordexp: handle overflow in positional parameter number (swbz#28011)
+
 * Wed Jul  7 2021 Florian Weimer <fweimer@redhat.com> - 2.33-19
 - Preserve .symtab in libc.so.6 and the main shared objects (#1975895)
 
