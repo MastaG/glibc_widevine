@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-866-g7a5db2e82f
+%define glibcsrcdir glibc-2.33.9000-906-g72e84d1db2
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 39%{?dist}
+Release: 40%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2207,6 +2207,53 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 12 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-40
+- Merge files NSS service module into libc.
+- Restore vDSO acceleration for time functions on older kernels for i686.
+- Auto-sync with upstream branch master,
+  commit 72e84d1db22203e01a43268de71ea8669eca2863:
+- Linux: Use 32-bit vDSO for clock_gettime, gettimeofday, time (BZ# 28071)
+- Reduce <limits.h> pollution due to dynamic PTHREAD_STACK_MIN
+- Fix failing nss/tst-nss-files-hosts-long.
+- nis: nis_local_group may read from __nisgroup[-1] (bug 28075)
+- hurd _Fork: Drop duplicate malloc_fork_lock calls
+- support: Replace _SC_MINSIGSTKSZ with _SC_SIGSTKSZ
+- support: Replace MINSIGSTKSZ with sysconf (_SC_MINSIGSTKSZ)
+- Define PTHREAD_STACK_MIN to sysconf(_SC_THREAD_STACK_MIN)
+- Force building with -fno-common
+- Add a generic malloc test for MALLOC_ALIGNMENT
+- Properly run tst-spawn5 directly [BZ #28067]
+- build-many-glibcs.py: Add glibcs-arm-linux-gnueabihf-thumb
+- nptl: Use out-of-line wake function in __libc_lock_unlock slow path
+- powerpc64le: Fix typo in configure
+- powerpc64: Remove strcspn ifunc from the loader
+- x86: Remove wcsnlen-sse4_1 from wcslen ifunc-impl-list [BZ #28064]
+- x86-64: Test strlen and wcslen with 0 in the RSI register [BZ #28064]
+- x86_64: Remove unneeded static PIE check for undefined weak diagnostic
+- Add NT_ARM_PAC_ENABLED_KEYS to elf.h
+- posix: Add posix_spawn_file_actions_addclosefrom_np
+- io: Add closefrom [BZ #10353]
+- linux: Add close_range
+- support: Add support_stack_alloc
+- _int_realloc is static
+- Move mcheck symbol from stdlib to malloc
+- nss: Do not install static linker input files for libnss_files
+- elf/tests: Make thrlock and noload depend on libm
+- Harden tcache double-free check
+- nss: Access nss_files through direct references
+- nss_files: Move into libc
+- nss_files: Add generic code for set*ent, end*ent and file open
+- nss_files: Allocate nscd file registration data on the heap
+- libio: Replace internal _IO_getdelim symbol with __getdelim
+- libio: Add hidden prototype for ungetc
+- inet: Add hidden prototype for __inet_network
+- Update MIPS libm-test-ulps
+- Update powerpc-nofpu libm-test-ulps
+- soft-fp: Add __extendhfsf2/__extendhfdf2, __truncsfhf2/__truncdfhf2,
+  __eqhf2/__nehf2
+- Update kernel version to 5.13 in tst-mman-consts.py
+- tests-exclude-mcheck: Fix typo
+
 * Wed Jul 07 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-39
 - Auto-sync with upstream branch master,
   commit 7a5db2e82fbb6c3a6e3fdae02b7166c5d0e8c7a8:
