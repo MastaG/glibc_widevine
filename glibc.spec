@@ -2373,10 +2373,10 @@ fi
 - Switch to new version of libthread_db .dynsym patch
 
 * Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-31
-- Further .symtab adjustment: Keep all __GI_* symbols (#1975859)
+- Further .symtab adjustment: Keep all __GI_* symbols (#1975895)
 
 * Mon Jun 28 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-30
-- Keep most of .symtab in libc.so.6 (#1975859)
+- Keep most of .symtab in libc.so.6 (#1975895)
 
 * Sun Jun 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-29
 - Apply emergency patch to fix iconvconfig corruption
