@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 41%{?dist}
+Release: 42%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2071,7 +2071,9 @@ end
 -- (5) On upgrades, restart systemd if installed.  "systemctl -q" does
 -- not suppress the error message (which is common in chroots), so
 -- open-code post_exec with standard error suppressed.
-if arg[2] == "2" and posix.access("%{_prefix}/bin/systemctl", "x") then
+if tonumber(arg[2]) >= 2
+   and posix.access("%{_prefix}/bin/systemctl", "x")
+then
   local pid = posix.fork()
   if pid == 0 then
     posix.redirect2null(2)
@@ -2220,6 +2222,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jul 13 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-42
+- Perform systemd re-exec even if glibc.i686 is installed
+
 * Tue Jul 13 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-41
 - Re-exec systemd on upgrades
 
