@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 40%{?dist}
+Release: 41%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2068,6 +2068,19 @@ else
   io.stdout:write ("Error: Missing " .. iconv_cache .. " file.\n")
 end
 
+-- (5) On upgrades, restart systemd if installed.  "systemctl -q" does
+-- not suppress the error message (which is common in chroots), so
+-- open-code post_exec with standard error suppressed.
+if arg[2] == "2" and posix.access("%{_prefix}/bin/systemctl", "x") then
+  local pid = posix.fork()
+  if pid == 0 then
+    posix.redirect2null(2)
+    assert(posix.exec("%{_prefix}/bin/systemctl", "daemon-reexec"))
+  elseif pid > 0 then
+    posix.wait(pid)
+  end
+end
+
 %posttrans all-langpacks -e -p <lua>
 -- The old glibc-all-langpacks postun scriptlet deleted the locale-archive
 -- file, so we may have to resurrect it on upgrades.
@@ -2207,6 +2220,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Tue Jul 13 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-41
+- Re-exec systemd on upgrades
+
 * Mon Jul 12 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-40
 - Merge files NSS service module into libc.
 - Restore vDSO acceleration for time functions on older kernels for i686.
