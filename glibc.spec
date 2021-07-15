@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 42%{?dist}
+Release: 43%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1529,10 +1529,10 @@ touch compat-libpthread-nonshared.filelist
   find %{glibc_sysroot} \( -type f -o -type l \) \
        \( \
 	 -name etc -printf "%%%%config " -o \
-	 -name gconv-modules* \
-	 -printf "%%%%verify(not md5 size mtime) %%%%config(noreplace) " -o \
 	 -name gconv-modules.cache \
-	 -printf "%%%%verify(not md5 size mtime) " \
+	 -printf "%%%%verify(not md5 size mtime) " -o \
+	 -name gconv-modules* \
+	 -printf "%%%%verify(not md5 size mtime) %%%%config(noreplace) " \
 	 , \
 	 ! -path "*/lib/debug/*" -printf "/%%P\n" \)
   # List all directories with a %%dir prefix.  We omit the info directory and
@@ -2114,8 +2114,11 @@ iconv_dir=%{_libdir}/gconv
 
 %postun gconv-extra
 iconv_dir=%{_libdir}/gconv
-%{_prefix}/sbin/iconvconfig -o "$iconv_dir/gconv-modules.cache" --nostdlib \
-    $iconv_dir
+# The file won't exist if glibc is also removed.
+if [ -f $iconv_dir/gconv-modules ]; then
+    %{_prefix}/sbin/iconvconfig -o "$iconv_dir/gconv-modules.cache" \
+        --nostdlib $iconv_dir
+fi
 
 %pre -n nscd
 getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
@@ -2143,6 +2146,7 @@ fi
 %dir /etc/ld.so.conf.d
 %dir %{_prefix}/libexec/getconf
 %dir %{_libdir}/gconv
+%dir %{_libdir}/gconv/gconv-modules.d
 %dir %attr(0700,root,root) /var/cache/ldconfig
 %attr(0600,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /var/cache/ldconfig/aux-cache
 %attr(0644,root,root) %verify(not md5 size mtime) %ghost %config(missingok,noreplace) /etc/ld.so.cache
@@ -2222,6 +2226,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jul 15 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-43
+- Run postun only if the main gconv-modules configuration file exists.
+  (#1981013)
+- Own %{libdir}/gconv/gconv-modules.d
+- Rearrange file list command so that gconv-modules.cache is no longer
+  marked as %config
+
 * Tue Jul 13 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-42
 - Perform systemd re-exec even if glibc.i686 is installed
 
