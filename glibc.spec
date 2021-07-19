@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-906-g72e84d1db2
+%define glibcsrcdir glibc-2.33.9000-950-gee5ed99922
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 43%{?dist}
+Release: 44%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2226,6 +2226,54 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 19 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-44
+- Auto-sync with upstream branch master,
+  commit ee5ed99922ca90bcea4a2f9a48a0c9ae4b534ece:
+- nss: Directly load nss_dns, without going through dlsym/dlopen
+- resolv: Move nss_dns into libc
+- resolv: Move res_query functions into libc
+- resolv: Move res_mkquery, res_nmkquery into libc
+- resolv: Move res_send, res_nsend into libc
+- resolv: Move res_hostalias into its own file, along with hostalias
+- resolv: Move __res_context_hostalias into its own file and into libc
+- resolv: Move res_queriesmatch to its own file and into libc
+- resolv: Move res_nameinquery to its own file and into libc
+- resolv: Move ns_samename into its own file, and into libc
+- resolv: Move ns_makecanon into its own file, and into libc
+- resolv: Move res_isourserver to its own file and reformat to GNU style
+- resolv: Move __res_get_nsaddr to its own file and into libc
+- resolv: Rename res_comp.c to res-name-checking.c and move into libc
+- resolv: Move dn_skipname to its own file and into libc
+- resolv: Move dn_comp to its own file and into libc
+- resolv: Move _getlong, _getshort, __putlong, __putshort to res-putget
+- resolv: Move dn_expand to its own file and into libc
+- resolv: Move ns_name_compress into its own file and into libc
+- resolv: Move ns_name_pack into its own file and into libc
+- resolv: Move ns_name_pton into its own file and into libc
+- resolv: Move ns_name_uncompress into its own file and into libc
+- resolv: Move ns_name_skip to its own file and into libc (bug 28091)
+- resolv: Deprecate legacy interfaces in libresolv
+- tst-safe-linking: make false positives even more improbable
+- htl: Do not expose pthread hidden proto outside libpthread
+- elf: Fix a wrong array access on tst-tls20
+- elf: Add -Wl,--no-as-needed for tst-tls-manydynamic*mod-dep-bad.so (BZ #28089)
+- resolv: Move ns_name_unpack to its own file and into libc
+- resolv: Remove unnecessary res_isourserver_p call from send_dg
+- resolv: Move ns_name_ntop to its own file and into libc
+- nss_dns: Do not use deprecated packet parsing functions
+- resolv: Sort Makefile routines and Versions lexicographically
+- socket: Add hidden prototype for setsockopt
+- elf: Fix DTV gap reuse logic (BZ #27135)
+- Fix linknamespace errors and local-plt-usages in nss_files.
+- Add static tests for __clone_internal
+- x86-64: Add the clone3 wrapper
+- Add an internal wrapper for clone, clone2 and clone3
+- nss: Fix build error with --disable-nscd
+- htl: Fix linking static examples against libpthread
+- htl: Let libc call __pthread_mutex_{,try,un}lock
+- posix: Ignore non opened files on tst-spawn5
+- mcheck: Align struct hdr to MALLOC_ALIGNMENT bytes [BZ #28068]
+
 * Thu Jul 15 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-43
 - Run postun only if the main gconv-modules configuration file exists.
   (#1981013)
