@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 44%{?dist}
+Release: 45%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1986,6 +1986,21 @@ local remove_dirs = { "%{_libdir}/i686",
 		      "%{_libdir}/power9",
 		    }
 
+-- Add all the subdirectories of the glibc-hwcaps subdirectory.
+repeat
+  local iter = posix.files("%{_libdir}/glibc-hwcaps")
+  if iter ~= nil then
+    for entry in iter do
+      if entry ~= "." and entry ~= ".." then
+        local path = "%{_libdir}/glibc-hwcaps/" .. entry
+        if posix.access(path .. "/.", "x") then
+          remove_dirs[#remove_dirs + 1] = path
+        end
+      end
+    end
+  end
+until true
+
 -- Walk all the directories with files we need to remove...
 for _, rdir in ipairs (remove_dirs) do
   if posix.access (rdir) then
@@ -2226,6 +2241,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 19 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-45
+- Remove glibc-hwcaps multilibs on upgrade (#1983677)
+
 * Mon Jul 19 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-44
 - Auto-sync with upstream branch master,
   commit ee5ed99922ca90bcea4a2f9a48a0c9ae4b534ece:
