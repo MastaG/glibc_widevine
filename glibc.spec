@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-950-gee5ed99922
+%define glibcsrcdir glibc-2.33.9000-961-g77ede5f010
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 45%{?dist}
+Release: 46%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2241,6 +2241,21 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Wed Jul 21 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-46
+- Auto-sync with upstream branch master,
+  commit 77ede5f010f1b144e067ec035e422a13bb57c55d:
+- socket: Add time64 alias for sendmsg
+- socket: Add time64 alias for recvmsg
+- socket: Add time64 alias for sendmmsg
+- Linux: Add time64 alias for prctl
+- io: Add time64 alias for fcntl
+- misc: Add time64 alias for ioctl
+- RISC-V: Update rv64 ULPs
+- resolv: Do not install libnss_dns.a, libnss_dns.so
+- hurd: Add support for spawn_do_closefrom
+- elf: Fix tst-cpu-features-cpuinfo on some AMD systems (BZ #28090)
+- i386: Add the clone3 wrapper
+
 * Mon Jul 19 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-45
 - Remove glibc-hwcaps multilibs on upgrade (#1983677)
 
