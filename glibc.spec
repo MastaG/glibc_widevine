@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-961-g77ede5f010
+%define glibcsrcdir glibc-2.33.9000-979-g9a7ab0769b
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 47%{?dist}
+Release: 48%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2241,6 +2241,28 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jul 23 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-48
+- Auto-sync with upstream branch master,
+  commit 9a7ab0769b295cbf5232140401742a8f34bda3de:
+- hurd: Fix glob lstat compatibility
+- socket: Add time64 alias for setsockopt
+- socket: Add time64 alias for getsockopt
+- mcheck Fix malloc_usable_size [BZ #22057]
+- Remove malloc hooks [BZ #23328]
+- Move malloc_{g,s}et_state to libc_malloc_debug
+- glibc.malloc.check: Wean away from malloc hooks
+- mtrace: Wean away from malloc hooks
+- Simplify __malloc_initialized
+- mcheck: Wean away from malloc hooks [BZ #23489]
+- Move malloc hooks into a compat DSO
+- Remove __morecore and __default_morecore
+- Remove __after_morecore_hook
+- Make mcheck tests conditional on GLIBC_2.23 or earlier
+- posix: Add sysconf(_SC_{MIN,}SIGSTKSZ) support
+- malloc: Fix tst-mallocfork3-malloc-check link
+- ARC: elf: make type safe
+- ARC: fp: (micro)optimize FPU_STATUS read by eliding FWE bit clearing
+
 * Thu Jul 22 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2.33.9000-47
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
