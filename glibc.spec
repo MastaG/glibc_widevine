@@ -1030,9 +1030,6 @@ cat /proc/sysinfo 2>/dev/null || true
 cat /proc/meminfo
 df
 
-# Prevent rebuild within the mass rebuild.
-exit 1
-
 # We build using the native system compilers.
 GCC=gcc
 GXX=g++
