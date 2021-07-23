@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 52%{?dist}
+Release: 53%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -315,7 +315,12 @@ BuildRequires: perl-interpreter
 Requires: glibc-langpack = %{version}-%{release}
 Suggests: glibc-minimal-langpack = %{version}-%{release}
 
-Requires: glibc-gconv-extra%{_isa} = %{version}-%{release}
+# Suggest extra gconv modules so that they are installed by default but can be
+# removed if needed to build a minimal OS image.
+Recommends: glibc-gconv-extra%{_isa} = %{version}-%{release}
+# Use redhat-rpm-config as a marker for a buildroot configuration, and
+# unconditionally pull in glibc-gconv-extra in that case.
+Requires: (glibc-gconv-extra%{_isa} = %{version}-%{release} if redhat-rpm-config)
 
 %description
 The glibc package contains standard libraries which are used by
@@ -855,8 +860,14 @@ nothing else. It is designed for assembling a minimal system.
 # Infrequently used iconv converter modules.
 %package gconv-extra
 Summary: All iconv converter modules for %{name}.
-Requires: %{name} = %{version}-%{release}
+Requires: %{name}%{_isa} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
+%ifarch x86_64
+# Automatically install the 32-bit variant if the 64-bit variant has
+# been installed.  This covers the case when glibc.i686 is installed
+# before glibc-gconv-extra.x86_64.  (See above for the other ordering.)
+Recommends: (glibc-gconv-extra(x86-32) if glibc(x86-32))
+%endif
 
 %description gconv-extra
 This package contains all iconv converter modules built in %{name}.
@@ -2243,6 +2254,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 26 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-53
+- Loosen dependency on glibc-gconv-extra (#1812191).
+
 * Mon Jul 26 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-52
 - Switch to new version of C.UTF-8 locale
 
