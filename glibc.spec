@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 48%{?dist}
+Release: 49%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -1967,10 +1967,11 @@ install_libs = { "anl", "BrokenLocale", "c", "dl", "m", "mvec",
 remove_regexps = {}
 for i = 1, #install_libs do
   -- Versioned install name.
-  remove_regexps[i] = ("lib" .. install_libs[i]
-                       .. "%%-[2-9]%%.[0-9]+%%.so$")
+  remove_regexps[#remove_regexps + 1] = ("lib" .. install_libs[i]
+                                         .. "%%-[2-9]%%.[0-9]+%%.so$")
   -- Unversioned install name.
-  remove_regexps[i] = ("lib" .. install_libs[i] .. "%%.so%.[0-9]+$")
+  remove_regexps[#remove_regexps + 1] = ("lib" .. install_libs[i]
+                                         .. "%%.so%%.[0-9]+$")
 end
 
 -- Two exceptions:
@@ -2241,6 +2242,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sat Jul 24 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-49
+- Remove both old and new library names in glibc-hwcaps removal (#1983677)
+
 * Fri Jul 23 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-48
 - Auto-sync with upstream branch master,
   commit 9a7ab0769b295cbf5232140401742a8f34bda3de:
