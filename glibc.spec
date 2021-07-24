@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-979-g9a7ab0769b
+%define glibcsrcdir glibc-2.33.9000-982-gd34ed66f96
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 49%{?dist}
+Release: 50%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2242,6 +2242,13 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Sat Jul 24 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-50
+- Auto-sync with upstream branch master,
+  commit d34ed66f96fa9316654d7adb2afcce4be1d1c4f5:
+- manual: Document unsupported cases for interposition
+- x86: Install <bits/platform/x86.h> [BZ #27958]
+- Fix build and tests with --disable-tunables
+
 * Sat Jul 24 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-49
 - Remove both old and new library names in glibc-hwcaps removal (#1983677)
 
