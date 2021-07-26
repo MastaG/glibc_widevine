@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 51%{?dist}
+Release: 52%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -185,7 +185,8 @@ Patch13: glibc-fedora-localedata-rh61908.patch
 Patch15: glibc-rh1070416.patch
 Patch16: glibc-nscd-sysconfig.patch
 Patch17: glibc-cs-path.patch
-Patch18: glibc-c-utf8-locale.patch
+Patch18: glibc-c-utf8-strcmp_collation.patch
+Patch19: glibc-c-utf8-locale.patch
 Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
@@ -2242,6 +2243,9 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 26 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-52
+- Switch to new version of C.UTF-8 locale
+
 * Mon Jul 26 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-51
 - Auto-sync with upstream branch master,
   commit ddcc612ce923038b867083a0c55d6e034951155a:

@@ -1,48 +1,370 @@
-Short description: Add C.UTF-8 support.
-Author(s): Fedora glibc team <glibc@lists.fedoraproject.org>
-Origin: PATCH
-Upstream status: not-submitted
+Submission: https://sourceware.org/pipermail/libc-alpha/2021-July/129456.html
 
-This patch needs to upstream as part of Carlos O'Donell
-<carlos@redhat.com>'s work on enabling upstream C.UTF-8 support. This
-work is currently blocked on cleaning up the test results to prove that
-full code-point sorting is working as intended.
+Author: Carlos O'Donell <carlos@redhat.com>
+Date:   Sun Jul 25 22:14:08 2021 -0400
 
-Note that this patch does not provide full code-point sorting as
-expected.
+    Add generic C.UTF-8 locale (Bug 17318)
+    
+    We add a new C.UTF-8 locale.  This locale is not builtin to glibc, but
+    is provided as a distinct locale.  The locale provides full support
+    for UTF-8 and this includes full code point sorting via strcmp-based
+    collation.
+    
+    The collation uses a new keyword 'strcmp_collation' which drops all
+    collation rules and generates an empty zero rules collation to enable
+    strcmp usage in collation. This ensures that we get full code point
+    sorting for C.UTF-8 with a minimal 92 bytes of overhead (LC_COLLATE
+    structure information).
+    
+    The new locale is added to SUPPORTED.  Minimal test data for specific
+    code points (minus those not supported by collate-test) is provided
+    in C.UTF-8.in, and this verifies code point sorting is working
+    reasonably across the range.  The locale was tested manually with the
+    full set of code points without failure.
+    
+    The locale is harmonized with locales already shipping in Gentoo,
+    Debian, Ubuntu, Fedora, CentOS Stream, and RHEL. A new tst-iconv9 test
+    is added which verifies the C.UTF-8 locale is generally usable.
+    
+    Tested on x86_64 or i686 without regression.
 
-This patch needs to upstream as soon as possible since it would be nice
-to have this in F29 and fixed.
-
-From 2eda7b462b415105f5a05c1323372d4e39d46439 Mon Sep 17 00:00:00 2001
-From: Mike FABIAN <mfabian@redhat.com>
-Date: Mon, 10 Aug 2015 15:58:12 +0200
-Subject: [PATCH] Add a C.UTF-8 locale
-
----
- localedata/SUPPORTED |   1 +
- localedata/locales/C | 238 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 239 insertions(+)
- create mode 100644 localedata/locales/C
-
+diff --git a/iconv/Makefile b/iconv/Makefile
+index 07d77c9ecaafba1f..9993f2d3f3cd7498 100644
+--- a/iconv/Makefile
++++ b/iconv/Makefile
+@@ -43,8 +43,19 @@ CFLAGS-charmap.c += -DCHARMAP_PATH='"$(i18ndir)/charmaps"' \
+ CFLAGS-linereader.c += -DNO_TRANSLITERATION
+ CFLAGS-simple-hash.c += -I../locale
+ 
+-tests	= tst-iconv1 tst-iconv2 tst-iconv3 tst-iconv4 tst-iconv5 tst-iconv6 \
+-	  tst-iconv7 tst-iconv8 tst-iconv-mt tst-iconv-opt
++tests = \
++	tst-iconv1 \
++	tst-iconv2 \
++	tst-iconv3 \
++	tst-iconv4 \
++	tst-iconv5 \
++	tst-iconv6 \
++	tst-iconv7 \
++	tst-iconv8 \
++	tst-iconv9 \
++	tst-iconv-mt \
++	tst-iconv-opt \
++	# tests
+ 
+ others		= iconv_prog iconvconfig
+ install-others-programs	= $(inst_bindir)/iconv
+@@ -83,10 +94,15 @@ endif
+ include ../Rules
+ 
+ ifeq ($(run-built-tests),yes)
+-LOCALES := en_US.UTF-8
++# We have to generate locales (list sorted alphabetically)
++LOCALES := \
++	C.UTF-8 \
++	en_US.UTF-8 \
++	# LOCALES
+ include ../gen-locales.mk
+ 
+ $(objpfx)tst-iconv-opt.out: $(gen-locales)
++$(objpfx)tst-iconv9.out: $(gen-locales)
+ endif
+ 
+ $(inst_bindir)/iconv: $(objpfx)iconv_prog $(+force)
+diff --git a/iconv/tst-iconv9.c b/iconv/tst-iconv9.c
+new file mode 100644
+index 0000000000000000..78a532427993d1c1
+--- /dev/null
++++ b/iconv/tst-iconv9.c
+@@ -0,0 +1,87 @@
++/* Verify that using C.UTF-8 works.
++
++   Copyright (C) 2021 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <iconv.h>
++#include <stddef.h>
++#include <stdio.h>
++#include <string.h>
++#include <support/support.h>
++#include <support/check.h>
++
++/* This test does two things:
++   (1) Verify that we have likely included translit_combining in C.UTF-8.
++   (2) Verify default_missing is '?' as expected.  */
++
++/* ISO-8859-1 encoding of "für".  */
++char iso88591_in[] = { 0x66, 0xfc, 0x72, 0x0 };
++/* ASCII transliteration is "fur" with C.UTF-8 translit_combining.  */
++char ascii_exp[] = { 0x66, 0x75, 0x72, 0x0 };
++
++/* First 3-byte UTF-8 code point.  */
++char utf8_in[] = { 0xe0, 0xa0, 0x80, 0x0 };
++/* There is no ASCII transliteration for SAMARITAN LETTER ALAF
++   so we get default_missing used which is '?'.  */
++char default_missing_exp[] = { 0x3f, 0x0 };
++
++static int
++do_test (void)
++{
++  char ascii_out[5];
++  iconv_t cd;
++  char *inbuf;
++  char *outbuf;
++  size_t inbytes;
++  size_t outbytes;
++  size_t n;
++
++  /* The C.UTF-8 locale should include translit_combining, which provides
++     the transliteration for "LATIN SMALL LETTER U WITH DIAERESIS" which
++     is not provided by locale/C-translit.h.in.  */
++  xsetlocale (LC_ALL, "C.UTF-8");
++
++  /* From ISO-8859-1 to ASCII. */
++  cd = iconv_open ("ASCII//TRANSLIT,IGNORE", "ISO-8859-1");
++  TEST_VERIFY (cd != (iconv_t) -1);
++  inbuf = iso88591_in;
++  inbytes = 3;
++  outbuf = ascii_out;
++  outbytes = 3;
++  n = iconv (cd, &inbuf, &inbytes, &outbuf, &outbytes);
++  TEST_VERIFY (n != -1);
++  *outbuf = '\0';
++  TEST_COMPARE_BLOB (ascii_out, 3, ascii_exp, 3);
++  TEST_VERIFY (iconv_close (cd) == 0);
++
++  /* From UTF-8 to ASCII. */
++  cd = iconv_open ("ASCII//TRANSLIT,IGNORE", "UTF-8");
++  TEST_VERIFY (cd != (iconv_t) -1);
++  inbuf = utf8_in;
++  inbytes = 3;
++  outbuf = ascii_out;
++  outbytes = 3;
++  n = iconv (cd, &inbuf, &inbytes, &outbuf, &outbytes);
++  TEST_VERIFY (n != -1);
++  *outbuf = '\0';
++  TEST_COMPARE_BLOB (ascii_out, 1, default_missing_exp, 1);
++  TEST_VERIFY (iconv_close (cd) == 0);
++
++  return 0;
++}
++
++#include <support/test-driver.c>
+diff --git a/localedata/C.UTF-8.in b/localedata/C.UTF-8.in
+new file mode 100644
+index 0000000000000000..c31dcc2aa045ee61
+--- /dev/null
++++ b/localedata/C.UTF-8.in
+@@ -0,0 +1,157 @@
++ ; <U1>
++ ; <U2>
++ ; <U3>
++ ; <U4>
++ ; <U5>
++ ; <U6>
++ ; <U7>
++ ; <U8>
++ ; <UE>
++ ; <UF>
++ ; <U10>
++ ; <U11>
++ ; <U12>
++ ; <U13>
++ ; <U14>
++ ; <U15>
++ ; <U16>
++ ; <U17>
++ ; <U18>
++ ; <U19>
++ ; <U1A>
++ ; <U1B>
++ ; <U1C>
++ ; <U1D>
++ ; <U1E>
++ ; <U1F>
++! ; <U21>
++" ; <U22>
++# ; <U23>
++$ ; <U24>
++% ; <U25>
++& ; <U26>
++' ; <U27>
++) ; <U29>
++* ; <U2A>
+++ ; <U2B>
++, ; <U2C>
++- ; <U2D>
++. ; <U2E>
++/ ; <U2F>
++0 ; <U30>
++1 ; <U31>
++2 ; <U32>
++3 ; <U33>
++4 ; <U34>
++5 ; <U35>
++6 ; <U36>
++7 ; <U37>
++8 ; <U38>
++9 ; <U39>
++< ; <U3C>
++= ; <U3D>
++> ; <U3E>
++? ; <U3F>
++@ ; <U40>
++A ; <U41>
++B ; <U42>
++C ; <U43>
++D ; <U44>
++E ; <U45>
++F ; <U46>
++G ; <U47>
++H ; <U48>
++I ; <U49>
++J ; <U4A>
++K ; <U4B>
++L ; <U4C>
++M ; <U4D>
++N ; <U4E>
++O ; <U4F>
++P ; <U50>
++Q ; <U51>
++R ; <U52>
++S ; <U53>
++T ; <U54>
++U ; <U55>
++V ; <U56>
++W ; <U57>
++X ; <U58>
++Y ; <U59>
++Z ; <U5A>
++[ ; <U5B>
++\ ; <U5C>
++] ; <U5D>
++^ ; <U5E>
++_ ; <U5F>
++` ; <U60>
++a ; <U61>
++b ; <U62>
++c ; <U63>
++d ; <U64>
++e ; <U65>
++f ; <U66>
++g ; <U67>
++h ; <U68>
++i ; <U69>
++j ; <U6A>
++k ; <U6B>
++l ; <U6C>
++m ; <U6D>
++n ; <U6E>
++o ; <U6F>
++p ; <U70>
++q ; <U71>
++r ; <U72>
++s ; <U73>
++t ; <U74>
++u ; <U75>
++v ; <U76>
++w ; <U77>
++x ; <U78>
++y ; <U79>
++z ; <U7A>
++{ ; <U7B>
++| ; <U7C>
++} ; <U7D>
++~ ; <U7E>
++ ; <U7F>
++ ; <U80>
++ÿ ; <UFF>
++Ā ; <U100>
++࿿ ; <UFFF>
++က ; <U1000>
++� ; <UFFFD>
++￿ ; <UFFFF>
++𐀀 ; <U10000>
++🿿 ; <U1FFFF>
++𠀀 ; <U20000>
++𯿿 ; <U2FFFF>
++𰀀 ; <U30000>
++𿿾 ; <U3FFFE>
++񀀀 ; <U40000>
++񏿿 ; <U4FFFF>
++񐀀 ; <U50000>
++񟿿 ; <U5FFFF>
++񠀀 ; <U60000>
++񯿿 ; <U6FFFF>
++񰀀 ; <U70000>
++񿿿 ; <U7FFFF>
++򀀀 ; <U80000>
++򏿿 ; <U8FFFF>
++򐀀 ; <U90000>
++򟿿 ; <U9FFFF>
++򠀀 ; <UA0000>
++򯿿 ; <UAFFFF>
++򰀀 ; <UB0000>
++򿿿 ; <UBFFFF>
++󀀁 ; <UC0001>
++󏿌 ; <UCFFCC>
++󐀎 ; <UD000E>
++󟿿 ; <UDFFFF>
++󠀁 ; <UE0001>
++󯿿 ; <UEFFFF>
++󰀁 ; <UF0001>
++󿿿 ; <UFFFFF>
++􀀁 ; <U100001>
++􏿿 ; <U10FFFF>
+diff --git a/localedata/Makefile b/localedata/Makefile
+index 0341528b0407ae3b..c9dd5a954e8194cc 100644
+--- a/localedata/Makefile
++++ b/localedata/Makefile
+@@ -47,6 +47,7 @@ test-input := \
+ 	bg_BG.UTF-8 \
+ 	br_FR.UTF-8 \
+ 	bs_BA.UTF-8 \
++	C.UTF-8 \
+ 	ckb_IQ.UTF-8 \
+ 	cmn_TW.UTF-8 \
+ 	crh_UA.UTF-8 \
+@@ -206,6 +207,7 @@ LOCALES := \
+ 	bg_BG.UTF-8 \
+ 	br_FR.UTF-8 \
+ 	bs_BA.UTF-8 \
++	C.UTF-8 \
+ 	ckb_IQ.UTF-8 \
+ 	cmn_TW.UTF-8 \
+ 	crh_UA.UTF-8 \
 diff --git a/localedata/SUPPORTED b/localedata/SUPPORTED
-index 8ca023e..2a78391 100644
+index 34f7a7c3fe2b6526..546ce6cea16a8fdb 100644
 --- a/localedata/SUPPORTED
 +++ b/localedata/SUPPORTED
-@@ -1,6 +1,7 @@
- # This file names the currently supported and somewhat tested locales.
- # If you have any additions please file a glibc bug report.
- SUPPORTED-LOCALES=\
+@@ -79,6 +79,7 @@ brx_IN/UTF-8 \
+ bs_BA.UTF-8/UTF-8 \
+ bs_BA/ISO-8859-2 \
+ byn_ER/UTF-8 \
 +C.UTF-8/UTF-8 \
- aa_DJ.UTF-8/UTF-8 \
- aa_DJ/ISO-8859-1 \
- aa_ER/UTF-8 \
+ ca_AD.UTF-8/UTF-8 \
+ ca_AD/ISO-8859-15 \
+ ca_ES.UTF-8/UTF-8 \
 diff --git a/localedata/locales/C b/localedata/locales/C
 new file mode 100644
-index 0000000..fdf460e
+index 0000000000000000..651691c72424cf38
 --- /dev/null
 +++ b/localedata/locales/C
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,194 @@
 +escape_char /
 +comment_char %
 +% Locale for C locale in UTF-8
@@ -52,14 +374,13 @@ index 0000000..fdf460e
 +source     ""
 +address    ""
 +contact    ""
-+email      "mfabian@redhat.com"
++email      "bug-glibc-locales@gnu.org"
 +tel        ""
 +fax        ""
-+language   "C"
++language   ""
 +territory  ""
-+revision   "1.0"
-+date       "2015-08-10"
-+%
++revision   "2.0"
++date       "2020-06-28"
 +category  "i18n:2012";LC_IDENTIFICATION
 +category  "i18n:2012";LC_CTYPE
 +category  "i18n:2012";LC_COLLATE
@@ -75,8 +396,23 @@ index 0000000..fdf460e
 +END LC_IDENTIFICATION
 +
 +LC_CTYPE
-+copy "i18n"
++% Include only the i18n character type classes without any of the
++% transliteration that i18n uses by default.
++copy "i18n_ctype"
 +
++% Include the neutral transliterations.  The builtin C and
++% POSIX locales have +1600 transliterations that are built into
++% the locales, and these are a superset of those.
++translit_start
++include "translit_neutral";""
++% We must use '?' for default_missing because the transliteration
++% framework includes it directly into the output and so it must
++% be compatible with ASCII if that is the target character set.
++default_missing <U003F>
++translit_end
++
++% Include the transliterations that can convert combined cahracters.
++% These are generally expected by users.
 +translit_start
 +include "translit_combining";""
 +translit_end
@@ -84,48 +420,26 @@ index 0000000..fdf460e
 +END LC_CTYPE
 +
 +LC_COLLATE
-+order_start forward
-+<U0000>
-+..
-+<UFFFF>
-+<U00010000>
-+..
-+<U0001FFFF>
-+<U00020000>
-+..
-+<U0002FFFF>
-+<U000E0000>
-+..
-+<U000EFFFF>
-+<U000F0000>
-+..
-+<U000FFFFF>
-+<U00100000>
-+..
-+<U0010FFFF>
-+UNDEFINED
-+order_end
++% The keyword 'strcmp_collation' in any part of any LC_COLLATE
++% immediately discards all collation information and causes the
++% locale to use strcmp for collation comparison.  This is exactly
++% what is needed for C (ASCII) or C.UTF-8.
++strcmp_collation
 +END LC_COLLATE
 +
 +LC_MONETARY
-+% This is the 14652 i18n fdcc-set definition for
-+% the LC_MONETARY category
-+% (except for the int_curr_symbol and currency_symbol, they are empty in
-+% the 14652 i18n fdcc-set definition and also empty in
-+% glibc/locale/C-monetary.c. But localedef complains in that case).
-+%
-+% Using "USD" for int_curr_symbol. But maybe "XXX" would be better?
-+% XXX is "No currency" (https://en.wikipedia.org/wiki/ISO_4217)
-+int_curr_symbol     "<U0055><U0053><U0044><U0020>"
-+% Using "$" for currency_symbol. But maybe <U00A4> would be better?
-+% U+00A4 is the "generic currency symbol"
-+% (https://en.wikipedia.org/wiki/Currency_sign_%28typography%29)
-+currency_symbol     "<U0024>"
-+mon_decimal_point   "<U002E>"
++
++% This is the 14652 i18n fdcc-set definition for the LC_MONETARY
++% category (except for the int_curr_symbol and currency_symbol, they are
++% empty in the 14652 i18n fdcc-set definition and also empty in
++% glibc/locale/C-monetary.c.).
++int_curr_symbol     ""
++currency_symbol     ""
++mon_decimal_point   "."
 +mon_thousands_sep   ""
 +mon_grouping        -1
 +positive_sign       ""
-+negative_sign       "<U002D>"
++negative_sign       "-"
 +int_frac_digits     -1
 +frac_digits         -1
 +p_cs_precedes       -1
@@ -143,51 +457,29 @@ index 0000000..fdf460e
 +% This is the POSIX Locale definition for
 +% the LC_NUMERIC category.
 +%
-+decimal_point   "<U002E>"
++decimal_point   "."
 +thousands_sep   ""
 +grouping        -1
 +END LC_NUMERIC
 +
 +LC_TIME
-+% This is the POSIX Locale definition for
-+% the LC_TIME category.
++% This is the POSIX Locale definition for the LC_TIME category with the
++% exception that time is per ISO 8601 and 24-hour.
 +%
 +% Abbreviated weekday names (%a)
-+abday       "<U0053><U0075><U006E>";"<U004D><U006F><U006E>";/
-+            "<U0054><U0075><U0065>";"<U0057><U0065><U0064>";/
-+            "<U0054><U0068><U0075>";"<U0046><U0072><U0069>";/
-+            "<U0053><U0061><U0074>"
++abday       "Sun";"Mon";"Tue";"Wed";"Thu";"Fri";"Sat"
 +
 +% Full weekday names (%A)
-+day         "<U0053><U0075><U006E><U0064><U0061><U0079>";/
-+            "<U004D><U006F><U006E><U0064><U0061><U0079>";/
-+            "<U0054><U0075><U0065><U0073><U0064><U0061><U0079>";/
-+            "<U0057><U0065><U0064><U006E><U0065><U0073><U0064><U0061><U0079>";/
-+            "<U0054><U0068><U0075><U0072><U0073><U0064><U0061><U0079>";/
-+            "<U0046><U0072><U0069><U0064><U0061><U0079>";/
-+            "<U0053><U0061><U0074><U0075><U0072><U0064><U0061><U0079>"
++day         "Sunday";"Monday";"Tuesday";"Wednesday";"Thursday";/
++            "Friday";"Saturday"
 +
 +% Abbreviated month names (%b)
-+abmon       "<U004A><U0061><U006E>";"<U0046><U0065><U0062>";/
-+            "<U004D><U0061><U0072>";"<U0041><U0070><U0072>";/
-+            "<U004D><U0061><U0079>";"<U004A><U0075><U006E>";/
-+            "<U004A><U0075><U006C>";"<U0041><U0075><U0067>";/
-+            "<U0053><U0065><U0070>";"<U004F><U0063><U0074>";/
-+            "<U004E><U006F><U0076>";"<U0044><U0065><U0063>"
++abmon       "Jan";"Feb";"Mar";"Apr";"May";"Jun";"Jul";"Aug";"Sep";/
++            "Oct";"Nov";"Dec"
 +
 +% Full month names (%B)
-+mon         "<U004A><U0061><U006E><U0075><U0061><U0072><U0079>";/
-+            "<U0046><U0065><U0062><U0072><U0075><U0061><U0072><U0079>";/
-+            "<U004D><U0061><U0072><U0063><U0068>";/
-+            "<U0041><U0070><U0072><U0069><U006C>";/
-+            "<U004D><U0061><U0079>";/
-+            "<U004A><U0075><U006E><U0065>";/
-+            "<U004A><U0075><U006C><U0079>";/
-+            "<U0041><U0075><U0067><U0075><U0073><U0074>";/
-+            "<U0053><U0065><U0070><U0074><U0065><U006D><U0062><U0065><U0072>";/
-+            "<U004F><U0063><U0074><U006F><U0062><U0065><U0072>";/
-+            "<U004E><U006F><U0076><U0065><U006D><U0062><U0065><U0072>";/
-+            "<U0044><U0065><U0063><U0065><U006D><U0062><U0065><U0072>"
++mon         "January";"February";"March";"April";"May";"June";"July";/
++            "August";"September";"October";"November";"December"
 +
 +% Week description, consists of three fields:
 +% 1. Number of days in a week.
@@ -198,40 +490,35 @@ index 0000000..fdf460e
 +% Monday), and 4 (Thursday), respectively.
 +week    7;19971201;4
 +first_weekday	1
-+first_workday	1
++first_workday	2
 +
 +% Appropriate date and time representation (%c)
-+%	"%a %b %e %H:%M:%S %Y"
-+d_t_fmt "<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065><U0020><U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053><U0020><U0025><U0059>"
++d_t_fmt "%a %b %e %H:%M:%S %Y"
 +
 +% Appropriate date representation (%x)
-+%	"%m/%d/%y"
-+d_fmt   "<U0025><U006D><U002F><U0025><U0064><U002F><U0025><U0079>"
++d_fmt   "%m/%d/%y"
 +
 +% Appropriate time representation (%X)
-+%	"%H:%M:%S"
-+t_fmt   "<U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053>"
++t_fmt   "%H:%M:%S"
 +
 +% Appropriate AM/PM time representation (%r)
-+%	"%I:%M:%S %p"
-+t_fmt_ampm "<U0025><U0049><U003A><U0025><U004D><U003A><U0025><U0053><U0020><U0025><U0070>"
++t_fmt_ampm "%I:%M:%S %p"
 +
-+% Equivalent of AM/PM (%p)      "AM"/"PM"
-+%
-+am_pm	"<U0041><U004D>";"<U0050><U004D>"
++% Equivalent of AM/PM (%p)
++am_pm	"AM";"PM"
 +
 +% Appropriate date representation (date(1))   "%a %b %e %H:%M:%S %Z %Y"
-+date_fmt	"<U0025><U0061><U0020><U0025><U0062><U0020><U0025><U0065><U0020><U0025><U0048><U003A><U0025><U004D><U003A><U0025><U0053><U0020><U0025><U005A><U0020><U0025><U0059>"
++date_fmt	"%a %b %e %H:%M:%S %Z %Y"
 +END LC_TIME
 +
 +LC_MESSAGES
 +% This is the POSIX Locale definition for
 +% the LC_NUMERIC category.
 +%
-+yesexpr "<U005E><U005B><U0079><U0059><U005D>"
-+noexpr  "<U005E><U005B><U006E><U004E><U005D>"
-+yesstr  "<U0059><U0065><U0073>"
-+nostr   "<U004E><U006F>"
++yesexpr "^[yY]"
++noexpr  "^[nN]"
++yesstr  "Yes"
++nostr   "No"
 +END LC_MESSAGES
 +
 +LC_PAPER
@@ -246,30 +533,22 @@ index 0000000..fdf460e
 +LC_NAME
 +% This is the ISO/IEC 14652 "i18n" definition for
 +% the LC_NAME category.
-+% "%p%t%g%t%m%t%f"
 +% (also used in the built in C/POSIX locale in glibc/locale/C-name.c)
-+name_fmt    "<U0025><U0070><U0025><U0074><U0025><U0067><U0025><U0074>/
-+<U0025><U006D><U0025><U0074><U0025><U0066>"
++name_fmt    "%p%t%g%t%m%t%f"
 +END LC_NAME
 +
 +LC_ADDRESS
 +% This is the ISO/IEC 14652 "i18n" definition for
 +% the LC_ADDRESS category.
-+% "%a%N%f%N%d%N%b%N%s %h %e %r%N%C-%z %T%N%c%N"
 +% (also used in the built in C/POSIX locale in glibc/locale/C-address.c)
-+postal_fmt    "<U0025><U0061><U0025><U004E><U0025><U0066><U0025><U004E>/
-+<U0025><U0064><U0025><U004E><U0025><U0062><U0025><U004E><U0025><U0073>/
-+<U0020><U0025><U0068><U0020><U0025><U0065><U0020><U0025><U0072><U0025>/
-+<U004E><U0025><U0043><U002D><U0025><U007A><U0020><U0025><U0054><U0025>/
-+<U004E><U0025><U0063><U0025><U004E>"
++postal_fmt    "%a%N%f%N%d%N%b%N%s %h %e %r%N%C-%z %T%N%c%N"
 +END LC_ADDRESS
 +
 +LC_TELEPHONE
 +% This is the ISO/IEC 14652 "i18n" definition for
 +% the LC_TELEPHONE category.
 +% "+%c %a %l"
-+tel_int_fmt    "<U002B><U0025><U0063><U0020><U0025><U0061><U0020><U0025>/
-+<U006C>"
++tel_int_fmt    "+%c %a %l"
 +% (also used in the built in C/POSIX locale in glibc/locale/C-telephone.c)
 +END LC_TELEPHONE
 +
@@ -280,7 +559,3 @@ index 0000000..fdf460e
 +%metric
 +measurement    1
 +END LC_MEASUREMENT
-+
--- 
-2.4.3
-
