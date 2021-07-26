@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-982-gd34ed66f96
+%define glibcsrcdir glibc-2.33.9000-984-gddcc612ce9
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 50%{?dist}
+Release: 51%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2242,6 +2242,12 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Jul 26 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-51
+- Auto-sync with upstream branch master,
+  commit ddcc612ce923038b867083a0c55d6e034951155a:
+- Exclude static tests for mcheck and malloc-check
+- i386: Regenerate ulps
+
 * Sat Jul 24 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-50
 - Auto-sync with upstream branch master,
   commit d34ed66f96fa9316654d7adb2afcce4be1d1c4f5:
