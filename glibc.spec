@@ -1,4 +1,4 @@
-%define glibcsrcdir glibc-2.33.9000-984-gddcc612ce9
+%define glibcsrcdir glibc-2.33.9000-993-gc37fc3ebf0
 %define glibcversion 2.33.9000
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
@@ -111,7 +111,7 @@
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 54%{?dist}
+Release: 55%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2253,6 +2253,19 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Thu Jul 29 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-55
+- Auto-sync with upstream branch master,
+  commit c37fc3ebf0607ce1953c565ffe56d56555eeb25e:
+- Update libc.pot for 2.34 release.
+- x86-64: Add Avoid_Short_Distance_REP_MOVSB
+- Typo: Rename HAVE_CLONE3_WAPPER to HAVE_CLONE3_WRAPPER
+- build-many-glibcs.py: Add x86_64-linux-gnu-minimal configuration
+- tests: use xmalloc to allocate implementation array
+- xmalloc: Fix warnings with gcc analyzer
+- __cxa_thread_atexit_impl: Abort on allocation failure [BZ #18524]
+- manual: Drop the .so suffix in libc_malloc_debug description
+- hurd: _Fork: unlock malloc before calling fork child hooks
+
 * Tue Jul 27 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-54
 - Revert to old C.UTF-8 locale
 
