@@ -106,12 +106,52 @@
 %endif
 
 ##############################################################################
+# Utility functions for pre/post scripts.  Stick them at the beginning of
+# any lua %pre, %post, %postun, etc. sections to have them expand into
+# those scripts.  It only works in lua sections and not anywhere else.
+%define glibc_post_funcs() \
+-- We use lua posix.exec because there may be no shell that we can \
+-- run during glibc upgrade.  We used to implement much of %%post as a \
+-- C program, but from an overall maintenance perspective the lua in \
+-- the spec file was simpler and safer given the operations required. \
+-- All lua code will be ignored by rpm-ostree; see: \
+-- https://github.com/projectatomic/rpm-ostree/pull/1869 \
+-- If we add new lua actions to the %%post code we should coordinate \
+-- with rpm-ostree and ensure that their glibc install is functional. \
+function post_exec (program, ...) \
+  local pid = posix.fork () \
+  if pid == 0 then \
+    posix.exec (program, ...) \
+    assert (nil) \
+  elseif pid > 0 then \
+    posix.wait (pid) \
+  end \
+end \
+\
+function update_gconv_modules_cache () \
+  local iconv_dir = "%{_libdir}/gconv" \
+  local iconv_cache = iconv_dir .. "/gconv-modules.cache" \
+  local iconv_modules = iconv_dir .. "/gconv-modules" \
+  if (posix.utime (iconv_modules) == 0) then \
+    if (posix.utime (iconv_cache) == 0) then \
+      post_exec ("%{_prefix}/sbin/iconvconfig", \
+		 "-o", iconv_cache, \
+		 "--nostdlib", \
+		 iconv_dir) \
+    else \
+      io.stdout:write ("Error: Missing " .. iconv_cache .. " file.\n") \
+    end \
+  end \
+end \
+%{nil}
+
+##############################################################################
 # %%package glibc - The GNU C Library (glibc) core package.
 ##############################################################################
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 55%{?dist}
+Release: 56%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -861,12 +901,6 @@ nothing else. It is designed for assembling a minimal system.
 Summary: All iconv converter modules for %{name}.
 Requires: %{name}%{_isa} = %{version}-%{release}
 Requires: %{name}-common = %{version}-%{release}
-%ifarch x86_64
-# Automatically install the 32-bit variant if the 64-bit variant has
-# been installed.  This covers the case when glibc.i686 is installed
-# before glibc-gconv-extra.x86_64.  (See above for the other ordering.)
-Recommends: (glibc-gconv-extra(x86-32) if glibc(x86-32))
-%endif
 
 %description gconv-extra
 This package contains all iconv converter modules built in %{name}.
@@ -1937,23 +1971,7 @@ if rpm.vercmp(rel, required) < 0 then
 end
 
 %post -p <lua>
--- We use lua's posix.exec because there may be no shell that we can
--- run during glibc upgrade.  We used to implement much of %%post as a
--- C program, but from an overall maintenance perspective the lua in
--- the spec file was simpler and safer given the operations required.
--- All lua code will be ignored by rpm-ostree; see:
--- https://github.com/projectatomic/rpm-ostree/pull/1869
--- If we add new lua actions to the %%post code we should coordinate
--- with rpm-ostree and ensure that their glibc install is functional.
-function post_exec (program, ...)
-  local pid = posix.fork ()
-  if pid == 0 then
-    assert (posix.exec (program, ...))
-  elseif pid > 0 then
-    posix.wait (pid)
-  end
-end
-
+%glibc_post_funcs
 -- (1) Remove multilib libraries from previous installs.
 -- In order to support in-place upgrades, we must immediately remove
 -- obsolete platform directories after installing a new glibc
@@ -2084,16 +2102,7 @@ post_exec ("%{_prefix}/sbin/ldconfig")
 -- We assume that the cache is in _libdir/gconv and called
 -- "gconv-modules.cache".
 
-local iconv_dir = "%{_libdir}/gconv"
-local iconv_cache = iconv_dir .. "/gconv-modules.cache"
-if (posix.utime (iconv_cache) == 0) then
-  post_exec ("%{_prefix}/sbin/iconvconfig",
-	     "-o", iconv_cache,
-	     "--nostdlib",
-	     iconv_dir)
-else
-  io.stdout:write ("Error: Missing " .. iconv_cache .. " file.\n")
-end
+update_gconv_modules_cache()
 
 -- (5) On upgrades, restart systemd if installed.  "systemctl -q" does
 -- not suppress the error message (which is common in chroots), so
@@ -2134,18 +2143,13 @@ if posix.access(save_path) then
   posix.unlink(save_path)
 end
 
-%post gconv-extra
-iconv_dir=%{_libdir}/gconv
-%{_prefix}/sbin/iconvconfig -o "$iconv_dir/gconv-modules.cache" --nostdlib \
-    $iconv_dir
+%post gconv-extra -p <lua>
+%glibc_post_funcs
+update_gconv_modules_cache ()
 
-%postun gconv-extra
-iconv_dir=%{_libdir}/gconv
-# The file won't exist if glibc is also removed.
-if [ -f $iconv_dir/gconv-modules ]; then
-    %{_prefix}/sbin/iconvconfig -o "$iconv_dir/gconv-modules.cache" \
-        --nostdlib $iconv_dir
-fi
+%postun gconv-extra -p <lua>
+%glibc_post_funcs
+update_gconv_modules_cache ()
 
 %pre -n nscd
 getent group nscd >/dev/null || /usr/sbin/groupadd -g 28 -r nscd
@@ -2253,6 +2257,10 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Fri Jul 30 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-56
+- Port post scripts for gconv-extra to lua and drop dependency across
+  architectures for x86 multilib (#1988344).
+
 * Thu Jul 29 2021 Florian Weimer <fweimer@redhat.com> - 2.33.9000-55
 - Auto-sync with upstream branch master,
   commit c37fc3ebf0607ce1953c565ffe56d56555eeb25e:
