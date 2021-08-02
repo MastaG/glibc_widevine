@@ -1,5 +1,5 @@
-%define glibcsrcdir glibc-2.33.9000-993-gc37fc3ebf0
-%define glibcversion 2.33.9000
+%define glibcsrcdir glibc-2.34
+%define glibcversion 2.34
 # Pre-release tarballs are pulled in from git using a command that is
 # effectively:
 #
@@ -151,7 +151,7 @@ end \
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 56%{?dist}
+Release: 1%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -2257,6 +2257,17 @@ fi
 %files -f compat-libpthread-nonshared.filelist -n compat-libpthread-nonshared
 
 %changelog
+* Mon Aug  2 2021 Florian Weimer <fweimer@redhat.com> - 2.34-1
+- Switch to glibc 2.34 release tarball:
+- Update ChangeLog.old/ChangeLog.23.
+- Prepare for glibc 2.34 release.
+- po/nl.po: Update Dutch translation.
+- Update install.texi, and regenerate INSTALL.
+- Update translations.
+- Update NEWS.
+- NEWS: Fix typos, grammar, and missing words
+- elf: Fix audit regression
+
 * Fri Jul 30 2021 Siddhesh Poyarekar <siddhesh@redhat.com> - 2.33.9000-56
 - Port post scripts for gconv-extra to lua and drop dependency across
   architectures for x86 multilib (#1988344).
