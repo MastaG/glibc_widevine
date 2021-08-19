@@ -151,7 +151,7 @@ end \
 Summary: The GNU libc libraries
 Name: glibc
 Version: %{glibcversion}
-Release: 1%{?dist}
+Release: 10001%{?dist}
 
 # In general, GPLv2+ is used by programs, LGPLv2+ is used for
 # libraries.
@@ -230,6 +230,8 @@ Patch23: glibc-python3.patch
 Patch29: glibc-fedora-nsswitch.patch
 Patch30: glibc-deprecated-selinux-makedb.patch
 Patch31: glibc-deprecated-selinux-nscd.patch
+Patch32: glibc-add-support-for-SHT_RELR-sections.patch
+Patch33: glibc-tls-libwidevinecdm.so-since-4.10.2252.0-has-TLS-with.patch
 
 ##############################################################################
 # Continued list of core "glibc" package information:
